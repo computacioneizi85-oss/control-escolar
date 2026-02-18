@@ -8,7 +8,8 @@
 
 <style>
 body{
-    background:#f2f5fb;
+    background:#eef2f7;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .panel{
@@ -18,47 +19,74 @@ body{
     box-shadow:0px 8px 20px rgba(0,0,0,0.08);
 }
 
-h2{
-    font-weight:700;
+.menu-btn{
+    width:100%;
+    height:80px;
+    font-size:20px;
+    font-weight:600;
+    border-radius:12px;
 }
 
 .table thead{
     background:#0d6efd;
     color:white;
 }
+
+h2{
+    font-weight:700;
+}
 </style>
 </head>
 
 <body class="container py-4">
 
+<!-- ENCABEZADO -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Panel del Maestro</h2>
     <a href="/logout" class="btn btn-danger">Cerrar sesión</a>
 </div>
 
-<!-- BOTONES PRINCIPALES -->
-<div class="mb-4">
-    <a href="/asistencia" class="btn btn-primary me-2">Tomar asistencia</a>
+<!-- MENU PRINCIPAL -->
+<div class="row mb-5">
+
+    <div class="col-md-4 mb-3">
+        <a href="/asistencia" class="btn btn-primary menu-btn">
+            📋 Pase de lista
+        </a>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <a href="/participaciones" class="btn btn-warning menu-btn">
+            ⭐ Participaciones
+        </a>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <a href="#calificaciones" class="btn btn-success menu-btn">
+            📝 Calificaciones
+        </a>
+    </div>
+
 </div>
 
-<!-- CAPTURA DE CALIFICACIONES -->
-<div class="panel mb-5">
-    <h4 class="mb-3">Capturar calificación</h4>
+<!-- CAPTURAR CALIFICACIONES -->
+<div id="calificaciones" class="panel mb-5">
+    <h4 class="mb-3">Registrar calificación</h4>
 
     <form method="POST" action="/agregar_calificacion">
 
         <label class="form-label">Alumno</label>
         <select name="alumno" class="form-select mb-3" required>
             {% for alumno in alumnos %}
-            <option value="{{ alumno.nombre }}">{{ alumno.nombre }}</option>
+            <option value="{{ alumno._id }}">{{ alumno.nombre }}</option>
             {% endfor %}
         </select>
 
         <label class="form-label">Materia</label>
-        <input type="text" name="materia" class="form-control mb-3" placeholder="Ejemplo: Español" required>
+        <input type="text" name="materia" class="form-control mb-3" placeholder="Ej: Español" required>
 
         <label class="form-label">Calificación</label>
-        <input type="number" step="0.1" min="0" max="10" name="calificacion" class="form-control mb-3" required>
+        <input type="number" name="calificacion" step="0.1" min="0" max="10" class="form-control mb-3" required>
 
         <button class="btn btn-success w-100">Guardar calificación</button>
     </form>
