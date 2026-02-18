@@ -235,6 +235,43 @@ def reset_password(correo):
 
     return f"Contraseña reiniciada. Nueva contraseña: {nueva_password}"
 
+# ==================================
+# ELIMINAR ALUMNO
+# ==================================
+@app.route("/eliminar_alumno/<correo>")
+@login_required("admin")
+def eliminar_alumno(correo):
+
+    # borrar alumno
+    mongo.db.alumnos.delete_one({"correo": correo})
+
+    # borrar su usuario de acceso
+    mongo.db.usuarios.delete_one({"correo": correo})
+
+    # borrar asistencias relacionadas
+    mongo.db.asistencias.delete_many({"nombre": {"$exists": True}, "correo": correo})
+
+    # borrar participaciones
+    mongo.db.participaciones.delete_many({"correo": correo})
+
+    return redirect("/admin")
+
+
+# ==================================
+# ELIMINAR MAESTRO
+# ==================================
+@app.route("/eliminar_maestro/<correo>")
+@login_required("admin")
+def eliminar_maestro(correo):
+
+    # borrar maestro
+    mongo.db.maestros.delete_one({"correo": correo})
+
+    # borrar acceso
+    mongo.db.usuarios.delete_one({"correo": correo})
+
+    return redirect("/admin")
+
 
 # =========================
 # LOGOUT

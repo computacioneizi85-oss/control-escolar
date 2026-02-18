@@ -27,6 +27,11 @@ h2{
     background:#212529;
     color:white;
 }
+
+.btn-sm{
+    width:100%;
+    margin-bottom:5px;
+}
 </style>
 </head>
 
@@ -72,7 +77,7 @@ h2{
 <tr>
 <th>Nombre</th>
 <th>Correo</th>
-<th>Acción</th>
+<th>Acciones</th>
 </tr>
 </thead>
 
@@ -82,9 +87,17 @@ h2{
 <td>{{ maestro.nombre }}</td>
 <td>{{ maestro.correo }}</td>
 <td>
+
 <a href="/reset_password/{{ maestro.correo }}" class="btn btn-warning btn-sm">
 Restablecer contraseña
 </a>
+
+<a href="/eliminar_maestro/{{ maestro.correo }}"
+class="btn btn-danger btn-sm"
+onclick="return confirm('¿Seguro que deseas eliminar este maestro?');">
+Eliminar maestro
+</a>
+
 </td>
 </tr>
 {% endfor %}
@@ -102,7 +115,7 @@ Restablecer contraseña
 <th>Nombre</th>
 <th>Correo</th>
 <th>Grupo</th>
-<th>Acción</th>
+<th>Acciones</th>
 </tr>
 </thead>
 
@@ -113,9 +126,17 @@ Restablecer contraseña
 <td>{{ alumno.correo }}</td>
 <td>{{ alumno.grupo }}</td>
 <td>
+
 <a href="/reset_password/{{ alumno.correo }}" class="btn btn-warning btn-sm">
 Restablecer contraseña
 </a>
+
+<a href="/eliminar_alumno/{{ alumno.correo }}"
+class="btn btn-danger btn-sm"
+onclick="return confirm('¿Seguro que deseas eliminar este alumno?');">
+Eliminar alumno
+</a>
+
 </td>
 </tr>
 {% endfor %}
