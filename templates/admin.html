@@ -150,7 +150,13 @@ Eliminar maestro
 <div class="panel">
 <h4>Alumnos registrados</h4>
 
-<table class="table table-bordered table-hover">
+<!-- BUSCADOR DE ALUMNOS -->
+<div class="mb-3">
+    <input type="text" id="buscadorAlumnos" class="form-control"
+    placeholder="🔍 Buscar por nombre o correo del alumno...">
+</div>
+
+<table class="table table-bordered table-hover" id="tablaAlumnos">
 <thead>
 <tr>
 <th>Nombre</th>
@@ -184,6 +190,26 @@ Eliminar alumno
 </tbody>
 </table>
 </div>
+
+<script>
+document.getElementById("buscadorAlumnos").addEventListener("keyup", function() {
+
+    let filtro = this.value.toLowerCase();
+    let filas = document.querySelectorAll("#tablaAlumnos tbody tr");
+
+    filas.forEach(function(fila) {
+
+        let texto = fila.textContent.toLowerCase();
+
+        if(texto.includes(filtro)){
+            fila.style.display = "";
+        } else {
+            fila.style.display = "none";
+        }
+
+    });
+});
+</script>
 
 </body>
 </html>
