@@ -48,7 +48,7 @@ h2{
     <a href="/logout" class="btn btn-danger">Cerrar sesión</a>
 </div>
 
-<!-- MENU ACADEMICO -->
+<!-- MENU PRINCIPAL -->
 <div class="row mb-5">
 
     <div class="col-md-3 mb-2">
@@ -75,10 +75,15 @@ h2{
         </a>
     </div>
 
-    <!-- NUEVO BOTON GRUPOS -->
     <div class="col-md-3 mt-2">
         <a href="/grupos" class="btn btn-info w-100 menu-btn">
             🏫 Administrar Grupos
+        </a>
+    </div>
+
+    <div class="col-md-3 mt-2">
+        <a href="/asignar_grupos" class="btn btn-secondary w-100 menu-btn">
+            👨‍🏫 Vincular maestro a grupo
         </a>
     </div>
 
@@ -150,7 +155,7 @@ Eliminar maestro
 <div class="panel">
 <h4>Alumnos registrados</h4>
 
-<!-- BUSCADOR DE ALUMNOS -->
+<!-- BUSCADOR -->
 <div class="mb-3">
     <input type="text" id="buscadorAlumnos" class="form-control"
     placeholder="🔍 Buscar por nombre o correo del alumno...">
@@ -193,20 +198,12 @@ Eliminar alumno
 
 <script>
 document.getElementById("buscadorAlumnos").addEventListener("keyup", function() {
-
     let filtro = this.value.toLowerCase();
     let filas = document.querySelectorAll("#tablaAlumnos tbody tr");
 
     filas.forEach(function(fila) {
-
         let texto = fila.textContent.toLowerCase();
-
-        if(texto.includes(filtro)){
-            fila.style.display = "";
-        } else {
-            fila.style.display = "none";
-        }
-
+        fila.style.display = texto.includes(filtro) ? "" : "none";
     });
 });
 </script>
