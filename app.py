@@ -17,7 +17,7 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 mongo = PyMongo(app)
 
-# Esperar a que MongoDB realmente conecte
+# Esperar conexión real a MongoDB
 db = None
 for i in range(10):
     try:
@@ -75,7 +75,7 @@ def login():
     return render_template("login.html")
 
 # =========================
-# CREAR ADMIN (SOLO PRIMERA VEZ)
+# CREAR ADMIN (PRIMERA VEZ)
 # =========================
 @app.route("/crear_admin")
 def crear_admin():
@@ -105,9 +105,7 @@ def admin():
     maestros = list(database.maestros.find())
     return render_template("admin.html", alumnos=alumnos, maestros=maestros)
 
-# =========================
 # REGISTRAR MAESTRO
-# =========================
 @app.route("/registrar_maestro", methods=["POST"])
 @login_required("admin")
 def registrar_maestro():
@@ -130,9 +128,7 @@ def registrar_maestro():
 
     return redirect("/admin")
 
-# =========================
 # REGISTRAR ALUMNO
-# =========================
 @app.route("/registrar_alumno", methods=["POST"])
 @login_required("admin")
 def registrar_alumno():
@@ -168,6 +164,7 @@ def maestro():
     alumnos = list(database.alumnos.find())
     return render_template("maestro.html", alumnos=alumnos)
 
+# AGREGAR CALIFICACION
 @app.route("/agregar_calificacion", methods=["POST"])
 @login_required("maestro")
 def agregar_calificacion():
@@ -185,6 +182,33 @@ def agregar_calificacion():
     return redirect("/maestro")
 
 # =========================
+# ASISTENCIAS
+# =========================
+@app.route("/asistencia")
+@login_required("maestro")
+def asistencia():
+    database = mongo.cx.get_database()
+    alumnos = list(database.alumnos.find())
+    return render_template("asistencia.html", alumnos=alumnos)
+
+@app.route("/guardar_asistencia", methods=["POST"])
+@login_required("maestro")
+def guardar_asistencia():
+    database = mongo.cx.get_database()
+    fecha = request.form["fecha"]
+
+    for alumno in database.alumnos.find():
+        estado = request.form.get(str(alumno["_id"]))
+        database.asistencias.insert_one({
+            "alumno_id": alumno["_id"],
+            "nombre": alumno["nombre"],
+            "fecha": fecha,
+            "estado": estado
+        })
+
+    return redirect("/maestro")
+
+# =========================
 # PANEL ALUMNO
 # =========================
 @app.route("/alumno")
@@ -192,7 +216,8 @@ def agregar_calificacion():
 def alumno():
     database = mongo.cx.get_database()
     alumno = database.alumnos.find_one({"correo": session["user"]})
-    return render_template("alumno.html", alumno=alumno)
+    asistencias = list(database.asistencias.find({"correo": session["user"]}))
+    return render_template("alumno.html", alumno=alumno, asistencias=asistencias)
 
 # =========================
 # LOGOUT

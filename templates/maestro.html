@@ -1,24 +1,93 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<title>Panel Maestro</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="container py-4">
-<h2>Panel Maestro</h2>
-<a href="/logout" class="btn btn-danger mb-4">Cerrar sesión</a>
+<meta charset="UTF-8">
+<title>Panel del Maestro</title>
 
-<h4>Capturar Calificación</h4>
-<form action="/agregar_calificacion" method="POST">
-<select class="form-control mb-2" name="alumno">
-{% for a in alumnos %}
-<option value="{{a.nombre}}">{{a.nombre}}</option>
-{% endfor %}
-</select>
-<input class="form-control mb-2" name="materia" placeholder="Materia" required>
-<input class="form-control mb-2" name="calificacion" placeholder="Calificación" required>
-<button class="btn btn-success">Guardar</button>
-</form>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{
+    background:#f2f5fb;
+}
+
+.panel{
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0px 8px 20px rgba(0,0,0,0.08);
+}
+
+h2{
+    font-weight:700;
+}
+
+.table thead{
+    background:#0d6efd;
+    color:white;
+}
+</style>
+</head>
+
+<body class="container py-4">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Panel del Maestro</h2>
+    <a href="/logout" class="btn btn-danger">Cerrar sesión</a>
+</div>
+
+<!-- BOTONES PRINCIPALES -->
+<div class="mb-4">
+    <a href="/asistencia" class="btn btn-primary me-2">Tomar asistencia</a>
+</div>
+
+<!-- CAPTURA DE CALIFICACIONES -->
+<div class="panel mb-5">
+    <h4 class="mb-3">Capturar calificación</h4>
+
+    <form method="POST" action="/agregar_calificacion">
+
+        <label class="form-label">Alumno</label>
+        <select name="alumno" class="form-select mb-3" required>
+            {% for alumno in alumnos %}
+            <option value="{{ alumno.nombre }}">{{ alumno.nombre }}</option>
+            {% endfor %}
+        </select>
+
+        <label class="form-label">Materia</label>
+        <input type="text" name="materia" class="form-control mb-3" placeholder="Ejemplo: Español" required>
+
+        <label class="form-label">Calificación</label>
+        <input type="number" step="0.1" min="0" max="10" name="calificacion" class="form-control mb-3" required>
+
+        <button class="btn btn-success w-100">Guardar calificación</button>
+    </form>
+</div>
+
+<!-- LISTA DE ALUMNOS -->
+<div class="panel">
+    <h4 class="mb-3">Lista de alumnos</h4>
+
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Grupo</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for alumno in alumnos %}
+            <tr>
+                <td>{{ alumno.nombre }}</td>
+                <td>{{ alumno.correo }}</td>
+                <td>{{ alumno.grupo }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 </body>
 </html>
