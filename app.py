@@ -18,6 +18,16 @@ app.config["PERMANENT_SESSION_LIFETIME"] = 3600
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 mongo = PyMongo(app)
 
+from datetime import timedelta
+
+app.permanent_session_lifetime = timedelta(hours=8)
+
+@app.before_request
+def mantener_sesion_activa():
+    if "user" in session:
+        session.modified = True
+
+
 # ======================================================
 # SEGURIDAD
 # ======================================================
@@ -52,6 +62,8 @@ def login():
 
         session["user"] = correo
         session["role"] = user["role"]
+	session.permanent = True
+
 
         if user["role"] == "admin":
             return redirect("/admin")
