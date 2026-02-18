@@ -9,6 +9,14 @@ import time
 app = Flask(__name__)
 app.secret_key = "ULTRA_SECRET_KEY_2026"
 
+
+# CONFIGURACION PARA RENDER (COOKIES Y SESIONES)
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = "None"
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600
+
+
 # =========================
 # CONEXION MONGODB ATLAS
 # =========================
