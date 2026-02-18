@@ -9,6 +9,7 @@
 <style>
 body{
     background:#eef2f7;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .panel{
@@ -21,12 +22,17 @@ body{
 h2{
     font-weight:700;
 }
-</style>
 
+.table thead{
+    background:#212529;
+    color:white;
+}
+</style>
 </head>
 
 <body class="container py-4">
 
+<!-- ENCABEZADO -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Panel Administrador</h2>
     <a href="/logout" class="btn btn-danger">Cerrar sesión</a>
@@ -38,8 +44,8 @@ h2{
 
 <form action="/registrar_maestro" method="POST">
     <input class="form-control mb-2" name="nombre" placeholder="Nombre completo" required>
-    <input class="form-control mb-2" name="correo" placeholder="Correo" required>
-    <input class="form-control mb-2" name="password" type="password" placeholder="Contraseña" required>
+    <input class="form-control mb-2" name="correo" placeholder="Correo electrónico" required>
+    <input class="form-control mb-2" name="password" type="password" placeholder="Contraseña inicial" required>
     <button class="btn btn-success w-100">Registrar maestro</button>
 </form>
 </div>
@@ -50,9 +56,9 @@ h2{
 
 <form action="/registrar_alumno" method="POST">
     <input class="form-control mb-2" name="nombre" placeholder="Nombre completo" required>
-    <input class="form-control mb-2" name="correo" placeholder="Correo" required>
+    <input class="form-control mb-2" name="correo" placeholder="Correo electrónico" required>
     <input class="form-control mb-2" name="grupo" placeholder="Grupo" required>
-    <input class="form-control mb-2" name="password" type="password" placeholder="Contraseña" required>
+    <input class="form-control mb-2" name="password" type="password" placeholder="Contraseña inicial" required>
     <button class="btn btn-primary w-100">Registrar alumno</button>
 </form>
 </div>
@@ -61,11 +67,12 @@ h2{
 <div class="panel mb-5">
 <h4>Maestros registrados</h4>
 
-<table class="table table-bordered">
-<thead class="table-dark">
+<table class="table table-bordered table-hover">
+<thead>
 <tr>
 <th>Nombre</th>
 <th>Correo</th>
+<th>Acción</th>
 </tr>
 </thead>
 
@@ -74,6 +81,11 @@ h2{
 <tr>
 <td>{{ maestro.nombre }}</td>
 <td>{{ maestro.correo }}</td>
+<td>
+<a href="/reset_password/{{ maestro.correo }}" class="btn btn-warning btn-sm">
+Restablecer contraseña
+</a>
+</td>
 </tr>
 {% endfor %}
 </tbody>
@@ -84,12 +96,13 @@ h2{
 <div class="panel">
 <h4>Alumnos registrados</h4>
 
-<table class="table table-bordered">
-<thead class="table-dark">
+<table class="table table-bordered table-hover">
+<thead>
 <tr>
 <th>Nombre</th>
 <th>Correo</th>
 <th>Grupo</th>
+<th>Acción</th>
 </tr>
 </thead>
 
@@ -99,6 +112,11 @@ h2{
 <td>{{ alumno.nombre }}</td>
 <td>{{ alumno.correo }}</td>
 <td>{{ alumno.grupo }}</td>
+<td>
+<a href="/reset_password/{{ alumno.correo }}" class="btn btn-warning btn-sm">
+Restablecer contraseña
+</a>
+</td>
 </tr>
 {% endfor %}
 </tbody>

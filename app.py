@@ -219,6 +219,23 @@ def alumno():
     asistencias = list(database.asistencias.find({"correo": session["user"]}))
     return render_template("alumno.html", alumno=alumno, asistencias=asistencias)
 
+# ==================================
+# RESTABLECER CONTRASEÑA
+# ==================================
+@app.route("/reset_password/<correo>")
+@login_required("admin")
+def reset_password(correo):
+
+    nueva_password = "123456"
+
+    mongo.db.usuarios.update_one(
+        {"correo": correo},
+        {"$set": {"password": generate_password_hash(nueva_password)}}
+    )
+
+    return f"Contraseña reiniciada. Nueva contraseña: {nueva_password}"
+
+
 # =========================
 # LOGOUT
 # =========================
