@@ -108,7 +108,15 @@ h2{
 <form action="/registrar_alumno" method="POST">
     <input class="form-control mb-2" name="nombre" placeholder="Nombre completo" required>
     <input class="form-control mb-2" name="correo" placeholder="Correo electrónico" required>
-    <input class="form-control mb-2" name="grupo" placeholder="Grupo (Ej: 1A, 2B)" required>
+
+    <!-- SELECTOR REAL DE GRUPOS -->
+    <select class="form-control mb-2" name="grupo" required>
+        <option value="">Seleccionar grupo</option>
+        {% for g in grupos %}
+        <option value="{{ g.nombre }}">{{ g.nombre }}</option>
+        {% endfor %}
+    </select>
+
     <input class="form-control mb-2" name="password" type="password" placeholder="Contraseña inicial" required>
     <button class="btn btn-primary w-100">Registrar alumno</button>
 </form>
@@ -155,7 +163,6 @@ Eliminar maestro
 <div class="panel">
 <h4>Alumnos registrados</h4>
 
-<!-- BUSCADOR -->
 <div class="mb-3">
     <input type="text" id="buscadorAlumnos" class="form-control"
     placeholder="🔍 Buscar por nombre o correo del alumno...">

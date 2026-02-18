@@ -85,7 +85,8 @@ def crear_admin():
 def admin():
     alumnos = list(mongo.db.alumnos.find())
     maestros = list(mongo.db.maestros.find())
-    return render_template("admin.html", alumnos=alumnos, maestros=maestros)
+    grupos = list(mongo.db.grupos.find())
+    return render_template("admin.html", alumnos=alumnos, maestros=maestros, grupos=grupos)
 
 # REGISTRAR MAESTRO
 @app.route("/registrar_maestro", methods=["POST"])
@@ -152,9 +153,16 @@ def eliminar_maestro(correo):
 @app.route("/asignar_grupos")
 @login_required("admin")
 def asignar_grupos():
+
     maestros = list(mongo.db.maestros.find())
-    grupos = mongo.db.alumnos.distinct("grupo")
+
+    # ahora leerá los grupos reales creados
+    grupos_db = list(mongo.db.grupos.find())
+
+    grupos = [g["nombre"] for g in grupos_db]
+
     return render_template("asignar_grupos.html", maestros=maestros, grupos=grupos)
+
 
 @app.route("/guardar_asignacion", methods=["POST"])
 @login_required("admin")
