@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Calificaciones</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container py-4">
+
+<h2>Calificaciones</h2>
+<a href="/admin" class="btn btn-secondary mb-3">Volver</a>
+
+{% for alumno in alumnos %}
+<div class="card mb-3 p-3">
+<h4>{{ alumno.nombre }} ({{ alumno.grupo }})</h4>
+
+<ul>
+{% for c in alumno.calificaciones %}
+<li>{{ c.materia }} : {{ c.calificacion }}</li>
+{% endfor %}
+</ul>
+
+</div>
+{% endfor %}
+
+</body>
+</html>

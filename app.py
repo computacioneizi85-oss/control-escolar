@@ -272,6 +272,37 @@ def eliminar_maestro(correo):
 
     return redirect("/admin")
 
+@app.route("/reporte_asistencias")
+@login_required("admin")
+def reporte_asistencias():
+    asistencias = list(mongo.db.asistencias.find().sort("fecha", -1))
+    return render_template("reporte_asistencias.html", asistencias=asistencias)
+
+@app.route("/reporte_participaciones")
+@login_required("admin")
+def reporte_participaciones():
+    participaciones = list(mongo.db.participaciones.find().sort("fecha", -1))
+    return render_template("reporte_participaciones.html", participaciones=participaciones)
+
+@app.route("/reporte_calificaciones")
+@login_required("admin")
+def reporte_calificaciones():
+    alumnos = list(mongo.db.alumnos.find())
+    return render_template("reporte_calificaciones.html", alumnos=alumnos)
+
+@app.route("/reporte_grupos")
+@login_required("admin")
+def reporte_grupos():
+    grupos = mongo.db.alumnos.distinct("grupo")
+    return render_template("reporte_grupos.html", grupos=grupos)
+
+
+@app.route("/grupo/<grupo>")
+@login_required("admin")
+def ver_grupo(grupo):
+    alumnos = list(mongo.db.alumnos.find({"grupo": grupo}))
+    return render_template("ver_grupo.html", alumnos=alumnos, grupo=grupo)
+
 
 # =========================
 # LOGOUT
