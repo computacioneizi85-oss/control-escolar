@@ -11,6 +11,21 @@ app.secret_key = "ULTRA_SECRET_KEY_2026"
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 mongo = PyMongo(app)
 
+# CREAR ADMIN AUTOMATICO PRIMER ARRANQUE
+try:
+    admin_existente = mongo.db.usuarios.find_one({"correo": "admin@escuela.com"})
+    if not admin_existente:
+        from werkzeug.security import generate_password_hash
+        mongo.db.usuarios.insert_one({
+            "correo": "admin@escuela.com",
+            "password": generate_password_hash("admin123"),
+            "role": "admin"
+        })
+        print("ADMIN CREADO AUTOMATICAMENTE")
+except Exception as e:
+    print("Esperando conexión a MongoDB...")
+
+
 def login_required(role):
     def wrapper(f):
         @wraps(f)
