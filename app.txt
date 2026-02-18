@@ -312,6 +312,48 @@ def ver_grupo(grupo):
     return render_template("ver_grupo.html", alumnos=alumnos, grupo=grupo)
 
 # ======================================================
+# MODULO DE GRUPOS
+# ======================================================
+
+@app.route("/panel_grupos")
+@login_required("admin")
+def panel_grupos():
+    grupos = list(mongo.db.grupos.find())
+    return render_template("panel_grupos.html", grupos=grupos)
+
+@app.route("/crear_grupo", methods=["POST"])
+@login_required("admin")
+def crear_grupo():
+
+    nombre = request.form["nombre"].strip().upper()
+
+    # evitar duplicados
+    existente = mongo.db.grupos.find_one({"nombre": nombre})
+    if existente:
+        return redirect("/panel_grupos")
+
+    mongo.db.grupos.insert_one({
+        "nombre": nombre
+    })
+
+    return redirect("/panel_grupos")
+
+@app.route("/eliminar_grupo/<grupo>")
+@login_required("admin")
+def eliminar_grupo(grupo):
+
+    mongo.db.grupos.delete_one({"nombre": grupo})
+
+    # opcional: quitar grupo a alumnos
+    mongo.db.alumnos.update_many(
+        {"grupo": grupo},
+        {"$set": {"grupo": "SIN_GRUPO"}}
+    )
+
+    return redirect("/panel_grupos")
+
+
+# ======================================================
 # LOGOUT
 # ======================================================
 @app.route("/logout")
