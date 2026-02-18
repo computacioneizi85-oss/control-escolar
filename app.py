@@ -1,51 +1,42 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session
 from flask_pymongo import PyMongo
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from pymongo import MongoClient
 import os
 import time
 
 app = Flask(__name__)
 app.secret_key = "ULTRA_SECRET_KEY_2026"
 
-
-# CONFIGURACION PARA RENDER (COOKIES Y SESIONES)
+# ===== CONFIGURACION SESIONES PARA RENDER =====
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = "None"
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['PERMANENT_SESSION_LIFETIME'] = 3600
 
-
-# =========================
-# CONEXION MONGODB ATLAS
-# =========================
+# ===== CONEXION MONGODB =====
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
-
 mongo = PyMongo(app)
 
-# ---- ESPERAR CONEXION REAL A MONGODB ----
+# Esperar a que MongoDB realmente conecte
 db = None
 for i in range(10):
     try:
         db = mongo.cx.get_database()
         db.command("ping")
-        print("MongoDB conectado correctamente")
+        print("MongoDB conectado")
         break
-    except Exception as e:
-        print("Esperando conexión MongoDB...")
+    except Exception:
+        print("Esperando MongoDB...")
         time.sleep(2)
 
-# =========================
-# DECORADOR SEGURIDAD
-# =========================
+# ===== SEGURIDAD POR ROLES =====
 def login_required(role):
     def wrapper(f):
         @wraps(f)
         def decorated(*args, **kwargs):
             if "user" not in session:
                 return redirect("/")
-            if session["role"] != role:
+            if session.get("role") != role:
                 return "Acceso denegado"
             return f(*args, **kwargs)
         return decorated
@@ -57,24 +48,29 @@ def login_required(role):
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        correo = request.form["correo"]
+        correo = request.form["correo"].strip().lower()
         password = request.form["password"]
 
-        usuarios = mongo.cx.get_database().usuarios
+        database = mongo.cx.get_database()
+        usuarios = database.usuarios
+
         user = usuarios.find_one({"correo": correo})
 
-        if user and check_password_hash(user["password"], password):
-            session["user"] = correo
-            session["role"] = user["role"]
+        if not user:
+            return "Usuario o contraseña incorrectos"
 
-            if user["role"] == "admin":
-                return redirect("/admin")
-            elif user["role"] == "maestro":
-                return redirect("/maestro")
-            else:
-                return redirect("/alumno")
+        if not check_password_hash(user["password"], password):
+            return "Usuario o contraseña incorrectos"
 
-        return "Usuario o contraseña incorrectos"
+        session["user"] = correo
+        session["role"] = user["role"]
+
+        if user["role"] == "admin":
+            return redirect("/admin")
+        elif user["role"] == "maestro":
+            return redirect("/maestro")
+        else:
+            return redirect("/alumno")
 
     return render_template("login.html")
 
@@ -83,9 +79,8 @@ def login():
 # =========================
 @app.route("/crear_admin")
 def crear_admin():
-    from werkzeug.security import generate_password_hash
-
-    usuarios = mongo.cx.get_database().usuarios
+    database = mongo.cx.get_database()
+    usuarios = database.usuarios
 
     admin_existente = usuarios.find_one({"correo": "admin@escuela.com"})
     if admin_existente:
@@ -110,17 +105,23 @@ def admin():
     maestros = list(database.maestros.find())
     return render_template("admin.html", alumnos=alumnos, maestros=maestros)
 
+# =========================
 # REGISTRAR MAESTRO
+# =========================
 @app.route("/registrar_maestro", methods=["POST"])
 @login_required("admin")
 def registrar_maestro():
     database = mongo.cx.get_database()
 
     nombre = request.form["nombre"]
-    correo = request.form["correo"]
+    correo = request.form["correo"].strip().lower()
     password = generate_password_hash(request.form["password"])
 
-    database.maestros.insert_one({"nombre": nombre, "correo": correo})
+    database.maestros.insert_one({
+        "nombre": nombre,
+        "correo": correo
+    })
+
     database.usuarios.insert_one({
         "correo": correo,
         "password": password,
@@ -129,14 +130,16 @@ def registrar_maestro():
 
     return redirect("/admin")
 
+# =========================
 # REGISTRAR ALUMNO
+# =========================
 @app.route("/registrar_alumno", methods=["POST"])
 @login_required("admin")
 def registrar_alumno():
     database = mongo.cx.get_database()
 
     nombre = request.form["nombre"]
-    correo = request.form["correo"]
+    correo = request.form["correo"].strip().lower()
     grupo = request.form["grupo"]
     password = generate_password_hash(request.form["password"])
 
@@ -156,7 +159,7 @@ def registrar_alumno():
     return redirect("/admin")
 
 # =========================
-# MAESTRO
+# PANEL MAESTRO
 # =========================
 @app.route("/maestro")
 @login_required("maestro")
@@ -178,10 +181,11 @@ def agregar_calificacion():
         {"nombre": alumno},
         {"$push": {"calificaciones": {"materia": materia, "calificacion": calificacion}}}
     )
+
     return redirect("/maestro")
 
 # =========================
-# ALUMNO
+# PANEL ALUMNO
 # =========================
 @app.route("/alumno")
 @login_required("alumno")
@@ -198,8 +202,5 @@ def logout():
     session.clear()
     return redirect("/")
 
-# =========================
-# RUN LOCAL
-# =========================
 if __name__ == "__main__":
     app.run(debug=True)
