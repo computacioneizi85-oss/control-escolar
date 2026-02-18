@@ -122,5 +122,23 @@ def alumno():
     alumno = mongo.db.alumnos.find_one({"correo": session["user"]})
     return render_template("alumno.html", alumno=alumno)
 
+# RUTA TEMPORAL PARA CREAR ADMIN
+@app.route("/crear_admin")
+def crear_admin():
+    from werkzeug.security import generate_password_hash
+
+    admin_existente = mongo.db.usuarios.find_one({"correo":"admin@escuela.com"})
+    if admin_existente:
+        return "El admin ya existe"
+
+    mongo.db.usuarios.insert_one({
+        "correo":"admin@escuela.com",
+        "password":generate_password_hash("admin123"),
+        "role":"admin"
+    })
+
+    return "ADMIN CREADO, YA PUEDES INICIAR SESION"
+
+
 if __name__ == "__main__":
     app.run(debug=True)
