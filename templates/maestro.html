@@ -78,15 +78,15 @@ h2{
         <label class="form-label">Alumno</label>
         <select name="alumno" class="form-select mb-3" required>
             {% for alumno in alumnos %}
-            <option value="{{ alumno._id }}">{{ alumno.nombre }}</option>
+            <option value="{{ alumno._id }}">{{ alumno.nombre }} ({{ alumno.grupo }})</option>
             {% endfor %}
         </select>
 
         <label class="form-label">Materia</label>
-        <input type="text" name="materia" class="form-control mb-3" placeholder="Ej: Español" required>
+        <input type="text" name="materia" class="form-control mb-3" placeholder="Ejemplo: Español" required>
 
         <label class="form-label">Calificación</label>
-        <input type="number" name="calificacion" step="0.1" min="0" max="10" class="form-control mb-3" required>
+        <input type="number" step="0.1" min="0" max="10" name="calificacion" class="form-control mb-3" required>
 
         <button class="btn btn-success w-100">Guardar calificación</button>
     </form>

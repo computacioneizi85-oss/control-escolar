@@ -2,34 +2,24 @@ from flask import Flask, render_template, request, redirect, session
 from flask_pymongo import PyMongo
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+from bson.objectid import ObjectId
 import os
-import time
 
 app = Flask(__name__)
 app.secret_key = "ULTRA_SECRET_KEY_2026"
 
-# ===== CONFIGURACION SESIONES PARA RENDER =====
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = "None"
-app.config['SESSION_COOKIE_HTTPONLY'] = True
+# ==== Cookies para HTTPS (Render) ====
+app.config["SESSION_COOKIE_SECURE"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "None"
+app.config["SESSION_COOKIE_HTTPONLY"] = True
 
-# ===== CONEXION MONGODB =====
+# ==== MongoDB ====
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 mongo = PyMongo(app)
 
-# Esperar conexión real a MongoDB
-db = None
-for i in range(10):
-    try:
-        db = mongo.cx.get_database()
-        db.command("ping")
-        print("MongoDB conectado")
-        break
-    except Exception:
-        print("Esperando MongoDB...")
-        time.sleep(2)
-
-# ===== SEGURIDAD POR ROLES =====
+# ==========================================================
+# SEGURIDAD
+# ==========================================================
 def login_required(role):
     def wrapper(f):
         @wraps(f)
@@ -42,19 +32,16 @@ def login_required(role):
         return decorated
     return wrapper
 
-# =========================
+# ==========================================================
 # LOGIN
-# =========================
+# ==========================================================
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         correo = request.form["correo"].strip().lower()
         password = request.form["password"]
 
-        database = mongo.cx.get_database()
-        usuarios = database.usuarios
-
-        user = usuarios.find_one({"correo": correo})
+        user = mongo.db.usuarios.find_one({"correo": correo})
 
         if not user:
             return "Usuario o contraseña incorrectos"
@@ -74,204 +61,177 @@ def login():
 
     return render_template("login.html")
 
-# =========================
-# CREAR ADMIN (PRIMERA VEZ)
-# =========================
+# ==========================================================
+# CREAR ADMIN (SOLO PRIMERA VEZ)
+# ==========================================================
 @app.route("/crear_admin")
 def crear_admin():
-    database = mongo.cx.get_database()
-    usuarios = database.usuarios
-
-    admin_existente = usuarios.find_one({"correo": "admin@escuela.com"})
-    if admin_existente:
+    if mongo.db.usuarios.find_one({"correo": "admin@escuela.com"}):
         return "El admin ya existe"
 
-    usuarios.insert_one({
+    mongo.db.usuarios.insert_one({
         "correo": "admin@escuela.com",
         "password": generate_password_hash("admin123"),
         "role": "admin"
     })
+    return "ADMIN CREADO"
 
-    return "ADMIN CREADO, YA PUEDES INICIAR SESION"
-
-# =========================
-# ADMIN
-# =========================
+# ==========================================================
+# PANEL ADMIN / DIRECCIÓN
+# ==========================================================
 @app.route("/admin")
 @login_required("admin")
 def admin():
-    database = mongo.cx.get_database()
-    alumnos = list(database.alumnos.find())
-    maestros = list(database.maestros.find())
+    alumnos = list(mongo.db.alumnos.find())
+    maestros = list(mongo.db.maestros.find())
     return render_template("admin.html", alumnos=alumnos, maestros=maestros)
 
-# REGISTRAR MAESTRO
+# ---------- Registrar Maestro ----------
 @app.route("/registrar_maestro", methods=["POST"])
 @login_required("admin")
 def registrar_maestro():
-    database = mongo.cx.get_database()
-
     nombre = request.form["nombre"]
     correo = request.form["correo"].strip().lower()
     password = generate_password_hash(request.form["password"])
 
-    database.maestros.insert_one({
-        "nombre": nombre,
-        "correo": correo
-    })
-
-    database.usuarios.insert_one({
-        "correo": correo,
-        "password": password,
-        "role": "maestro"
-    })
-
+    mongo.db.maestros.insert_one({"nombre": nombre, "correo": correo})
+    mongo.db.usuarios.insert_one({"correo": correo, "password": password, "role": "maestro"})
     return redirect("/admin")
 
-# REGISTRAR ALUMNO
+# ---------- Registrar Alumno ----------
 @app.route("/registrar_alumno", methods=["POST"])
 @login_required("admin")
 def registrar_alumno():
-    database = mongo.cx.get_database()
-
     nombre = request.form["nombre"]
     correo = request.form["correo"].strip().lower()
     grupo = request.form["grupo"]
     password = generate_password_hash(request.form["password"])
 
-    database.alumnos.insert_one({
+    mongo.db.alumnos.insert_one({
         "nombre": nombre,
         "correo": correo,
         "grupo": grupo,
         "calificaciones": []
     })
-
-    database.usuarios.insert_one({
-        "correo": correo,
-        "password": password,
-        "role": "alumno"
-    })
-
+    mongo.db.usuarios.insert_one({"correo": correo, "password": password, "role": "alumno"})
     return redirect("/admin")
 
-# =========================
+# ---------- Reset Password ----------
+@app.route("/reset_password/<correo>")
+@login_required("admin")
+def reset_password(correo):
+    nueva = "123456"
+    mongo.db.usuarios.update_one(
+        {"correo": correo},
+        {"$set": {"password": generate_password_hash(nueva)}}
+    )
+    return redirect("/admin")
+
+# ---------- Eliminar ----------
+@app.route("/eliminar_alumno/<correo>")
+@login_required("admin")
+def eliminar_alumno(correo):
+    mongo.db.alumnos.delete_one({"correo": correo})
+    mongo.db.usuarios.delete_one({"correo": correo})
+    mongo.db.asistencias.delete_many({"correo": correo})
+    mongo.db.participaciones.delete_many({"correo": correo})
+    return redirect("/admin")
+
+@app.route("/eliminar_maestro/<correo>")
+@login_required("admin")
+def eliminar_maestro(correo):
+    mongo.db.maestros.delete_one({"correo": correo})
+    mongo.db.usuarios.delete_one({"correo": correo})
+    return redirect("/admin")
+
+# ==========================================================
 # PANEL MAESTRO
-# =========================
+# ==========================================================
 @app.route("/maestro")
 @login_required("maestro")
 def maestro():
-    database = mongo.cx.get_database()
-    alumnos = list(database.alumnos.find())
+    alumnos = list(mongo.db.alumnos.find())
     return render_template("maestro.html", alumnos=alumnos)
 
-# AGREGAR CALIFICACION
+# ---------- Calificaciones ----------
 @app.route("/agregar_calificacion", methods=["POST"])
 @login_required("maestro")
 def agregar_calificacion():
-    database = mongo.cx.get_database()
-
-    alumno = request.form["alumno"]
+    alumno_id = request.form["alumno"]
     materia = request.form["materia"]
     calificacion = request.form["calificacion"]
 
-    database.alumnos.update_one(
-        {"nombre": alumno},
+    mongo.db.alumnos.update_one(
+        {"_id": ObjectId(alumno_id)},
         {"$push": {"calificaciones": {"materia": materia, "calificacion": calificacion}}}
     )
-
     return redirect("/maestro")
 
-# =========================
-# ASISTENCIAS
-# =========================
+# ---------- Asistencias ----------
 @app.route("/asistencia")
 @login_required("maestro")
 def asistencia():
-    database = mongo.cx.get_database()
-    alumnos = list(database.alumnos.find())
+    alumnos = list(mongo.db.alumnos.find())
     return render_template("asistencia.html", alumnos=alumnos)
 
 @app.route("/guardar_asistencia", methods=["POST"])
 @login_required("maestro")
 def guardar_asistencia():
-    database = mongo.cx.get_database()
     fecha = request.form["fecha"]
 
-    for alumno in database.alumnos.find():
+    for alumno in mongo.db.alumnos.find():
         estado = request.form.get(str(alumno["_id"]))
-        database.asistencias.insert_one({
+        mongo.db.asistencias.insert_one({
             "alumno_id": alumno["_id"],
             "nombre": alumno["nombre"],
+            "correo": alumno["correo"],
             "fecha": fecha,
             "estado": estado
         })
 
     return redirect("/maestro")
 
-# =========================
+# ---------- Participaciones ----------
+@app.route("/participaciones")
+@login_required("maestro")
+def participaciones():
+    alumnos = list(mongo.db.alumnos.find())
+    return render_template("participaciones.html", alumnos=alumnos)
+
+@app.route("/guardar_participacion", methods=["POST"])
+@login_required("maestro")
+def guardar_participacion():
+    alumno_id = request.form["alumno"]
+    tipo = request.form["tipo"]
+    fecha = request.form["fecha"]
+
+    alumno = mongo.db.alumnos.find_one({"_id": ObjectId(alumno_id)})
+
+    mongo.db.participaciones.insert_one({
+        "alumno_id": alumno["_id"],
+        "nombre": alumno["nombre"],
+        "correo": alumno["correo"],
+        "tipo": tipo,
+        "fecha": fecha
+    })
+    return redirect("/maestro")
+
+# ==========================================================
 # PANEL ALUMNO
-# =========================
+# ==========================================================
 @app.route("/alumno")
 @login_required("alumno")
 def alumno():
-    database = mongo.cx.get_database()
-    alumno = database.alumnos.find_one({"correo": session["user"]})
-    asistencias = list(database.asistencias.find({"correo": session["user"]}))
-    return render_template("alumno.html", alumno=alumno, asistencias=asistencias)
+    alumno = mongo.db.alumnos.find_one({"correo": session["user"]})
+    asistencias = list(mongo.db.asistencias.find({"correo": session["user"]}))
+    participaciones = list(mongo.db.participaciones.find({"correo": session["user"]}))
+    return render_template("alumno.html", alumno=alumno,
+                           asistencias=asistencias,
+                           participaciones=participaciones)
 
-# ==================================
-# RESTABLECER CONTRASEÑA
-# ==================================
-@app.route("/reset_password/<correo>")
-@login_required("admin")
-def reset_password(correo):
-
-    nueva_password = "123456"
-
-    mongo.db.usuarios.update_one(
-        {"correo": correo},
-        {"$set": {"password": generate_password_hash(nueva_password)}}
-    )
-
-    return f"Contraseña reiniciada. Nueva contraseña: {nueva_password}"
-
-# ==================================
-# ELIMINAR ALUMNO
-# ==================================
-@app.route("/eliminar_alumno/<correo>")
-@login_required("admin")
-def eliminar_alumno(correo):
-
-    # borrar alumno
-    mongo.db.alumnos.delete_one({"correo": correo})
-
-    # borrar su usuario de acceso
-    mongo.db.usuarios.delete_one({"correo": correo})
-
-    # borrar asistencias relacionadas
-    mongo.db.asistencias.delete_many({"nombre": {"$exists": True}, "correo": correo})
-
-    # borrar participaciones
-    mongo.db.participaciones.delete_many({"correo": correo})
-
-    return redirect("/admin")
-
-
-# ==================================
-# ELIMINAR MAESTRO
-# ==================================
-@app.route("/eliminar_maestro/<correo>")
-@login_required("admin")
-def eliminar_maestro(correo):
-
-    # borrar maestro
-    mongo.db.maestros.delete_one({"correo": correo})
-
-    # borrar acceso
-    mongo.db.usuarios.delete_one({"correo": correo})
-
-    return redirect("/admin")
-
+# ==========================================================
+# REPORTES DIRECCIÓN
+# ==========================================================
 @app.route("/reporte_asistencias")
 @login_required("admin")
 def reporte_asistencias():
@@ -296,17 +256,15 @@ def reporte_grupos():
     grupos = mongo.db.alumnos.distinct("grupo")
     return render_template("reporte_grupos.html", grupos=grupos)
 
-
 @app.route("/grupo/<grupo>")
 @login_required("admin")
 def ver_grupo(grupo):
     alumnos = list(mongo.db.alumnos.find({"grupo": grupo}))
     return render_template("ver_grupo.html", alumnos=alumnos, grupo=grupo)
 
-
-# =========================
+# ==========================================================
 # LOGOUT
-# =========================
+# ==========================================================
 @app.route("/logout")
 def logout():
     session.clear()
