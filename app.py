@@ -265,6 +265,37 @@ def ver_grupo(grupo):
     return render_template("ver_grupo.html", alumnos=alumnos, grupo=grupo)
 
 # ==========================================================
+# MODULO GRUPOS
+# ==========================================================
+
+@app.route("/grupos")
+@login_required("admin")
+def grupos():
+    grupos = list(mongo.db.grupos.find())
+    return render_template("grupos.html", grupos=grupos)
+
+
+@app.route("/crear_grupo", methods=["POST"])
+@login_required("admin")
+def crear_grupo():
+    nombre = request.form["nombre"]
+    grado = request.form["grado"]
+
+    mongo.db.grupos.insert_one({
+        "nombre": nombre,
+        "grado": grado
+    })
+
+    return redirect("/grupos")
+
+@app.route("/grupo_detalle/<grupo>")
+@login_required("admin")
+def grupo_detalle(grupo):
+    alumnos = list(mongo.db.alumnos.find({"grupo": grupo}))
+    return render_template("grupo_detalle.html", alumnos=alumnos, grupo=grupo)
+
+
+# ==========================================================
 # LOGOUT
 # ==========================================================
 @app.route("/logout")
