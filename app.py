@@ -9,9 +9,11 @@ app = Flask(__name__)
 app.secret_key = "ULTRA_SECRET_KEY_2026"
 
 # ==== Cookies para HTTPS (Render) ====
+# Configuración correcta para Render + navegadores PC
 app.config["SESSION_COOKIE_SECURE"] = True
-app.config["SESSION_COOKIE_SAMESITE"] = "None"
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["PERMANENT_SESSION_LIFETIME"] = 3600
 
 # ==== MongoDB ====
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
