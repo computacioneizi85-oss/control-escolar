@@ -42,28 +42,34 @@ h2{
 
 <!-- ENCABEZADO -->
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Panel del Maestro</h2>
+    <h2>Panel del Maestro - Grupo {{grupo}}</h2>
     <a href="/logout" class="btn btn-danger">Cerrar sesión</a>
 </div>
 
 <!-- MENU PRINCIPAL -->
 <div class="row mb-5">
 
-    <div class="col-md-4 mb-3">
+    <div class="col-md-3 mb-3">
         <a href="/asistencia" class="btn btn-primary menu-btn">
             📋 Pase de lista
         </a>
     </div>
 
-    <div class="col-md-4 mb-3">
+    <div class="col-md-3 mb-3">
         <a href="/participaciones" class="btn btn-warning menu-btn">
             ⭐ Participaciones
         </a>
     </div>
 
-    <div class="col-md-4 mb-3">
+    <div class="col-md-3 mb-3">
         <a href="#calificaciones" class="btn btn-success menu-btn">
             📝 Calificaciones
+        </a>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <a href="/reportes" class="btn btn-danger menu-btn">
+            🚨 Reportes
         </a>
     </div>
 
@@ -94,7 +100,7 @@ h2{
 
 <!-- LISTA DE ALUMNOS -->
 <div class="panel">
-    <h4 class="mb-3">Lista de alumnos</h4>
+    <h4 class="mb-3">Alumnos de mi grupo</h4>
 
     <table class="table table-bordered table-hover">
         <thead>

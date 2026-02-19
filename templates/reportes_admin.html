@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Reportes Dirección</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container py-4">
+
+<h2>Reportes disciplinarios</h2>
+
+<table class="table table-bordered">
+<tr>
+<th>Alumno</th>
+<th>Grupo</th>
+<th>Maestro</th>
+<th>Fecha</th>
+<th>Razón</th>
+<th>Consecuencia</th>
+<th>Estado</th>
+<th>Acción</th>
+</tr>
+
+{% for r in reportes %}
+<tr>
+<td>{{r.alumno}}</td>
+<td>{{r.grupo}}</td>
+<td>{{r.maestro}}</td>
+<td>{{r.fecha}}</td>
+<td>{{r.razon}}</td>
+<td>{{r.consecuencia}}</td>
+<td>
+{% if r.estado == "pendiente" %}
+<span class="badge bg-warning">Pendiente</span>
+{% else %}
+<span class="badge bg-success">Aprobado</span>
+{% endif %}
+</td>
+
+<td>
+{% if r.estado == "pendiente" %}
+<a href="/aprobar_reporte/{{r._id}}" class="btn btn-success btn-sm">
+Aceptar
+</a>
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+</table>
+
+</body>
+</html>

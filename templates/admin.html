@@ -68,11 +68,21 @@ h2{
     </div>
 
     <div class="col-md-3 mt-2">
-        <a href="/asignar_grupos" class="btn btn-secondary w-100 menu-btn">👨‍🏫 Vincular maestro a grupo</a>
+        <a href="/reportes_admin" class="btn btn-danger w-100 menu-btn">
+            🚨 Reportes disciplinarios
+        </a>
     </div>
 
     <div class="col-md-3 mt-2">
-        <a href="/panel_grupos" class="btn btn-info w-100 menu-btn">🏫 Crear / Administrar Grupos</a>
+        <a href="/asignar_grupos" class="btn btn-secondary w-100 menu-btn">
+            👨‍🏫 Vincular maestro a grupo
+        </a>
+    </div>
+
+    <div class="col-md-3 mt-2">
+        <a href="/panel_grupos" class="btn btn-info w-100 menu-btn">
+            🏫 Crear / Administrar Grupos
+        </a>
     </div>
 
 </div>
@@ -113,7 +123,7 @@ h2{
 <div class="panel">
 <h4>Alumnos registrados</h4>
 
-<!-- PESTAÑAS DE GRUPOS -->
+<!-- TABS POR GRUPO -->
 <ul class="nav nav-tabs mb-3" id="tabsGrupos">
     <li class="nav-item">
         <button class="nav-link active" onclick="filtrarGrupo('TODOS')">Todos</button>
@@ -175,6 +185,7 @@ let grupoActual = "TODOS";
 function filtrarGrupo(grupo){
     grupoActual = grupo;
     aplicarFiltros();
+
     document.querySelectorAll("#tabsGrupos .nav-link").forEach(btn=>{
         btn.classList.remove("active");
     });
@@ -191,11 +202,7 @@ function aplicarFiltros(){
         let coincideGrupo = (grupoActual==="TODOS" || fila.dataset.grupo===grupoActual);
         let coincideTexto = fila.textContent.toLowerCase().includes(texto);
 
-        if(coincideGrupo && coincideTexto){
-            fila.style.display="";
-        }else{
-            fila.style.display="none";
-        }
+        fila.style.display = (coincideGrupo && coincideTexto) ? "" : "none";
     });
 }
 </script>
