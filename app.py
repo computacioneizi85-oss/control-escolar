@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, send_file
 from flask_pymongo import PyMongo
+from flask_session import Session
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from bson.objectid import ObjectId
@@ -12,17 +13,21 @@ import io
 app = Flask(__name__)
 app.secret_key = "ULTRA_SECRET_KEY_2026"
 
-# ---------- CONFIGURACION DE SESION ESTABLE ----------
-app.config["SESSION_PERMANENT"] = True
-app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=12)
-app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-app.config["SESSION_COOKIE_SECURE"] = False
-
-# ---------- MONGODB ----------
+# ===================== MONGODB =====================
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 mongo = PyMongo(app)
 
-# ---------- SEGURIDAD ----------
+# ===================== SESIONES EN MONGODB =====================
+app.config["SESSION_TYPE"] = "mongodb"
+app.config["SESSION_MONGODB"] = mongo.cx
+app.config["SESSION_MONGODB_DB"] = "control_escolar"
+app.config["SESSION_MONGODB_COLLECT"] = "sesiones"
+app.config["SESSION_PERMANENT"] = True
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=12)
+
+Session(app)
+
+# ===================== SEGURIDAD =====================
 def login_required(role):
     def wrapper(f):
         @wraps(f)
@@ -35,22 +40,22 @@ def login_required(role):
         return decorated
     return wrapper
 
-# ---------- LOGIN ----------
+# ===================== LOGIN =====================
 @app.route("/", methods=["GET", "POST"])
 def login():
+
     if request.method == "POST":
         correo = request.form["correo"].strip().lower()
         password = request.form["password"]
 
         user = mongo.db.usuarios.find_one({"correo": correo})
+
         if not user or not check_password_hash(user["password"], password):
             return "Usuario o contraseña incorrectos"
 
-        # limpiar cookies viejas
         session.clear()
         session["user"] = correo
         session["role"] = user["role"]
-        session.permanent = True
 
         if user["role"] == "admin":
             return redirect("/admin")
@@ -61,9 +66,10 @@ def login():
 
     return render_template("login.html")
 
-# ---------- CREAR ADMIN ----------
+# ===================== CREAR ADMIN =====================
 @app.route("/crear_admin")
 def crear_admin():
+
     if mongo.db.usuarios.find_one({"correo": "admin@escuela.com"}):
         return "Admin ya existe"
 
@@ -72,9 +78,10 @@ def crear_admin():
         "password": generate_password_hash("admin123"),
         "role": "admin"
     })
+
     return "ADMIN CREADO"
 
-# ---------- PANEL ADMIN ----------
+# ===================== PANEL ADMIN =====================
 @app.route("/admin")
 @login_required("admin")
 def admin():
@@ -83,21 +90,24 @@ def admin():
     grupos = list(mongo.db.grupos.find())
     return render_template("admin.html", alumnos=alumnos, maestros=maestros, grupos=grupos)
 
-# ---------- PANEL MAESTRO ----------
+# ===================== PANEL MAESTRO =====================
 @app.route("/maestro")
 @login_required("maestro")
 def maestro():
+
     maestro = mongo.db.maestros.find_one({"correo": session["user"]})
+
     if not maestro or "grupo" not in maestro:
         return "No tienes grupo asignado"
 
     alumnos = list(mongo.db.alumnos.find({"grupo": maestro["grupo"]}))
     return render_template("maestro.html", alumnos=alumnos, grupo=maestro["grupo"])
 
-# ---------- CREAR REPORTE ----------
+# ===================== CREAR REPORTE =====================
 @app.route("/crear_reporte", methods=["POST"])
 @login_required("maestro")
 def crear_reporte():
+
     alumno_id = request.form["alumno"]
     razon = request.form["razon"]
     fecha = request.form["fecha"]
@@ -118,30 +128,38 @@ def crear_reporte():
 
     return redirect("/reportes")
 
-# ---------- REPORTES MAESTRO ----------
+# ===================== REPORTES MAESTRO =====================
 @app.route("/reportes")
 @login_required("maestro")
 def panel_reportes():
+
     maestro = mongo.db.maestros.find_one({"correo": session["user"]})
     alumnos = list(mongo.db.alumnos.find({"grupo": maestro["grupo"]}))
     reportes = list(mongo.db.reportes.find({"maestro": session["user"]}))
+
     return render_template("reportes_maestro.html", alumnos=alumnos, reportes=reportes)
 
-# ---------- REPORTES ADMIN ----------
+# ===================== REPORTES DIRECCION =====================
 @app.route("/reportes_admin")
 @login_required("admin")
 def reportes_admin():
+
     reportes = list(mongo.db.reportes.find().sort("fecha", -1))
     return render_template("reportes_admin.html", reportes=reportes)
 
-# ---------- APROBAR REPORTE ----------
+# ===================== APROBAR REPORTE =====================
 @app.route("/aprobar_reporte/<id>")
 @login_required("admin")
 def aprobar_reporte(id):
-    mongo.db.reportes.update_one({"_id": ObjectId(id)}, {"$set": {"estado": "aprobado"}})
+
+    mongo.db.reportes.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"estado": "aprobado"}}
+    )
+
     return redirect("/reportes_admin")
 
-# ---------- GENERAR PDF ----------
+# ===================== GENERADOR PDF =====================
 def generar_pdf(reporte):
 
     buffer = io.BytesIO()
@@ -168,7 +186,6 @@ def generar_pdf(reporte):
         pdf.drawString(50, y, linea[:90])
         y -= 15
 
-    # Firmas
     pdf.line(80, 200, 250, 200)
     pdf.drawString(100, 185, "Firma del Maestro")
 
@@ -178,13 +195,11 @@ def generar_pdf(reporte):
     pdf.line(200, 120, 400, 120)
     pdf.drawString(250, 105, "Firma de Dirección")
 
-    pdf.drawString(80, 80, "Favor de entregar este documento firmado al día siguiente.")
-
     pdf.save()
     buffer.seek(0)
     return buffer
 
-# ---------- DESCARGAR PDF ----------
+# ===================== DESCARGAR PDF =====================
 @app.route("/reporte_pdf/<id>")
 def reporte_pdf(id):
 
@@ -200,21 +215,15 @@ def reporte_pdf(id):
 
     buffer = generar_pdf(reporte)
 
-    response = send_file(
+    return send_file(
         buffer,
         mimetype="application/pdf",
         as_attachment=True,
         download_name="reporte_disciplinario.pdf"
     )
 
-    response.headers["Cache-Control"] = "no-store"
-    return response
-
-# ---------- LOGOUT ----------
+# ===================== LOGOUT =====================
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/")
-
-if __name__ == "__main__":
-    app.run(debug=True)

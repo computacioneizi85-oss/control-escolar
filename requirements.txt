@@ -4,3 +4,4 @@ dnspython
 Werkzeug
 gunicorn
 reportlab
+Flask-Session
