@@ -21,7 +21,7 @@ body{
 
 .menu-btn{
     width:100%;
-    height:80px;
+    height:85px;
     font-size:20px;
     font-weight:600;
     border-radius:12px;
@@ -42,7 +42,7 @@ h2{
 
 <!-- ENCABEZADO -->
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Panel del Maestro - Grupo {{grupo}}</h2>
+    <h2>Panel del Maestro - Grupo {{ grupo }}</h2>
     <a href="/logout" class="btn btn-danger">Cerrar sesión</a>
 </div>
 
@@ -75,7 +75,7 @@ h2{
 
 </div>
 
-<!-- CAPTURAR CALIFICACIONES -->
+<!-- REGISTRO DE CALIFICACIONES -->
 <div id="calificaciones" class="panel mb-5">
     <h4 class="mb-3">Registrar calificación</h4>
 
@@ -83,6 +83,7 @@ h2{
 
         <label class="form-label">Alumno</label>
         <select name="alumno" class="form-select mb-3" required>
+            <option value="">Seleccionar alumno</option>
             {% for alumno in alumnos %}
             <option value="{{ alumno._id }}">{{ alumno.nombre }} ({{ alumno.grupo }})</option>
             {% endfor %}

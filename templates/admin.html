@@ -19,9 +19,7 @@ body{
     box-shadow:0px 8px 20px rgba(0,0,0,0.08);
 }
 
-h2{
-    font-weight:700;
-}
+h2{ font-weight:700; }
 
 .menu-btn{
     font-weight:600;
@@ -119,7 +117,7 @@ h2{
 </form>
 </div>
 
-<!-- LISTA DE ALUMNOS -->
+<!-- ALUMNOS REGISTRADOS -->
 <div class="panel">
 <h4>Alumnos registrados</h4>
 
@@ -201,7 +199,6 @@ function aplicarFiltros(){
     filas.forEach(fila=>{
         let coincideGrupo = (grupoActual==="TODOS" || fila.dataset.grupo===grupoActual);
         let coincideTexto = fila.textContent.toLowerCase().includes(texto);
-
         fila.style.display = (coincideGrupo && coincideTexto) ? "" : "none";
     });
 }

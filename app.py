@@ -1,10 +1,13 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, send_file
 from flask_pymongo import PyMongo
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from bson.objectid import ObjectId
 from datetime import timedelta
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 import os
+import io
 
 app = Flask(__name__)
 app.secret_key = "ULTRA_SECRET_KEY_2026"
@@ -46,11 +49,7 @@ def login():
         password = request.form["password"]
 
         user = mongo.db.usuarios.find_one({"correo": correo})
-
-        if not user:
-            return "Usuario o contraseña incorrectos"
-
-        if not check_password_hash(user["password"], password):
+        if not user or not check_password_hash(user["password"], password):
             return "Usuario o contraseña incorrectos"
 
         session["user"] = correo
@@ -98,7 +97,6 @@ def registrar_maestro():
 
     mongo.db.maestros.insert_one({"nombre": nombre, "correo": correo})
     mongo.db.usuarios.insert_one({"correo": correo, "password": password, "role": "maestro"})
-
     return redirect("/admin")
 
 # ================= REGISTRAR ALUMNO =================
@@ -118,25 +116,6 @@ def registrar_alumno():
     })
 
     mongo.db.usuarios.insert_one({"correo": correo, "password": password, "role": "alumno"})
-
-    return redirect("/admin")
-
-# ================= ELIMINAR =================
-@app.route("/eliminar_alumno/<correo>")
-@login_required("admin")
-def eliminar_alumno(correo):
-    mongo.db.alumnos.delete_one({"correo": correo})
-    mongo.db.usuarios.delete_one({"correo": correo})
-    mongo.db.asistencias.delete_many({"correo": correo})
-    mongo.db.participaciones.delete_many({"correo": correo})
-    mongo.db.reportes.delete_many({"correo_alumno": correo})
-    return redirect("/admin")
-
-@app.route("/eliminar_maestro/<correo>")
-@login_required("admin")
-def eliminar_maestro(correo):
-    mongo.db.maestros.delete_one({"correo": correo})
-    mongo.db.usuarios.delete_one({"correo": correo})
     return redirect("/admin")
 
 # ================= GRUPOS =================
@@ -182,80 +161,11 @@ def guardar_asignacion():
 @login_required("maestro")
 def maestro():
     maestro = mongo.db.maestros.find_one({"correo": session["user"]})
-
     if not maestro or "grupo" not in maestro:
         return "No tienes grupo asignado"
 
     alumnos = list(mongo.db.alumnos.find({"grupo": maestro["grupo"]}))
     return render_template("maestro.html", alumnos=alumnos, grupo=maestro["grupo"])
-
-# ================= CALIFICACIONES =================
-@app.route("/agregar_calificacion", methods=["POST"])
-@login_required("maestro")
-def agregar_calificacion():
-    alumno_id = request.form["alumno"]
-    materia = request.form["materia"]
-    calificacion = request.form["calificacion"]
-
-    mongo.db.alumnos.update_one(
-        {"_id": ObjectId(alumno_id)},
-        {"$push": {"calificaciones": {"materia": materia, "calificacion": calificacion}}}
-    )
-    return redirect("/maestro")
-
-# ================= ASISTENCIAS =================
-@app.route("/asistencia")
-@login_required("maestro")
-def asistencia():
-    maestro = mongo.db.maestros.find_one({"correo": session["user"]})
-    alumnos = list(mongo.db.alumnos.find({"grupo": maestro["grupo"]}))
-    return render_template("asistencia.html", alumnos=alumnos)
-
-@app.route("/guardar_asistencia", methods=["POST"])
-@login_required("maestro")
-def guardar_asistencia():
-    fecha = request.form["fecha"]
-    maestro = mongo.db.maestros.find_one({"correo": session["user"]})
-
-    for alumno in mongo.db.alumnos.find({"grupo": maestro["grupo"]}):
-        estado = request.form.get(str(alumno["_id"]))
-
-        mongo.db.asistencias.insert_one({
-            "nombre": alumno["nombre"],
-            "correo": alumno["correo"],
-            "grupo": alumno["grupo"],
-            "fecha": fecha,
-            "estado": estado
-        })
-
-    return redirect("/maestro")
-
-# ================= PARTICIPACIONES =================
-@app.route("/participaciones")
-@login_required("maestro")
-def participaciones():
-    maestro = mongo.db.maestros.find_one({"correo": session["user"]})
-    alumnos = list(mongo.db.alumnos.find({"grupo": maestro["grupo"]}))
-    return render_template("participaciones.html", alumnos=alumnos)
-
-@app.route("/guardar_participacion", methods=["POST"])
-@login_required("maestro")
-def guardar_participacion():
-    alumno_id = request.form["alumno"]
-    tipo = request.form["tipo"]
-    fecha = request.form["fecha"]
-
-    alumno = mongo.db.alumnos.find_one({"_id": ObjectId(alumno_id)})
-
-    mongo.db.participaciones.insert_one({
-        "nombre": alumno["nombre"],
-        "correo": alumno["correo"],
-        "grupo": alumno["grupo"],
-        "tipo": tipo,
-        "fecha": fecha
-    })
-
-    return redirect("/maestro")
 
 # ================= REPORTES DISCIPLINARIOS =================
 @app.route("/reportes")
@@ -301,14 +211,63 @@ def aprobar_reporte(id):
     mongo.db.reportes.update_one({"_id": ObjectId(id)}, {"$set": {"estado": "aprobado"}})
     return redirect("/reportes_admin")
 
-# ================= PANEL ALUMNO =================
-@app.route("/alumno")
-@login_required("alumno")
-def alumno():
-    alumno = mongo.db.alumnos.find_one({"correo": session["user"]})
-    asistencias = list(mongo.db.asistencias.find({"correo": session["user"]}))
-    participaciones = list(mongo.db.participaciones.find({"correo": session["user"]}))
-    return render_template("alumno.html", alumno=alumno, asistencias=asistencias, participaciones=participaciones)
+# ================= PDF DEL REPORTE =================
+def generar_pdf(reporte):
+    buffer = io.BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=letter)
+
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(170, 750, "REPORTE DISCIPLINARIO ESCOLAR")
+
+    pdf.setFont("Helvetica", 11)
+    pdf.drawString(50, 720, f"Alumno: {reporte['alumno']}")
+    pdf.drawString(50, 700, f"Grupo: {reporte['grupo']}")
+    pdf.drawString(50, 680, f"Maestro: {reporte['maestro']}")
+    pdf.drawString(50, 660, f"Fecha: {reporte['fecha']}")
+
+    pdf.drawString(50, 630, "Motivo:")
+    y = 610
+    for linea in reporte["razon"].split("\n"):
+        pdf.drawString(50, y, linea)
+        y -= 15
+
+    pdf.drawString(50, y-10, "Consecuencia:")
+    y -= 30
+    for linea in reporte["consecuencia"].split("\n"):
+        pdf.drawString(50, y, linea)
+        y -= 15
+
+    # Firmas
+    pdf.line(80, 200, 250, 200)
+    pdf.drawString(110, 185, "Firma del Maestro")
+
+    pdf.line(330, 200, 520, 200)
+    pdf.drawString(360, 185, "Firma del Padre o Tutor")
+
+    pdf.line(200, 120, 400, 120)
+    pdf.drawString(250, 105, "Firma de Dirección")
+
+    pdf.save()
+    buffer.seek(0)
+    return buffer
+
+@app.route("/reporte_pdf/<id>")
+@login_required("admin")
+def reporte_pdf(id):
+    reporte = mongo.db.reportes.find_one({"_id": ObjectId(id)})
+    return send_file(generar_pdf(reporte), as_attachment=True,
+                     download_name="reporte_disciplinario.pdf",
+                     mimetype="application/pdf")
+
+@app.route("/reporte_pdf_maestro/<id>")
+@login_required("maestro")
+def reporte_pdf_maestro(id):
+    reporte = mongo.db.reportes.find_one({"_id": ObjectId(id)})
+    if reporte["maestro"] != session["user"]:
+        return "No autorizado"
+    return send_file(generar_pdf(reporte), as_attachment=True,
+                     download_name="reporte_disciplinario.pdf",
+                     mimetype="application/pdf")
 
 # ================= LOGOUT =================
 @app.route("/logout")
