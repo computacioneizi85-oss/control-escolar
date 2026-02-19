@@ -12,13 +12,13 @@ import io
 app = Flask(__name__)
 app.secret_key = "ULTRA_SECRET_KEY_2026"
 
-# ---------- SESIONES (IMPORTANTE PARA RENDER) ----------
-app.config["SESSION_COOKIE_SECURE"] = True
+# ===== SESIONES (ARREGLADO PARA RENDER) =====
+app.config["SESSION_COOKIE_SECURE"] = False
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.permanent_session_lifetime = timedelta(hours=8)
 
-# ---------- MONGODB ----------
+# ===== MONGODB =====
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 mongo = PyMongo(app)
 
@@ -28,7 +28,7 @@ def mantener_sesion_activa():
         session.permanent = True
         session.modified = True
 
-# ---------- SEGURIDAD ----------
+# ===== SEGURIDAD =====
 def login_required(role):
     def wrapper(f):
         @wraps(f)
@@ -41,7 +41,7 @@ def login_required(role):
         return decorated
     return wrapper
 
-# ---------- LOGIN ----------
+# ===== LOGIN =====
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -65,7 +65,7 @@ def login():
 
     return render_template("login.html")
 
-# ---------- CREAR ADMIN ----------
+# ===== CREAR ADMIN =====
 @app.route("/crear_admin")
 def crear_admin():
     if mongo.db.usuarios.find_one({"correo": "admin@escuela.com"}):
@@ -78,7 +78,7 @@ def crear_admin():
     })
     return "ADMIN CREADO"
 
-# ---------- PANEL ADMIN ----------
+# ===== PANEL ADMIN =====
 @app.route("/admin")
 @login_required("admin")
 def admin():
@@ -87,7 +87,7 @@ def admin():
     grupos = list(mongo.db.grupos.find())
     return render_template("admin.html", alumnos=alumnos, maestros=maestros, grupos=grupos)
 
-# ---------- REGISTRAR MAESTRO ----------
+# ===== REGISTRAR MAESTRO =====
 @app.route("/registrar_maestro", methods=["POST"])
 @login_required("admin")
 def registrar_maestro():
@@ -99,7 +99,7 @@ def registrar_maestro():
     mongo.db.usuarios.insert_one({"correo": correo, "password": password, "role": "maestro"})
     return redirect("/admin")
 
-# ---------- REGISTRAR ALUMNO ----------
+# ===== REGISTRAR ALUMNO =====
 @app.route("/registrar_alumno", methods=["POST"])
 @login_required("admin")
 def registrar_alumno():
@@ -118,7 +118,7 @@ def registrar_alumno():
     mongo.db.usuarios.insert_one({"correo": correo, "password": password, "role": "alumno"})
     return redirect("/admin")
 
-# ---------- PANEL MAESTRO ----------
+# ===== PANEL MAESTRO =====
 @app.route("/maestro")
 @login_required("maestro")
 def maestro():
@@ -129,7 +129,7 @@ def maestro():
     alumnos = list(mongo.db.alumnos.find({"grupo": maestro["grupo"]}))
     return render_template("maestro.html", alumnos=alumnos, grupo=maestro["grupo"])
 
-# ---------- REPORTES DISCIPLINARIOS ----------
+# ===== REPORTES DISCIPLINARIOS =====
 @app.route("/reportes")
 @login_required("maestro")
 def panel_reportes():
@@ -173,7 +173,7 @@ def aprobar_reporte(id):
     mongo.db.reportes.update_one({"_id": ObjectId(id)}, {"$set": {"estado": "aprobado"}})
     return redirect("/reportes_admin")
 
-# ---------- GENERADOR PDF ----------
+# ===== GENERADOR PDF =====
 def generar_pdf(reporte):
 
     buffer = io.BytesIO()
@@ -186,7 +186,7 @@ def generar_pdf(reporte):
     pdf.drawString(50, 720, f"Alumno: {reporte['alumno']}")
     pdf.drawString(50, 700, f"Grupo: {reporte['grupo']}")
     pdf.drawString(50, 680, f"Maestro: {reporte['maestro']}")
-    pdf.drawString(50, 660, f"Fecha del incidente: {reporte['fecha']}")
+    pdf.drawString(50, 660, f"Fecha: {reporte['fecha']}")
 
     pdf.drawString(50, 630, "Motivo del reporte:")
     y = 610
@@ -216,27 +216,29 @@ def generar_pdf(reporte):
     buffer.seek(0)
     return buffer
 
+# ===== DESCARGAR PDF (FUNCIONA EN RENDER) =====
 @app.route("/reporte_pdf/<id>")
-@login_required("admin")
 def reporte_pdf(id):
-    reporte = mongo.db.reportes.find_one({"_id": ObjectId(id)})
-    return send_file(generar_pdf(reporte),
-                     as_attachment=True,
-                     download_name="reporte_disciplinario.pdf",
-                     mimetype="application/pdf")
 
-@app.route("/reporte_pdf_maestro/<id>")
-@login_required("maestro")
-def reporte_pdf_maestro(id):
-    reporte = mongo.db.reportes.find_one({"_id": ObjectId(id)})
-    if reporte["maestro"] != session["user"]:
-        return "No autorizado"
-    return send_file(generar_pdf(reporte),
-                     as_attachment=True,
-                     download_name="reporte_disciplinario.pdf",
-                     mimetype="application/pdf")
+    if "user" not in session:
+        return redirect("/")
 
-# ---------- LOGOUT ----------
+    reporte = mongo.db.reportes.find_one({"_id": ObjectId(id)})
+
+    if session["role"] == "maestro":
+        if reporte["maestro"] != session["user"]:
+            return "No autorizado"
+
+    buffer = generar_pdf(reporte)
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name="reporte_disciplinario.pdf",
+        mimetype="application/pdf"
+    )
+
+# ===== LOGOUT =====
 @app.route("/logout")
 def logout():
     session.clear()
