@@ -52,39 +52,27 @@ h2{
 <div class="row mb-5">
 
     <div class="col-md-3 mb-2">
-        <a href="/reporte_asistencias" class="btn btn-primary w-100 menu-btn">
-            📋 Asistencias
-        </a>
+        <a href="/reporte_asistencias" class="btn btn-primary w-100 menu-btn">📋 Asistencias</a>
     </div>
 
     <div class="col-md-3 mb-2">
-        <a href="/reporte_participaciones" class="btn btn-warning w-100 menu-btn">
-            ⭐ Participaciones
-        </a>
+        <a href="/reporte_participaciones" class="btn btn-warning w-100 menu-btn">⭐ Participaciones</a>
     </div>
 
     <div class="col-md-3 mb-2">
-        <a href="/reporte_calificaciones" class="btn btn-success w-100 menu-btn">
-            📝 Calificaciones
-        </a>
+        <a href="/reporte_calificaciones" class="btn btn-success w-100 menu-btn">📝 Calificaciones</a>
     </div>
 
     <div class="col-md-3 mb-2">
-        <a href="/reporte_grupos" class="btn btn-dark w-100 menu-btn">
-            👥 Por Grupo
-        </a>
+        <a href="/reporte_grupos" class="btn btn-dark w-100 menu-btn">👥 Por Grupo</a>
     </div>
 
     <div class="col-md-3 mt-2">
-        <a href="/asignar_grupos" class="btn btn-secondary w-100 menu-btn">
-            👨‍🏫 Vincular maestro a grupo
-        </a>
+        <a href="/asignar_grupos" class="btn btn-secondary w-100 menu-btn">👨‍🏫 Vincular maestro a grupo</a>
     </div>
 
     <div class="col-md-3 mt-2">
-        <a href="/panel_grupos" class="btn btn-info w-100 menu-btn">
-            🏫 Crear / Administrar Grupos
-        </a>
+        <a href="/panel_grupos" class="btn btn-info w-100 menu-btn">🏫 Crear / Administrar Grupos</a>
     </div>
 
 </div>
@@ -109,7 +97,6 @@ h2{
     <input class="form-control mb-2" name="nombre" placeholder="Nombre completo" required>
     <input class="form-control mb-2" name="correo" placeholder="Correo electrónico" required>
 
-    <!-- SELECTOR REAL DE GRUPOS -->
     <select class="form-control mb-2" name="grupo" required>
         <option value="">Seleccionar grupo</option>
         {% for g in grupos %}
@@ -122,47 +109,26 @@ h2{
 </form>
 </div>
 
-<!-- LISTA DE MAESTROS -->
-<div class="panel mb-5">
-<h4>Maestros registrados</h4>
-
-<table class="table table-bordered table-hover">
-<thead>
-<tr>
-<th>Nombre</th>
-<th>Correo</th>
-<th>Acciones</th>
-</tr>
-</thead>
-
-<tbody>
-{% for maestro in maestros %}
-<tr>
-<td>{{ maestro.nombre }}</td>
-<td>{{ maestro.correo }}</td>
-<td>
-
-<a href="/reset_password/{{ maestro.correo }}" class="btn btn-warning btn-sm">
-Restablecer contraseña
-</a>
-
-<a href="/eliminar_maestro/{{ maestro.correo }}"
-class="btn btn-danger btn-sm"
-onclick="return confirm('¿Seguro que deseas eliminar este maestro?');">
-Eliminar maestro
-</a>
-
-</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
-</div>
-
 <!-- LISTA DE ALUMNOS -->
 <div class="panel">
 <h4>Alumnos registrados</h4>
 
+<!-- PESTAÑAS DE GRUPOS -->
+<ul class="nav nav-tabs mb-3" id="tabsGrupos">
+    <li class="nav-item">
+        <button class="nav-link active" onclick="filtrarGrupo('TODOS')">Todos</button>
+    </li>
+
+    {% for g in grupos %}
+    <li class="nav-item">
+        <button class="nav-link" onclick="filtrarGrupo('{{ g.nombre }}')">
+            {{ g.nombre }}
+        </button>
+    </li>
+    {% endfor %}
+</ul>
+
+<!-- BUSCADOR -->
 <div class="mb-3">
     <input type="text" id="buscadorAlumnos" class="form-control"
     placeholder="🔍 Buscar por nombre o correo del alumno...">
@@ -180,7 +146,7 @@ Eliminar maestro
 
 <tbody>
 {% for alumno in alumnos %}
-<tr>
+<tr data-grupo="{{ alumno.grupo }}">
 <td>{{ alumno.nombre }}</td>
 <td>{{ alumno.correo }}</td>
 <td>{{ alumno.grupo }}</td>
@@ -204,15 +170,34 @@ Eliminar alumno
 </div>
 
 <script>
-document.getElementById("buscadorAlumnos").addEventListener("keyup", function() {
-    let filtro = this.value.toLowerCase();
+let grupoActual = "TODOS";
+
+function filtrarGrupo(grupo){
+    grupoActual = grupo;
+    aplicarFiltros();
+    document.querySelectorAll("#tabsGrupos .nav-link").forEach(btn=>{
+        btn.classList.remove("active");
+    });
+    event.target.classList.add("active");
+}
+
+document.getElementById("buscadorAlumnos").addEventListener("keyup", aplicarFiltros);
+
+function aplicarFiltros(){
+    let texto = document.getElementById("buscadorAlumnos").value.toLowerCase();
     let filas = document.querySelectorAll("#tablaAlumnos tbody tr");
 
-    filas.forEach(function(fila) {
-        let texto = fila.textContent.toLowerCase();
-        fila.style.display = texto.includes(filtro) ? "" : "none";
+    filas.forEach(fila=>{
+        let coincideGrupo = (grupoActual==="TODOS" || fila.dataset.grupo===grupoActual);
+        let coincideTexto = fila.textContent.toLowerCase().includes(texto);
+
+        if(coincideGrupo && coincideTexto){
+            fila.style.display="";
+        }else{
+            fila.style.display="none";
+        }
     });
-});
+}
 </script>
 
 </body>
