@@ -17,13 +17,13 @@ body{
     padding:25px;
     border-radius:15px;
     box-shadow:0px 8px 20px rgba(0,0,0,0.08);
-    margin-bottom:25px;
+    margin-bottom:30px;
 }
 
 .menu-btn{
     width:100%;
-    height:90px;
-    font-size:20px;
+    height:85px;
+    font-size:19px;
     font-weight:600;
     border-radius:14px;
     display:flex;
@@ -32,13 +32,16 @@ body{
 }
 
 .section-title{
-    margin-top:10px;
-    margin-bottom:20px;
     font-weight:700;
+    margin-bottom:15px;
 }
 
 table{
     background:white;
+}
+
+.acciones a{
+    margin-right:5px;
 }
 </style>
 </head>
@@ -51,113 +54,141 @@ table{
     <a href="/logout" class="btn btn-danger">Cerrar sesión</a>
 </div>
 
-<!-- ===== MENÚ PRINCIPAL ===== -->
+<!-- ===== MENÚ ACADÉMICO ===== -->
 <div class="row mb-4">
 
     <div class="col-md-4 mb-3">
-        <a href="/reporte_asistencias" class="btn btn-primary menu-btn">
-            📋 Asistencias
-        </a>
+        <a href="/reporte_asistencias" class="btn btn-primary menu-btn">📋 Asistencias</a>
     </div>
 
     <div class="col-md-4 mb-3">
-        <a href="/reporte_participaciones" class="btn btn-warning menu-btn">
-            ⭐ Participaciones
-        </a>
+        <a href="/reporte_participaciones" class="btn btn-warning menu-btn">⭐ Participaciones</a>
     </div>
 
     <div class="col-md-4 mb-3">
-        <a href="/reporte_calificaciones" class="btn btn-success menu-btn">
-            📝 Calificaciones
-        </a>
+        <a href="/reporte_calificaciones" class="btn btn-success menu-btn">📝 Calificaciones</a>
     </div>
 
 </div>
 
-<!-- ===== GESTIÓN ESCOLAR ===== -->
+<!-- ===== GESTIÓN ===== -->
 <div class="row mb-4">
 
     <div class="col-md-4 mb-3">
-        <a href="/panel_grupos" class="btn btn-dark menu-btn">
-            🏫 Crear / Administrar grupos
-        </a>
+        <a href="/panel_grupos" class="btn btn-dark menu-btn">🏫 Administrar grupos</a>
     </div>
 
     <div class="col-md-4 mb-3">
-        <a href="/asignar_grupos" class="btn btn-secondary menu-btn">
-            👨‍🏫 Vincular maestro a grupo
-        </a>
+        <a href="/asignar_grupos" class="btn btn-secondary menu-btn">👨‍🏫 Asignar grupo a maestro</a>
     </div>
 
     <div class="col-md-4 mb-3">
-        <a href="/reportes_admin" class="btn btn-danger menu-btn">
-            🚨 Reportes disciplinarios
-        </a>
+        <a href="/reportes_admin" class="btn btn-danger menu-btn">🚨 Reportes disciplinarios</a>
     </div>
 
 </div>
 
-<!-- ===== BOTONES DE REGISTRO ===== -->
+<!-- ===== BOTONES REGISTRO ===== -->
 <div class="panel">
 
-    <div class="d-flex gap-3 mb-4">
-        <a href="/nuevo_alumno" class="btn btn-success">
-            ➕ Registrar alumno
-        </a>
+<div class="mb-3">
+    <a href="/nuevo_alumno" class="btn btn-success">➕ Registrar alumno</a>
+    <a href="/nuevo_maestro" class="btn btn-primary">➕ Registrar maestro</a>
+</div>
 
-        <a href="/nuevo_maestro" class="btn btn-primary">
-            ➕ Registrar maestro
-        </a>
-    </div>
+<!-- FILTRO GRUPOS -->
+<div class="mb-4">
+    <b>Filtrar por grupo:</b><br>
 
-    <h4 class="section-title">Alumnos registrados</h4>
+    <a href="/admin" class="btn btn-secondary btn-sm">Todos</a>
 
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>Nombre</th>
-                <th>Correo</th>
-                <th>Grupo</th>
-            </tr>
-        </thead>
+    {% for g in grupos %}
+    <a href="/grupo/{{ g.nombre }}" class="btn btn-outline-dark btn-sm">
+        {{ g.nombre }}
+    </a>
+    {% endfor %}
+</div>
 
-        <tbody>
-        {% for a in alumnos %}
-            <tr>
-                <td>{{ a.nombre }}</td>
-                <td>{{ a.correo }}</td>
-                <td>{{ a.grupo }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<h4 class="section-title">Alumnos registrados</h4>
+
+<table class="table table-bordered table-hover">
+<thead class="table-dark">
+<tr>
+<th>Nombre</th>
+<th>Correo</th>
+<th>Grupo</th>
+<th>Acciones</th>
+</tr>
+</thead>
+
+<tbody>
+{% for a in alumnos %}
+<tr>
+<td>{{ a.nombre }}</td>
+<td>{{ a.correo }}</td>
+<td>{{ a.grupo }}</td>
+
+<td class="acciones">
+
+<a href="/reset_password/{{ a.correo }}"
+class="btn btn-sm btn-warning">
+Reset
+</a>
+
+<a href="/eliminar_alumno/{{ a._id }}"
+class="btn btn-sm btn-danger"
+onclick="return confirm('¿Eliminar alumno?')">
+Borrar
+</a>
+
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
 
 </div>
 
 <!-- ===== MAESTROS ===== -->
 <div class="panel">
 
-    <h4 class="section-title">Maestros registrados</h4>
+<h4 class="section-title">Maestros registrados</h4>
 
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>Nombre</th>
-                <th>Correo</th>
-                <th>Grupo asignado</th>
-            </tr>
-        </thead>
+<table class="table table-bordered table-hover">
+<thead class="table-dark">
+<tr>
+<th>Nombre</th>
+<th>Correo</th>
+<th>Grupo asignado</th>
+<th>Acciones</th>
+</tr>
+</thead>
 
-        <tbody>
-        {% for m in maestros %}
-            <tr>
-                <td>{{ m.nombre }}</td>
-                <td>{{ m.correo }}</td>
-                <td>{{ m.grupo if m.grupo else "Sin asignar" }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<tbody>
+{% for m in maestros %}
+<tr>
+<td>{{ m.nombre }}</td>
+<td>{{ m.correo }}</td>
+<td>{{ m.grupo if m.grupo else "Sin asignar" }}</td>
+
+<td class="acciones">
+
+<a href="/reset_password/{{ m.correo }}"
+class="btn btn-sm btn-warning">
+Reset
+</a>
+
+<a href="/eliminar_maestro/{{ m._id }}"
+class="btn btn-sm btn-danger"
+onclick="return confirm('¿Eliminar maestro?')">
+Borrar
+</a>
+
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
 
 </div>
 
