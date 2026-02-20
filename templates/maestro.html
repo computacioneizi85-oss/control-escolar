@@ -49,59 +49,24 @@ h2{
 <!-- MENU PRINCIPAL -->
 <div class="row mb-5">
 
-    <div class="col-md-3 mb-3">
-        <a href="/asistencia" class="btn btn-primary menu-btn">
-            📋 Pase de lista
-        </a>
-    </div>
-
-    <div class="col-md-3 mb-3">
-        <a href="/participaciones" class="btn btn-warning menu-btn">
-            ⭐ Participaciones
-        </a>
-    </div>
-
-    <div class="col-md-3 mb-3">
-        <a href="#calificaciones" class="btn btn-success menu-btn">
-            📝 Calificaciones
-        </a>
-    </div>
-
-    <div class="col-md-3 mb-3">
+    <div class="col-md-4 mb-3">
         <a href="/reportes" class="btn btn-danger menu-btn">
-            🚨 Reportes
+            🚨 Reportes disciplinarios
         </a>
     </div>
 
-</div>
-
-<!-- REGISTRO DE CALIFICACIONES -->
-<div id="calificaciones" class="panel mb-5">
-    <h4 class="mb-3">Registrar calificación</h4>
-
-    <form method="POST" action="/agregar_calificacion">
-
-        <label class="form-label">Alumno</label>
-        <select name="alumno" class="form-select mb-3" required>
-            <option value="">Seleccionar alumno</option>
-            {% for alumno in alumnos %}
-            <option value="{{ alumno._id }}">{{ alumno.nombre }} ({{ alumno.grupo }})</option>
-            {% endfor %}
-        </select>
-
-        <label class="form-label">Materia</label>
-        <input type="text" name="materia" class="form-control mb-3" placeholder="Ejemplo: Español" required>
-
-        <label class="form-label">Calificación</label>
-        <input type="number" step="0.1" min="0" max="10" name="calificacion" class="form-control mb-3" required>
-
-        <button class="btn btn-success w-100">Guardar calificación</button>
-    </form>
 </div>
 
 <!-- LISTA DE ALUMNOS -->
 <div class="panel">
     <h4 class="mb-3">Alumnos de mi grupo</h4>
+
+    {% if alumnos|length == 0 %}
+        <div class="alert alert-warning">
+            No tienes alumnos asignados todavía.  
+            Dirección debe vincularte a un grupo.
+        </div>
+    {% endif %}
 
     <table class="table table-bordered table-hover">
         <thead>
