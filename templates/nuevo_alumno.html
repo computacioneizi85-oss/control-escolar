@@ -1,0 +1,16 @@
+<h2>Registrar Alumno</h2>
+
+<form method="POST" action="/guardar_alumno">
+    <input name="nombre" placeholder="Nombre completo" required><br><br>
+    <input name="correo" placeholder="Correo" required><br><br>
+
+    <select name="grupo" required>
+        {% for g in grupos %}
+        <option value="{{ g.nombre }}">{{ g.nombre }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <button>Guardar</button>
+</form>
+
+<a href="/admin">Volver</a>

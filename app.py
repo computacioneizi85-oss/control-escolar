@@ -14,7 +14,7 @@ import io
 app = Flask(__name__)
 app.secret_key = "ULTRA_SECRET_KEY_2026"
 
-# ---------- Evitar cache (para ver cambios sin cerrar sesión) ----------
+# ---------- Evitar cache ----------
 @app.after_request
 def add_header(response):
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
@@ -22,7 +22,7 @@ def add_header(response):
     response.headers["Expires"] = "0"
     return response
 
-# ---------- SESIONES (Render - filesystem) ----------
+# ---------- SESIONES ----------
 SESSION_PATH = "/tmp/flask_session"
 if not os.path.exists(SESSION_PATH):
     os.makedirs(SESSION_PATH)
@@ -33,17 +33,17 @@ app.config["SESSION_PERMANENT"] = True
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=12)
 Session(app)
 
-# ---------- MongoDB (inicializa después de crear app) ----------
+# ---------- MongoDB ----------
 mongo = PyMongo()
-mongo.db = None  # evita que apunte a 'test' por defecto
+mongo.db = None
 
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 if not app.config["MONGO_URI"]:
-    raise Exception("⚠️ MONGO_URI no está configurado en Render")
+    raise Exception("MONGO_URI no configurado")
 
 mongo.init_app(app)
 
-# 🔥 Forzar usar siempre la base control_escolar aunque el URI no la tenga
+# FORZAR BASE control_escolar
 db = mongo.cx["control_escolar"]
 mongo.db = db
 
@@ -82,18 +82,6 @@ def login():
 
     return render_template("login.html")
 
-# ========================= CREAR ADMIN =========================
-@app.route("/crear_admin")
-def crear_admin():
-    correo = "admin@escuela.com"
-    if not mongo.db.usuarios.find_one({"correo": correo}):
-        mongo.db.usuarios.insert_one({
-            "correo": correo,
-            "password": generate_password_hash("admin123"),
-            "role": "admin"
-        })
-    return "Admin creado"
-
 # ========================= PANEL ADMIN =========================
 @app.route("/admin")
 @login_required("admin")
@@ -103,32 +91,75 @@ def admin():
     grupos = list(mongo.db.grupos.find())
     return render_template("admin.html", alumnos=alumnos, maestros=maestros, grupos=grupos)
 
+# ========================= REGISTRAR ALUMNO =========================
+@app.route("/nuevo_alumno")
+@login_required("admin")
+def nuevo_alumno():
+    grupos = list(mongo.db.grupos.find())
+    return render_template("nuevo_alumno.html", grupos=grupos)
+
+@app.route("/guardar_alumno", methods=["POST"])
+@login_required("admin")
+def guardar_alumno():
+    nombre = request.form["nombre"].strip()
+    correo = request.form["correo"].strip().lower()
+    grupo = request.form["grupo"]
+
+    mongo.db.alumnos.insert_one({
+        "nombre": nombre,
+        "correo": correo,
+        "grupo": grupo,
+        "calificacion": ""
+    })
+
+    mongo.db.usuarios.insert_one({
+        "correo": correo,
+        "password": generate_password_hash("123456"),
+        "role": "alumno"
+    })
+
+    return redirect("/admin")
+
+# ========================= REGISTRAR MAESTRO =========================
+@app.route("/nuevo_maestro")
+@login_required("admin")
+def nuevo_maestro():
+    return render_template("nuevo_maestro.html")
+
+@app.route("/guardar_maestro", methods=["POST"])
+@login_required("admin")
+def guardar_maestro():
+    nombre = request.form["nombre"].strip()
+    correo = request.form["correo"].strip().lower()
+
+    mongo.db.maestros.insert_one({
+        "nombre": nombre,
+        "correo": correo,
+        "grupo": ""
+    })
+
+    mongo.db.usuarios.insert_one({
+        "correo": correo,
+        "password": generate_password_hash("123456"),
+        "role": "maestro"
+    })
+
+    return redirect("/admin")
+
 # ========================= PANEL MAESTRO =========================
 @app.route("/maestro")
 @login_required("maestro")
 def maestro():
-    correo = session["user"].strip().lower()
-
+    correo = session["user"]
     maestro = mongo.db.maestros.find_one({"correo": correo})
 
-    # Si no existe, crear registro automático
-    if not maestro:
-        mongo.db.maestros.insert_one({
-            "nombre": correo.split("@")[0],
-            "correo": correo,
-            "grupo": ""
-        })
-        maestro = mongo.db.maestros.find_one({"correo": correo})
-
-    grupo = maestro.get("grupo", "")
-
-    if grupo == "":
+    if not maestro or maestro.get("grupo","") == "":
         return "<h2 style='text-align:center;margin-top:80px'>Dirección aún no te asigna un grupo</h2>"
 
-    alumnos = list(mongo.db.alumnos.find({"grupo": grupo}))
-    return render_template("maestro.html", alumnos=alumnos, grupo=grupo)
+    alumnos = list(mongo.db.alumnos.find({"grupo": maestro["grupo"]}))
+    return render_template("maestro.html", alumnos=alumnos, grupo=maestro["grupo"])
 
-# ========================= ASIGNAR MAESTRO A GRUPO =========================
+# ========================= ASIGNAR GRUPO =========================
 @app.route("/asignar_grupos")
 @login_required("admin")
 def asignar_grupos():
@@ -140,7 +171,7 @@ def asignar_grupos():
 @login_required("admin")
 def guardar_asignacion():
     maestro_id = request.form["maestro"]
-    grupo = request.form["grupo"].strip()
+    grupo = request.form["grupo"]
 
     mongo.db.maestros.update_one(
         {"_id": ObjectId(maestro_id)},
@@ -148,116 +179,12 @@ def guardar_asignacion():
     )
     return redirect("/asignar_grupos")
 
-# ========================= REPORTES DISCIPLINARIOS =========================
-@app.route("/reportes")
-@login_required("maestro")
-def panel_reportes():
-    correo = session["user"]
-    maestro = mongo.db.maestros.find_one({"correo": correo})
-    alumnos = list(mongo.db.alumnos.find({"grupo": maestro["grupo"]}))
-    reportes = list(mongo.db.reportes.find({"maestro": correo}))
-    return render_template("reportes_maestro.html", alumnos=alumnos, reportes=reportes)
-
-@app.route("/crear_reporte", methods=["POST"])
-@login_required("maestro")
-def crear_reporte():
-    alumno_id = request.form["alumno"]
-    razon = request.form["razon"]
-    fecha = request.form["fecha"]
-    consecuencia = request.form["consecuencia"]
-
-    alumno = mongo.db.alumnos.find_one({"_id": ObjectId(alumno_id)})
-
-    mongo.db.reportes.insert_one({
-        "alumno": alumno["nombre"],
-        "grupo": alumno["grupo"],
-        "maestro": session["user"],
-        "fecha": fecha,
-        "razon": razon,
-        "consecuencia": consecuencia,
-        "estado": "pendiente"
-    })
-
-    return redirect("/reportes")
-
-@app.route("/reportes_admin")
-@login_required("admin")
-def reportes_admin():
-    reportes = list(mongo.db.reportes.find())
-    return render_template("reportes_admin.html", reportes=reportes)
-
-@app.route("/aprobar_reporte/<id>")
-@login_required("admin")
-def aprobar_reporte(id):
-    mongo.db.reportes.update_one({"_id": ObjectId(id)}, {"$set": {"estado": "aprobado"}})
-    return redirect("/reportes_admin")
-
-# ========================= PDF =========================
-def generar_pdf(reporte):
-    buffer = io.BytesIO()
-    pdf = canvas.Canvas(buffer, pagesize=letter)
-
-    pdf.setFont("Helvetica", 14)
-    pdf.drawString(170, 750, "REPORTE DISCIPLINARIO ESCOLAR")
-
-    pdf.setFont("Helvetica", 11)
-    pdf.drawString(50, 720, f"Alumno: {reporte['alumno']}")
-    pdf.drawString(50, 700, f"Grupo: {reporte['grupo']}")
-    pdf.drawString(50, 680, f"Maestro: {reporte['maestro']}")
-    pdf.drawString(50, 660, f"Fecha: {reporte['fecha']}")
-
-    pdf.drawString(50, 630, "Motivo:")
-    pdf.drawString(50, 610, reporte["razon"])
-
-    pdf.drawString(50, 580, "Consecuencia:")
-    pdf.drawString(50, 560, reporte["consecuencia"])
-
-    pdf.line(80, 200, 250, 200)
-    pdf.drawString(100, 185, "Firma Maestro")
-
-    pdf.line(330, 200, 520, 200)
-    pdf.drawString(360, 185, "Firma Padre/Tutor")
-
-    pdf.save()
-    buffer.seek(0)
-    return buffer
-
-@app.route("/reporte_pdf/<id>")
-@login_required("admin")
-def reporte_pdf(id):
-    reporte = mongo.db.reportes.find_one({"_id": ObjectId(id)})
-    return send_file(
-        generar_pdf(reporte),
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name="reporte.pdf"
-    )
-
-# ========================= MENÚS DIRECCIÓN =========================
-@app.route("/reporte_asistencias")
-@login_required("admin")
-def reporte_asistencias():
-    asistencias = list(mongo.db.asistencias.find())
-    return render_template("reporte_asistencias.html", asistencias=asistencias)
-
-@app.route("/reporte_participaciones")
-@login_required("admin")
-def reporte_participaciones():
-    participaciones = list(mongo.db.participaciones.find())
-    return render_template("reporte_participaciones.html", participaciones=participaciones)
-
-@app.route("/reporte_calificaciones")
-@login_required("admin")
-def reporte_calificaciones():
-    alumnos = list(mongo.db.alumnos.find())
-    return render_template("reporte_calificaciones.html", alumnos=alumnos)
-
 # ========================= LOGOUT =========================
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/")
 
-# ---------- Entrada para gunicorn / Render ----------
+# ===== entrada Render =====
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)

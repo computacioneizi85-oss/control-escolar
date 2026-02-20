@@ -17,6 +17,7 @@ body{
     padding:25px;
     border-radius:15px;
     box-shadow:0px 8px 20px rgba(0,0,0,0.08);
+    margin-bottom:25px;
 }
 
 .menu-btn{
@@ -25,17 +26,19 @@ body{
     font-size:20px;
     font-weight:600;
     border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
 
 .section-title{
-    margin-top:40px;
+    margin-top:10px;
     margin-bottom:20px;
     font-weight:700;
 }
 
-.table thead{
-    background:#212529;
-    color:white;
+table{
+    background:white;
 }
 </style>
 </head>
@@ -48,7 +51,7 @@ body{
     <a href="/logout" class="btn btn-danger">Cerrar sesión</a>
 </div>
 
-<!-- ================= MENÚ PRINCIPAL ================= -->
+<!-- ===== MENÚ PRINCIPAL ===== -->
 <div class="row mb-4">
 
     <div class="col-md-4 mb-3">
@@ -71,7 +74,7 @@ body{
 
 </div>
 
-<!-- ================= GESTIÓN ESCOLAR ================= -->
+<!-- ===== GESTIÓN ESCOLAR ===== -->
 <div class="row mb-4">
 
     <div class="col-md-4 mb-3">
@@ -94,57 +97,67 @@ body{
 
 </div>
 
-<!-- ================= ALUMNOS REGISTRADOS ================= -->
+<!-- ===== BOTONES DE REGISTRO ===== -->
 <div class="panel">
 
-<h4 class="section-title">Alumnos registrados</h4>
+    <div class="d-flex gap-3 mb-4">
+        <a href="/nuevo_alumno" class="btn btn-success">
+            ➕ Registrar alumno
+        </a>
 
-<table class="table table-bordered table-hover">
-<thead>
-<tr>
-<th>Nombre</th>
-<th>Correo</th>
-<th>Grupo</th>
-</tr>
-</thead>
+        <a href="/nuevo_maestro" class="btn btn-primary">
+            ➕ Registrar maestro
+        </a>
+    </div>
 
-<tbody>
-{% for a in alumnos %}
-<tr>
-<td>{{ a.nombre }}</td>
-<td>{{ a.correo }}</td>
-<td>{{ a.grupo }}</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
+    <h4 class="section-title">Alumnos registrados</h4>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Grupo</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for a in alumnos %}
+            <tr>
+                <td>{{ a.nombre }}</td>
+                <td>{{ a.correo }}</td>
+                <td>{{ a.grupo }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 
 </div>
 
-<!-- ================= MAESTROS ================= -->
-<div class="panel mt-4">
+<!-- ===== MAESTROS ===== -->
+<div class="panel">
 
-<h4 class="section-title">Maestros registrados</h4>
+    <h4 class="section-title">Maestros registrados</h4>
 
-<table class="table table-bordered table-hover">
-<thead>
-<tr>
-<th>Nombre</th>
-<th>Correo</th>
-<th>Grupo asignado</th>
-</tr>
-</thead>
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Grupo asignado</th>
+            </tr>
+        </thead>
 
-<tbody>
-{% for m in maestros %}
-<tr>
-<td>{{ m.nombre }}</td>
-<td>{{ m.correo }}</td>
-<td>{{ m.grupo if m.grupo else "Sin asignar" }}</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
+        <tbody>
+        {% for m in maestros %}
+            <tr>
+                <td>{{ m.nombre }}</td>
+                <td>{{ m.correo }}</td>
+                <td>{{ m.grupo if m.grupo else "Sin asignar" }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 
 </div>
 
