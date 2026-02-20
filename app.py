@@ -7,8 +7,7 @@ from bson.objectid import ObjectId
 from datetime import timedelta
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-import os
-import io
+import os, io, random, string
 
 # ========================= APP =========================
 app = Flask(__name__)
@@ -22,7 +21,7 @@ def add_header(response):
     response.headers["Expires"] = "0"
     return response
 
-# ---------- SESIONES ----------
+# ---------- SESIONES (Render) ----------
 SESSION_PATH = "/tmp/flask_session"
 if not os.path.exists(SESSION_PATH):
     os.makedirs(SESSION_PATH)
@@ -39,13 +38,18 @@ mongo.db = None
 
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 if not app.config["MONGO_URI"]:
-    raise Exception("MONGO_URI no configurado")
+    raise Exception("MONGO_URI no configurado en Render")
 
 mongo.init_app(app)
 
-# FORZAR BASE control_escolar
+# Forzar usar base control_escolar
 db = mongo.cx["control_escolar"]
 mongo.db = db
+
+# ========================= UTILIDADES =========================
+def generar_password(longitud=8):
+    caracteres = string.ascii_letters + string.digits
+    return ''.join(random.choice(caracteres) for _ in range(longitud))
 
 # ========================= SEGURIDAD =========================
 def login_required(role):
@@ -61,7 +65,7 @@ def login_required(role):
     return wrapper
 
 # ========================= LOGIN =========================
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET","POST"])
 def login():
     if request.method == "POST":
         correo = request.form["correo"].strip().lower()
@@ -104,6 +108,12 @@ def guardar_alumno():
     nombre = request.form["nombre"].strip()
     correo = request.form["correo"].strip().lower()
     grupo = request.form["grupo"]
+    password_manual = request.form.get("password")
+
+    if not password_manual:
+        password = generar_password()
+    else:
+        password = password_manual
 
     mongo.db.alumnos.insert_one({
         "nombre": nombre,
@@ -114,11 +124,14 @@ def guardar_alumno():
 
     mongo.db.usuarios.insert_one({
         "correo": correo,
-        "password": generate_password_hash("123456"),
+        "password": generate_password_hash(password),
         "role": "alumno"
     })
 
-    return redirect("/admin")
+    return render_template("usuario_creado.html",
+                           correo=correo,
+                           password=password,
+                           tipo="Alumno")
 
 # ========================= REGISTRAR MAESTRO =========================
 @app.route("/nuevo_maestro")
@@ -131,6 +144,12 @@ def nuevo_maestro():
 def guardar_maestro():
     nombre = request.form["nombre"].strip()
     correo = request.form["correo"].strip().lower()
+    password_manual = request.form.get("password")
+
+    if not password_manual:
+        password = generar_password()
+    else:
+        password = password_manual
 
     mongo.db.maestros.insert_one({
         "nombre": nombre,
@@ -140,11 +159,14 @@ def guardar_maestro():
 
     mongo.db.usuarios.insert_one({
         "correo": correo,
-        "password": generate_password_hash("123456"),
+        "password": generate_password_hash(password),
         "role": "maestro"
     })
 
-    return redirect("/admin")
+    return render_template("usuario_creado.html",
+                           correo=correo,
+                           password=password,
+                           tipo="Maestro")
 
 # ========================= PANEL MAESTRO =========================
 @app.route("/maestro")
@@ -179,12 +201,51 @@ def guardar_asignacion():
     )
     return redirect("/asignar_grupos")
 
+# ========================= PDF REPORTE =========================
+def generar_pdf(reporte):
+    buffer = io.BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=letter)
+
+    pdf.setFont("Helvetica",14)
+    pdf.drawString(170,750,"REPORTE DISCIPLINARIO ESCOLAR")
+
+    pdf.setFont("Helvetica",11)
+    pdf.drawString(50,720,f"Alumno: {reporte['alumno']}")
+    pdf.drawString(50,700,f"Grupo: {reporte['grupo']}")
+    pdf.drawString(50,680,f"Maestro: {reporte['maestro']}")
+    pdf.drawString(50,660,f"Fecha: {reporte['fecha']}")
+
+    pdf.drawString(50,630,"Motivo:")
+    pdf.drawString(50,610,reporte["razon"])
+
+    pdf.drawString(50,580,"Consecuencia:")
+    pdf.drawString(50,560,reporte["consecuencia"])
+
+    pdf.line(80,200,250,200)
+    pdf.drawString(100,185,"Firma Maestro")
+
+    pdf.line(330,200,520,200)
+    pdf.drawString(360,185,"Firma Padre/Tutor")
+
+    pdf.save()
+    buffer.seek(0)
+    return buffer
+
+@app.route("/reporte_pdf/<id>")
+@login_required("admin")
+def reporte_pdf(id):
+    reporte = mongo.db.reportes.find_one({"_id": ObjectId(id)})
+    return send_file(generar_pdf(reporte),
+                     mimetype="application/pdf",
+                     as_attachment=True,
+                     download_name="reporte.pdf")
+
 # ========================= LOGOUT =========================
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/")
 
-# ===== entrada Render =====
+# ===== Render/Gunicorn =====
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
