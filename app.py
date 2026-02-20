@@ -18,14 +18,20 @@ app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 mongo = PyMongo(app)
 
 # ================== SESIONES ESTABLES (RENDER) ==================
+SESSION_PATH = "/tmp/flask_session"
+
+# Crear carpeta si no existe (ESTO ERA LO QUE FALTABA)
+if not os.path.exists(SESSION_PATH):
+    os.makedirs(SESSION_PATH)
+
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = True
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=12)
 app.config["SESSION_USE_SIGNER"] = True
-app.config["SESSION_FILE_DIR"] = "/tmp/flask_session"
+app.config["SESSION_FILE_DIR"] = SESSION_PATH
 app.config["SESSION_FILE_THRESHOLD"] = 500
-Session(app)
 
+Session(app)
 # ================== SEGURIDAD ==================
 def login_required(role):
     def wrapper(f):
