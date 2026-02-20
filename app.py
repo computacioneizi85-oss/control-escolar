@@ -18,10 +18,18 @@ app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 mongo = PyMongo(app)
 
 # ================== SESIONES (ESTABLES) ==================
-app.config["SESSION_TYPE"] = "mongodb"
-app.config["SESSION_MONGODB"] = mongo.cx
-app.config["SESSION_MONGODB_DB"] = "control_escolar"
-app.config["SESSION_MONGODB_COLLECT"] = "sesiones"
+# ===== SESIONES ESTABLES EN RENDER =====
+from datetime import timedelta
+from flask_session import Session
+
+app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_PERMANENT"] = True
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=12)
+app.config["SESSION_USE_SIGNER"] = True
+app.config["SESSION_FILE_DIR"] = "/tmp/flask_session"
+app.config["SESSION_FILE_THRESHOLD"] = 500
+
+Session(app)
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=12)
 Session(app)
 
