@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Panel Dirección</title>
+<title>Panel de Dirección</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -19,21 +19,23 @@ body{
     box-shadow:0px 8px 20px rgba(0,0,0,0.08);
 }
 
-h2{ font-weight:700; }
-
 .menu-btn{
+    width:100%;
+    height:90px;
+    font-size:20px;
     font-weight:600;
-    height:55px;
+    border-radius:14px;
+}
+
+.section-title{
+    margin-top:40px;
+    margin-bottom:20px;
+    font-weight:700;
 }
 
 .table thead{
     background:#212529;
     color:white;
-}
-
-.btn-sm{
-    width:100%;
-    margin-bottom:5px;
 }
 </style>
 </head>
@@ -46,163 +48,105 @@ h2{ font-weight:700; }
     <a href="/logout" class="btn btn-danger">Cerrar sesión</a>
 </div>
 
-<!-- MENU PRINCIPAL -->
-<div class="row mb-5">
+<!-- ================= MENÚ PRINCIPAL ================= -->
+<div class="row mb-4">
 
-    <div class="col-md-3 mb-2">
-        <a href="/reporte_asistencias" class="btn btn-primary w-100 menu-btn">📋 Asistencias</a>
-    </div>
-
-    <div class="col-md-3 mb-2">
-        <a href="/reporte_participaciones" class="btn btn-warning w-100 menu-btn">⭐ Participaciones</a>
-    </div>
-
-    <div class="col-md-3 mb-2">
-        <a href="/reporte_calificaciones" class="btn btn-success w-100 menu-btn">📝 Calificaciones</a>
-    </div>
-
-    <div class="col-md-3 mb-2">
-        <a href="/reporte_grupos" class="btn btn-dark w-100 menu-btn">👥 Por Grupo</a>
-    </div>
-
-    <div class="col-md-3 mt-2">
-        <a href="/reportes_admin" class="btn btn-danger w-100 menu-btn">
-            🚨 Reportes disciplinarios
+    <div class="col-md-4 mb-3">
+        <a href="/reporte_asistencias" class="btn btn-primary menu-btn">
+            📋 Asistencias
         </a>
     </div>
 
-    <div class="col-md-3 mt-2">
-        <a href="/asignar_grupos" class="btn btn-secondary w-100 menu-btn">
+    <div class="col-md-4 mb-3">
+        <a href="/reporte_participaciones" class="btn btn-warning menu-btn">
+            ⭐ Participaciones
+        </a>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <a href="/reporte_calificaciones" class="btn btn-success menu-btn">
+            📝 Calificaciones
+        </a>
+    </div>
+
+</div>
+
+<!-- ================= GESTIÓN ESCOLAR ================= -->
+<div class="row mb-4">
+
+    <div class="col-md-4 mb-3">
+        <a href="/panel_grupos" class="btn btn-dark menu-btn">
+            🏫 Crear / Administrar grupos
+        </a>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <a href="/asignar_grupos" class="btn btn-secondary menu-btn">
             👨‍🏫 Vincular maestro a grupo
         </a>
     </div>
 
-    <div class="col-md-3 mt-2">
-        <a href="/panel_grupos" class="btn btn-info w-100 menu-btn">
-            🏫 Crear / Administrar Grupos
+    <div class="col-md-4 mb-3">
+        <a href="/reportes_admin" class="btn btn-danger menu-btn">
+            🚨 Reportes disciplinarios
         </a>
     </div>
 
 </div>
 
-<!-- REGISTRAR MAESTRO -->
-<div class="panel mb-5">
-<h4>Registrar Maestro</h4>
-
-<form action="/registrar_maestro" method="POST">
-    <input class="form-control mb-2" name="nombre" placeholder="Nombre completo" required>
-    <input class="form-control mb-2" name="correo" placeholder="Correo electrónico" required>
-    <input class="form-control mb-2" name="password" type="password" placeholder="Contraseña inicial" required>
-    <button class="btn btn-success w-100">Registrar maestro</button>
-</form>
-</div>
-
-<!-- REGISTRAR ALUMNO -->
-<div class="panel mb-5">
-<h4>Registrar Alumno</h4>
-
-<form action="/registrar_alumno" method="POST">
-    <input class="form-control mb-2" name="nombre" placeholder="Nombre completo" required>
-    <input class="form-control mb-2" name="correo" placeholder="Correo electrónico" required>
-
-    <select class="form-control mb-2" name="grupo" required>
-        <option value="">Seleccionar grupo</option>
-        {% for g in grupos %}
-        <option value="{{ g.nombre }}">{{ g.nombre }}</option>
-        {% endfor %}
-    </select>
-
-    <input class="form-control mb-2" name="password" type="password" placeholder="Contraseña inicial" required>
-    <button class="btn btn-primary w-100">Registrar alumno</button>
-</form>
-</div>
-
-<!-- ALUMNOS REGISTRADOS -->
+<!-- ================= ALUMNOS REGISTRADOS ================= -->
 <div class="panel">
-<h4>Alumnos registrados</h4>
 
-<!-- TABS POR GRUPO -->
-<ul class="nav nav-tabs mb-3" id="tabsGrupos">
-    <li class="nav-item">
-        <button class="nav-link active" onclick="filtrarGrupo('TODOS')">Todos</button>
-    </li>
+<h4 class="section-title">Alumnos registrados</h4>
 
-    {% for g in grupos %}
-    <li class="nav-item">
-        <button class="nav-link" onclick="filtrarGrupo('{{ g.nombre }}')">
-            {{ g.nombre }}
-        </button>
-    </li>
-    {% endfor %}
-</ul>
-
-<!-- BUSCADOR -->
-<div class="mb-3">
-    <input type="text" id="buscadorAlumnos" class="form-control"
-    placeholder="🔍 Buscar por nombre o correo del alumno...">
-</div>
-
-<table class="table table-bordered table-hover" id="tablaAlumnos">
+<table class="table table-bordered table-hover">
 <thead>
 <tr>
 <th>Nombre</th>
 <th>Correo</th>
 <th>Grupo</th>
-<th>Acciones</th>
 </tr>
 </thead>
 
 <tbody>
-{% for alumno in alumnos %}
-<tr data-grupo="{{ alumno.grupo }}">
-<td>{{ alumno.nombre }}</td>
-<td>{{ alumno.correo }}</td>
-<td>{{ alumno.grupo }}</td>
-<td>
-
-<a href="/reset_password/{{ alumno.correo }}" class="btn btn-warning btn-sm">
-Restablecer contraseña
-</a>
-
-<a href="/eliminar_alumno/{{ alumno.correo }}"
-class="btn btn-danger btn-sm"
-onclick="return confirm('¿Seguro que deseas eliminar este alumno?');">
-Eliminar alumno
-</a>
-
-</td>
+{% for a in alumnos %}
+<tr>
+<td>{{ a.nombre }}</td>
+<td>{{ a.correo }}</td>
+<td>{{ a.grupo }}</td>
 </tr>
 {% endfor %}
 </tbody>
 </table>
+
 </div>
 
-<script>
-let grupoActual = "TODOS";
+<!-- ================= MAESTROS ================= -->
+<div class="panel mt-4">
 
-function filtrarGrupo(grupo){
-    grupoActual = grupo;
-    aplicarFiltros();
+<h4 class="section-title">Maestros registrados</h4>
 
-    document.querySelectorAll("#tabsGrupos .nav-link").forEach(btn=>{
-        btn.classList.remove("active");
-    });
-    event.target.classList.add("active");
-}
+<table class="table table-bordered table-hover">
+<thead>
+<tr>
+<th>Nombre</th>
+<th>Correo</th>
+<th>Grupo asignado</th>
+</tr>
+</thead>
 
-document.getElementById("buscadorAlumnos").addEventListener("keyup", aplicarFiltros);
+<tbody>
+{% for m in maestros %}
+<tr>
+<td>{{ m.nombre }}</td>
+<td>{{ m.correo }}</td>
+<td>{{ m.grupo if m.grupo else "Sin asignar" }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
 
-function aplicarFiltros(){
-    let texto = document.getElementById("buscadorAlumnos").value.toLowerCase();
-    let filas = document.querySelectorAll("#tablaAlumnos tbody tr");
-
-    filas.forEach(fila=>{
-        let coincideGrupo = (grupoActual==="TODOS" || fila.dataset.grupo===grupoActual);
-        let coincideTexto = fila.textContent.toLowerCase().includes(texto);
-        fila.style.display = (coincideGrupo && coincideTexto) ? "" : "none";
-    });
-}
-</script>
+</div>
 
 </body>
 </html>
