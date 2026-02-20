@@ -89,11 +89,32 @@ def admin():
 @app.route("/maestro")
 @login_required("maestro")
 def maestro():
-    maestro=mongo.db.maestros.find_one({"correo":session["user"]})
-    if not maestro or "grupo" not in maestro:
-        return "No tienes grupo asignado"
-    alumnos=list(mongo.db.alumnos.find({"grupo":maestro["grupo"]}))
-    return render_template("maestro.html",alumnos=alumnos,grupo=maestro["grupo"])
+
+    maestro = mongo.db.maestros.find_one({"correo": session["user"]})
+
+    # Si el maestro no existe en la colección
+    if maestro is None:
+        return """
+        <h2 style='font-family:Arial;text-align:center;margin-top:80px'>
+        Tu cuenta de maestro aún no está registrada en la base de datos.<br>
+        Dirección debe registrarte primero.
+        </h2>
+        """
+
+    # Si existe pero no tiene grupo asignado
+    if "grupo" not in maestro or maestro["grupo"] == "" or maestro["grupo"] is None:
+        return """
+        <h2 style='font-family:Arial;text-align:center;margin-top:80px'>
+        Aún no tienes grupo asignado.<br>
+        Dirección debe vincularte a un grupo.
+        </h2>
+        """
+
+    alumnos = list(mongo.db.alumnos.find({"grupo": maestro["grupo"]}))
+
+    return render_template("maestro.html",
+                           alumnos=alumnos,
+                           grupo=maestro["grupo"])
 
 # ======================================================
 # PANEL GRUPOS
@@ -183,10 +204,18 @@ def ver_grupo(grupo):
 @app.route("/reportes")
 @login_required("maestro")
 def panel_reportes():
-    maestro=mongo.db.maestros.find_one({"correo":session["user"]})
-    alumnos=list(mongo.db.alumnos.find({"grupo":maestro["grupo"]}))
-    reportes=list(mongo.db.reportes.find({"maestro":session["user"]}))
-    return render_template("reportes_maestro.html",alumnos=alumnos,reportes=reportes)
+
+    maestro = mongo.db.maestros.find_one({"correo": session["user"]})
+
+    if maestro is None or "grupo" not in maestro:
+        return redirect("/maestro")
+
+    alumnos = list(mongo.db.alumnos.find({"grupo": maestro["grupo"]}))
+    reportes = list(mongo.db.reportes.find({"maestro": session["user"]}))
+
+    return render_template("reportes_maestro.html",
+                           alumnos=alumnos,
+                           reportes=reportes)
 
 @app.route("/crear_reporte",methods=["POST"])
 @login_required("maestro")
