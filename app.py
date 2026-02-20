@@ -14,7 +14,7 @@ import io
 app = Flask(__name__)
 app.secret_key = "ULTRA_SECRET_KEY_2026"
 
-# ---------- Evitar cache (esto arregla que dirección no vea cambios) ----------
+# ---------- Evitar cache (para ver cambios sin cerrar sesión) ----------
 @app.after_request
 def add_header(response):
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
@@ -35,12 +35,17 @@ Session(app)
 
 # ---------- MongoDB (inicializa después de crear app) ----------
 mongo = PyMongo()
-app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
+mongo.db = None  # evita que apunte a 'test' por defecto
 
+app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 if not app.config["MONGO_URI"]:
     raise Exception("⚠️ MONGO_URI no está configurado en Render")
 
 mongo.init_app(app)
+
+# 🔥 Forzar usar siempre la base control_escolar aunque el URI no la tenga
+db = mongo.cx["control_escolar"]
+mongo.db = db
 
 # ========================= SEGURIDAD =========================
 def login_required(role):
@@ -80,9 +85,10 @@ def login():
 # ========================= CREAR ADMIN =========================
 @app.route("/crear_admin")
 def crear_admin():
-    if not mongo.db.usuarios.find_one({"correo": "admin@escuela.com"}):
+    correo = "admin@escuela.com"
+    if not mongo.db.usuarios.find_one({"correo": correo}):
         mongo.db.usuarios.insert_one({
-            "correo": "admin@escuela.com",
+            "correo": correo,
             "password": generate_password_hash("admin123"),
             "role": "admin"
         })
@@ -101,13 +107,11 @@ def admin():
 @app.route("/maestro")
 @login_required("maestro")
 def maestro():
-
     correo = session["user"].strip().lower()
 
-    # Buscar maestro
     maestro = mongo.db.maestros.find_one({"correo": correo})
 
-    # Si no existe, lo creamos automáticamente
+    # Si no existe, crear registro automático
     if not maestro:
         mongo.db.maestros.insert_one({
             "nombre": correo.split("@")[0],
@@ -122,7 +126,6 @@ def maestro():
         return "<h2 style='text-align:center;margin-top:80px'>Dirección aún no te asigna un grupo</h2>"
 
     alumnos = list(mongo.db.alumnos.find({"grupo": grupo}))
-
     return render_template("maestro.html", alumnos=alumnos, grupo=grupo)
 
 # ========================= ASIGNAR MAESTRO A GRUPO =========================
@@ -223,10 +226,31 @@ def generar_pdf(reporte):
 @login_required("admin")
 def reporte_pdf(id):
     reporte = mongo.db.reportes.find_one({"_id": ObjectId(id)})
-    return send_file(generar_pdf(reporte),
-                     mimetype="application/pdf",
-                     as_attachment=True,
-                     download_name="reporte.pdf")
+    return send_file(
+        generar_pdf(reporte),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name="reporte.pdf"
+    )
+
+# ========================= MENÚS DIRECCIÓN =========================
+@app.route("/reporte_asistencias")
+@login_required("admin")
+def reporte_asistencias():
+    asistencias = list(mongo.db.asistencias.find())
+    return render_template("reporte_asistencias.html", asistencias=asistencias)
+
+@app.route("/reporte_participaciones")
+@login_required("admin")
+def reporte_participaciones():
+    participaciones = list(mongo.db.participaciones.find())
+    return render_template("reporte_participaciones.html", participaciones=participaciones)
+
+@app.route("/reporte_calificaciones")
+@login_required("admin")
+def reporte_calificaciones():
+    alumnos = list(mongo.db.alumnos.find())
+    return render_template("reporte_calificaciones.html", alumnos=alumnos)
 
 # ========================= LOGOUT =========================
 @app.route("/logout")
@@ -234,6 +258,6 @@ def logout():
     session.clear()
     return redirect("/")
 
-# ====== ENTRADA PARA RENDER / GUNICORN ======
+# ---------- Entrada para gunicorn / Render ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
