@@ -1,7 +1,7 @@
 Flask
 flask-pymongo
+Flask-Session
 dnspython
 Werkzeug
 gunicorn
 reportlab
-Flask-Session

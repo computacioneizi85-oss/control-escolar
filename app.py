@@ -233,3 +233,7 @@ def reporte_pdf(id):
 def logout():
     session.clear()
     return redirect("/")
+
+# ====== ENTRADA PARA RENDER / GUNICORN ======
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
