@@ -32,6 +32,36 @@ from pymongo import MongoClient
 cliente = MongoClient(MONGO_URI)
 mongo.db = cliente["control_escolar"]
 
+# ================= REPARAR REGISTROS ANTIGUOS =================
+def reparar_registros():
+
+    # ---- ASISTENCIAS ----
+    asistencias = mongo.db.asistencias.find({"alumno_id": {"$exists": False}})
+
+    for a in asistencias:
+        if "alumno" in a:
+            alumno = mongo.db.alumnos.find_one({"nombre": a["alumno"]})
+            if alumno:
+                mongo.db.asistencias.update_one(
+                    {"_id": a["_id"]},
+                    {"$set": {"alumno_id": str(alumno["_id"])}}
+                )
+
+    # ---- PARTICIPACIONES ----
+    participaciones = mongo.db.participaciones.find({"alumno_id": {"$exists": False}})
+
+    for p in participaciones:
+        if "alumno" in p:
+            alumno = mongo.db.alumnos.find_one({"nombre": p["alumno"]})
+            if alumno:
+                mongo.db.participaciones.update_one(
+                    {"_id": p["_id"]},
+                    {"$set": {"alumno_id": str(alumno["_id"])}}
+                )
+
+# ejecutar al iniciar servidor
+reparar_registros()
+
 # ================= UTILIDADES =================
 def generar_password(long=8):
     chars = string.ascii_letters + string.digits
