@@ -1,64 +1,105 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <title>Registrar Maestro</title>
+
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{
+    background:#f2f4f8;
+}
+
+.card{
+    border-radius:14px;
+    box-shadow:0 6px 18px rgba(0,0,0,.15);
+}
+
+.titulo{
+    font-weight:700;
+    color:#2c3e50;
+}
+
+.btn-success{
+    font-weight:600;
+    letter-spacing:.5px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container mt-5 mb-5">
+
+    <div class="card p-4">
+
+        <h2 class="titulo mb-4">Registrar Maestro</h2>
+
+        <form action="/guardar_maestro" method="POST">
+
+            <!-- Nombre -->
+            <div class="mb-3">
+                <label class="form-label">Nombre completo</label>
+                <input type="text" name="nombre" class="form-control" required>
+            </div>
+
+            <!-- Correo -->
+            <div class="mb-3">
+                <label class="form-label">Correo</label>
+                <input type="email" name="correo" class="form-control" required>
+            </div>
+
+            <!-- Grupo -->
+            <div class="mb-3">
+                <label class="form-label">Grupo asignado</label>
+                <select name="grupo" class="form-control" required>
+                    <option value="">Seleccionar grupo</option>
+                    {% for g in grupos %}
+                        <option value="{{ g.nombre }}">{{ g.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Contraseña -->
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                <input type="text" id="password" name="password" class="form-control" placeholder="Opcional">
+                <small class="text-muted">Si lo dejas vacío, el sistema generará una automáticamente</small>
+            </div>
+
+            <!-- Botón generar -->
+            <div class="mb-4">
+                <button type="button" class="btn btn-secondary" onclick="generarPassword()">
+                    Generar contraseña automática
+                </button>
+            </div>
+
+            <!-- Botón registrar -->
+            <button type="submit" class="btn btn-success w-100">
+                Registrar Maestro
+            </button>
+
+        </form>
+
+        <hr class="mt-4">
+
+        <a href="/admin" class="btn btn-outline-dark">← Volver al Panel</a>
+
+    </div>
+
+</div>
 
 <script>
 function generarPassword(){
-    const chars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let pass="";
+    const caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let pass = "";
     for(let i=0;i<8;i++){
-        pass+=chars.charAt(Math.floor(Math.random()*chars.length));
+        pass += caracteres.charAt(Math.floor(Math.random()*caracteres.length));
     }
-    document.getElementById("password").value=pass;
+    document.getElementById("password").value = pass;
 }
 </script>
-</head>
-
-<body class="container py-5">
-
-<div class="card shadow p-4">
-
-<h3 class="mb-4">Registrar Maestro</h3>
-
-<form method="POST" action="/guardar_Maestro">
-
-<div class="mb-3">
-<label>Nombre completo</label>
-<input name="nombre" class="form-control" required>
-</div>
-
-<div class="mb-3">
-<label>Correo</label>
-<input name="correo" type="email" class="form-control" required>
-</div>
-
-<div class="mb-3">
-<label>Grupo</label>
-<select name="grupo" class="form-control" required>
-{% for g in grupos %}
-<option value="{{ g.nombre }}">{{ g.nombre }}</option>
-{% endfor %}
-</select>
-</div>
-
-<div class="mb-3">
-<label>Contraseña</label>
-<input id="password" name="password" class="form-control" placeholder="Opcional">
-<small class="text-muted">Si lo dejas vacío se generará automáticamente</small>
-</div>
-
-<button type="button" onclick="generarPassword()" class="btn btn-secondary mb-3">
-Generar contraseña automática
-</button>
-
-<button class="btn btn-success w-100">Registrar Maestro</button>
-
-</form>
-
-</div>
 
 </body>
 </html>

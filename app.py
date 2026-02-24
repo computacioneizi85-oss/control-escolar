@@ -128,7 +128,8 @@ def guardar_alumno():
 @app.route("/nuevo_maestro")
 @login_required("admin")
 def nuevo_maestro():
-    return render_template("nuevo_maestro.html")
+    grupos = list(mongo.db.grupos.find().sort("nombre",1))
+    return render_template("nuevo_maestro.html", grupos=grupos)
 
 @app.route("/guardar_maestro", methods=["POST"])
 @login_required("admin")
@@ -140,11 +141,13 @@ def guardar_maestro():
     if not password:
         password = generar_password()
 
-    mongo.db.maestros.insert_one({
-        "nombre": nombre,
-        "correo": correo,
-        "grupo": ""
-    })
+    grupo = request.form["grupo"]
+
+mongo.db.maestros.insert_one({
+    "nombre": nombre,
+    "correo": correo,
+    "grupo": grupo
+})
 
     mongo.db.usuarios.insert_one({
         "correo": correo,
