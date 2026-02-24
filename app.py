@@ -1,10 +1,15 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, send_file
 from flask_pymongo import PyMongo
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson.objectid import ObjectId
 from functools import wraps
 import os, random, string
-from datetime import timedelta
+from datetime import timedelta, datetime
+
+# PDF
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from io import BytesIO
 
 # ---------------- APP ----------------
 app = Flask(__name__)
@@ -75,19 +80,16 @@ def admin():
     grupo = request.args.get("grupo")
 
     if grupo:
-        alumnos = list(mongo.db.alumnos.find({"grupo": grupo}))
-        maestros = list(mongo.db.maestros.find({"grupo": grupo}))
+        alumnos = list(mongo.db.alumnos.find({"grupo":grupo}))
+        maestros = list(mongo.db.maestros.find({"grupo":grupo}))
     else:
         alumnos = list(mongo.db.alumnos.find())
         maestros = list(mongo.db.maestros.find())
 
     grupos = list(mongo.db.grupos.find())
 
-    return render_template("admin.html",
-                           alumnos=alumnos,
-                           maestros=maestros,
-                           grupos=grupos,
-                           grupo_actual=grupo)
+    return render_template("admin.html", alumnos=alumnos, maestros=maestros, grupos=grupos)
+
 # ---------------- CREAR GRUPOS ----------------
 @app.route("/grupos", methods=["GET","POST"])
 @login_required("admin")
@@ -114,7 +116,8 @@ def guardar_alumno():
     grupo=request.form["grupo"]
     password=request.form.get("password") or generar_password()
 
-    mongo.db.alumnos.insert_one({"nombre":nombre,"correo":correo,"grupo":grupo})
+    mongo.db.alumnos.insert_one({"nombre":nombre,"correo":correo,"grupo":grupo,"calificacion":""})
+
     mongo.db.usuarios.insert_one({
         "correo":correo,
         "password":generate_password_hash(password),
@@ -138,6 +141,7 @@ def guardar_maestro():
     password=request.form.get("password") or generar_password()
 
     mongo.db.maestros.insert_one({"nombre":nombre,"correo":correo,"grupo":grupo})
+
     mongo.db.usuarios.insert_one({
         "correo":correo,
         "password":generate_password_hash(password),
@@ -145,7 +149,7 @@ def guardar_maestro():
     })
     return redirect("/admin")
 
-# ---------------- ASIGNAR GRUPO A MAESTRO ----------------
+# ---------------- ASIGNAR GRUPO ----------------
 @app.route("/asignar_grupos", methods=["GET","POST"])
 @login_required("admin")
 def asignar_grupos():
@@ -168,59 +172,22 @@ def maestro():
     alumnos=list(mongo.db.alumnos.find({"grupo":maestro["grupo"]}))
     return render_template("maestro.html", alumnos=alumnos, grupo=maestro["grupo"])
 
-# ---------------- ASISTENCIAS ----------------
-@app.route("/reporte_asistencias")
-@login_required("admin")
-def reporte_asistencias():
-    asistencias=list(mongo.db.asistencias.find())
-    return render_template("reporte_asistencias.html", asistencias=asistencias)
-
-# ---------------- PARTICIPACIONES ----------------
-@app.route("/reporte_participaciones")
-@login_required("admin")
-def reporte_participaciones():
-    participaciones=list(mongo.db.participaciones.find())
-    return render_template("reporte_participaciones.html", participaciones=participaciones)
-
-# ---------------- CALIFICACIONES ----------------
-@app.route("/reporte_calificaciones")
-@login_required("admin")
-def reporte_calificaciones():
-    alumnos=list(mongo.db.alumnos.find())
-    return render_template("reporte_calificaciones.html", alumnos=alumnos)
-
-# ---------------- REPORTES DISCIPLINARIOS ----------------
-@app.route("/reportes_admin")
-@login_required("admin")
-def reportes_admin():
-    reportes=list(mongo.db.reportes.find())
-    return render_template("reportes_admin.html", reportes=reportes)
-
 # ---------------- RESET PASSWORD ----------------
 @app.route("/reset_password/<correo>")
 @login_required("admin")
 def reset_password(correo):
 
     correo = correo.lower().strip()
-
-    usuario = mongo.db.usuarios.find_one({"correo": correo})
-    if not usuario:
-        return "Usuario no encontrado"
-
     nueva = generar_password()
 
     mongo.db.usuarios.update_one(
-        {"correo": correo},
-        {"$set": {"password": generate_password_hash(nueva)}}
+        {"correo":correo},
+        {"$set":{"password":generate_password_hash(nueva)}}
     )
 
-    return f"""
-    <h2>Contraseña restablecida</h2>
-    <b>Usuario:</b> {correo}<br>
-    <b>Nueva contraseña:</b> {nueva}<br><br>
-    <a href='/admin'>Volver al panel</a>
-    """
-# ---------------- ELIMINAR ALUMNO ----------------
+    return f"<h2>Nueva contraseña:</h2><h3>{nueva}</h3><a href='/admin'>Volver</a>"
+
+# ---------------- ELIMINAR ----------------
 @app.route("/eliminar_alumno/<id>")
 @login_required("admin")
 def eliminar_alumno(id):
@@ -229,7 +196,6 @@ def eliminar_alumno(id):
     mongo.db.alumnos.delete_one({"_id":ObjectId(id)})
     return redirect("/admin")
 
-# ---------------- ELIMINAR MAESTRO ----------------
 @app.route("/eliminar_maestro/<id>")
 @login_required("admin")
 def eliminar_maestro(id):
@@ -237,6 +203,67 @@ def eliminar_maestro(id):
     mongo.db.usuarios.delete_one({"correo":maestro["correo"]})
     mongo.db.maestros.delete_one({"_id":ObjectId(id)})
     return redirect("/admin")
+
+# ---------------- KARDEX PDF ----------------
+@app.route("/kardex/<id>")
+@login_required("admin")
+def kardex(id):
+
+    alumno = mongo.db.alumnos.find_one({"_id": ObjectId(id)})
+
+    asistencias = list(mongo.db.asistencias.find({"alumno": alumno["nombre"]}))
+    participaciones = list(mongo.db.participaciones.find({"alumno": alumno["nombre"]}))
+
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=letter)
+
+    pdf.setFont("Helvetica-Bold",18)
+    pdf.drawString(190,750,"KARDEX ESCOLAR")
+
+    pdf.setFont("Helvetica",11)
+    pdf.drawString(50,720,f"Alumno: {alumno['nombre']}")
+    pdf.drawString(50,700,f"Correo: {alumno['correo']}")
+    pdf.drawString(50,680,f"Grupo: {alumno['grupo']}")
+    pdf.drawString(50,660,f"Fecha: {datetime.now().strftime('%d/%m/%Y')}")
+
+    y=620
+    pdf.setFont("Helvetica-Bold",13)
+    pdf.drawString(50,y,"Asistencias")
+    y-=20
+    pdf.setFont("Helvetica",10)
+
+    for a in asistencias[:20]:
+        pdf.drawString(60,y,f"{a.get('fecha','')} - {a.get('estado','')}")
+        y-=15
+
+    y-=20
+    pdf.setFont("Helvetica-Bold",13)
+    pdf.drawString(50,y,"Participaciones")
+    y-=20
+    pdf.setFont("Helvetica",10)
+
+    for p in participaciones[:20]:
+        pdf.drawString(60,y,f"{p.get('fecha','')} - {p.get('puntos','')} pts")
+        y-=15
+
+    y-=30
+    pdf.setFont("Helvetica-Bold",13)
+    pdf.drawString(50,y,"Calificación Final")
+    y-=20
+    pdf.drawString(60,y,f"{alumno.get('calificacion','No registrada')}")
+
+    pdf.line(80,120,260,120)
+    pdf.drawString(120,105,"Firma Director")
+
+    pdf.line(340,120,520,120)
+    pdf.drawString(380,105,"Firma Padre/Tutor")
+
+    pdf.save()
+
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True,
+                     download_name=f"Kardex_{alumno['nombre']}.pdf",
+                     mimetype="application/pdf")
 
 # ---------------- RUN ----------------
 if __name__=="__main__":

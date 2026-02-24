@@ -8,190 +8,151 @@
 
 <style>
 body{
-    background:#eef2f7;
-    font-family: Arial, Helvetica, sans-serif;
+    background:#f2f4f8;
 }
 
-.panel{
-    background:white;
-    padding:25px;
-    border-radius:15px;
-    box-shadow:0px 8px 20px rgba(0,0,0,0.08);
-    margin-bottom:30px;
+.card{
+    border-radius:14px;
+    box-shadow:0 6px 18px rgba(0,0,0,.15);
+}
+
+.titulo{
+    font-weight:700;
+    color:#2c3e50;
 }
 
 .menu-btn{
-    width:100%;
-    height:85px;
-    font-size:19px;
-    font-weight:600;
-    border-radius:14px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
-
-.section-title{
-    font-weight:700;
-    margin-bottom:15px;
-}
-
-table{
-    background:white;
-}
-
-.acciones a{
-    margin-right:5px;
+    margin:4px;
 }
 </style>
 </head>
 
-<body class="container py-4">
+<body>
 
-<!-- ENCABEZADO -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Panel de Dirección</h2>
-    <a href="/logout" class="btn btn-danger">Cerrar sesión</a>
-</div>
+<div class="container mt-4 mb-5">
 
-<!-- ===== MENÚ ACADÉMICO ===== -->
-<div class="row mb-4">
-
-    <div class="col-md-4 mb-3">
-        <a href="/reporte_asistencias" class="btn btn-primary menu-btn">📋 Asistencias</a>
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="titulo">Panel de Dirección</h2>
+        <a href="/logout" class="btn btn-danger">Cerrar sesión</a>
     </div>
 
-    <div class="col-md-4 mb-3">
-        <a href="/reporte_participaciones" class="btn btn-warning menu-btn">⭐ Participaciones</a>
+    <!-- MENU PRINCIPAL -->
+    <div class="card p-3 mb-4 text-center">
+
+        <a href="/nuevo_alumno" class="btn btn-success menu-btn">➕ Registrar Alumno</a>
+        <a href="/nuevo_maestro" class="btn btn-success menu-btn">➕ Registrar Maestro</a>
+        <a href="/grupos" class="btn btn-primary menu-btn">📚 Crear/Administrar Grupos</a>
+        <a href="/asignar_grupos" class="btn btn-warning menu-btn">👨‍🏫 Asignar Maestro a Grupo</a>
+        <a href="/reporte_asistencias" class="btn btn-secondary menu-btn">🗓 Asistencias</a>
+        <a href="/reporte_participaciones" class="btn btn-secondary menu-btn">⭐ Participaciones</a>
+        <a href="/reporte_calificaciones" class="btn btn-secondary menu-btn">📝 Calificaciones</a>
+        <a href="/reportes_admin" class="btn btn-dark menu-btn">📋 Reportes Disciplinarios</a>
+
     </div>
 
-    <div class="col-md-4 mb-3">
-        <a href="/reporte_calificaciones" class="btn btn-success menu-btn">📝 Calificaciones</a>
+    <!-- FILTRO POR GRUPO -->
+    <div class="card p-3 mb-4">
+        <h5>Filtrar por grupo:</h5>
+
+        <a class="btn btn-dark btn-sm m-1" href="/admin">Todos</a>
+
+        {% for g in grupos %}
+        <a class="btn btn-outline-primary btn-sm m-1"
+           href="/admin?grupo={{ g.nombre }}">
+           {{ g.nombre }}
+        </a>
+        {% endfor %}
     </div>
 
-</div>
+    <!-- ALUMNOS -->
+    <div class="card p-3 mb-4">
+        <h4 class="mb-3">Alumnos Registrados</h4>
 
-<!-- ===== GESTIÓN ===== -->
-<div class="row mb-4">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Grupo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
 
-    <div class="col-md-4 mb-3">
-        <a href="/panel_grupos" class="btn btn-dark menu-btn">🏫 Administrar grupos</a>
+            {% for alumno in alumnos %}
+            <tr>
+                <td>{{ alumno.nombre }}</td>
+                <td>{{ alumno.correo }}</td>
+                <td>{{ alumno.grupo }}</td>
+
+                <td>
+
+                    <!-- KARDEx -->
+                    <a href="/kardex/{{ alumno._id }}" class="btn btn-primary btn-sm">
+                        📄 Kardex
+                    </a>
+
+                    <!-- RESET PASSWORD -->
+                    <a href="/reset_password/{{ alumno.correo }}" class="btn btn-warning btn-sm">
+                        🔑 Reset
+                    </a>
+
+                    <!-- ELIMINAR -->
+                    <a href="/eliminar_alumno/{{ alumno._id }}"
+                       class="btn btn-danger btn-sm"
+                       onclick="return confirm('¿Eliminar alumno?')">
+                        🗑 Eliminar
+                    </a>
+
+                </td>
+            </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
     </div>
 
-    <div class="col-md-4 mb-3">
-        <a href="/asignar_grupos" class="btn btn-secondary menu-btn">👨‍🏫 Asignar grupo a maestro</a>
+    <!-- MAESTROS -->
+    <div class="card p-3">
+        <h4 class="mb-3">Maestros Registrados</h4>
+
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Grupo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            {% for maestro in maestros %}
+            <tr>
+                <td>{{ maestro.nombre }}</td>
+                <td>{{ maestro.correo }}</td>
+                <td>{{ maestro.grupo }}</td>
+
+                <td>
+
+                    <a href="/reset_password/{{ maestro.correo }}" class="btn btn-warning btn-sm">
+                        🔑 Reset
+                    </a>
+
+                    <a href="/eliminar_maestro/{{ maestro._id }}"
+                       class="btn btn-danger btn-sm"
+                       onclick="return confirm('¿Eliminar maestro?')">
+                        🗑 Eliminar
+                    </a>
+
+                </td>
+            </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
     </div>
-
-    <div class="col-md-4 mb-3">
-        <a href="/reportes_admin" class="btn btn-danger menu-btn">🚨 Reportes disciplinarios</a>
-    </div>
-
-</div>
-
-<!-- ===== BOTONES REGISTRO ===== -->
-<div class="panel">
-
-<div class="mb-3">
-    <a href="/nuevo_alumno" class="btn btn-success">➕ Registrar alumno</a>
-    <a href="/nuevo_maestro" class="btn btn-primary">➕ Registrar maestro</a>
-</div>
-
-<!-- FILTRO GRUPOS -->
-<div class="mb-4">
-    <b>Filtrar por grupo:</b><br>
-
-    <a href="/admin" class="btn btn-secondary btn-sm">Todos</a>
-
-   {% for g in grupos %}
-<a class="btn btn-outline-primary m-1"
-   href="/admin?grupo={{ g.nombre }}">
-   {{ g.nombre }}
-</a>
-{% endfor %}
-
-<a class="btn btn-dark m-1" href="/admin">Todos</a>
-</div>
-
-<h4 class="section-title">Alumnos registrados</h4>
-
-<table class="table table-bordered table-hover">
-<thead class="table-dark">
-<tr>
-<th>Nombre</th>
-<th>Correo</th>
-<th>Grupo</th>
-<th>Acciones</th>
-</tr>
-</thead>
-
-<tbody>
-{% for a in alumnos %}
-<tr>
-<td>{{ a.nombre }}</td>
-<td>{{ a.correo }}</td>
-<td>{{ a.grupo }}</td>
-
-<td class="acciones">
-
-<a href="/reset_password/{{ a.correo }}"
-class="btn btn-sm btn-warning">
-Reset
-</a>
-
-<a href="/eliminar_alumno/{{ a._id }}"
-class="btn btn-sm btn-danger"
-onclick="return confirm('¿Eliminar alumno?')">
-Borrar
-</a>
-
-</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
-
-</div>
-
-<!-- ===== MAESTROS ===== -->
-<div class="panel">
-
-<h4 class="section-title">Maestros registrados</h4>
-
-<table class="table table-bordered table-hover">
-<thead class="table-dark">
-<tr>
-<th>Nombre</th>
-<th>Correo</th>
-<th>Grupo asignado</th>
-<th>Acciones</th>
-</tr>
-</thead>
-
-<tbody>
-{% for m in maestros %}
-<tr>
-<td>{{ m.nombre }}</td>
-<td>{{ m.correo }}</td>
-<td>{{ m.grupo if m.grupo else "Sin asignar" }}</td>
-
-<td class="acciones">
-
-<a href="/reset_password/{{ m.correo }}"
-class="btn btn-sm btn-warning">
-Reset
-</a>
-
-<a href="/eliminar_maestro/{{ m._id }}"
-class="btn btn-sm btn-danger"
-onclick="return confirm('¿Eliminar maestro?')">
-Borrar
-</a>
-
-</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
 
 </div>
 
