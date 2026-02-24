@@ -7,23 +7,76 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
+
 body{
-    background:#f2f4f8;
+    background: linear-gradient(135deg,#e9eef5,#d8e1ec);
+    font-family: "Segoe UI", Tahoma, sans-serif;
 }
 
-.card{
-    border-radius:14px;
+/* Header */
+.header{
+    background:white;
+    padding:20px 30px;
+    border-radius:16px;
     box-shadow:0 6px 18px rgba(0,0,0,.15);
 }
 
-.titulo{
-    font-weight:700;
-    color:#2c3e50;
+/* Tarjetas del dashboard */
+.dashboard-card{
+    border-radius:16px;
+    padding:22px;
+    color:white;
+    font-weight:600;
+    text-align:center;
+    box-shadow:0 10px 25px rgba(0,0,0,.18);
+    transition:.25s;
+    text-decoration:none;
+    display:block;
 }
 
-.menu-btn{
+.dashboard-card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 14px 32px rgba(0,0,0,.25);
+}
+
+/* Colores respetando tu sistema */
+.card-alumno{ background:#1e8449; }
+.card-maestro{ background:#239b56; }
+.card-grupo{ background:#1f66d1; }
+.card-asignar{ background:#f1b70a; color:#222; }
+.card-asistencia{ background:#6c757d; }
+.card-participacion{ background:#6c757d; }
+.card-calificacion{ background:#6c757d; }
+.card-reporte{ background:#1c1f23; }
+
+/* Tablas */
+.card-table{
+    background:white;
+    border-radius:16px;
+    padding:20px;
+    box-shadow:0 8px 20px rgba(0,0,0,.15);
+}
+
+.table th{
+    background:#2c3e50;
+    color:white;
+    text-align:center;
+}
+
+.table td{
+    vertical-align:middle;
+}
+
+/* botones pequeños */
+.btn-mini{
+    padding:4px 9px;
+    font-size:13px;
+}
+
+.group-filter a{
     margin:4px;
 }
+
 </style>
 </head>
 
@@ -32,50 +85,90 @@ body{
 <div class="container mt-4 mb-5">
 
     <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="titulo">Panel de Dirección</h2>
+    <div class="header d-flex justify-content-between align-items-center mb-4">
+        <h2 class="m-0">Panel de Dirección</h2>
         <a href="/logout" class="btn btn-danger">Cerrar sesión</a>
     </div>
 
-    <!-- MENU PRINCIPAL -->
-    <div class="card p-3 mb-4 text-center">
+    <!-- DASHBOARD -->
+    <div class="row g-3 mb-4">
 
-        <a href="/nuevo_alumno" class="btn btn-success menu-btn">➕ Registrar Alumno</a>
-        <a href="/nuevo_maestro" class="btn btn-success menu-btn">➕ Registrar Maestro</a>
-        <a href="/grupos" class="btn btn-primary menu-btn">📚 Crear/Administrar Grupos</a>
-        <a href="/asignar_grupos" class="btn btn-warning menu-btn">👨‍🏫 Asignar Maestro a Grupo</a>
-        <a href="/reporte_asistencias" class="btn btn-secondary menu-btn">🗓 Asistencias</a>
-        <a href="/reporte_participaciones" class="btn btn-secondary menu-btn">⭐ Participaciones</a>
-        <a href="/reporte_calificaciones" class="btn btn-secondary menu-btn">📝 Calificaciones</a>
-        <a href="/reportes_admin" class="btn btn-dark menu-btn">📋 Reportes Disciplinarios</a>
+        <div class="col-md-3">
+            <a href="/nuevo_alumno" class="dashboard-card card-alumno">
+                ➕ Registrar Alumno
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="/nuevo_maestro" class="dashboard-card card-maestro">
+                ➕ Registrar Maestro
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="/grupos" class="dashboard-card card-grupo">
+                📚 Crear / Administrar Grupos
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="/asignar_grupos" class="dashboard-card card-asignar">
+                👨‍🏫 Asignar Maestro
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="/reporte_asistencias" class="dashboard-card card-asistencia">
+                🗓 Asistencias
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="/reporte_participaciones" class="dashboard-card card-participacion">
+                ⭐ Participaciones
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="/reporte_calificaciones" class="dashboard-card card-calificacion">
+                📝 Calificaciones
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="/reportes_admin" class="dashboard-card card-reporte">
+                📋 Reportes Disciplinarios
+            </a>
+        </div>
 
     </div>
 
     <!-- FILTRO POR GRUPO -->
-    <div class="card p-3 mb-4">
-        <h5>Filtrar por grupo:</h5>
+    <div class="card-table mb-4">
+        <h5>Filtrar por grupo</h5>
 
-        <a class="btn btn-dark btn-sm m-1" href="/admin">Todos</a>
-
-        {% for g in grupos %}
-        <a class="btn btn-outline-primary btn-sm m-1"
-           href="/admin?grupo={{ g.nombre }}">
-           {{ g.nombre }}
-        </a>
-        {% endfor %}
+        <div class="group-filter">
+            <a class="btn btn-dark btn-sm" href="/admin">Todos</a>
+            {% for g in grupos %}
+            <a class="btn btn-outline-primary btn-sm"
+               href="/admin?grupo={{ g.nombre }}">
+               {{ g.nombre }}
+            </a>
+            {% endfor %}
+        </div>
     </div>
 
     <!-- ALUMNOS -->
-    <div class="card p-3 mb-4">
+    <div class="card-table mb-4">
         <h4 class="mb-3">Alumnos Registrados</h4>
 
-        <table class="table table-bordered table-striped">
-            <thead class="table-dark">
+        <table class="table table-hover table-bordered">
+            <thead>
                 <tr>
                     <th>Nombre</th>
                     <th>Correo</th>
                     <th>Grupo</th>
-                    <th>Acciones</th>
+                    <th style="width:280px;">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -85,24 +178,20 @@ body{
                 <td>{{ alumno.nombre }}</td>
                 <td>{{ alumno.correo }}</td>
                 <td>{{ alumno.grupo }}</td>
+                <td class="text-center">
 
-                <td>
-
-                    <!-- KARDEx -->
-                    <a href="/kardex/{{ alumno._id }}" class="btn btn-primary btn-sm">
-                        📄 Kardex
+                    <a href="/kardex/{{ alumno._id }}" class="btn btn-primary btn-mini">
+                        Kardex
                     </a>
 
-                    <!-- RESET PASSWORD -->
-                    <a href="/reset_password/{{ alumno.correo }}" class="btn btn-warning btn-sm">
-                        🔑 Reset
+                    <a href="/reset_password/{{ alumno.correo }}" class="btn btn-warning btn-mini">
+                        Reset
                     </a>
 
-                    <!-- ELIMINAR -->
                     <a href="/eliminar_alumno/{{ alumno._id }}"
-                       class="btn btn-danger btn-sm"
+                       class="btn btn-danger btn-mini"
                        onclick="return confirm('¿Eliminar alumno?')">
-                        🗑 Eliminar
+                       Eliminar
                     </a>
 
                 </td>
@@ -114,16 +203,16 @@ body{
     </div>
 
     <!-- MAESTROS -->
-    <div class="card p-3">
+    <div class="card-table">
         <h4 class="mb-3">Maestros Registrados</h4>
 
-        <table class="table table-bordered table-striped">
-            <thead class="table-dark">
+        <table class="table table-hover table-bordered">
+            <thead>
                 <tr>
                     <th>Nombre</th>
                     <th>Correo</th>
                     <th>Grupo</th>
-                    <th>Acciones</th>
+                    <th style="width:200px;">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -133,17 +222,16 @@ body{
                 <td>{{ maestro.nombre }}</td>
                 <td>{{ maestro.correo }}</td>
                 <td>{{ maestro.grupo }}</td>
+                <td class="text-center">
 
-                <td>
-
-                    <a href="/reset_password/{{ maestro.correo }}" class="btn btn-warning btn-sm">
-                        🔑 Reset
+                    <a href="/reset_password/{{ maestro.correo }}" class="btn btn-warning btn-mini">
+                        Reset
                     </a>
 
                     <a href="/eliminar_maestro/{{ maestro._id }}"
-                       class="btn btn-danger btn-sm"
+                       class="btn btn-danger btn-mini"
                        onclick="return confirm('¿Eliminar maestro?')">
-                        🗑 Eliminar
+                        Eliminar
                     </a>
 
                 </td>
