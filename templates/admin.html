@@ -102,11 +102,14 @@ table{
 
     <a href="/admin" class="btn btn-secondary btn-sm">Todos</a>
 
-    {% for g in grupos %}
-    <a href="/grupo/{{ g.nombre }}" class="btn btn-outline-dark btn-sm">
-        {{ g.nombre }}
-    </a>
-    {% endfor %}
+   {% for g in grupos %}
+<a class="btn btn-outline-primary m-1"
+   href="/admin?grupo={{ g.nombre }}">
+   {{ g.nombre }}
+</a>
+{% endfor %}
+
+<a class="btn btn-dark m-1" href="/admin">Todos</a>
 </div>
 
 <h4 class="section-title">Alumnos registrados</h4>

@@ -71,11 +71,23 @@ def logout():
 @app.route("/admin")
 @login_required("admin")
 def admin():
-    alumnos=list(mongo.db.alumnos.find())
-    maestros=list(mongo.db.maestros.find())
-    grupos=list(mongo.db.grupos.find())
-    return render_template("admin.html", alumnos=alumnos, maestros=maestros, grupos=grupos)
 
+    grupo = request.args.get("grupo")
+
+    if grupo:
+        alumnos = list(mongo.db.alumnos.find({"grupo": grupo}))
+        maestros = list(mongo.db.maestros.find({"grupo": grupo}))
+    else:
+        alumnos = list(mongo.db.alumnos.find())
+        maestros = list(mongo.db.maestros.find())
+
+    grupos = list(mongo.db.grupos.find())
+
+    return render_template("admin.html",
+                           alumnos=alumnos,
+                           maestros=maestros,
+                           grupos=grupos,
+                           grupo_actual=grupo)
 # ---------------- CREAR GRUPOS ----------------
 @app.route("/grupos", methods=["GET","POST"])
 @login_required("admin")
@@ -188,10 +200,26 @@ def reportes_admin():
 @app.route("/reset_password/<correo>")
 @login_required("admin")
 def reset_password(correo):
-    nueva=generar_password()
-    mongo.db.usuarios.update_one({"correo":correo},{"$set":{"password":generate_password_hash(nueva)}})
-    return redirect("/admin")
 
+    correo = correo.lower().strip()
+
+    usuario = mongo.db.usuarios.find_one({"correo": correo})
+    if not usuario:
+        return "Usuario no encontrado"
+
+    nueva = generar_password()
+
+    mongo.db.usuarios.update_one(
+        {"correo": correo},
+        {"$set": {"password": generate_password_hash(nueva)}}
+    )
+
+    return f"""
+    <h2>Contraseña restablecida</h2>
+    <b>Usuario:</b> {correo}<br>
+    <b>Nueva contraseña:</b> {nueva}<br><br>
+    <a href='/admin'>Volver al panel</a>
+    """
 # ---------------- ELIMINAR ALUMNO ----------------
 @app.route("/eliminar_alumno/<id>")
 @login_required("admin")
