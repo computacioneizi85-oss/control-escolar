@@ -32,14 +32,17 @@ app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=12)
 Session(app)
 
 # -------- MongoDB --------
-mongo = PyMongo()
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
-if not app.config["MONGO_URI"]:
-    raise Exception("Falta configurar MONGO_URI en Render")
 
-mongo.init_app(app)
-# Forzar usar la BD correcta aunque el URI no la tenga
-mongo.db = mongo.cx["control_escolar"]
+if not app.config["MONGO_URI"]:
+    raise Exception("No existe MONGO_URI en variables de entorno")
+
+mongo = PyMongo(app)
+
+# Forzar base correcta sin romper Render
+from pymongo import MongoClient
+cliente = MongoClient(app.config["MONGO_URI"])
+mongo.db = cliente["control_escolar"]
 
 # ===================== UTILIDADES =====================
 def generar_password(longitud=8):
