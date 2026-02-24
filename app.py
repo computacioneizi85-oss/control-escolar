@@ -211,13 +211,47 @@ def maestro():
 @app.route("/reporte_asistencias")
 @login_required("admin")
 def reporte_asistencias():
-    asistencias = list(mongo.db.asistencias.find())
+
+    asistencias_db = list(mongo.db.asistencias.find().sort("fecha",-1))
+    asistencias = []
+
+    for a in asistencias_db:
+
+        alumno = mongo.db.alumnos.find_one({"_id": ObjectId(a["alumno_id"])})
+
+        nombre = "Alumno eliminado"
+        if alumno:
+            nombre = alumno["nombre"]
+
+        asistencias.append({
+            "nombre": nombre,
+            "fecha": a.get("fecha",""),
+            "estado": a.get("estado","")
+        })
+
     return render_template("reporte_asistencias.html", asistencias=asistencias)
 
 @app.route("/reporte_participaciones")
 @login_required("admin")
 def reporte_participaciones():
-    participaciones = list(mongo.db.participaciones.find())
+
+    partes_db = list(mongo.db.participaciones.find().sort("fecha",-1))
+    participaciones = []
+
+    for p in partes_db:
+
+        alumno = mongo.db.alumnos.find_one({"_id": ObjectId(p["alumno_id"])})
+
+        nombre = "Alumno eliminado"
+        if alumno:
+            nombre = alumno["nombre"]
+
+        participaciones.append({
+            "nombre": nombre,
+            "fecha": p.get("fecha",""),
+            "puntos": p.get("puntos","")
+        })
+
     return render_template("reporte_participaciones.html", participaciones=participaciones)
 
 @app.route("/reporte_calificaciones")
