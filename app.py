@@ -13,7 +13,7 @@ import os, io, random, string
 app = Flask(__name__)
 app.secret_key = "ULTRA_SECRET_KEY_2026"
 
-# -------- Evitar cache (actualiza sin cerrar sesión) --------
+# -------- Evitar cache (ver cambios al instante) --------
 @app.after_request
 def add_header(response):
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
@@ -21,7 +21,7 @@ def add_header(response):
     response.headers["Expires"] = "0"
     return response
 
-# -------- Sesiones --------
+# -------- Sesiones (Render filesystem) --------
 SESSION_PATH = "/tmp/flask_session"
 os.makedirs(SESSION_PATH, exist_ok=True)
 
@@ -38,6 +38,7 @@ if not app.config["MONGO_URI"]:
     raise Exception("Falta configurar MONGO_URI en Render")
 
 mongo.init_app(app)
+# Forzar usar la BD correcta aunque el URI no la tenga
 mongo.db = mongo.cx["control_escolar"]
 
 # ===================== UTILIDADES =====================
@@ -202,12 +203,14 @@ def guardar_asignacion():
 def maestro():
     correo = session["user"]
     maestro = mongo.db.maestros.find_one({"correo": correo})
+
     if not maestro or maestro.get("grupo","") == "":
         return "<h2 style='text-align:center;margin-top:80px'>Dirección aún no te asigna un grupo</h2>"
+
     alumnos = list(mongo.db.alumnos.find({"grupo": maestro["grupo"]}))
     return render_template("maestro.html", alumnos=alumnos, grupo=maestro["grupo"])
 
-# ===================== SUBMENÚS DIRECCIÓN =====================
+# ===================== SUBMENÚS DIRECCIÓN (ROBUSTOS) =====================
 @app.route("/reporte_asistencias")
 @login_required("admin")
 def reporte_asistencias():
@@ -217,11 +220,20 @@ def reporte_asistencias():
 
     for a in asistencias_db:
 
-        alumno = mongo.db.alumnos.find_one({"_id": ObjectId(a["alumno_id"])})
+        nombre = "Desconocido"
 
-        nombre = "Alumno eliminado"
-        if alumno:
-            nombre = alumno["nombre"]
+        # registros nuevos con alumno_id
+        if "alumno_id" in a:
+            try:
+                alumno = mongo.db.alumnos.find_one({"_id": ObjectId(a["alumno_id"])})
+                if alumno:
+                    nombre = alumno["nombre"]
+            except:
+                pass
+
+        # registros antiguos
+        elif "alumno" in a:
+            nombre = a["alumno"]
 
         asistencias.append({
             "nombre": nombre,
@@ -230,6 +242,7 @@ def reporte_asistencias():
         })
 
     return render_template("reporte_asistencias.html", asistencias=asistencias)
+
 
 @app.route("/reporte_participaciones")
 @login_required("admin")
@@ -240,11 +253,18 @@ def reporte_participaciones():
 
     for p in partes_db:
 
-        alumno = mongo.db.alumnos.find_one({"_id": ObjectId(p["alumno_id"])})
+        nombre = "Desconocido"
 
-        nombre = "Alumno eliminado"
-        if alumno:
-            nombre = alumno["nombre"]
+        if "alumno_id" in p:
+            try:
+                alumno = mongo.db.alumnos.find_one({"_id": ObjectId(p["alumno_id"])})
+                if alumno:
+                    nombre = alumno["nombre"]
+            except:
+                pass
+
+        elif "alumno" in p:
+            nombre = p["alumno"]
 
         participaciones.append({
             "nombre": nombre,
@@ -253,6 +273,7 @@ def reporte_participaciones():
         })
 
     return render_template("reporte_participaciones.html", participaciones=participaciones)
+
 
 @app.route("/reporte_calificaciones")
 @login_required("admin")
@@ -280,5 +301,6 @@ def logout():
     session.clear()
     return redirect("/")
 
+# Para correr local / Gunicorn
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
