@@ -1,8 +1,11 @@
+from flask import render_template, request, redirect, session, url_for
 from flask import Flask
 from pymongo import MongoClient
 import os
 
 app = Flask(__name__)
+
+app.secret_key = "control_escolar_secret_2026"
 
 # =========================
 # CONEXION A MONGODB ATLAS
