@@ -1,8 +1,6 @@
-Flask
-flask-pymongo
-Flask-Session
-dnspython
-Werkzeug
-gunicorn
-reportlab
-reportlab==4.0.8
+Flask==3.0.2
+gunicorn==21.2.0
+pymongo==4.6.3
+dnspython==2.6.1
+reportlab==4.0.9
+Werkzeug==3.0.1
