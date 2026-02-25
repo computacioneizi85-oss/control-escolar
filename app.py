@@ -1,7 +1,7 @@
 ```python
 # ==========================================
-# CONTROL ESCOLAR - VERSION FINAL ESTABLE
-# COMPATIBLE CON RENDER + MONGODB ATLAS
+# CONTROL ESCOLAR - VERSION ESTABLE DEFINITIVA
+# Compatible con Render + MongoDB Atlas
 # ==========================================
 
 from flask import Flask, render_template, request, redirect, session, flash, g
@@ -11,10 +11,10 @@ from jinja2 import TemplateNotFound
 import os
 
 app = Flask(__name__)
-app.secret_key = "CONTROL_ESCOLAR_RENDER_FINAL_2026"
+app.secret_key = "CONTROL_ESCOLAR_RENDER_OK_2026"
 
 # -------------------------------------------------
-# CONEXION A MONGODB (CORRECTA PARA RENDER)
+# CONEXION MONGODB SEGURA (POR REQUEST - RENDER)
 # -------------------------------------------------
 
 def get_db():
@@ -32,29 +32,16 @@ def close_db(error=None):
         client.close()
 
 # Colecciones
-def usuarios():
-    return get_db().usuarios
-
-def alumnos():
-    return get_db().alumnos
-
-def grupos():
-    return get_db().grupos
-
-def asistencias():
-    return get_db().asistencias
-
-def participaciones():
-    return get_db().participaciones
-
-def calificaciones():
-    return get_db().calificaciones
-
-def reportes():
-    return get_db().reportes
+def usuarios(): return get_db().usuarios
+def alumnos(): return get_db().alumnos
+def grupos(): return get_db().grupos
+def asistencias(): return get_db().asistencias
+def participaciones(): return get_db().participaciones
+def calificaciones(): return get_db().calificaciones
+def reportes(): return get_db().reportes
 
 # -------------------------------------------------
-# SAFE RENDER (EVITA QUE FALTE UN HTML Y SE CAIGA)
+# SAFE RENDER (si falta un html NO crashea)
 # -------------------------------------------------
 def safe_render(template, **context):
     try:
@@ -79,7 +66,7 @@ def login():
 
             if user["rol"] == "admin":
                 return redirect("/admin")
-            elif user["rol"] == "maestro":
+            if user["rol"] == "maestro":
                 return redirect("/maestro")
 
         flash("Correo o contraseña incorrectos")
@@ -201,50 +188,72 @@ def maestro():
     return safe_render("maestro.html")
 
 # -------------------------------------------------
-# ASISTENCIAS
+# ASISTENCIAS (COMPATIBLE CON TUS HTML)
 # -------------------------------------------------
 @app.route("/asistencias")
 def ver_asistencias():
-    data=[]
+    registros=[]
     for a in asistencias().find():
-        data.append({
-            "nombre":a.get("alumno","Desconocido"),
-            "grupo":a.get("grupo","-"),
+        registros.append({
+            "alumno":{
+                "nombre":a.get("alumno","Desconocido"),
+                "grupo":a.get("grupo","-")
+            },
             "fecha":a.get("fecha","-"),
             "estado":a.get("estado","-")
         })
-    return safe_render("asistencias_admin.html", registros=data)
+    return safe_render("asistencias_admin.html", registros=registros)
 
 # -------------------------------------------------
 # PARTICIPACIONES
 # -------------------------------------------------
 @app.route("/participaciones")
 def ver_participaciones():
-    data=[]
+    registros=[]
     for p in participaciones().find():
-        data.append({
-            "nombre":p.get("alumno","Desconocido"),
-            "grupo":p.get("grupo","-"),
+        registros.append({
+            "alumno":{
+                "nombre":p.get("alumno","Desconocido"),
+                "grupo":p.get("grupo","-")
+            },
             "fecha":p.get("fecha","-"),
             "puntos":p.get("puntos","0")
         })
-    return safe_render("participaciones_admin.html", registros=data)
+    return safe_render("participaciones_admin.html", registros=registros)
 
 # -------------------------------------------------
 # CALIFICACIONES
 # -------------------------------------------------
 @app.route("/calificaciones")
 def ver_calificaciones():
-    lista=list(alumnos().find())
-    return safe_render("calificaciones_admin.html", registros=lista)
+    registros=[]
+    for a in alumnos().find():
+        registros.append({
+            "alumno":{
+                "nombre":a.get("nombre","Desconocido"),
+                "grupo":a.get("grupo","-")
+            },
+            "calificacion":a.get("calificacion","Sin registrar")
+        })
+    return safe_render("calificaciones_admin.html", registros=registros)
 
 # -------------------------------------------------
-# REPORTES
+# REPORTES DISCIPLINARIOS
 # -------------------------------------------------
 @app.route("/reportes")
 def ver_reportes():
-    lista=list(reportes().find())
-    return safe_render("reportes_admin.html", reportes=lista)
+    registros=[]
+    for r in reportes().find():
+        registros.append({
+            "alumno":{
+                "nombre":r.get("alumno","Desconocido"),
+                "grupo":r.get("grupo","-")
+            },
+            "fecha":r.get("fecha","-"),
+            "razon":r.get("razon","-"),
+            "consecuencia":r.get("consecuencia","-")
+        })
+    return safe_render("reportes_admin.html", registros=registros)
 
 # -------------------------------------------------
 if __name__ == "__main__":
