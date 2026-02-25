@@ -1,326 +1,306 @@
-```python
-from flask import Flask, render_template, request, redirect, session, g, send_file, abort
+# =========================
+
+# SISTEMA CONTROL ESCOLAR
+
+# VERSION ESTABLE PARA RENDER
+
+# =========================
+
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-import os
-import hashlib
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from jinja2 import TemplateNotFound
+import os
 
-# --------------------------------------------------
-# CONFIGURACION APP
-# --------------------------------------------------
+app = Flask(**name**)
+app.secret_key = "CONTROL_ESCOLAR_PRO_SECRET_2026"
 
-app = Flask(__name__)
-app.secret_key = "control_escolar_secret_key_2026"
+# -------------------------
 
+# CONEXION MONGODB
 
-# --------------------------------------------------
-# CONEXION MONGODB (ESTABLE PARA RENDER)
-# --------------------------------------------------
+# -------------------------
 
-def get_db():
-    if "mongo_db" not in g:
-        mongo_uri = os.environ.get("MONGO_URI")
+MONGO_URI = os.environ.get("MONGO_URI")
 
-        if not mongo_uri:
-            raise Exception("MONGO_URI no configurada en Render")
+client = MongoClient(MONGO_URI)
+db = client["control_escolar"]
 
-        client = MongoClient(mongo_uri)
-        g.mongo_client = client
-        g.mongo_db = client["control_escolar"]
+usuarios = db.usuarios
+alumnos = db.alumnos
+grupos = db.grupos
+asistencias = db.asistencias
+participaciones = db.participaciones
+calificaciones = db.calificaciones
+reportes = db.reportes
 
-    return g.mongo_db
+# -------------------------
 
+# SAFE RENDER (ANTI-CRASH)
 
-@app.teardown_appcontext
-def close_db(e=None):
-    client = g.pop("mongo_client", None)
-    if client:
-        client.close()
+# -------------------------
 
+def safe_render(template, **context):
+try:
+return render_template(template, **context)
+except TemplateNotFound:
+return f"<h2 style='color:red'>ERROR: falta el archivo {template} dentro de /templates</h2>"
 
-def db():
-    return get_db()
+# -------------------------
 
-
-# --------------------------------------------------
-# HASH PASSWORD
-# --------------------------------------------------
-
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
-
-
-# --------------------------------------------------
 # LOGIN
-# --------------------------------------------------
+
+# -------------------------
 
 @app.route("/", methods=["GET", "POST"])
 def login():
+if request.method == "POST":
+correo = request.form["correo"]
+password = request.form["password"]
 
-    if request.method == "POST":
-        correo = request.form["correo"]
-        password = hash_password(request.form["password"])
+```
+    user = usuarios.find_one({"correo": correo})
 
-        user = db().usuarios.find_one({
-            "correo": correo,
-            "password": password
-        })
+    if user and check_password_hash(user["password"], password):
+        session["usuario"] = str(user["_id"])
+        session["rol"] = user["rol"]
 
-        if user:
-            session["user_id"] = str(user["_id"])
-            session["tipo"] = user["tipo"]
+        if user["rol"] == "admin":
+            return redirect("/admin")
+        if user["rol"] == "maestro":
+            return redirect("/maestro")
 
-            if user["tipo"] == "admin":
-                return redirect("/admin")
-            elif user["tipo"] == "maestro":
-                return redirect("/maestro")
-            else:
-                return redirect("/alumno")
+    flash("Correo o contraseña incorrectos")
 
-    return render_template("login.html")
+return safe_render("login.html")
+```
 
+# -------------------------
 
-# --------------------------------------------------
-# LOGOUT
-# --------------------------------------------------
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
-
-
-# --------------------------------------------------
 # PANEL ADMIN
-# --------------------------------------------------
+
+# -------------------------
 
 @app.route("/admin")
 def admin():
-    if session.get("tipo") != "admin":
-        return redirect("/")
+if session.get("rol") != "admin":
+return redirect("/")
 
-    alumnos = list(db().usuarios.find({"tipo": "alumno"}))
-    maestros = list(db().usuarios.find({"tipo": "maestro"}))
-    grupos = list(db().grupos.find())
+```
+lista_alumnos = list(alumnos.find())
+lista_maestros = list(usuarios.find({"rol": "maestro"}))
+lista_grupos = list(grupos.find())
 
-    return render_template("admin.html",
-                           alumnos=alumnos,
-                           maestros=maestros,
-                           grupos=grupos)
+return safe_render(
+    "admin.html",
+    alumnos=lista_alumnos,
+    maestros=lista_maestros,
+    grupos=lista_grupos
+)
+```
 
+# -------------------------
 
-# --------------------------------------------------
 # CREAR GRUPO
-# --------------------------------------------------
+
+# -------------------------
 
 @app.route("/crear_grupo", methods=["POST"])
 def crear_grupo():
-    if session.get("tipo") != "admin":
-        return redirect("/")
+if session.get("rol") != "admin":
+return redirect("/")
 
-    nombre = request.form["nombre"]
+```
+nombre = request.form["nombre"]
 
-    if not db().grupos.find_one({"nombre": nombre}):
-        db().grupos.insert_one({"nombre": nombre})
+if not grupos.find_one({"nombre": nombre}):
+    grupos.insert_one({"nombre": nombre})
 
-    return redirect("/admin")
+return redirect("/admin")
+```
 
+# -------------------------
 
-# --------------------------------------------------
-# ELIMINAR GRUPO
-# --------------------------------------------------
-
-@app.route("/eliminar_grupo/<nombre>")
-def eliminar_grupo(nombre):
-    if session.get("tipo") != "admin":
-        return redirect("/")
-
-    db().grupos.delete_one({"nombre": nombre})
-
-    db().usuarios.update_many(
-        {"grupo": nombre},
-        {"$set": {"grupo": ""}}
-    )
-
-    return redirect("/admin")
-
-
-# --------------------------------------------------
-# REGISTRAR ALUMNO
-# --------------------------------------------------
-
-@app.route("/registrar_alumno", methods=["POST"])
-def registrar_alumno():
-    if session.get("tipo") != "admin":
-        return redirect("/")
-
-    nombre = request.form["nombre"]
-    correo = request.form["correo"]
-    grupo = request.form["grupo"]
-    password = request.form["password"] or "123456"
-
-    db().usuarios.insert_one({
-        "nombre": nombre,
-        "correo": correo,
-        "grupo": grupo,
-        "tipo": "alumno",
-        "password": hash_password(password)
-    })
-
-    return redirect("/admin")
-
-
-# --------------------------------------------------
 # REGISTRAR MAESTRO
-# --------------------------------------------------
+
+# -------------------------
 
 @app.route("/registrar_maestro", methods=["POST"])
 def registrar_maestro():
-    if session.get("tipo") != "admin":
-        return redirect("/")
+if session.get("rol") != "admin":
+return redirect("/")
 
-    nombre = request.form["nombre"]
-    correo = request.form["correo"]
-    grupo = request.form["grupo"]
-    password = request.form["password"] or "123456"
+```
+nombre = request.form["nombre"]
+correo = request.form["correo"]
+password = request.form["password"]
 
-    db().usuarios.insert_one({
-        "nombre": nombre,
-        "correo": correo,
-        "grupo": grupo,
-        "tipo": "maestro",
-        "password": hash_password(password)
-    })
+if password == "":
+    password = "123456"
 
-    return redirect("/admin")
+usuarios.insert_one({
+    "nombre": nombre,
+    "correo": correo,
+    "password": generate_password_hash(password),
+    "rol": "maestro"
+})
 
+return redirect("/admin")
+```
 
-# --------------------------------------------------
-# ASIGNAR MAESTRO A GRUPO
-# --------------------------------------------------
+# -------------------------
 
-@app.route("/asignar_grupo", methods=["POST"])
-def asignar_grupo():
-    if session.get("tipo") != "admin":
-        return redirect("/")
+# REGISTRAR ALUMNO
 
-    maestro_id = request.form["maestro"]
-    grupo = request.form["grupo"]
+# -------------------------
 
-    db().usuarios.update_one(
-        {"_id": ObjectId(maestro_id)},
-        {"$set": {"grupo": grupo}}
-    )
+@app.route("/registrar_alumno", methods=["POST"])
+def registrar_alumno():
+if session.get("rol") != "admin":
+return redirect("/")
 
-    return redirect("/admin")
+```
+nombre = request.form["nombre"]
+correo = request.form["correo"]
+grupo = request.form["grupo"]
+password = request.form["password"]
 
+if password == "":
+    password = "123456"
 
-# --------------------------------------------------
+user_id = usuarios.insert_one({
+    "nombre": nombre,
+    "correo": correo,
+    "password": generate_password_hash(password),
+    "rol": "alumno"
+}).inserted_id
+
+alumnos.insert_one({
+    "usuario_id": user_id,
+    "grupo": grupo
+})
+
+return redirect("/admin")
+```
+
+# -------------------------
+
+# PANEL MAESTRO
+
+# -------------------------
+
+@app.route("/maestro")
+def maestro():
+if session.get("rol") != "maestro":
+return redirect("/")
+
+```
+return safe_render("maestro.html")
+```
+
+# -------------------------
+
 # ASISTENCIAS
-# --------------------------------------------------
+
+# -------------------------
 
 @app.route("/asistencias")
-def asistencias():
-    if "tipo" not in session:
-        return redirect("/")
+def ver_asistencias():
+data = []
 
-    registros = list(db().asistencias.find())
+```
+for a in asistencias.find():
+    alumno = alumnos.find_one({"_id": ObjectId(a["alumno_id"])})
 
-    for r in registros:
-        alumno = db().usuarios.find_one({"_id": ObjectId(r["alumno_id"])})
-        if alumno:
-            r["nombre"] = alumno["nombre"]
-            r["grupo"] = alumno.get("grupo", "")
-        else:
-            r["nombre"] = "Alumno eliminado"
+    if alumno:
+        user = usuarios.find_one({"_id": alumno["usuario_id"]})
+        nombre = user["nombre"] if user else "Desconocido"
+        grupo = alumno["grupo"]
+    else:
+        nombre = "Desconocido"
+        grupo = "-"
 
-    return render_template("asistencias.html", registros=registros)
+    data.append({
+        "nombre": nombre,
+        "grupo": grupo,
+        "fecha": a["fecha"],
+        "estado": a["estado"]
+    })
 
+return safe_render("asistencias_admin.html", registros=data)
+```
 
-# --------------------------------------------------
+# -------------------------
+
 # PARTICIPACIONES
-# --------------------------------------------------
+
+# -------------------------
 
 @app.route("/participaciones")
-def participaciones():
-    if "tipo" not in session:
-        return redirect("/")
+def ver_participaciones():
+data = []
 
-    registros = list(db().participaciones.find())
+```
+for p in participaciones.find():
+    alumno = alumnos.find_one({"_id": ObjectId(p["alumno_id"])})
 
-    for r in registros:
-        alumno = db().usuarios.find_one({"_id": ObjectId(r["alumno_id"])})
-        if alumno:
-            r["nombre"] = alumno["nombre"]
-            r["grupo"] = alumno.get("grupo", "")
-        else:
-            r["nombre"] = "Alumno eliminado"
+    if alumno:
+        user = usuarios.find_one({"_id": alumno["usuario_id"]})
+        nombre = user["nombre"] if user else "Desconocido"
+        grupo = alumno["grupo"]
+    else:
+        nombre = "Desconocido"
+        grupo = "-"
 
-    return render_template("participaciones.html", registros=registros)
+    data.append({
+        "nombre": nombre,
+        "grupo": grupo,
+        "fecha": p["fecha"],
+        "puntos": p["puntos"]
+    })
 
+return safe_render("participaciones_admin.html", registros=data)
+```
 
-# --------------------------------------------------
+# -------------------------
+
 # CALIFICACIONES
-# --------------------------------------------------
+
+# -------------------------
 
 @app.route("/calificaciones")
-def calificaciones():
-    if "tipo" not in session:
-        return redirect("/")
+def ver_calificaciones():
+return safe_render("calificaciones_admin.html")
 
-    registros = list(db().calificaciones.find())
+# -------------------------
 
-    for r in registros:
-        alumno = db().usuarios.find_one({"_id": ObjectId(r["alumno_id"])})
-        if alumno:
-            r["nombre"] = alumno["nombre"]
-            r["grupo"] = alumno.get("grupo", "")
-        else:
-            r["nombre"] = "Alumno eliminado"
+# REPORTES
 
-    return render_template("calificaciones.html", registros=registros)
+# -------------------------
 
+@app.route("/reportes")
+def ver_reportes():
+lista = list(reportes.find())
+return safe_render("reportes_admin.html", reportes=lista)
 
-# --------------------------------------------------
-# KARDEX PDF (LAZY REPORTLAB)
-# --------------------------------------------------
+# -------------------------
 
-@app.route("/kardex/<alumno_id>")
-def kardex(alumno_id):
+# LOGOUT
 
-    if session.get("tipo") != "admin":
-        return redirect("/")
+# -------------------------
 
-    alumno = db().usuarios.find_one({"_id": ObjectId(alumno_id)})
-    if not alumno:
-        abort(404)
+@app.route("/logout")
+def logout():
+session.clear()
+return redirect("/")
 
-    # IMPORTACION DIFERIDA (NO ROMPE RENDER)
-    from reportlab.lib.pagesizes import letter
-    from reportlab.pdfgen import canvas
+# -------------------------
 
-    filename = f"kardex_{alumno['nombre']}.pdf"
+# RUN LOCAL
 
-    c = canvas.Canvas(filename, pagesize=letter)
+# -------------------------
 
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(180, 750, "KARDEX ESCOLAR")
-
-    c.setFont("Helvetica", 12)
-    c.drawString(100, 700, f"Nombre: {alumno['nombre']}")
-    c.drawString(100, 680, f"Correo: {alumno['correo']}")
-    c.drawString(100, 660, f"Grupo: {alumno.get('grupo','')}")
-
-    c.drawString(100, 620, "Firma del padre o tutor: _________________________")
-
-    c.save()
-
-    return send_file(filename, as_attachment=True)
-
-
-# --------------------------------------------------
-
-if __name__ == "__main__":
-    app.run(debug=True)
-```
+if **name** == "**main**":
+app.run(debug=True)
