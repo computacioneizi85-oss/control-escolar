@@ -1,82 +1,48 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from pymongo import MongoClient
-from bson.objectid import ObjectId
 import os
 
+# -------- APP FLASK --------
 app = Flask(__name__)
-app.secret_key = "control_escolar_secret_key"
+app.secret_key = "control_escolar_secret_2026"
 
-# ===============================
-# CONEXION A MONGODB ATLAS
-# ===============================
-
+# -------- CONEXION MONGO --------
 MONGO_URI = os.environ.get("MONGO_URI")
-
 client = MongoClient(MONGO_URI)
 db = client["control_escolar"]
 
-usuarios = db["usuarios"]
 alumnos = db["alumnos"]
+maestros = db["maestros"]
 
-# ===============================
-# CREAR USUARIO ADMIN SI NO EXISTE
-# ===============================
+# -------- LOGIN --------
+@app.route("/", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        usuario = request.form["usuario"]
+        password = request.form["password"]
 
-if usuarios.count_documents({"usuario": "direccion"}) == 0:
-    usuarios.insert_one({
-        "usuario": "direccion",
-        "password": "1234",
-        "rol": "admin"
-    })
+        if usuario == "direccion" and password == "1234":
+            session["user"] = usuario
+            return redirect("/admin")
+        else:
+            return render_template("login.html", error="Usuario o contraseña incorrectos")
 
-# ===============================
-# LOGIN
-# ===============================
-
-@app.route("/", methods=["GET"])
-def home():
     return render_template("login.html")
 
-
-@app.route("/login", methods=["POST"])
-def login():
-    usuario = request.form["usuario"]
-    password = request.form["password"]
-
-    user = usuarios.find_one({
-        "usuario": usuario,
-        "password": password
-    })
-
-    if user:
-        session["usuario"] = usuario
-        return redirect(url_for("admin"))
-    else:
-        return render_template("login.html", error="Usuario o contraseña incorrectos")
-
-
-# ===============================
-# PANEL ADMIN
-# ===============================
-
+# -------- PANEL ADMIN --------
 @app.route("/admin")
 def admin():
-    if "usuario" not in session:
-        return redirect(url_for("home"))
-
+    if "user" not in session:
+        return redirect("/")
+    
     lista_alumnos = list(alumnos.find())
     return render_template("admin.html", alumnos=lista_alumnos)
 
-
-# ===============================
-# REGISTRAR ALUMNO
-# ===============================
-
+# -------- REGISTRAR ALUMNO --------
 @app.route("/registrar_alumno", methods=["POST"])
 def registrar_alumno():
-
-    if "usuario" not in session:
-        return redirect(url_for("home"))
+    if "user" not in session:
+        return redirect("/")
 
     nombre = request.form["nombre"]
     correo = request.form["correo"]
@@ -88,28 +54,14 @@ def registrar_alumno():
         "grupo": grupo
     })
 
-    return redirect(url_for("admin"))
+    return redirect("/admin")
 
-
-# ===============================
-# ELIMINAR ALUMNO
-# ===============================
-
-@app.route("/eliminar_alumno/<id>", methods=["POST"])
-def eliminar_alumno():
-
-    if "usuario" not in session:
-        return redirect(url_for("home"))
-
-    alumnos.delete_one({"_id": ObjectId(id)})
-    return redirect(url_for("admin"))
-
-
-# ===============================
-# CERRAR SESION
-# ===============================
-
+# -------- LOGOUT --------
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("home"))
+    return redirect("/")
+
+# IMPORTANTE PARA RENDER
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
