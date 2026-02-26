@@ -2,154 +2,179 @@
 
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Panel de Dirección - Control Escolar</title>
+<meta charset="UTF-8">
+<title>Panel de Dirección | Control Escolar</title>
 
-```
 <style>
-    body{
-        margin:0;
-        font-family: Arial, Helvetica, sans-serif;
-        background:#f4f6f9;
-    }
 
-    /* Barra superior */
-    .topbar{
-        height:60px;
-        background:#1f2937;
-        color:white;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        padding:0 25px;
-    }
+body{
+    margin:0;
+    font-family: Arial, Helvetica, sans-serif;
+    background:#f1f5f9;
+}
 
-    .topbar h2{
-        margin:0;
-        font-size:20px;
-    }
+/* Barra superior */
+.topbar{
+    height:65px;
+    background:#0f172a;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 25px;
+}
 
-    .logout{
-        background:#ef4444;
-        color:white;
-        border:none;
-        padding:8px 15px;
-        border-radius:6px;
-        cursor:pointer;
-        text-decoration:none;
-    }
+.topbar h1{
+    font-size:20px;
+    margin:0;
+    font-weight:600;
+}
 
-    .logout:hover{
-        background:#dc2626;
-    }
+.logout{
+    background:#ef4444;
+    padding:10px 16px;
+    border-radius:8px;
+    color:white;
+    text-decoration:none;
+    font-size:14px;
+}
 
-    /* Contenedor principal */
-    .container{
-        display:flex;
-        height:calc(100vh - 60px);
-    }
+.logout:hover{
+    background:#dc2626;
+}
 
-    /* Menú lateral */
-    .sidebar{
-        width:230px;
-        background:#111827;
-        color:white;
-        padding-top:20px;
-    }
+/* Layout */
+.wrapper{
+    display:flex;
+    height:calc(100vh - 65px);
+}
 
-    .sidebar a{
-        display:block;
-        padding:14px 20px;
-        color:white;
-        text-decoration:none;
-        transition:.2s;
-    }
+/* Menú lateral */
+.sidebar{
+    width:240px;
+    background:#111827;
+    color:white;
+    padding-top:20px;
+}
 
-    .sidebar a:hover{
-        background:#2563eb;
-    }
+.sidebar-title{
+    text-align:center;
+    font-size:15px;
+    opacity:.7;
+    margin-bottom:15px;
+}
 
-    /* Área contenido */
-    .content{
-        flex:1;
-        padding:30px;
-        overflow:auto;
-    }
+.sidebar a{
+    display:block;
+    padding:14px 22px;
+    text-decoration:none;
+    color:white;
+    transition:.2s;
+    font-size:15px;
+}
 
-    .card{
-        background:white;
-        border-radius:10px;
-        padding:20px;
-        box-shadow:0 5px 15px rgba(0,0,0,.15);
-    }
+.sidebar a:hover{
+    background:#2563eb;
+}
 
-    .card h3{
-        margin-top:0;
-        margin-bottom:20px;
-    }
+/* Contenido */
+.content{
+    flex:1;
+    padding:35px;
+    overflow:auto;
+}
 
-    table{
-        width:100%;
-        border-collapse:collapse;
-    }
+/* Tarjeta */
+.card{
+    background:white;
+    padding:25px;
+    border-radius:14px;
+    box-shadow:0 10px 25px rgba(0,0,0,.15);
+}
 
-    th, td{
-        padding:12px;
-        border-bottom:1px solid #e5e7eb;
-        text-align:left;
-    }
+.card h2{
+    margin-top:0;
+    margin-bottom:20px;
+    color:#1f2937;
+}
 
-    th{
-        background:#e5e7eb;
-    }
+/* Tabla */
+table{
+    width:100%;
+    border-collapse:collapse;
+}
 
-    tr:hover{
-        background:#f9fafb;
-    }
+th, td{
+    padding:13px;
+    text-align:left;
+    border-bottom:1px solid #e5e7eb;
+}
+
+th{
+    background:#e5e7eb;
+    color:#111827;
+}
+
+tr:hover{
+    background:#f9fafb;
+}
+
+.no-data{
+    text-align:center;
+    padding:20px;
+    color:#6b7280;
+}
+
 </style>
-```
 
 </head>
 
 <body>
 
-```
 <!-- Barra superior -->
+
 <div class="topbar">
-    <h2>Panel de Dirección</h2>
+    <h1>Control Escolar - Dirección</h1>
     <a href="/logout" class="logout">Cerrar sesión</a>
 </div>
 
-<div class="container">
+<div class="wrapper">
 
-    <!-- Menú lateral -->
-    <div class="sidebar">
-        <a href="/admin">Inicio</a>
-        <a href="#">Registrar Alumno</a>
-        <a href="#">Registrar Maestro</a>
-        <a href="#">Grupos</a>
-        <a href="#">Asistencias</a>
-        <a href="#">Participaciones</a>
-        <a href="#">Calificaciones</a>
-        <a href="#">Reportes</a>
-    </div>
+```
+<!-- Menú lateral -->
+<div class="sidebar">
 
-    <!-- Contenido principal -->
-    <div class="content">
+    <div class="sidebar-title">MENÚ PRINCIPAL</div>
 
-        <div class="card">
-            <h3>Alumnos Registrados</h3>
+    <a href="/admin">Inicio</a>
+    <a href="/nuevo_alumno">Registrar Alumno</a>
+    <a href="#">Registrar Maestro</a>
+    <a href="#">Grupos</a>
+    <a href="#">Asistencias</a>
+    <a href="#">Participaciones</a>
+    <a href="#">Calificaciones</a>
+    <a href="#">Reportes Disciplinarios</a>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Grupo</th>
-                    </tr>
-                </thead>
+</div>
 
-                <tbody>
+<!-- Contenido principal -->
+<div class="content">
+
+    <div class="card">
+        <h2>Alumnos Registrados</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Grupo</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% if alumnos %}
                     {% for alumno in alumnos %}
                     <tr>
                         <td>{{ alumno.nombre }}</td>
@@ -157,15 +182,23 @@
                         <td>{{ alumno.grupo }}</td>
                     </tr>
                     {% endfor %}
-                </tbody>
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="no-data">
+                            No hay alumnos registrados todavía
+                        </td>
+                    </tr>
+                {% endif %}
 
-            </table>
-
-        </div>
+            </tbody>
+        </table>
 
     </div>
+
 </div>
 ```
+
+</div>
 
 </body>
 </html>

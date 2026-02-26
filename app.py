@@ -60,6 +60,31 @@ def admin():
 
     return render_template("admin.html", alumnos=alumnos)
 
+# =========================
+# FORMULARIO NUEVO ALUMNO
+# =========================
+@app.route("/nuevo_alumno")
+def nuevo_alumno():
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+    return render_template("nuevo_alumno.html")
+
+@app.route("/guardar_alumno", methods=["POST"])
+def guardar_alumno():
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+
+    nombre = request.form.get("nombre")
+    correo = request.form.get("correo")
+    grupo = request.form.get("grupo")
+
+    alumnos.append({
+        "nombre": nombre,
+        "correo": correo,
+        "grupo": grupo
+    })
+
+    return redirect(url_for("admin"))
 
 # =========================
 # LOGOUT
