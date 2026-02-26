@@ -3,6 +3,14 @@ from flask import Flask, render_template, request, redirect, url_for, session
 app = Flask(__name__)
 app.secret_key = "control_escolar_secret_key"
 
+# ===== BASE DE DATOS TEMPORAL (MEMORIA) =====
+alumnos = [
+    {"nombre": "MARIO", "correo": "hola@gmail.com", "grupo": "1A"},
+    {"nombre": "PEDRO", "correo": "pedro@gmail.com", "grupo": "1A"},
+    {"nombre": "BRUNO MARTINEZ GONZALEZ", "correo": "bruno@gmail.com", "grupo": "3A"},
+    {"nombre": "SUSANA", "correo": "susana@gmail.com", "grupo": "1A"}
+]
+
 
 # =========================
 # LOGIN
@@ -38,7 +46,8 @@ def login():
 def admin():
     if "usuario" not in session:
         return redirect(url_for("login"))
-    return render_template("admin.html")
+
+    return render_template("admin.html", alumnos=alumnos)
 
 
 # =========================
