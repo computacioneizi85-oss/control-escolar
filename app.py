@@ -1,135 +1,115 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 import os
 
 app = Flask(__name__)
 app.secret_key = "control_escolar_secret_key"
 
-# ----------------------------
-# CONFIGURACION DE SESION (IMPORTANTE PARA RENDER)
-# ----------------------------
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = "Lax"
-
-
-# ----------------------------
+# ===============================
 # CONEXION A MONGODB ATLAS
-# ----------------------------
+# ===============================
+
 MONGO_URI = os.environ.get("MONGO_URI")
 
-client = MongoClient(
-    MONGO_URI,
-    serverSelectionTimeoutMS=5000,
-    connectTimeoutMS=5000,
-    socketTimeoutMS=5000
-)
-
-try:
-    client.admin.command("ping")
-    print("MongoDB conectado correctamente")
-except Exception as e:
-    print("MongoDB no disponible al iniciar:", e)
-
+client = MongoClient(MONGO_URI)
 db = client["control_escolar"]
-coleccion_alumnos = db["alumnos"]
 
+usuarios = db["usuarios"]
+alumnos = db["alumnos"]
 
-# =====================================================
+# ===============================
+# CREAR USUARIO ADMIN SI NO EXISTE
+# ===============================
+
+if usuarios.count_documents({"usuario": "direccion"}) == 0:
+    usuarios.insert_one({
+        "usuario": "direccion",
+        "password": "1234",
+        "rol": "admin"
+    })
+
+# ===============================
 # LOGIN
-# =====================================================
-@app.route("/", methods=["GET", "POST"])
-@app.route("/login", methods=["GET", "POST"])
-def login():
+# ===============================
 
-    if request.method == "POST":
-        usuario = request.form.get("usuario")
-        password = request.form.get("password")
-
-        if usuario == "direccion" and password == "1234":
-            session["usuario"] = usuario
-            session["rol"] = "direccion"
-            return redirect(url_for("admin"))
-
-        return render_template("login.html", error="Usuario o contraseña incorrectos")
-
+@app.route("/", methods=["GET"])
+def home():
     return render_template("login.html")
 
 
-# =====================================================
+@app.route("/login", methods=["POST"])
+def login():
+    usuario = request.form["usuario"]
+    password = request.form["password"]
+
+    user = usuarios.find_one({
+        "usuario": usuario,
+        "password": password
+    })
+
+    if user:
+        session["usuario"] = usuario
+        return redirect(url_for("admin"))
+    else:
+        return render_template("login.html", error="Usuario o contraseña incorrectos")
+
+
+# ===============================
 # PANEL ADMIN
-# =====================================================
+# ===============================
+
 @app.route("/admin")
 def admin():
-
     if "usuario" not in session:
-        return redirect(url_for("login"))
+        return redirect(url_for("home"))
 
-    lista_alumnos = list(coleccion_alumnos.find())
-
+    lista_alumnos = list(alumnos.find())
     return render_template("admin.html", alumnos=lista_alumnos)
 
 
-# =====================================================
-# FORMULARIO NUEVO ALUMNO
-# =====================================================
-@app.route("/nuevo_alumno")
-def nuevo_alumno():
+# ===============================
+# REGISTRAR ALUMNO
+# ===============================
+
+@app.route("/registrar_alumno", methods=["POST"])
+def registrar_alumno():
 
     if "usuario" not in session:
-        return redirect(url_for("login"))
+        return redirect(url_for("home"))
 
-    return render_template("nuevo_alumno.html")
+    nombre = request.form["nombre"]
+    correo = request.form["correo"]
+    grupo = request.form["grupo"]
 
-
-# =====================================================
-# GUARDAR ALUMNO
-# =====================================================
-@app.route("/guardar_alumno", methods=["POST"])
-def guardar_alumno():
-
-    if "usuario" not in session:
-        return redirect(url_for("login"))
-
-    nombre = request.form.get("nombre")
-    correo = request.form.get("correo")
-    grupo = request.form.get("grupo")
-
-    if nombre and correo and grupo:
-        coleccion_alumnos.insert_one({
-            "nombre": nombre,
-            "correo": correo,
-            "grupo": grupo
-        })
+    alumnos.insert_one({
+        "nombre": nombre,
+        "correo": correo,
+        "grupo": grupo
+    })
 
     return redirect(url_for("admin"))
 
-from bson.objectid import ObjectId
 
-# =====================================================
+# ===============================
 # ELIMINAR ALUMNO
-# =====================================================
+# ===============================
+
 @app.route("/eliminar_alumno/<id>", methods=["POST"])
-def eliminar_alumno(id):
+def eliminar_alumno():
 
     if "usuario" not in session:
-        return redirect(url_for("login"))
+        return redirect(url_for("home"))
 
-    coleccion_alumnos.delete_one({"_id": ObjectId(id)})
-
+    alumnos.delete_one({"_id": ObjectId(id)})
     return redirect(url_for("admin"))
 
 
-# =====================================================
-# LOGOUT
-# =====================================================
+# ===============================
+# CERRAR SESION
+# ===============================
+
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("login"))
-
-
-# =====================================================
-# ARRANQUE LOCAL (Render no usa esto)
-# =====================================================
-if __name__ == "__main__":
-    app.run(debug=True)
+    return redirect(url_for("home"))
