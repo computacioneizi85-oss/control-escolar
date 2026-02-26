@@ -1,1 +1,0 @@
-from servidor import app
