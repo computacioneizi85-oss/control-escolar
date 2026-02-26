@@ -3,6 +3,14 @@ from flask import Flask, render_template, request, redirect, url_for, session
 app = Flask(__name__)
 app.secret_key = "control_escolar_secret_key"
 
+# ===== BASE TEMPORAL (mientras conectamos Mongo después) =====
+alumnos = [
+    {"nombre": "Mario Pérez", "correo": "mario@gmail.com", "grupo": "1A"},
+    {"nombre": "Pedro López", "correo": "pedro@gmail.com", "grupo": "1A"},
+    {"nombre": "Bruno Martínez", "correo": "bruno@gmail.com", "grupo": "3A"},
+    {"nombre": "Susana Ruiz", "correo": "susana@gmail.com", "grupo": "2B"},
+]
+
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = "Lax"
 
