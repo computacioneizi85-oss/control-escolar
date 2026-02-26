@@ -1,248 +1,171 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Panel de Dirección</title>
+    <meta charset="UTF-8">
+    <title>Panel de Dirección - Control Escolar</title>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
+```
 <style>
+    body{
+        margin:0;
+        font-family: Arial, Helvetica, sans-serif;
+        background:#f4f6f9;
+    }
 
-body{
-    background: linear-gradient(135deg,#e9eef5,#d8e1ec);
-    font-family: "Segoe UI", Tahoma, sans-serif;
-}
+    /* Barra superior */
+    .topbar{
+        height:60px;
+        background:#1f2937;
+        color:white;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:0 25px;
+    }
 
-/* Header */
-.header{
-    background:white;
-    padding:20px 30px;
-    border-radius:16px;
-    box-shadow:0 6px 18px rgba(0,0,0,.15);
-}
+    .topbar h2{
+        margin:0;
+        font-size:20px;
+    }
 
-/* Tarjetas del dashboard */
-.dashboard-card{
-    border-radius:16px;
-    padding:22px;
-    color:white;
-    font-weight:600;
-    text-align:center;
-    box-shadow:0 10px 25px rgba(0,0,0,.18);
-    transition:.25s;
-    text-decoration:none;
-    display:block;
-}
+    .logout{
+        background:#ef4444;
+        color:white;
+        border:none;
+        padding:8px 15px;
+        border-radius:6px;
+        cursor:pointer;
+        text-decoration:none;
+    }
 
-.dashboard-card:hover{
-    transform:translateY(-6px);
-    box-shadow:0 14px 32px rgba(0,0,0,.25);
-}
+    .logout:hover{
+        background:#dc2626;
+    }
 
-/* Colores respetando tu sistema */
-.card-alumno{ background:#1e8449; }
-.card-maestro{ background:#239b56; }
-.card-grupo{ background:#1f66d1; }
-.card-asignar{ background:#f1b70a; color:#222; }
-.card-asistencia{ background:#6c757d; }
-.card-participacion{ background:#6c757d; }
-.card-calificacion{ background:#6c757d; }
-.card-reporte{ background:#1c1f23; }
+    /* Contenedor principal */
+    .container{
+        display:flex;
+        height:calc(100vh - 60px);
+    }
 
-/* Tablas */
-.card-table{
-    background:white;
-    border-radius:16px;
-    padding:20px;
-    box-shadow:0 8px 20px rgba(0,0,0,.15);
-}
+    /* Menú lateral */
+    .sidebar{
+        width:230px;
+        background:#111827;
+        color:white;
+        padding-top:20px;
+    }
 
-.table th{
-    background:#2c3e50;
-    color:white;
-    text-align:center;
-}
+    .sidebar a{
+        display:block;
+        padding:14px 20px;
+        color:white;
+        text-decoration:none;
+        transition:.2s;
+    }
 
-.table td{
-    vertical-align:middle;
-}
+    .sidebar a:hover{
+        background:#2563eb;
+    }
 
-/* botones pequeños */
-.btn-mini{
-    padding:4px 9px;
-    font-size:13px;
-}
+    /* Área contenido */
+    .content{
+        flex:1;
+        padding:30px;
+        overflow:auto;
+    }
 
-.group-filter a{
-    margin:4px;
-}
+    .card{
+        background:white;
+        border-radius:10px;
+        padding:20px;
+        box-shadow:0 5px 15px rgba(0,0,0,.15);
+    }
 
+    .card h3{
+        margin-top:0;
+        margin-bottom:20px;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+    }
+
+    th, td{
+        padding:12px;
+        border-bottom:1px solid #e5e7eb;
+        text-align:left;
+    }
+
+    th{
+        background:#e5e7eb;
+    }
+
+    tr:hover{
+        background:#f9fafb;
+    }
 </style>
+```
+
 </head>
 
 <body>
 
-<div class="container mt-4 mb-5">
-
-    <!-- HEADER -->
-    <div class="header d-flex justify-content-between align-items-center mb-4">
-        <h2 class="m-0">Panel de Dirección</h2>
-        <a href="/logout" class="btn btn-danger">Cerrar sesión</a>
-    </div>
-
-    <!-- DASHBOARD -->
-    <div class="row g-3 mb-4">
-
-        <div class="col-md-3">
-            <a href="/nuevo_alumno" class="dashboard-card card-alumno">
-                ➕ Registrar Alumno
-            </a>
-        </div>
-
-        <div class="col-md-3">
-            <a href="/nuevo_maestro" class="dashboard-card card-maestro">
-                ➕ Registrar Maestro
-            </a>
-        </div>
-
-        <div class="col-md-3">
-            <a href="/grupos" class="dashboard-card card-grupo">
-                📚 Crear / Administrar Grupos
-            </a>
-        </div>
-
-        <div class="col-md-3">
-            <a href="/asignar_grupos" class="dashboard-card card-asignar">
-                👨‍🏫 Asignar Maestro
-            </a>
-        </div>
-
-        <div class="col-md-3">
-            <a href="/reporte_asistencias" class="dashboard-card card-asistencia">
-                🗓 Asistencias
-            </a>
-        </div>
-
-        <div class="col-md-3">
-            <a href="/reporte_participaciones" class="dashboard-card card-participacion">
-                ⭐ Participaciones
-            </a>
-        </div>
-
-        <div class="col-md-3">
-            <a href="/reporte_calificaciones" class="dashboard-card card-calificacion">
-                📝 Calificaciones
-            </a>
-        </div>
-
-        <div class="col-md-3">
-            <a href="/reportes_admin" class="dashboard-card card-reporte">
-                📋 Reportes Disciplinarios
-            </a>
-        </div>
-
-    </div>
-
-    <!-- FILTRO POR GRUPO -->
-    <div class="card-table mb-4">
-        <h5>Filtrar por grupo</h5>
-
-        <div class="group-filter">
-            <a class="btn btn-dark btn-sm" href="/admin">Todos</a>
-            {% for g in grupos %}
-            <a class="btn btn-outline-primary btn-sm"
-               href="/admin?grupo={{ g.nombre }}">
-               {{ g.nombre }}
-            </a>
-            {% endfor %}
-        </div>
-    </div>
-
-    <!-- ALUMNOS -->
-    <div class="card-table mb-4">
-        <h4 class="mb-3">Alumnos Registrados</h4>
-
-        <table class="table table-hover table-bordered">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Correo</th>
-                    <th>Grupo</th>
-                    <th style="width:280px;">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-
-            {% for alumno in alumnos %}
-            <tr>
-                <td>{{ alumno.nombre }}</td>
-                <td>{{ alumno.correo }}</td>
-                <td>{{ alumno.grupo }}</td>
-                <td class="text-center">
-
-                    <a href="/kardex/{{ alumno._id }}" class="btn btn-primary btn-mini">
-                        Kardex
-                    </a>
-
-                    <a href="/reset_password/{{ alumno.correo }}" class="btn btn-warning btn-mini">
-                        Reset
-                    </a>
-
-                    <a href="/eliminar_alumno/{{ alumno._id }}"
-                       class="btn btn-danger btn-mini"
-                       onclick="return confirm('¿Eliminar alumno?')">
-                       Eliminar
-                    </a>
-
-                </td>
-            </tr>
-            {% endfor %}
-
-            </tbody>
-        </table>
-    </div>
-
-    <!-- MAESTROS -->
-    <div class="card-table">
-        <h4 class="mb-3">Maestros Registrados</h4>
-
-        <table class="table table-hover table-bordered">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Correo</th>
-                    <th>Grupo</th>
-                    <th style="width:200px;">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-
-            {% for maestro in maestros %}
-            <tr>
-                <td>{{ maestro.nombre }}</td>
-                <td>{{ maestro.correo }}</td>
-                <td>{{ maestro.grupo }}</td>
-                <td class="text-center">
-
-                    <a href="/reset_password/{{ maestro.correo }}" class="btn btn-warning btn-mini">
-                        Reset
-                    </a>
-
-                    <a href="/eliminar_maestro/{{ maestro._id }}"
-                       class="btn btn-danger btn-mini"
-                       onclick="return confirm('¿Eliminar maestro?')">
-                        Eliminar
-                    </a>
-
-                </td>
-            </tr>
-            {% endfor %}
-
-            </tbody>
-        </table>
-    </div>
-
+```
+<!-- Barra superior -->
+<div class="topbar">
+    <h2>Panel de Dirección</h2>
+    <a href="/logout" class="logout">Cerrar sesión</a>
 </div>
+
+<div class="container">
+
+    <!-- Menú lateral -->
+    <div class="sidebar">
+        <a href="/admin">Inicio</a>
+        <a href="#">Registrar Alumno</a>
+        <a href="#">Registrar Maestro</a>
+        <a href="#">Grupos</a>
+        <a href="#">Asistencias</a>
+        <a href="#">Participaciones</a>
+        <a href="#">Calificaciones</a>
+        <a href="#">Reportes</a>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="content">
+
+        <div class="card">
+            <h3>Alumnos Registrados</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Grupo</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for alumno in alumnos %}
+                    <tr>
+                        <td>{{ alumno.nombre }}</td>
+                        <td>{{ alumno.correo }}</td>
+                        <td>{{ alumno.grupo }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+</div>
+```
 
 </body>
 </html>
