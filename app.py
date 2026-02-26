@@ -103,6 +103,21 @@ def guardar_alumno():
 
     return redirect(url_for("admin"))
 
+from bson.objectid import ObjectId
+
+# =====================================================
+# ELIMINAR ALUMNO
+# =====================================================
+@app.route("/eliminar_alumno/<id>", methods=["POST"])
+def eliminar_alumno(id):
+
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+
+    coleccion_alumnos.delete_one({"_id": ObjectId(id)})
+
+    return redirect(url_for("admin"))
+
 
 # =====================================================
 # LOGOUT

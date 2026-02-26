@@ -125,6 +125,20 @@ tr:hover{
     color:#6b7280;
 }
 
+/* Botón eliminar */
+.delete-btn{
+    background:#ef4444;
+    color:white;
+    border:none;
+    padding:7px 12px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.delete-btn:hover{
+    background:#dc2626;
+}
+
 </style>
 
 </head>
@@ -169,6 +183,7 @@ tr:hover{
                     <th>Nombre</th>
                     <th>Correo</th>
                     <th>Grupo</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
 
@@ -180,11 +195,20 @@ tr:hover{
                         <td>{{ alumno.nombre }}</td>
                         <td>{{ alumno.correo }}</td>
                         <td>{{ alumno.grupo }}</td>
+
+                        <td>
+                            <form action="/eliminar_alumno/{{ alumno._id }}" method="POST">
+                                <button class="delete-btn"
+                                        onclick="return confirm('¿Seguro que deseas eliminar este alumno?')">
+                                    Eliminar
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td colspan="3" class="no-data">
+                        <td colspan="4" class="no-data">
                             No hay alumnos registrados todavía
                         </td>
                     </tr>
