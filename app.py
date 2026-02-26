@@ -1,44 +1,49 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+from pymongo import MongoClient
+import os
 
 app = Flask(__name__)
 app.secret_key = "control_escolar_secret_key"
 
-# ===== BASE TEMPORAL (mientras conectamos Mongo después) =====
-alumnos = [
-    {"nombre": "Mario Pérez", "correo": "mario@gmail.com", "grupo": "1A"},
-    {"nombre": "Pedro López", "correo": "pedro@gmail.com", "grupo": "1A"},
-    {"nombre": "Bruno Martínez", "correo": "bruno@gmail.com", "grupo": "3A"},
-    {"nombre": "Susana Ruiz", "correo": "susana@gmail.com", "grupo": "2B"},
-]
-
+# ----------------------------
+# CONFIGURACION DE SESION (IMPORTANTE PARA RENDER)
+# ----------------------------
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = "Lax"
 
-# ===== BASE DE DATOS TEMPORAL (MEMORIA) =====
-alumnos = [
-    {"nombre": "MARIO", "correo": "hola@gmail.com", "grupo": "1A"},
-    {"nombre": "PEDRO", "correo": "pedro@gmail.com", "grupo": "1A"},
-    {"nombre": "BRUNO MARTINEZ GONZALEZ", "correo": "bruno@gmail.com", "grupo": "3A"},
-    {"nombre": "SUSANA", "correo": "susana@gmail.com", "grupo": "1A"}
-]
+
+# ----------------------------
+# CONEXION A MONGODB ATLAS
+# ----------------------------
+MONGO_URI = os.environ.get("MONGO_URI")
+
+client = MongoClient(
+    MONGO_URI,
+    serverSelectionTimeoutMS=5000,
+    connectTimeoutMS=5000,
+    socketTimeoutMS=5000
+)
+
+try:
+    client.admin.command("ping")
+    print("MongoDB conectado correctamente")
+except Exception as e:
+    print("MongoDB no disponible al iniciar:", e)
+
+db = client["control_escolar"]
+coleccion_alumnos = db["alumnos"]
 
 
-# =========================
+# =====================================================
 # LOGIN
-# =========================
-
-@app.route("/")
-def inicio():
-    return redirect(url_for("login"))
-
-
-@app.route("/login", methods=["GET", "POST"])
+# =====================================================
+@app.route("/", methods=["GET", "POST"])
 def login():
-    if request.method == "POST":
-        usuario = request.form["usuario"]
-        password = request.form["password"]
 
-        # Usuario principal (dirección)
+    if request.method == "POST":
+        usuario = request.form.get("usuario")
+        password = request.form.get("password")
+
         if usuario == "direccion" and password == "1234":
             session["usuario"] = usuario
             session["rol"] = "direccion"
@@ -49,28 +54,38 @@ def login():
     return render_template("login.html")
 
 
-# =========================
+# =====================================================
 # PANEL ADMIN
-# =========================
-
+# =====================================================
 @app.route("/admin")
 def admin():
+
     if "usuario" not in session:
         return redirect(url_for("login"))
 
-    return render_template("admin.html", alumnos=alumnos)
+    lista_alumnos = list(coleccion_alumnos.find())
 
-# =========================
+    return render_template("admin.html", alumnos=lista_alumnos)
+
+
+# =====================================================
 # FORMULARIO NUEVO ALUMNO
-# =========================
+# =====================================================
 @app.route("/nuevo_alumno")
 def nuevo_alumno():
+
     if "usuario" not in session:
         return redirect(url_for("login"))
+
     return render_template("nuevo_alumno.html")
 
+
+# =====================================================
+# GUARDAR ALUMNO
+# =====================================================
 @app.route("/guardar_alumno", methods=["POST"])
 def guardar_alumno():
+
     if "usuario" not in session:
         return redirect(url_for("login"))
 
@@ -78,25 +93,27 @@ def guardar_alumno():
     correo = request.form.get("correo")
     grupo = request.form.get("grupo")
 
-    alumnos.append({
-        "nombre": nombre,
-        "correo": correo,
-        "grupo": grupo
-    })
+    if nombre and correo and grupo:
+        coleccion_alumnos.insert_one({
+            "nombre": nombre,
+            "correo": correo,
+            "grupo": grupo
+        })
 
     return redirect(url_for("admin"))
 
-# =========================
-# LOGOUT
-# =========================
 
+# =====================================================
+# LOGOUT
+# =====================================================
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("login"))
 
 
-# =========================
-
+# =====================================================
+# ARRANQUE LOCAL (Render no usa esto)
+# =====================================================
 if __name__ == "__main__":
     app.run(debug=True)
