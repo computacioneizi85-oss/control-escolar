@@ -3,6 +3,9 @@ from flask import Flask, render_template, request, redirect, url_for, session
 app = Flask(__name__)
 app.secret_key = "control_escolar_secret_key"
 
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = "Lax"
+
 # ===== BASE DE DATOS TEMPORAL (MEMORIA) =====
 alumnos = [
     {"nombre": "MARIO", "correo": "hola@gmail.com", "grupo": "1A"},
