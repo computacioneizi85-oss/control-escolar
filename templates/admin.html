@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel de Dirección | Control Escolar</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family: Arial, Helvetica, sans-serif;
+    background:#f1f5f9;
+}
+
+/* Barra superior */
+.topbar{
+    height:65px;
+    background:#0f172a;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 25px;
+}
+
+.topbar h1{
+    font-size:20px;
+    margin:0;
+    font-weight:600;
+}
+
+.logout{
+    background:#ef4444;
+    padding:10px 16px;
+    border-radius:8px;
+    color:white;
+    text-decoration:none;
+    font-size:14px;
+}
+
+.logout:hover{
+    background:#dc2626;
+}
+
+/* Layout */
+.wrapper{
+    display:flex;
+    height:calc(100vh - 65px);
+}
+
+/* Menú lateral */
+.sidebar{
+    width:240px;
+    background:#111827;
+    color:white;
+    padding-top:20px;
+}
+
+.sidebar-title{
+    text-align:center;
+    font-size:15px;
+    opacity:.7;
+    margin-bottom:15px;
+}
+
+.sidebar a{
+    display:block;
+    padding:14px 22px;
+    text-decoration:none;
+    color:white;
+    transition:.2s;
+    font-size:15px;
+}
+
+.sidebar a:hover{
+    background:#2563eb;
+}
+
+/* Contenido */
+.content{
+    flex:1;
+    padding:35px;
+    overflow:auto;
+}
+
+/* Tarjeta */
+.card{
+    background:white;
+    padding:25px;
+    border-radius:14px;
+    box-shadow:0 10px 25px rgba(0,0,0,.15);
+}
+
+.card h2{
+    margin-top:0;
+    margin-bottom:20px;
+    color:#1f2937;
+}
+
+/* Tabla */
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th, td{
+    padding:13px;
+    text-align:left;
+    border-bottom:1px solid #e5e7eb;
+}
+
+th{
+    background:#e5e7eb;
+    color:#111827;
+}
+
+tr:hover{
+    background:#f9fafb;
+}
+
+.no-data{
+    text-align:center;
+    padding:20px;
+    color:#6b7280;
+}
+
+/* Botón eliminar */
+.delete-btn{
+    background:#ef4444;
+    color:white;
+    border:none;
+    padding:7px 12px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.delete-btn:hover{
+    background:#dc2626;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- Barra superior -->
+
+<div class="topbar">
+    <h1>Control Escolar - Dirección</h1>
+    <a href="/logout" class="logout">Cerrar sesión</a>
+</div>
+
+<div class="wrapper">
+
+```
+<!-- Menú lateral -->
+<div class="sidebar">
+
+    <div class="sidebar-title">MENÚ PRINCIPAL</div>
+
+    <a href="/admin">Inicio</a>
+    <a href="/nuevo_alumno">Registrar Alumno</a>
+    <a href="#">Registrar Maestro</a>
+    <a href="#">Grupos</a>
+    <a href="#">Asistencias</a>
+    <a href="#">Participaciones</a>
+    <a href="#">Calificaciones</a>
+    <a href="#">Reportes Disciplinarios</a>
+
+</div>
+
+<!-- Contenido principal -->
+<div class="content">
+
+    <div class="card">
+        <h2>Alumnos Registrados</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Grupo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% if alumnos %}
+                    {% for alumno in alumnos %}
+                    <tr>
+                        <td>{{ alumno.nombre }}</td>
+                        <td>{{ alumno.correo }}</td>
+                        <td>{{ alumno.grupo }}</td>
+
+                        <td>
+                            <form action="/eliminar_alumno/{{ alumno._id }}" method="POST">
+                                <button class="delete-btn"
+                                        onclick="return confirm('¿Seguro que deseas eliminar este alumno?')">
+                                    Eliminar
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="no-data">
+                            No hay alumnos registrados todavía
+                        </td>
+                    </tr>
+                {% endif %}
+
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+```
+
+</div>
+
+</body>
+</html>

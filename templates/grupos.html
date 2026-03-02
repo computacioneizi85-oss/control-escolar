@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Grupos</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="container py-4">
+
+<h2>Administrar Grupos</h2>
+<a href="/admin" class="btn btn-secondary mb-3">Volver</a>
+
+<div class="card p-4 mb-4">
+<h4>Crear nuevo grupo</h4>
+
+<form method="POST" action="/crear_grupo">
+    <input class="form-control mb-2" name="grado" placeholder="Grado (Ej: 1°, 2°, 3°)" required>
+    <input class="form-control mb-2" name="nombre" placeholder="Grupo (Ej: A, B, C)" required>
+    <button class="btn btn-success">Crear grupo</button>
+</form>
+</div>
+
+<h4>Grupos existentes</h4>
+
+<table class="table table-bordered">
+<tr>
+<th>Grado</th>
+<th>Grupo</th>
+<th>Acción</th>
+</tr>
+
+{% for g in grupos %}
+<tr>
+<td>{{ g.grado }}</td>
+<td>{{ g.nombre }}</td>
+<td>
+<a href="/grupo_detalle/{{ g.nombre }}" class="btn btn-primary">Ver alumnos</a>
+</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</body>
+</html>

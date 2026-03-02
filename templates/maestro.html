@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel del Maestro</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{
+    background:#eef2f7;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.panel{
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0px 8px 20px rgba(0,0,0,0.08);
+}
+
+.menu-btn{
+    width:100%;
+    height:85px;
+    font-size:20px;
+    font-weight:600;
+    border-radius:12px;
+}
+
+.table thead{
+    background:#0d6efd;
+    color:white;
+}
+
+h2{
+    font-weight:700;
+}
+</style>
+</head>
+
+<body class="container py-4">
+
+<!-- ENCABEZADO -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Panel del Maestro - Grupo {{ grupo }}</h2>
+    <a href="/logout" class="btn btn-danger">Cerrar sesión</a>
+</div>
+
+<!-- MENU PRINCIPAL -->
+<div class="row mb-5">
+
+    <div class="col-md-4 mb-3">
+        <a href="/reportes" class="btn btn-danger menu-btn">
+            🚨 Reportes disciplinarios
+        </a>
+    </div>
+
+</div>
+
+<!-- LISTA DE ALUMNOS -->
+<div class="panel">
+    <h4 class="mb-3">Alumnos de mi grupo</h4>
+
+    {% if alumnos|length == 0 %}
+        <div class="alert alert-warning">
+            No tienes alumnos asignados todavía.  
+            Dirección debe vincularte a un grupo.
+        </div>
+    {% endif %}
+
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Grupo</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for alumno in alumnos %}
+            <tr>
+                <td>{{ alumno.nombre }}</td>
+                <td>{{ alumno.correo }}</td>
+                <td>{{ alumno.grupo }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

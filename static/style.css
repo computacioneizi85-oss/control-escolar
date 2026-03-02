@@ -1,0 +1,5 @@
+
+body { background:#f4f6fb; font-family:Arial, Helvetica, sans-serif; }
+.card { box-shadow:0 6px 18px rgba(0,0,0,.1); border-radius:14px; }
+h2 { font-weight:700; }
+.btn-primary { border-radius:10px; }
