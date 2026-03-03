@@ -14,12 +14,15 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 
 app = Flask(__name__)
-app.secret_key = "control_escolar_premium_secret"
+app.secret_key = "control_escolar_secret"
 
 # ===============================
 # CONEXIÓN MONGO
 # ===============================
 MONGO_URI = os.environ.get("MONGO_URI")
+if not MONGO_URI:
+    raise Exception("MONGO_URI no configurado")
+
 client = MongoClient(MONGO_URI)
 db = client["control_escolar"]
 
@@ -69,13 +72,11 @@ def admin():
     grupos = list(db.grupos.find())
     mensaje_password = session.pop("nueva_password", None)
 
-    return render_template(
-        "admin.html",
-        alumnos=alumnos,
-        maestros=maestros,
-        grupos=grupos,
-        nueva_password=mensaje_password
-    )
+    return render_template("admin.html",
+                           alumnos=alumnos,
+                           maestros=maestros,
+                           grupos=grupos,
+                           nueva_password=mensaje_password)
 
 # ===============================
 # CONFIGURACIÓN INSTITUCIONAL
@@ -138,7 +139,18 @@ def registrar_alumno():
 
 @app.route("/eliminar_alumno/<id>")
 def eliminar_alumno(id):
+    if "direccion" not in session:
+        return redirect("/")
     db.alumnos.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin")
+
+@app.route("/reset_password_alumno/<id>")
+def reset_password_alumno(id):
+    if "direccion" not in session:
+        return redirect("/")
+    nueva = generar_password()
+    db.alumnos.update_one({"_id": ObjectId(id)}, {"$set": {"password": nueva}})
+    session["nueva_password"] = f"Nueva contraseña alumno: {nueva}"
     return redirect("/admin")
 
 # ===============================
@@ -159,14 +171,39 @@ def registrar_maestro():
     session["nueva_password"] = f"Contraseña maestro: {password}"
     return redirect("/admin")
 
+@app.route("/eliminar_maestro/<id>")
+def eliminar_maestro(id):
+    if "direccion" not in session:
+        return redirect("/")
+    db.maestros.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin")
+
+@app.route("/reset_password_maestro/<id>")
+def reset_password_maestro(id):
+    if "direccion" not in session:
+        return redirect("/")
+    nueva = generar_password()
+    db.maestros.update_one({"_id": ObjectId(id)}, {"$set": {"password": nueva}})
+    session["nueva_password"] = f"Nueva contraseña maestro: {nueva}"
+    return redirect("/admin")
+
 # ===============================
 # GRUPOS
 # ===============================
 @app.route("/crear_grupo", methods=["POST"])
 def crear_grupo():
+    if "direccion" not in session:
+        return redirect("/")
     nombre = request.form.get("nombre_grupo")
     if not db.grupos.find_one({"nombre": nombre}):
         db.grupos.insert_one({"nombre": nombre})
+    return redirect("/admin")
+
+@app.route("/eliminar_grupo/<id>")
+def eliminar_grupo(id):
+    if "direccion" not in session:
+        return redirect("/")
+    db.grupos.delete_one({"_id": ObjectId(id)})
     return redirect("/admin")
 
 # ===============================
@@ -190,7 +227,6 @@ def login_maestro():
 def panel_maestro():
     if "maestro_id" not in session:
         return redirect("/login_maestro")
-
     maestro = db.maestros.find_one({"_id": ObjectId(session["maestro_id"])})
     alumnos = list(db.alumnos.find({"grupo": maestro["grupo"]}))
     return render_template("panel_maestro.html", maestro=maestro, alumnos=alumnos)
@@ -225,14 +261,6 @@ def guardar_asistencia():
 
     return redirect("/panel_maestro")
 
-@app.route("/asistencias_admin")
-def asistencias_admin():
-    if "direccion" not in session:
-        return redirect("/")
-
-    asistencias = list(db.asistencias.find())
-    return render_template("asistencias_admin.html", asistencias=asistencias)
-
 # ===============================
 # REPORTES DISCIPLINARIOS
 # ===============================
@@ -260,13 +288,6 @@ def crear_reporte():
 
     return redirect("/admin")
 
-@app.route("/reportes_admin")
-def reportes_admin():
-    if "direccion" not in session:
-        return redirect("/")
-    reportes = list(db.reportes.find())
-    return render_template("reportes_admin.html", reportes=reportes)
-
 @app.route("/aprobar_reporte/<id>")
 def aprobar_reporte(id):
     if "direccion" not in session:
@@ -274,18 +295,18 @@ def aprobar_reporte(id):
 
     reporte = db.reportes.find_one({"_id": ObjectId(id)})
     db.reportes.update_one({"_id": ObjectId(id)}, {"$set": {"estado": "Aprobado"}})
-
     generar_pdf_reporte(reporte)
-    return redirect("/reportes_admin")
+    return redirect("/admin")
 
 # ===============================
 # PDF REPORTE
 # ===============================
 def generar_pdf_reporte(reporte):
-
     config = db.configuracion.find_one()
-    ruta = f"static/reporte_{reporte['_id']}.pdf"
+    if not os.path.exists("static"):
+        os.makedirs("static")
 
+    ruta = f"static/reporte_{reporte['_id']}.pdf"
     doc = SimpleDocTemplate(ruta, pagesize=A4)
     elementos = []
     styles = getSampleStyleSheet()
