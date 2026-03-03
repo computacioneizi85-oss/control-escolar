@@ -1,41 +1,195 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Panel Maestro</title>
+<meta charset="UTF-8">
+<title>Panel Maestro</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:#f4f6f9;
+}
+
+header{
+    background:#1b263b;
+    color:white;
+    padding:15px 25px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+header h1{
+    margin:0;
+    font-size:20px;
+}
+
+.logout-btn{
+    background:#e74c3c;
+    color:white;
+    padding:8px 15px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.container{
+    padding:30px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0px 4px 10px rgba(0,0,0,0.08);
+    margin-bottom:30px;
+}
+
+h2{
+    margin-top:0;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+
+th, td{
+    padding:10px;
+    border-bottom:1px solid #ddd;
+    text-align:left;
+}
+
+th{
+    background:#ecf0f1;
+}
+
+button{
+    padding:8px 12px;
+    border-radius:6px;
+    border:none;
+    cursor:pointer;
+}
+
+.btn-primary{
+    background:#2ecc71;
+    color:white;
+}
+
+textarea{
+    width:100%;
+    padding:8px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    margin-top:5px;
+}
+</style>
 </head>
+
 <body>
 
-<h2>Bienvenido {{ maestro.nombre }}</h2>
-<a href="/logout_maestro">Cerrar sesión</a>
+<header>
+    <h1>Panel Maestro - {{ maestro.nombre }}</h1>
+    <a href="/logout_maestro">
+        <button class="logout-btn">Cerrar sesión</button>
+    </a>
+</header>
 
-<h3>Tomar Asistencia - Grupo {{ maestro.grupo }}</h3>
+<div class="container">
 
-<form method="POST" action="/guardar_asistencia">
+    <!-- LISTA DE ALUMNOS -->
+    <div class="card">
+        <h2>Alumnos del Grupo {{ maestro.grupo }}</h2>
 
-<table border="1">
-<tr>
-    <th>Alumno</th>
-    <th>Estado</th>
-</tr>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Grado</th>
+                    <th>Grupo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alumno in alumnos %}
+                <tr>
+                    <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+                    <td>{{ alumno.grado }}</td>
+                    <td>{{ alumno.grupo }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-{% for alumno in alumnos %}
-<tr>
-    <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
-    <td>
-        <select name="alumno_{{ alumno._id }}">
-            <option value="Presente">Presente</option>
-            <option value="Falta">Falta</option>
-        </select>
-    </td>
-</tr>
-{% endfor %}
+    <!-- ASISTENCIAS -->
+    <div class="card">
+        <h2>Tomar Asistencia</h2>
 
-</table>
+        <form method="POST" action="/guardar_asistencia">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Alumno</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alumno in alumnos %}
+                    <tr>
+                        <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+                        <td>
+                            <select name="alumno_{{ alumno._id }}">
+                                <option value="Presente">Presente</option>
+                                <option value="Falta">Falta</option>
+                            </select>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
 
-<br>
-<button type="submit">Guardar Asistencia</button>
+            <br>
+            <button type="submit" class="btn-primary">Guardar Asistencia</button>
+        </form>
+    </div>
 
-</form>
+    <!-- REPORTES DISCIPLINARIOS -->
+    <div class="card">
+        <h2>Crear Reporte Disciplinario</h2>
+
+        <form method="POST" action="/crear_reporte">
+
+            <label>Alumno:</label>
+            <select name="alumno_id" required>
+                {% for alumno in alumnos %}
+                <option value="{{ alumno._id }}">
+                    {{ alumno.nombre }} {{ alumno.apellido }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <br><br>
+
+            <label>Motivo:</label>
+            <textarea name="motivo" rows="3" required></textarea>
+
+            <br><br>
+
+            <label>Consecuencia:</label>
+            <textarea name="consecuencia" rows="3" required></textarea>
+
+            <br><br>
+
+            <button type="submit" class="btn-primary">
+                Enviar Reporte
+            </button>
+
+        </form>
+    </div>
+
+</div>
 
 </body>
 </html>

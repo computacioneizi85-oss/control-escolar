@@ -6,6 +6,12 @@ import os
 import random
 import string
 
+# PDF
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+
 app = Flask(__name__)
 app.secret_key = "control_escolar_secret_key"
 
@@ -13,7 +19,6 @@ app.secret_key = "control_escolar_secret_key"
 # CONEXIÓN A MONGO
 # ===============================
 MONGO_URI = os.environ.get("MONGO_URI")
-
 if not MONGO_URI:
     raise Exception("MONGO_URI no configurado en Render")
 
@@ -21,7 +26,7 @@ client = MongoClient(MONGO_URI)
 db = client["control_escolar"]
 
 # ===============================
-# GENERADOR DE PASSWORD
+# UTILIDADES
 # ===============================
 def generar_password():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
@@ -39,9 +44,6 @@ def login():
         return render_template("login.html", error="Credenciales incorrectas")
     return render_template("login.html")
 
-# ===============================
-# LOGOUT DIRECCIÓN
-# ===============================
 @app.route("/logout")
 def logout():
     session.clear()
@@ -58,7 +60,6 @@ def admin():
     alumnos = list(db.alumnos.find())
     maestros = list(db.maestros.find())
     grupos = list(db.grupos.find())
-
     mensaje_password = session.pop("nueva_password", None)
 
     return render_template(
@@ -70,7 +71,7 @@ def admin():
     )
 
 # ===============================
-# REGISTRAR ALUMNO
+# GESTIÓN ALUMNOS
 # ===============================
 @app.route("/registrar_alumno", methods=["POST"])
 def registrar_alumno():
@@ -91,32 +92,20 @@ def registrar_alumno():
     session["nueva_password"] = f"Contraseña del alumno: {password}"
     return redirect("/admin")
 
-# ===============================
-# ELIMINAR ALUMNO
-# ===============================
 @app.route("/eliminar_alumno/<id>")
 def eliminar_alumno(id):
-    if "direccion" not in session:
-        return redirect("/")
-
     db.alumnos.delete_one({"_id": ObjectId(id)})
     return redirect("/admin")
 
-# ===============================
-# RESET PASSWORD ALUMNO
-# ===============================
 @app.route("/reset_password_alumno/<id>")
 def reset_password_alumno(id):
-    if "direccion" not in session:
-        return redirect("/")
-
     nueva = generar_password()
     db.alumnos.update_one({"_id": ObjectId(id)}, {"$set": {"password": nueva}})
     session["nueva_password"] = f"Nueva contraseña del alumno: {nueva}"
     return redirect("/admin")
 
 # ===============================
-# REGISTRAR MAESTRO
+# GESTIÓN MAESTROS
 # ===============================
 @app.route("/registrar_maestro", methods=["POST"])
 def registrar_maestro():
@@ -136,53 +125,30 @@ def registrar_maestro():
     session["nueva_password"] = f"Contraseña del maestro: {password}"
     return redirect("/admin")
 
-# ===============================
-# ELIMINAR MAESTRO
-# ===============================
 @app.route("/eliminar_maestro/<id>")
 def eliminar_maestro(id):
-    if "direccion" not in session:
-        return redirect("/")
-
     db.maestros.delete_one({"_id": ObjectId(id)})
     return redirect("/admin")
 
-# ===============================
-# RESET PASSWORD MAESTRO
-# ===============================
 @app.route("/reset_password_maestro/<id>")
 def reset_password_maestro(id):
-    if "direccion" not in session:
-        return redirect("/")
-
     nueva = generar_password()
     db.maestros.update_one({"_id": ObjectId(id)}, {"$set": {"password": nueva}})
     session["nueva_password"] = f"Nueva contraseña del maestro: {nueva}"
     return redirect("/admin")
 
 # ===============================
-# CREAR GRUPO
+# GRUPOS
 # ===============================
 @app.route("/crear_grupo", methods=["POST"])
 def crear_grupo():
-    if "direccion" not in session:
-        return redirect("/")
-
     nombre = request.form.get("nombre_grupo")
-
     if not db.grupos.find_one({"nombre": nombre}):
         db.grupos.insert_one({"nombre": nombre})
-
     return redirect("/admin")
 
-# ===============================
-# ELIMINAR GRUPO
-# ===============================
 @app.route("/eliminar_grupo/<id>")
 def eliminar_grupo(id):
-    if "direccion" not in session:
-        return redirect("/")
-
     db.grupos.delete_one({"_id": ObjectId(id)})
     return redirect("/admin")
 
@@ -204,10 +170,14 @@ def login_maestro():
             session.clear()
             session["maestro_id"] = str(maestro["_id"])
             return redirect("/panel_maestro")
-        else:
-            return render_template("login_maestro.html", error="Credenciales incorrectas")
+        return render_template("login_maestro.html", error="Credenciales incorrectas")
 
     return render_template("login_maestro.html")
+
+@app.route("/logout_maestro")
+def logout_maestro():
+    session.clear()
+    return redirect("/login_maestro")
 
 # ===============================
 # PANEL MAESTRO
@@ -223,22 +193,17 @@ def panel_maestro():
     return render_template("panel_maestro.html", maestro=maestro, alumnos=alumnos)
 
 # ===============================
-# GUARDAR ASISTENCIA
+# ASISTENCIAS
 # ===============================
 @app.route("/guardar_asistencia", methods=["POST"])
 def guardar_asistencia():
-    if "maestro_id" not in session:
-        return redirect("/login_maestro")
-
-    maestro_id = session["maestro_id"]
-    maestro = db.maestros.find_one({"_id": ObjectId(maestro_id)})
+    maestro = db.maestros.find_one({"_id": ObjectId(session["maestro_id"])})
     fecha = datetime.now().strftime("%Y-%m-%d")
 
     for key in request.form:
         if key.startswith("alumno_"):
             alumno_id = key.replace("alumno_", "")
             estado = request.form.get(key)
-
             alumno = db.alumnos.find_one({"_id": ObjectId(alumno_id)})
 
             db.asistencias.insert_one({
@@ -247,41 +212,84 @@ def guardar_asistencia():
                 "grupo": maestro["grupo"],
                 "fecha": fecha,
                 "estado": estado,
-                "maestro_id": maestro_id
+                "maestro_id": session["maestro_id"]
             })
 
     return redirect("/panel_maestro")
 
-# ===============================
-# VER ASISTENCIAS EN DIRECCIÓN
-# ===============================
 @app.route("/asistencias_admin")
 def asistencias_admin():
-    if "direccion" not in session:
-        return redirect("/")
-
-    grupo = request.args.get("grupo")
-
-    if grupo:
-        asistencias = list(db.asistencias.find({"grupo": grupo}))
-    else:
-        asistencias = list(db.asistencias.find())
-
+    asistencias = list(db.asistencias.find())
     grupos = list(db.grupos.find())
-
-    return render_template(
-        "asistencias_admin.html",
-        asistencias=asistencias,
-        grupos=grupos
-    )
+    return render_template("asistencias_admin.html", asistencias=asistencias, grupos=grupos)
 
 # ===============================
-# LOGOUT MAESTRO
+# REPORTES DISCIPLINARIOS
 # ===============================
-@app.route("/logout_maestro")
-def logout_maestro():
-    session.clear()
-    return redirect("/login_maestro")
+@app.route("/crear_reporte", methods=["POST"])
+def crear_reporte():
+    maestro = db.maestros.find_one({"_id": ObjectId(session["maestro_id"])})
+    alumno_id = request.form["alumno_id"]
+    alumno = db.alumnos.find_one({"_id": ObjectId(alumno_id)})
+
+    db.reportes.insert_one({
+        "alumno_id": alumno_id,
+        "nombre_alumno": alumno["nombre"] + " " + alumno["apellido"],
+        "grupo": maestro["grupo"],
+        "maestro_id": session["maestro_id"],
+        "motivo": request.form["motivo"],
+        "consecuencia": request.form["consecuencia"],
+        "fecha": datetime.now().strftime("%Y-%m-%d"),
+        "estado": "Pendiente"
+    })
+
+    return redirect("/panel_maestro")
+
+@app.route("/reportes_admin")
+def reportes_admin():
+    reportes = list(db.reportes.find())
+    return render_template("reportes_admin.html", reportes=reportes)
+
+@app.route("/autorizar_reporte/<id>")
+def autorizar_reporte(id):
+    reporte = db.reportes.find_one({"_id": ObjectId(id)})
+    db.reportes.update_one({"_id": ObjectId(id)}, {"$set": {"estado": "Aprobado"}})
+    generar_pdf_reporte(reporte)
+    return redirect("/reportes_admin")
+
+# ===============================
+# GENERAR PDF
+# ===============================
+def generar_pdf_reporte(reporte):
+    if not os.path.exists("static"):
+        os.makedirs("static")
+
+    ruta = f"static/reporte_{reporte['_id']}.pdf"
+    doc = SimpleDocTemplate(ruta, pagesize=A4)
+    elementos = []
+    styles = getSampleStyleSheet()
+
+    elementos.append(Paragraph("<b>REPORTE DISCIPLINARIO</b>", styles["Title"]))
+    elementos.append(Spacer(1, 20))
+
+    datos = [
+        ["Alumno:", reporte["nombre_alumno"]],
+        ["Grupo:", reporte["grupo"]],
+        ["Fecha:", reporte["fecha"]],
+        ["Motivo:", reporte["motivo"]],
+        ["Consecuencia:", reporte["consecuencia"]],
+    ]
+
+    tabla = Table(datos, colWidths=[120, 350])
+    tabla.setStyle(TableStyle([
+        ("GRID", (0,0), (-1,-1), 0.5, colors.grey)
+    ]))
+
+    elementos.append(tabla)
+    elementos.append(Spacer(1, 50))
+    elementos.append(Paragraph("Firma del Padre o Tutor: ____________________________", styles["Normal"]))
+
+    doc.build(elementos)
 
 # ===============================
 if __name__ == "__main__":
