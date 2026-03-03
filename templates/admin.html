@@ -1,226 +1,188 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Panel de Dirección | Control Escolar</title>
+    <meta charset="UTF-8">
+    <title>Control Escolar - Dirección</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+        }
 
-<style>
+        header {
+            background-color: #0b1c3d;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-body{
-    margin:0;
-    font-family: Arial, Helvetica, sans-serif;
-    background:#f1f5f9;
-}
+        .logout-btn {
+            background-color: #e74c3c;
+            border: none;
+            padding: 8px 14px;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
 
-/* Barra superior */
-.topbar{
-    height:65px;
-    background:#0f172a;
-    color:white;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 25px;
-}
+        .container {
+            display: flex;
+        }
 
-.topbar h1{
-    font-size:20px;
-    margin:0;
-    font-weight:600;
-}
+        .sidebar {
+            width: 220px;
+            background-color: #0b1c3d;
+            min-height: 100vh;
+            color: white;
+            padding-top: 20px;
+        }
 
-.logout{
-    background:#ef4444;
-    padding:10px 16px;
-    border-radius:8px;
-    color:white;
-    text-decoration:none;
-    font-size:14px;
-}
+        .sidebar a {
+            display: block;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+        }
 
-.logout:hover{
-    background:#dc2626;
-}
+        .sidebar a:hover {
+            background-color: #132a57;
+        }
 
-/* Layout */
-.wrapper{
-    display:flex;
-    height:calc(100vh - 65px);
-}
+        .content {
+            flex: 1;
+            padding: 30px;
+        }
 
-/* Menú lateral */
-.sidebar{
-    width:240px;
-    background:#111827;
-    color:white;
-    padding-top:20px;
-}
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
 
-.sidebar-title{
-    text-align:center;
-    font-size:15px;
-    opacity:.7;
-    margin-bottom:15px;
-}
+        h2 {
+            margin-top: 0;
+        }
 
-.sidebar a{
-    display:block;
-    padding:14px 22px;
-    text-decoration:none;
-    color:white;
-    transition:.2s;
-    font-size:15px;
-}
+        input {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
 
-.sidebar a:hover{
-    background:#2563eb;
-}
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
-/* Contenido */
-.content{
-    flex:1;
-    padding:35px;
-    overflow:auto;
-}
+        .btn-primary {
+            background-color: #2ecc71;
+            color: white;
+        }
 
-/* Tarjeta */
-.card{
-    background:white;
-    padding:25px;
-    border-radius:14px;
-    box-shadow:0 10px 25px rgba(0,0,0,.15);
-}
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
 
-.card h2{
-    margin-top:0;
-    margin-bottom:20px;
-    color:#1f2937;
-}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-/* Tabla */
-table{
-    width:100%;
-    border-collapse:collapse;
-}
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
 
-th, td{
-    padding:13px;
-    text-align:left;
-    border-bottom:1px solid #e5e7eb;
-}
+        th {
+            background-color: #f1f1f1;
+        }
 
-th{
-    background:#e5e7eb;
-    color:#111827;
-}
-
-tr:hover{
-    background:#f9fafb;
-}
-
-.no-data{
-    text-align:center;
-    padding:20px;
-    color:#6b7280;
-}
-
-/* Botón eliminar */
-.delete-btn{
-    background:#ef4444;
-    color:white;
-    border:none;
-    padding:7px 12px;
-    border-radius:6px;
-    cursor:pointer;
-}
-
-.delete-btn:hover{
-    background:#dc2626;
-}
-
-</style>
-
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+    </style>
 </head>
-
 <body>
 
-<!-- Barra superior -->
+<header>
+    <h2>Control Escolar - Dirección</h2>
+    <a href="/logout">
+        <button class="logout-btn">Cerrar sesión</button>
+    </a>
+</header>
 
-<div class="topbar">
-    <h1>Control Escolar - Dirección</h1>
-    <a href="/logout" class="logout">Cerrar sesión</a>
-</div>
+<div class="container">
 
-<div class="wrapper">
+    <div class="sidebar">
+        <a href="/admin">Inicio</a>
+        <a href="#">Registrar Maestro</a>
+        <a href="#">Grupos</a>
+        <a href="#">Asistencias</a>
+        <a href="#">Participaciones</a>
+        <a href="#">Calificaciones</a>
+        <a href="#">Reportes Disciplinarios</a>
+    </div>
 
-```
-<!-- Menú lateral -->
-<div class="sidebar">
+    <div class="content">
 
-    <div class="sidebar-title">MENÚ PRINCIPAL</div>
+        <!-- REGISTRAR ALUMNO -->
+        <div class="card">
+            <h2>Registrar Alumno</h2>
+            <form action="/registrar_alumno" method="POST">
+                <input type="text" name="nombre" placeholder="Nombre" required>
+                <input type="text" name="apellido" placeholder="Apellido" required>
+                <input type="email" name="correo" placeholder="Correo" required>
+                <input type="text" name="grado" placeholder="Grado" required>
+                <input type="text" name="grupo" placeholder="Grupo" required>
+                <button type="submit" class="btn-primary">Registrar</button>
+            </form>
+        </div>
 
-    <a href="/admin">Inicio</a>
-    <a href="/nuevo_alumno">Registrar Alumno</a>
-    <a href="#">Registrar Maestro</a>
-    <a href="#">Grupos</a>
-    <a href="#">Asistencias</a>
-    <a href="#">Participaciones</a>
-    <a href="#">Calificaciones</a>
-    <a href="#">Reportes Disciplinarios</a>
+        <!-- LISTA DE ALUMNOS -->
+        <div class="card">
+            <h2>Alumnos Registrados</h2>
 
-</div>
-
-<!-- Contenido principal -->
-<div class="content">
-
-    <div class="card">
-        <h2>Alumnos Registrados</h2>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Correo</th>
-                    <th>Grupo</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% if alumnos %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Correo</th>
+                        <th>Grado</th>
+                        <th>Grupo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
                     {% for alumno in alumnos %}
                     <tr>
                         <td>{{ alumno.nombre }}</td>
+                        <td>{{ alumno.apellido }}</td>
                         <td>{{ alumno.correo }}</td>
+                        <td>{{ alumno.grado }}</td>
                         <td>{{ alumno.grupo }}</td>
-
                         <td>
-                            <form action="/eliminar_alumno/{{ alumno._id }}" method="POST">
-                                <button class="delete-btn"
-                                        onclick="return confirm('¿Seguro que deseas eliminar este alumno?')">
-                                    Eliminar
-                                </button>
-                            </form>
+                            <a href="/eliminar_alumno/{{ alumno._id }}">
+                                <button class="btn-danger">Eliminar</button>
+                            </a>
                         </td>
                     </tr>
                     {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="4" class="no-data">
-                            No hay alumnos registrados todavía
-                        </td>
-                    </tr>
-                {% endif %}
+                </tbody>
+            </table>
 
-            </tbody>
-        </table>
+        </div>
 
     </div>
-
-</div>
-```
 
 </div>
 

@@ -61,11 +61,15 @@ def registrar_alumno():
         return redirect(url_for("login"))
 
     nombre = request.form.get("nombre")
+    apellido = request.form.get("apellido")
+    correo = request.form.get("correo")
     grado = request.form.get("grado")
     grupo = request.form.get("grupo")
 
     db.alumnos.insert_one({
         "nombre": nombre,
+        "apellido": apellido,
+        "correo": correo,
         "grado": grado,
         "grupo": grupo
     })
