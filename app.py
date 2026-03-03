@@ -70,16 +70,20 @@ def admin():
     alumnos = list(db.alumnos.find())
     maestros = list(db.maestros.find())
     grupos = list(db.grupos.find())
+    reportes = list(db.reportes.find())
     mensaje_password = session.pop("nueva_password", None)
 
-    return render_template("admin.html",
-                           alumnos=alumnos,
-                           maestros=maestros,
-                           grupos=grupos,
-                           nueva_password=mensaje_password)
+    return render_template(
+        "admin.html",
+        alumnos=alumnos,
+        maestros=maestros,
+        grupos=grupos,
+        reportes=reportes,
+        nueva_password=mensaje_password
+    )
 
 # ===============================
-# CONFIGURACIÓN INSTITUCIONAL
+# CONFIGURACIÓN
 # ===============================
 @app.route("/configuracion", methods=["GET", "POST"])
 def configuracion():
@@ -207,106 +211,88 @@ def eliminar_grupo(id):
     return redirect("/admin")
 
 # ===============================
-# LOGIN MAESTRO
+# KARDEX PDF
 # ===============================
-@app.route("/login_maestro", methods=["GET", "POST"])
-def login_maestro():
-    if request.method == "POST":
-        maestro = db.maestros.find_one({
-            "correo": request.form["correo"],
-            "password": request.form["password"]
-        })
-        if maestro:
-            session.clear()
-            session["maestro_id"] = str(maestro["_id"])
-            return redirect("/panel_maestro")
-        return render_template("login_maestro.html", error="Credenciales incorrectas")
-    return render_template("login_maestro.html")
-
-@app.route("/panel_maestro")
-def panel_maestro():
-    if "maestro_id" not in session:
-        return redirect("/login_maestro")
-    maestro = db.maestros.find_one({"_id": ObjectId(session["maestro_id"])})
-    alumnos = list(db.alumnos.find({"grupo": maestro["grupo"]}))
-    return render_template("panel_maestro.html", maestro=maestro, alumnos=alumnos)
-
-# ===============================
-# ASISTENCIAS
-# ===============================
-@app.route("/guardar_asistencia", methods=["POST"])
-def guardar_asistencia():
-    if "maestro_id" not in session:
-        return redirect("/login_maestro")
-
-    maestro = db.maestros.find_one({"_id": ObjectId(session["maestro_id"])})
-    fecha = datetime.now().strftime("%Y-%m-%d")
-
-    for key in request.form:
-        if key.startswith("alumno_"):
-            alumno_id = key.replace("alumno_", "")
-            estado = request.form.get(key)
-
-            db.asistencias.delete_many({
-                "alumno_id": alumno_id,
-                "fecha": fecha
-            })
-
-            db.asistencias.insert_one({
-                "alumno_id": alumno_id,
-                "grupo": maestro["grupo"],
-                "fecha": fecha,
-                "estado": estado
-            })
-
-    return redirect("/panel_maestro")
-
-# ===============================
-# REPORTES DISCIPLINARIOS
-# ===============================
-@app.route("/crear_reporte", methods=["POST"])
-def crear_reporte():
-    if "maestro_id" in session:
-        creador = "Maestro"
-    elif "direccion" in session:
-        creador = "Dirección"
-    else:
+@app.route("/kardex/<id>")
+def generar_kardex(id):
+    if "direccion" not in session and "maestro_id" not in session:
         return redirect("/")
 
-    alumno_id = request.form["alumno_id"]
-    alumno = db.alumnos.find_one({"_id": ObjectId(alumno_id)})
+    alumno = db.alumnos.find_one({"_id": ObjectId(id)})
+    if not alumno:
+        return "Alumno no encontrado"
 
-    db.reportes.insert_one({
-        "alumno_id": alumno_id,
-        "nombre_alumno": alumno["nombre"] + " " + alumno["apellido"],
-        "motivo": request.form["motivo"],
-        "consecuencia": request.form["consecuencia"],
-        "fecha": datetime.now().strftime("%Y-%m-%d"),
-        "estado": "Pendiente",
-        "creado_por": creador
-    })
+    config = db.configuracion.find_one()
 
-    return redirect("/admin")
+    if not os.path.exists("static"):
+        os.makedirs("static")
 
+    ruta = f"static/kardex_{id}.pdf"
+
+    doc = SimpleDocTemplate(ruta, pagesize=A4)
+    elementos = []
+    styles = getSampleStyleSheet()
+
+    if config and config.get("logo"):
+        logo_path = os.path.join("static", config["logo"])
+        if os.path.exists(logo_path):
+            elementos.append(Image(logo_path, width=120, height=80))
+            elementos.append(Spacer(1, 20))
+
+    nombre_colegio = config["nombre_colegio"] if config else "Colegio"
+    elementos.append(Paragraph(f"<b>{nombre_colegio}</b>", styles["Title"]))
+    elementos.append(Spacer(1, 10))
+    elementos.append(Paragraph(f"Ciclo Escolar: {ciclo_escolar_actual()}", styles["Normal"]))
+    elementos.append(Spacer(1, 20))
+
+    datos = [
+        ["Alumno:", alumno["nombre"] + " " + alumno["apellido"]],
+        ["Grado:", alumno["grado"]],
+        ["Grupo:", alumno["grupo"]],
+    ]
+
+    tabla = Table(datos)
+    tabla.setStyle(TableStyle([("GRID", (0,0), (-1,-1), 0.5, colors.grey)]))
+    elementos.append(tabla)
+
+    elementos.append(Spacer(1, 40))
+    elementos.append(Paragraph("Firma Dirección: ____________________", styles["Normal"]))
+    elementos.append(Spacer(1, 20))
+    elementos.append(Paragraph("Firma Padre/Tutor: ____________________", styles["Normal"]))
+
+    doc.build(elementos)
+
+    return redirect("/" + ruta)
+
+# ===============================
+# APROBAR REPORTE + PDF
+# ===============================
 @app.route("/aprobar_reporte/<id>")
 def aprobar_reporte(id):
     if "direccion" not in session:
         return redirect("/")
 
     reporte = db.reportes.find_one({"_id": ObjectId(id)})
-    db.reportes.update_one({"_id": ObjectId(id)}, {"$set": {"estado": "Aprobado"}})
-    generar_pdf_reporte(reporte)
-    return redirect("/admin")
+    if not reporte:
+        return "Reporte no encontrado"
 
-# ===============================
-# PDF REPORTE
-# ===============================
+    db.reportes.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"estado": "Aprobado"}}
+    )
+
+    generar_pdf_reporte(reporte)
+
+    return redirect("/static/reporte_" + str(id) + ".pdf")
+
 def generar_pdf_reporte(reporte):
     config = db.configuracion.find_one()
+
     if not os.path.exists("static"):
         os.makedirs("static")
 
     ruta = f"static/reporte_{reporte['_id']}.pdf"
+
     doc = SimpleDocTemplate(ruta, pagesize=A4)
     elementos = []
     styles = getSampleStyleSheet()
