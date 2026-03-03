@@ -6,9 +6,9 @@
 
 <style>
 body{
-    margin:0;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Arial, sans-serif;
     background:#f4f6f9;
+    margin:0;
 }
 
 header{
@@ -20,20 +20,6 @@ header{
     align-items:center;
 }
 
-header h1{
-    margin:0;
-    font-size:20px;
-}
-
-.logout-btn{
-    background:#e74c3c;
-    color:white;
-    padding:8px 15px;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-}
-
 .container{
     padding:30px;
 }
@@ -42,7 +28,7 @@ header h1{
     background:white;
     padding:20px;
     border-radius:12px;
-    box-shadow:0px 4px 10px rgba(0,0,0,0.08);
+    box-shadow:0 4px 10px rgba(0,0,0,0.08);
     margin-bottom:30px;
 }
 
@@ -66,10 +52,16 @@ th{
     background:#ecf0f1;
 }
 
-button{
-    padding:8px 12px;
+select, textarea{
+    padding:6px;
     border-radius:6px;
+    border:1px solid #ccc;
+}
+
+button{
+    padding:6px 10px;
     border:none;
+    border-radius:6px;
     cursor:pointer;
 }
 
@@ -78,21 +70,14 @@ button{
     color:white;
 }
 
-.btn-secondary{
-    background:#3498db;
+.btn-warning{
+    background:#f39c12;
     color:white;
 }
 
-textarea{
-    width:100%;
-    padding:8px;
-    border-radius:6px;
-    border:1px solid #ccc;
-    margin-top:5px;
-}
-select{
-    padding:6px;
-    border-radius:6px;
+.btn-info{
+    background:#3498db;
+    color:white;
 }
 </style>
 </head>
@@ -100,87 +85,52 @@ select{
 <body>
 
 <header>
-    <h1>Panel Maestro - {{ maestro.nombre }}</h1>
+    <h2>Panel Maestro - {{ maestro.nombre }}</h2>
     <a href="/logout_maestro">
-        <button class="logout-btn">Cerrar sesión</button>
+        <button class="btn-warning">Cerrar sesión</button>
     </a>
 </header>
 
 <div class="container">
 
-    <!-- LISTA DE ALUMNOS -->
+    <!-- ================= ASISTENCIAS ================= -->
     <div class="card">
-        <h2>Alumnos del Grupo {{ maestro.grupo }}</h2>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Grado</th>
-                    <th>Grupo</th>
-                    <th>Kardex</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for alumno in alumnos %}
-                <tr>
-                    <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
-                    <td>{{ alumno.grado }}</td>
-                    <td>{{ alumno.grupo }}</td>
-                    <td>
-                        <a href="/kardex/{{ alumno._id }}" target="_blank">
-                            <button class="btn-secondary">
-                                Kardex PDF
-                            </button>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <!-- ASISTENCIAS -->
-    <div class="card">
-        <h2>Tomar Asistencia</h2>
+        <h2>Registrar Asistencia</h2>
 
         <form method="POST" action="/guardar_asistencia">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Alumno</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for alumno in alumnos %}
-                    <tr>
-                        <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
-                        <td>
-                            <select name="alumno_{{ alumno._id }}">
-                                <option value="Presente">Presente</option>
-                                <option value="Falta">Falta</option>
-                            </select>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <table>
+            <tr>
+                <th>Alumno</th>
+                <th>Estado</th>
+            </tr>
 
-            <br>
-            <button type="submit" class="btn-primary">
-                Guardar Asistencia
-            </button>
+            {% for alumno in alumnos %}
+            <tr>
+                <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+                <td>
+                    <select name="alumno_{{ alumno._id }}">
+                        <option value="Presente">Presente</option>
+                        <option value="Ausente">Ausente</option>
+                        <option value="Retardo">Retardo</option>
+                        <option value="Justificado">Justificado</option>
+                    </select>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <br>
+        <button type="submit" class="btn-primary">Guardar Asistencia</button>
         </form>
     </div>
 
-    <!-- REPORTES DISCIPLINARIOS -->
+    <!-- ================= REPORTES DISCIPLINARIOS ================= -->
     <div class="card">
         <h2>Crear Reporte Disciplinario</h2>
 
         <form method="POST" action="/crear_reporte">
 
-            <label>Alumno:</label>
+            <label>Alumno:</label><br>
             <select name="alumno_id" required>
                 {% for alumno in alumnos %}
                 <option value="{{ alumno._id }}">
@@ -191,21 +141,43 @@ select{
 
             <br><br>
 
-            <label>Motivo:</label>
-            <textarea name="motivo" rows="3" required></textarea>
+            <label>Motivo:</label><br>
+            <textarea name="motivo" rows="3" cols="60" required></textarea>
 
             <br><br>
 
-            <label>Consecuencia:</label>
-            <textarea name="consecuencia" rows="3" required></textarea>
+            <label>Consecuencia:</label><br>
+            <textarea name="consecuencia" rows="3" cols="60" required></textarea>
 
             <br><br>
 
-            <button type="submit" class="btn-primary">
-                Enviar Reporte
+            <button type="submit" class="btn-warning">
+                Enviar Reporte (Pendiente Aprobación)
             </button>
-
         </form>
+    </div>
+
+    <!-- ================= KARDEX ================= -->
+    <div class="card">
+        <h2>Kardex de Alumnos</h2>
+
+        <table>
+            <tr>
+                <th>Alumno</th>
+                <th>Generar Kardex</th>
+            </tr>
+
+            {% for alumno in alumnos %}
+            <tr>
+                <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+                <td>
+                    <a href="/kardex/{{ alumno._id }}" target="_blank">
+                        <button class="btn-info">Generar PDF</button>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
     </div>
 
 </div>

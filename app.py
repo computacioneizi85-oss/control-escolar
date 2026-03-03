@@ -5,28 +5,21 @@ from datetime import datetime
 import os
 import random
 import string
-
 from werkzeug.utils import secure_filename
 
 # PDF
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer,
-    Table, TableStyle, Image
-)
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 
 app = Flask(__name__)
-app.secret_key = "control_escolar_secret_key"
+app.secret_key = "control_escolar_premium_secret"
 
 # ===============================
-# CONEXIÓN MONGODB
+# CONEXIÓN MONGO
 # ===============================
 MONGO_URI = os.environ.get("MONGO_URI")
-if not MONGO_URI:
-    raise Exception("MONGO_URI no configurado en Render")
-
 client = MongoClient(MONGO_URI)
 db = client["control_escolar"]
 
@@ -64,7 +57,7 @@ def logout():
     return redirect("/")
 
 # ===============================
-# PANEL DIRECCIÓN
+# PANEL ADMIN
 # ===============================
 @app.route("/admin")
 def admin():
@@ -140,19 +133,12 @@ def registrar_alumno():
         "password": password
     })
 
-    session["nueva_password"] = f"Contraseña del alumno: {password}"
+    session["nueva_password"] = f"Contraseña alumno: {password}"
     return redirect("/admin")
 
 @app.route("/eliminar_alumno/<id>")
 def eliminar_alumno(id):
     db.alumnos.delete_one({"_id": ObjectId(id)})
-    return redirect("/admin")
-
-@app.route("/reset_password_alumno/<id>")
-def reset_password_alumno(id):
-    nueva = generar_password()
-    db.alumnos.update_one({"_id": ObjectId(id)}, {"$set": {"password": nueva}})
-    session["nueva_password"] = f"Nueva contraseña del alumno: {nueva}"
     return redirect("/admin")
 
 # ===============================
@@ -170,19 +156,7 @@ def registrar_maestro():
         "password": password
     })
 
-    session["nueva_password"] = f"Contraseña del maestro: {password}"
-    return redirect("/admin")
-
-@app.route("/eliminar_maestro/<id>")
-def eliminar_maestro(id):
-    db.maestros.delete_one({"_id": ObjectId(id)})
-    return redirect("/admin")
-
-@app.route("/reset_password_maestro/<id>")
-def reset_password_maestro(id):
-    nueva = generar_password()
-    db.maestros.update_one({"_id": ObjectId(id)}, {"$set": {"password": nueva}})
-    session["nueva_password"] = f"Nueva contraseña del maestro: {nueva}"
+    session["nueva_password"] = f"Contraseña maestro: {password}"
     return redirect("/admin")
 
 # ===============================
@@ -195,11 +169,6 @@ def crear_grupo():
         db.grupos.insert_one({"nombre": nombre})
     return redirect("/admin")
 
-@app.route("/eliminar_grupo/<id>")
-def eliminar_grupo(id):
-    db.grupos.delete_one({"_id": ObjectId(id)})
-    return redirect("/admin")
-
 # ===============================
 # LOGIN MAESTRO
 # ===============================
@@ -210,52 +179,116 @@ def login_maestro():
             "correo": request.form["correo"],
             "password": request.form["password"]
         })
-
         if maestro:
             session.clear()
             session["maestro_id"] = str(maestro["_id"])
             return redirect("/panel_maestro")
-
         return render_template("login_maestro.html", error="Credenciales incorrectas")
-
     return render_template("login_maestro.html")
 
-@app.route("/logout_maestro")
-def logout_maestro():
-    session.clear()
-    return redirect("/login_maestro")
-
-# ===============================
-# PANEL MAESTRO
-# ===============================
 @app.route("/panel_maestro")
 def panel_maestro():
     if "maestro_id" not in session:
         return redirect("/login_maestro")
 
     maestro = db.maestros.find_one({"_id": ObjectId(session["maestro_id"])})
-    alumnos = list(db.alumnos.find({"grupo": maestro.get("grupo")}))
+    alumnos = list(db.alumnos.find({"grupo": maestro["grupo"]}))
     return render_template("panel_maestro.html", maestro=maestro, alumnos=alumnos)
 
 # ===============================
-# KARDEX PREMIUM
+# ASISTENCIAS
 # ===============================
-@app.route("/kardex/<id>")
-def generar_kardex(id):
+@app.route("/guardar_asistencia", methods=["POST"])
+def guardar_asistencia():
+    if "maestro_id" not in session:
+        return redirect("/login_maestro")
 
-    alumno = db.alumnos.find_one({"_id": ObjectId(id)})
+    maestro = db.maestros.find_one({"_id": ObjectId(session["maestro_id"])})
+    fecha = datetime.now().strftime("%Y-%m-%d")
+
+    for key in request.form:
+        if key.startswith("alumno_"):
+            alumno_id = key.replace("alumno_", "")
+            estado = request.form.get(key)
+
+            db.asistencias.delete_many({
+                "alumno_id": alumno_id,
+                "fecha": fecha
+            })
+
+            db.asistencias.insert_one({
+                "alumno_id": alumno_id,
+                "grupo": maestro["grupo"],
+                "fecha": fecha,
+                "estado": estado
+            })
+
+    return redirect("/panel_maestro")
+
+@app.route("/asistencias_admin")
+def asistencias_admin():
+    if "direccion" not in session:
+        return redirect("/")
+
+    asistencias = list(db.asistencias.find())
+    return render_template("asistencias_admin.html", asistencias=asistencias)
+
+# ===============================
+# REPORTES DISCIPLINARIOS
+# ===============================
+@app.route("/crear_reporte", methods=["POST"])
+def crear_reporte():
+    if "maestro_id" in session:
+        creador = "Maestro"
+    elif "direccion" in session:
+        creador = "Dirección"
+    else:
+        return redirect("/")
+
+    alumno_id = request.form["alumno_id"]
+    alumno = db.alumnos.find_one({"_id": ObjectId(alumno_id)})
+
+    db.reportes.insert_one({
+        "alumno_id": alumno_id,
+        "nombre_alumno": alumno["nombre"] + " " + alumno["apellido"],
+        "motivo": request.form["motivo"],
+        "consecuencia": request.form["consecuencia"],
+        "fecha": datetime.now().strftime("%Y-%m-%d"),
+        "estado": "Pendiente",
+        "creado_por": creador
+    })
+
+    return redirect("/admin")
+
+@app.route("/reportes_admin")
+def reportes_admin():
+    if "direccion" not in session:
+        return redirect("/")
+    reportes = list(db.reportes.find())
+    return render_template("reportes_admin.html", reportes=reportes)
+
+@app.route("/aprobar_reporte/<id>")
+def aprobar_reporte(id):
+    if "direccion" not in session:
+        return redirect("/")
+
+    reporte = db.reportes.find_one({"_id": ObjectId(id)})
+    db.reportes.update_one({"_id": ObjectId(id)}, {"$set": {"estado": "Aprobado"}})
+
+    generar_pdf_reporte(reporte)
+    return redirect("/reportes_admin")
+
+# ===============================
+# PDF REPORTE
+# ===============================
+def generar_pdf_reporte(reporte):
+
     config = db.configuracion.find_one()
+    ruta = f"static/reporte_{reporte['_id']}.pdf"
 
-    if not os.path.exists("static"):
-        os.makedirs("static")
-
-    ruta = f"static/kardex_{id}.pdf"
     doc = SimpleDocTemplate(ruta, pagesize=A4)
     elementos = []
     styles = getSampleStyleSheet()
-
-    nombre_colegio = config["nombre_colegio"] if config else "Nombre del Colegio"
-    ciclo = ciclo_escolar_actual()
 
     if config and config.get("logo"):
         logo_path = os.path.join("static", config["logo"])
@@ -263,15 +296,17 @@ def generar_kardex(id):
             elementos.append(Image(logo_path, width=120, height=80))
             elementos.append(Spacer(1, 20))
 
+    nombre_colegio = config["nombre_colegio"] if config else "Colegio"
     elementos.append(Paragraph(f"<b>{nombre_colegio}</b>", styles["Title"]))
     elementos.append(Spacer(1, 10))
-    elementos.append(Paragraph(f"Ciclo Escolar: {ciclo}", styles["Normal"]))
+    elementos.append(Paragraph(f"Ciclo Escolar: {ciclo_escolar_actual()}", styles["Normal"]))
     elementos.append(Spacer(1, 20))
 
     datos = [
-        ["Alumno:", alumno["nombre"] + " " + alumno["apellido"]],
-        ["Grado:", alumno["grado"]],
-        ["Grupo:", alumno["grupo"]],
+        ["Alumno:", reporte["nombre_alumno"]],
+        ["Motivo:", reporte["motivo"]],
+        ["Consecuencia:", reporte["consecuencia"]],
+        ["Fecha:", reporte["fecha"]],
     ]
 
     tabla = Table(datos)
@@ -279,13 +314,11 @@ def generar_kardex(id):
     elementos.append(tabla)
 
     elementos.append(Spacer(1, 40))
-    elementos.append(Paragraph("Firma Dirección: ____________________________", styles["Normal"]))
+    elementos.append(Paragraph("Firma Dirección: ____________________", styles["Normal"]))
     elementos.append(Spacer(1, 20))
-    elementos.append(Paragraph("Firma Padre/Tutor: ____________________________", styles["Normal"]))
+    elementos.append(Paragraph("Firma Padre/Tutor: ____________________", styles["Normal"]))
 
     doc.build(elementos)
-
-    return redirect(f"/static/kardex_{id}.pdf")
 
 # ===============================
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Asistencias - Dirección</title>
+<title>Asistencias - Dirección</title>
 </head>
 <body>
 
@@ -9,29 +9,41 @@
 <a href="/admin">Volver</a>
 
 <form method="GET">
-    <select name="grupo">
-        <option value="">Todos los grupos</option>
-        {% for grupo in grupos %}
-        <option value="{{ grupo.nombre }}">{{ grupo.nombre }}</option>
-        {% endfor %}
-    </select>
-    <button type="submit">Filtrar</button>
+<select name="grupo">
+    <option value="">Todos los grupos</option>
+    {% for grupo in grupos %}
+    <option value="{{ grupo.nombre }}">{{ grupo.nombre }}</option>
+    {% endfor %}
+</select>
+<button type="submit">Filtrar</button>
 </form>
 
 <table border="1">
 <tr>
-    <th>Alumno</th>
-    <th>Grupo</th>
-    <th>Fecha</th>
-    <th>Estado</th>
+<th>Alumno</th>
+<th>Grupo</th>
+<th>Fecha</th>
+<th>Estado</th>
+<th>Modificar</th>
 </tr>
 
 {% for a in asistencias %}
 <tr>
-    <td>{{ a.nombre_alumno }}</td>
-    <td>{{ a.grupo }}</td>
-    <td>{{ a.fecha }}</td>
-    <td>{{ a.estado }}</td>
+<td>{{ a.nombre_alumno }}</td>
+<td>{{ a.grupo }}</td>
+<td>{{ a.fecha }}</td>
+<td>{{ a.estado }}</td>
+<td>
+<form method="POST" action="/modificar_asistencia/{{ a._id }}">
+<select name="estado">
+    <option value="Presente">Presente</option>
+    <option value="Ausente">Ausente</option>
+    <option value="Retardo">Retardo</option>
+    <option value="Justificado">Justificado</option>
+</select>
+<button type="submit">Guardar</button>
+</form>
+</td>
 </tr>
 {% endfor %}
 
