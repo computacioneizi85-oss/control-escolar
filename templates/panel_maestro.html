@@ -7,7 +7,7 @@
 <style>
 body{
     margin:0;
-    font-family:Arial, Helvetica, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     background:#f4f6f9;
 }
 
@@ -78,12 +78,21 @@ button{
     color:white;
 }
 
+.btn-secondary{
+    background:#3498db;
+    color:white;
+}
+
 textarea{
     width:100%;
     padding:8px;
     border-radius:6px;
     border:1px solid #ccc;
     margin-top:5px;
+}
+select{
+    padding:6px;
+    border-radius:6px;
 }
 </style>
 </head>
@@ -109,6 +118,7 @@ textarea{
                     <th>Nombre</th>
                     <th>Grado</th>
                     <th>Grupo</th>
+                    <th>Kardex</th>
                 </tr>
             </thead>
             <tbody>
@@ -117,6 +127,13 @@ textarea{
                     <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
                     <td>{{ alumno.grado }}</td>
                     <td>{{ alumno.grupo }}</td>
+                    <td>
+                        <a href="/kardex/{{ alumno._id }}" target="_blank">
+                            <button class="btn-secondary">
+                                Kardex PDF
+                            </button>
+                        </a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -151,7 +168,9 @@ textarea{
             </table>
 
             <br>
-            <button type="submit" class="btn-primary">Guardar Asistencia</button>
+            <button type="submit" class="btn-primary">
+                Guardar Asistencia
+            </button>
         </form>
     </div>
 

@@ -71,13 +71,10 @@ def admin():
     )
 
 # ===============================
-# GESTIÓN ALUMNOS
+# ALUMNOS
 # ===============================
 @app.route("/registrar_alumno", methods=["POST"])
 def registrar_alumno():
-    if "direccion" not in session:
-        return redirect("/")
-
     password = request.form.get("password") or generar_password()
 
     db.alumnos.insert_one({
@@ -105,13 +102,10 @@ def reset_password_alumno(id):
     return redirect("/admin")
 
 # ===============================
-# GESTIÓN MAESTROS
+# MAESTROS
 # ===============================
 @app.route("/registrar_maestro", methods=["POST"])
 def registrar_maestro():
-    if "direccion" not in session:
-        return redirect("/")
-
     password = request.form.get("password") or generar_password()
 
     db.maestros.insert_one({
@@ -170,6 +164,7 @@ def login_maestro():
             session.clear()
             session["maestro_id"] = str(maestro["_id"])
             return redirect("/panel_maestro")
+
         return render_template("login_maestro.html", error="Credenciales incorrectas")
 
     return render_template("login_maestro.html")
@@ -184,12 +179,8 @@ def logout_maestro():
 # ===============================
 @app.route("/panel_maestro")
 def panel_maestro():
-    if "maestro_id" not in session:
-        return redirect("/login_maestro")
-
     maestro = db.maestros.find_one({"_id": ObjectId(session["maestro_id"])})
     alumnos = list(db.alumnos.find({"grupo": maestro.get("grupo")}))
-
     return render_template("panel_maestro.html", maestro=maestro, alumnos=alumnos)
 
 # ===============================
@@ -258,7 +249,7 @@ def autorizar_reporte(id):
     return redirect("/reportes_admin")
 
 # ===============================
-# GENERAR PDF
+# PDF REPORTE
 # ===============================
 def generar_pdf_reporte(reporte):
     if not os.path.exists("static"):
@@ -280,16 +271,70 @@ def generar_pdf_reporte(reporte):
         ["Consecuencia:", reporte["consecuencia"]],
     ]
 
-    tabla = Table(datos, colWidths=[120, 350])
-    tabla.setStyle(TableStyle([
-        ("GRID", (0,0), (-1,-1), 0.5, colors.grey)
-    ]))
+    tabla = Table(datos)
+    tabla.setStyle(TableStyle([("GRID", (0,0), (-1,-1), 0.5, colors.grey)]))
 
     elementos.append(tabla)
     elementos.append(Spacer(1, 50))
     elementos.append(Paragraph("Firma del Padre o Tutor: ____________________________", styles["Normal"]))
 
     doc.build(elementos)
+
+# ===============================
+# KARDEX COMPLETO
+# ===============================
+@app.route("/kardex/<id>")
+def generar_kardex(id):
+
+    alumno = db.alumnos.find_one({"_id": ObjectId(id)})
+    asistencias = list(db.asistencias.find({"alumno_id": id}))
+    reportes = list(db.reportes.find({"alumno_id": id, "estado": "Aprobado"}))
+
+    if not os.path.exists("static"):
+        os.makedirs("static")
+
+    ruta = f"static/kardex_{id}.pdf"
+    doc = SimpleDocTemplate(ruta, pagesize=A4)
+    elementos = []
+    styles = getSampleStyleSheet()
+
+    elementos.append(Paragraph("<b>KARDEX ACADÉMICO</b>", styles["Title"]))
+    elementos.append(Spacer(1, 20))
+
+    datos_generales = [
+        ["Nombre:", alumno["nombre"] + " " + alumno["apellido"]],
+        ["Correo:", alumno["correo"]],
+        ["Grado:", alumno["grado"]],
+        ["Grupo:", alumno["grupo"]],
+    ]
+
+    tabla_datos = Table(datos_generales)
+    tabla_datos.setStyle(TableStyle([("GRID", (0,0), (-1,-1), 0.5, colors.grey)]))
+
+    elementos.append(tabla_datos)
+    elementos.append(Spacer(1, 20))
+
+    elementos.append(Paragraph("<b>Asistencias</b>", styles["Heading2"]))
+    elementos.append(Spacer(1, 10))
+
+    if asistencias:
+        datos_asist = [["Fecha", "Estado"]]
+        for a in asistencias:
+            datos_asist.append([a["fecha"], a["estado"]])
+        tabla_asist = Table(datos_asist)
+        tabla_asist.setStyle(TableStyle([("GRID", (0,0), (-1,-1), 0.5, colors.grey)]))
+        elementos.append(tabla_asist)
+    else:
+        elementos.append(Paragraph("Sin asistencias registradas.", styles["Normal"]))
+
+    elementos.append(Spacer(1, 20))
+    elementos.append(Paragraph("Firma del Director: ____________________________", styles["Normal"]))
+    elementos.append(Spacer(1, 20))
+    elementos.append(Paragraph("Firma del Padre o Tutor: ____________________________", styles["Normal"]))
+
+    doc.build(elementos)
+
+    return redirect(f"/static/kardex_{id}.pdf")
 
 # ===============================
 if __name__ == "__main__":

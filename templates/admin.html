@@ -7,7 +7,7 @@
 <style>
 body{
     margin:0;
-    font-family:Arial, Helvetica, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     background:#f4f6f9;
 }
 
@@ -22,6 +22,7 @@ header{
 
 header h1{
     margin:0;
+    font-size:20px;
 }
 
 .logout-btn{
@@ -38,7 +39,7 @@ header h1{
 }
 
 .sidebar{
-    width:230px;
+    width:240px;
     background:#0d1b2a;
     color:white;
     min-height:100vh;
@@ -54,6 +55,12 @@ header h1{
     color:white;
     text-decoration:none;
     margin:10px 0;
+    padding:6px;
+    border-radius:6px;
+}
+
+.sidebar a:hover{
+    background:#1b263b;
 }
 
 .content{
@@ -73,7 +80,7 @@ h2{
     margin-top:0;
 }
 
-input{
+input, select{
     padding:8px;
     margin:5px 5px 5px 0;
     border-radius:6px;
@@ -99,6 +106,11 @@ button{
 
 .btn-warning{
     background:#f39c12;
+    color:white;
+}
+
+.btn-info{
+    background:#3498db;
     color:white;
 }
 
@@ -131,7 +143,7 @@ th{
 <body>
 
 <header>
-    <h1>Control Escolar - Dirección</h1>
+    <h1>Panel Dirección - Control Escolar</h1>
     <a href="/logout">
         <button class="logout-btn">Cerrar sesión</button>
     </a>
@@ -143,6 +155,7 @@ th{
         <h3>MENÚ</h3>
         <a href="/admin">Inicio</a>
         <a href="/asistencias_admin">Asistencias</a>
+        <a href="/reportes_admin">Reportes Disciplinarios</a>
     </div>
 
     <div class="content">
@@ -153,41 +166,34 @@ th{
         </div>
         {% endif %}
 
-        <!-- CREAR GRUPO -->
+        <!-- ================= GRUPOS ================= -->
         <div class="card">
             <h2>Crear Grupo</h2>
             <form action="/crear_grupo" method="POST">
                 <input type="text" name="nombre_grupo" placeholder="Nombre del grupo" required>
-                <button type="submit" class="btn-primary">Crear Grupo</button>
+                <button type="submit" class="btn-primary">Crear</button>
             </form>
-        </div>
 
-        <!-- LISTA GRUPOS -->
-        <div class="card">
-            <h2>Grupos Registrados</h2>
+            <h3>Grupos Registrados</h3>
             <table>
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for grupo in grupos %}
-                    <tr>
-                        <td>{{ grupo.nombre }}</td>
-                        <td>
-                            <a href="/eliminar_grupo/{{ grupo._id }}">
-                                <button class="btn-danger">Eliminar</button>
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Acción</th>
+                </tr>
+                {% for grupo in grupos %}
+                <tr>
+                    <td>{{ grupo.nombre }}</td>
+                    <td>
+                        <a href="/eliminar_grupo/{{ grupo._id }}">
+                            <button class="btn-danger">Eliminar</button>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
             </table>
         </div>
 
-        <!-- REGISTRAR ALUMNO -->
+        <!-- ================= ALUMNOS ================= -->
         <div class="card">
             <h2>Registrar Alumno</h2>
             <form action="/registrar_alumno" method="POST">
@@ -199,43 +205,42 @@ th{
                 <input type="password" name="password" placeholder="Contraseña (opcional)">
                 <button type="submit" class="btn-primary">Registrar</button>
             </form>
-        </div>
 
-        <!-- LISTA ALUMNOS -->
-        <div class="card">
-            <h2>Alumnos Registrados</h2>
+            <h3>Alumnos Registrados</h3>
             <table>
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Grado</th>
-                        <th>Grupo</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for alumno in alumnos %}
-                    <tr>
-                        <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
-                        <td>{{ alumno.correo }}</td>
-                        <td>{{ alumno.grado }}</td>
-                        <td>{{ alumno.grupo }}</td>
-                        <td>
-                            <a href="/reset_password_alumno/{{ alumno._id }}">
-                                <button class="btn-warning">Restaurar contraseña</button>
-                            </a>
-                            <a href="/eliminar_alumno/{{ alumno._id }}">
-                                <button class="btn-danger">Eliminar</button>
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Grado</th>
+                    <th>Grupo</th>
+                    <th>Kardex</th>
+                    <th>Acciones</th>
+                </tr>
+                {% for alumno in alumnos %}
+                <tr>
+                    <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+                    <td>{{ alumno.correo }}</td>
+                    <td>{{ alumno.grado }}</td>
+                    <td>{{ alumno.grupo }}</td>
+                    <td>
+                        <a href="/kardex/{{ alumno._id }}" target="_blank">
+                            <button class="btn-info">Kardex PDF</button>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/reset_password_alumno/{{ alumno._id }}">
+                            <button class="btn-warning">Reset</button>
+                        </a>
+                        <a href="/eliminar_alumno/{{ alumno._id }}">
+                            <button class="btn-danger">Eliminar</button>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
             </table>
         </div>
 
-        <!-- REGISTRAR MAESTRO -->
+        <!-- ================= MAESTROS ================= -->
         <div class="card">
             <h2>Registrar Maestro</h2>
             <form action="/registrar_maestro" method="POST">
@@ -246,39 +251,32 @@ th{
                 <input type="password" name="password" placeholder="Contraseña (opcional)">
                 <button type="submit" class="btn-primary">Registrar</button>
             </form>
-        </div>
 
-        <!-- LISTA MAESTROS -->
-        <div class="card">
-            <h2>Maestros Registrados</h2>
+            <h3>Maestros Registrados</h3>
             <table>
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Materia</th>
-                        <th>Grupo</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for maestro in maestros %}
-                    <tr>
-                        <td>{{ maestro.nombre }}</td>
-                        <td>{{ maestro.correo }}</td>
-                        <td>{{ maestro.materia }}</td>
-                        <td>{{ maestro.grupo }}</td>
-                        <td>
-                            <a href="/reset_password_maestro/{{ maestro._id }}">
-                                <button class="btn-warning">Restaurar contraseña</button>
-                            </a>
-                            <a href="/eliminar_maestro/{{ maestro._id }}">
-                                <button class="btn-danger">Eliminar</button>
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Materia</th>
+                    <th>Grupo</th>
+                    <th>Acciones</th>
+                </tr>
+                {% for maestro in maestros %}
+                <tr>
+                    <td>{{ maestro.nombre }}</td>
+                    <td>{{ maestro.correo }}</td>
+                    <td>{{ maestro.materia }}</td>
+                    <td>{{ maestro.grupo }}</td>
+                    <td>
+                        <a href="/reset_password_maestro/{{ maestro._id }}">
+                            <button class="btn-warning">Reset</button>
+                        </a>
+                        <a href="/eliminar_maestro/{{ maestro._id }}">
+                            <button class="btn-danger">Eliminar</button>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
             </table>
         </div>
 
