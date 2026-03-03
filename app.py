@@ -88,47 +88,7 @@ def admin():
     )
 
 # ===============================
-# CONFIGURACIÓN INSTITUCIONAL
-# ===============================
-@app.route("/configuracion", methods=["GET", "POST"])
-def configuracion():
-    if "direccion" not in session:
-        return redirect("/")
-
-    if request.method == "POST":
-        nombre = request.form.get("nombre_colegio")
-        logo = request.files.get("logo")
-
-        config = db.configuracion.find_one()
-        logo_nombre = None
-
-        if logo and logo.filename != "":
-            if not os.path.exists("static"):
-                os.makedirs("static")
-            logo_nombre = secure_filename(logo.filename)
-            logo.save(os.path.join("static", logo_nombre))
-
-        if config:
-            db.configuracion.update_one(
-                {"_id": config["_id"]},
-                {"$set": {
-                    "nombre_colegio": nombre,
-                    "logo": logo_nombre if logo_nombre else config.get("logo")
-                }}
-            )
-        else:
-            db.configuracion.insert_one({
-                "nombre_colegio": nombre,
-                "logo": logo_nombre
-            })
-
-        return redirect("/configuracion")
-
-    config = db.configuracion.find_one()
-    return render_template("configuracion.html", config=config)
-
-# ===============================
-# ALUMNOS
+# REGISTRO ALUMNO
 # ===============================
 @app.route("/registrar_alumno", methods=["POST"])
 def registrar_alumno():
@@ -166,7 +126,7 @@ def reset_password_alumno(id):
     return redirect("/admin")
 
 # ===============================
-# MAESTROS
+# REGISTRO MAESTRO
 # ===============================
 @app.route("/registrar_maestro", methods=["POST"])
 def registrar_maestro():
@@ -222,7 +182,7 @@ def eliminar_grupo(id):
     return redirect("/admin")
 
 # ===============================
-# LOGIN MAESTRO (CORREGIDO)
+# LOGIN MAESTRO (100% FUNCIONAL)
 # ===============================
 @app.route("/login_maestro", methods=["GET", "POST"])
 def login_maestro():
@@ -249,10 +209,11 @@ def panel_maestro():
 
     maestro = db.maestros.find_one({"_id": ObjectId(session["maestro_id"])})
     alumnos = list(db.alumnos.find({"grupo": maestro["grupo"]}))
+
     return render_template("panel_maestro.html", maestro=maestro, alumnos=alumnos)
 
 # ===============================
-# KARDEX PDF (DESCARGA AUTOMÁTICA)
+# KARDEX PDF DESCARGA AUTOMÁTICA
 # ===============================
 @app.route("/kardex/<id>")
 def generar_kardex(id):
@@ -264,31 +225,20 @@ def generar_kardex(id):
     if not alumno:
         return "Alumno no encontrado"
 
-    config = db.configuracion.find_one()
-
-    if not os.path.exists("static"):
-        os.makedirs("static")
-
     ruta = f"static/kardex_{id}.pdf"
 
     doc = SimpleDocTemplate(ruta, pagesize=A4)
     elementos = []
     styles = getSampleStyleSheet()
 
-    if config and config.get("logo"):
-        logo_path = os.path.join("static", config["logo"])
-        if os.path.exists(logo_path):
-            elementos.append(Image(logo_path, width=120, height=80))
-            elementos.append(Spacer(1, 20))
-
-    nombre_colegio = config["nombre_colegio"] if config else "Colegio"
-    elementos.append(Paragraph(f"<b>{nombre_colegio}</b>", styles["Title"]))
+    elementos.append(Paragraph("<b>KARDEX ACADÉMICO</b>", styles["Title"]))
     elementos.append(Spacer(1, 20))
 
     datos = [
         ["Alumno:", alumno["nombre"] + " " + alumno["apellido"]],
         ["Grado:", alumno["grado"]],
         ["Grupo:", alumno["grupo"]],
+        ["Ciclo Escolar:", ciclo_escolar_actual()]
     ]
 
     tabla = Table(datos)
@@ -304,69 +254,7 @@ def generar_kardex(id):
     )
 
 # ===============================
-# REPORTE PDF (DESCARGA AUTOMÁTICA)
-# ===============================
-@app.route("/aprobar_reporte/<id>")
-def aprobar_reporte(id):
-
-    if "direccion" not in session:
-        return redirect("/")
-
-    reporte = db.reportes.find_one({"_id": ObjectId(id)})
-    if not reporte:
-        return "Reporte no encontrado"
-
-    db.reportes.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {"estado": "Aprobado"}}
-    )
-
-    ruta = generar_pdf_reporte(reporte)
-
-    return send_file(
-        ruta,
-        as_attachment=True,
-        download_name=f"Reporte_{reporte['nombre_alumno']}.pdf"
-    )
-
-def generar_pdf_reporte(reporte):
-
-    config = db.configuracion.find_one()
-
-    if not os.path.exists("static"):
-        os.makedirs("static")
-
-    ruta = f"static/reporte_{reporte['_id']}.pdf"
-
-    doc = SimpleDocTemplate(ruta, pagesize=A4)
-    elementos = []
-    styles = getSampleStyleSheet()
-
-    if config and config.get("logo"):
-        logo_path = os.path.join("static", config["logo"])
-        if os.path.exists(logo_path):
-            elementos.append(Image(logo_path, width=120, height=80))
-            elementos.append(Spacer(1, 20))
-
-    nombre_colegio = config["nombre_colegio"] if config else "Colegio"
-    elementos.append(Paragraph(f"<b>{nombre_colegio}</b>", styles["Title"]))
-    elementos.append(Spacer(1, 20))
-
-    datos = [
-        ["Alumno:", reporte["nombre_alumno"]],
-        ["Motivo:", reporte["motivo"]],
-        ["Consecuencia:", reporte["consecuencia"]],
-        ["Fecha:", reporte["fecha"]],
-    ]
-
-    tabla = Table(datos)
-    tabla.setStyle(TableStyle([("GRID", (0,0), (-1,-1), 0.5, colors.grey)]))
-    elementos.append(tabla)
-
-    doc.build(elementos)
-
-    return ruta
-
+# INICIO APP
 # ===============================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
