@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Panel Maestro</title>
+</head>
+<body>
+
+<h2>Bienvenido {{ maestro.nombre }}</h2>
+
+<a href="/logout_maestro">Cerrar sesión</a>
+
+<h3>Alumnos de tu grupo</h3>
+
+<table border="1">
+<tr>
+    <th>Nombre</th>
+    <th>Grado</th>
+    <th>Grupo</th>
+</tr>
+
+{% for alumno in alumnos %}
+<tr>
+    <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+    <td>{{ alumno.grado }}</td>
+    <td>{{ alumno.grupo }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</body>
+</html>
