@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, send_file
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -47,11 +47,16 @@ def ciclo_escolar_actual():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        if request.form["usuario"] == "direccion" and request.form["password"] == "1234":
+        usuario = request.form.get("usuario", "").strip()
+        password = request.form.get("password", "").strip()
+
+        if usuario == "direccion" and password == "1234":
             session.clear()
             session["direccion"] = True
             return redirect("/admin")
+
         return render_template("login.html", error="Credenciales incorrectas")
+
     return render_template("login.html")
 
 @app.route("/logout")
@@ -83,7 +88,7 @@ def admin():
     )
 
 # ===============================
-# CONFIGURACIÓN
+# CONFIGURACIÓN INSTITUCIONAL
 # ===============================
 @app.route("/configuracion", methods=["GET", "POST"])
 def configuracion():
@@ -127,12 +132,15 @@ def configuracion():
 # ===============================
 @app.route("/registrar_alumno", methods=["POST"])
 def registrar_alumno():
+    if "direccion" not in session:
+        return redirect("/")
+
     password = request.form.get("password") or generar_password()
 
     db.alumnos.insert_one({
         "nombre": request.form["nombre"],
         "apellido": request.form["apellido"],
-        "correo": request.form["correo"],
+        "correo": request.form["correo"].strip().lower(),
         "grado": request.form["grado"],
         "grupo": request.form["grupo"],
         "password": password
@@ -162,11 +170,14 @@ def reset_password_alumno(id):
 # ===============================
 @app.route("/registrar_maestro", methods=["POST"])
 def registrar_maestro():
+    if "direccion" not in session:
+        return redirect("/")
+
     password = request.form.get("password") or generar_password()
 
     db.maestros.insert_one({
         "nombre": request.form["nombre"],
-        "correo": request.form["correo"],
+        "correo": request.form["correo"].strip().lower(),
         "materia": request.form["materia"],
         "grupo": request.form["grupo"],
         "password": password
@@ -211,10 +222,41 @@ def eliminar_grupo(id):
     return redirect("/admin")
 
 # ===============================
-# KARDEX PDF
+# LOGIN MAESTRO (CORREGIDO)
+# ===============================
+@app.route("/login_maestro", methods=["GET", "POST"])
+def login_maestro():
+    if request.method == "POST":
+
+        correo = request.form.get("correo", "").strip().lower()
+        password = request.form.get("password", "").strip()
+
+        maestro = db.maestros.find_one({"correo": correo})
+
+        if maestro and maestro.get("password") == password:
+            session.clear()
+            session["maestro_id"] = str(maestro["_id"])
+            return redirect("/panel_maestro")
+
+        return render_template("login_maestro.html", error="Credenciales incorrectas")
+
+    return render_template("login_maestro.html")
+
+@app.route("/panel_maestro")
+def panel_maestro():
+    if "maestro_id" not in session:
+        return redirect("/login_maestro")
+
+    maestro = db.maestros.find_one({"_id": ObjectId(session["maestro_id"])})
+    alumnos = list(db.alumnos.find({"grupo": maestro["grupo"]}))
+    return render_template("panel_maestro.html", maestro=maestro, alumnos=alumnos)
+
+# ===============================
+# KARDEX PDF (DESCARGA AUTOMÁTICA)
 # ===============================
 @app.route("/kardex/<id>")
 def generar_kardex(id):
+
     if "direccion" not in session and "maestro_id" not in session:
         return redirect("/")
 
@@ -241,8 +283,6 @@ def generar_kardex(id):
 
     nombre_colegio = config["nombre_colegio"] if config else "Colegio"
     elementos.append(Paragraph(f"<b>{nombre_colegio}</b>", styles["Title"]))
-    elementos.append(Spacer(1, 10))
-    elementos.append(Paragraph(f"Ciclo Escolar: {ciclo_escolar_actual()}", styles["Normal"]))
     elementos.append(Spacer(1, 20))
 
     datos = [
@@ -255,20 +295,20 @@ def generar_kardex(id):
     tabla.setStyle(TableStyle([("GRID", (0,0), (-1,-1), 0.5, colors.grey)]))
     elementos.append(tabla)
 
-    elementos.append(Spacer(1, 40))
-    elementos.append(Paragraph("Firma Dirección: ____________________", styles["Normal"]))
-    elementos.append(Spacer(1, 20))
-    elementos.append(Paragraph("Firma Padre/Tutor: ____________________", styles["Normal"]))
-
     doc.build(elementos)
 
-    return redirect("/" + ruta)
+    return send_file(
+        ruta,
+        as_attachment=True,
+        download_name=f"Kardex_{alumno['nombre']}.pdf"
+    )
 
 # ===============================
-# APROBAR REPORTE + PDF
+# REPORTE PDF (DESCARGA AUTOMÁTICA)
 # ===============================
 @app.route("/aprobar_reporte/<id>")
 def aprobar_reporte(id):
+
     if "direccion" not in session:
         return redirect("/")
 
@@ -281,11 +321,16 @@ def aprobar_reporte(id):
         {"$set": {"estado": "Aprobado"}}
     )
 
-    generar_pdf_reporte(reporte)
+    ruta = generar_pdf_reporte(reporte)
 
-    return redirect("/static/reporte_" + str(id) + ".pdf")
+    return send_file(
+        ruta,
+        as_attachment=True,
+        download_name=f"Reporte_{reporte['nombre_alumno']}.pdf"
+    )
 
 def generar_pdf_reporte(reporte):
+
     config = db.configuracion.find_one()
 
     if not os.path.exists("static"):
@@ -305,8 +350,6 @@ def generar_pdf_reporte(reporte):
 
     nombre_colegio = config["nombre_colegio"] if config else "Colegio"
     elementos.append(Paragraph(f"<b>{nombre_colegio}</b>", styles["Title"]))
-    elementos.append(Spacer(1, 10))
-    elementos.append(Paragraph(f"Ciclo Escolar: {ciclo_escolar_actual()}", styles["Normal"]))
     elementos.append(Spacer(1, 20))
 
     datos = [
@@ -320,12 +363,9 @@ def generar_pdf_reporte(reporte):
     tabla.setStyle(TableStyle([("GRID", (0,0), (-1,-1), 0.5, colors.grey)]))
     elementos.append(tabla)
 
-    elementos.append(Spacer(1, 40))
-    elementos.append(Paragraph("Firma Dirección: ____________________", styles["Normal"]))
-    elementos.append(Spacer(1, 20))
-    elementos.append(Paragraph("Firma Padre/Tutor: ____________________", styles["Normal"]))
-
     doc.build(elementos)
+
+    return ruta
 
 # ===============================
 if __name__ == "__main__":
