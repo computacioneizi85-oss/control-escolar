@@ -186,6 +186,7 @@ def eliminar_grupo(id):
 # ===============================
 @app.route("/login_maestro", methods=["GET", "POST"])
 def login_maestro():
+
     if request.method == "POST":
 
         correo = request.form.get("correo", "").strip().lower()
@@ -193,12 +194,17 @@ def login_maestro():
 
         maestro = db.maestros.find_one({"correo": correo})
 
-        if maestro and maestro.get("password") == password:
-            session.clear()
-            session["maestro_id"] = str(maestro["_id"])
-            return redirect("/panel_maestro")
+        if not maestro:
+            return render_template("login_maestro.html",
+                                   error="Usuario no encontrado")
 
-        return render_template("login_maestro.html", error="Credenciales incorrectas")
+        if maestro["password"] != password:
+            return render_template("login_maestro.html",
+                                   error="Contraseña incorrecta")
+
+        session.clear()
+        session["maestro_id"] = str(maestro["_id"])
+        return redirect("/panel_maestro")
 
     return render_template("login_maestro.html")
 
@@ -252,6 +258,34 @@ def generar_kardex(id):
         as_attachment=True,
         download_name=f"Kardex_{alumno['nombre']}.pdf"
     )
+
+# ===============================
+# ASISTENCIAS ADMIN
+# ===============================
+@app.route("/asistencias_admin")
+def asistencias_admin():
+    if "direccion" not in session:
+        return redirect("/")
+
+    asistencias = list(db.asistencias.find())
+    alumnos = {str(a["_id"]): a for a in db.alumnos.find()}
+
+    return render_template("asistencias_admin.html",
+                           asistencias=asistencias,
+                           alumnos=alumnos)
+
+
+# ===============================
+# REPORTES ADMIN
+# ===============================
+@app.route("/reportes_admin")
+def reportes_admin():
+    if "direccion" not in session:
+        return redirect("/")
+
+    reportes = list(db.reportes.find())
+    return render_template("reportes_admin.html",
+                           reportes=reportes)
 
 # ===============================
 # INICIO APP
