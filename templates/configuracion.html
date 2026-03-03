@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Configuración Institucional</title>
+</head>
+<body>
+
+<h2>Configuración Institucional</h2>
+<a href="/admin">Volver</a>
+
+<form method="POST" enctype="multipart/form-data">
+
+<label>Nombre del Colegio:</label><br>
+<input type="text" name="nombre_colegio"
+value="{{ config.nombre_colegio if config else '' }}" required>
+
+<br><br>
+
+<label>Logo Institucional:</label><br>
+<input type="file" name="logo">
+
+<br><br>
+
+<button type="submit">Guardar Configuración</button>
+
+</form>
+
+{% if config and config.logo %}
+<h3>Logo Actual:</h3>
+<img src="/static/{{ config.logo }}" width="150">
+{% endif %}
+
+</body>
+</html>
