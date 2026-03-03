@@ -18,10 +18,10 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 
 app = Flask(__name__)
-app.secret_key = "control_escolar_premium_secret"
+app.secret_key = "control_escolar_secret_key"
 
 # ===============================
-# CONEXIÓN A MONGO
+# CONEXIÓN MONGODB
 # ===============================
 MONGO_URI = os.environ.get("MONGO_URI")
 if not MONGO_URI:
@@ -48,6 +48,7 @@ def ciclo_escolar_actual():
 # LOGIN DIRECCIÓN
 # ===============================
 @app.route("/", methods=["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         if request.form["usuario"] == "direccion" and request.form["password"] == "1234":
@@ -229,6 +230,9 @@ def logout_maestro():
 # ===============================
 @app.route("/panel_maestro")
 def panel_maestro():
+    if "maestro_id" not in session:
+        return redirect("/login_maestro")
+
     maestro = db.maestros.find_one({"_id": ObjectId(session["maestro_id"])})
     alumnos = list(db.alumnos.find({"grupo": maestro.get("grupo")}))
     return render_template("panel_maestro.html", maestro=maestro, alumnos=alumnos)
@@ -240,8 +244,6 @@ def panel_maestro():
 def generar_kardex(id):
 
     alumno = db.alumnos.find_one({"_id": ObjectId(id)})
-    asistencias = list(db.asistencias.find({"alumno_id": id}))
-    reportes = list(db.reportes.find({"alumno_id": id, "estado": "Aprobado"}))
     config = db.configuracion.find_one()
 
     if not os.path.exists("static"):
@@ -255,7 +257,6 @@ def generar_kardex(id):
     nombre_colegio = config["nombre_colegio"] if config else "Nombre del Colegio"
     ciclo = ciclo_escolar_actual()
 
-    # Logo
     if config and config.get("logo"):
         logo_path = os.path.join("static", config["logo"])
         if os.path.exists(logo_path):
