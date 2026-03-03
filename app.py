@@ -2,53 +2,38 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import os
+import random
+import string
 
 app = Flask(__name__)
 app.secret_key = "control_escolar_secret_key"
 
-# ==========================
-# CONEXIÓN A MONGO
-# ==========================
 MONGO_URI = os.environ.get("MONGO_URI")
 
 if not MONGO_URI:
-    raise Exception("MONGO_URI no está configurado en Render")
+    raise Exception("MONGO_URI no configurado")
 
 client = MongoClient(MONGO_URI)
 db = client["control_escolar"]
 
 # =====================================================
-# RUTA PRINCIPAL
+# UTILIDAD GENERAR PASSWORD
 # =====================================================
-@app.route("/")
-def home():
-    return redirect(url_for("login"))
+def generar_password():
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
 # =====================================================
 # LOGIN DIRECCIÓN
 # =====================================================
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        usuario = request.form.get("usuario")
-        password = request.form.get("password")
-
-        if usuario == "direccion" and password == "1234":
+        if request.form["usuario"] == "direccion" and request.form["password"] == "1234":
             session.clear()
             session["direccion"] = True
-            return redirect(url_for("admin"))
-        else:
-            return render_template("login.html", error="Credenciales incorrectas")
-
+            return redirect("/admin")
+        return render_template("login.html", error="Credenciales incorrectas")
     return render_template("login.html")
-
-# =====================================================
-# LOGOUT DIRECCIÓN
-# =====================================================
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("login"))
 
 # =====================================================
 # PANEL DIRECCIÓN
@@ -56,12 +41,19 @@ def logout():
 @app.route("/admin")
 def admin():
     if "direccion" not in session:
-        return redirect(url_for("login"))
+        return redirect("/")
 
     alumnos = list(db.alumnos.find())
     maestros = list(db.maestros.find())
 
-    return render_template("admin.html", alumnos=alumnos, maestros=maestros)
+    mensaje_password = session.pop("nueva_password", None)
+
+    return render_template(
+        "admin.html",
+        alumnos=alumnos,
+        maestros=maestros,
+        nueva_password=mensaje_password
+    )
 
 # =====================================================
 # REGISTRAR ALUMNO
@@ -69,28 +61,23 @@ def admin():
 @app.route("/registrar_alumno", methods=["POST"])
 def registrar_alumno():
     if "direccion" not in session:
-        return redirect(url_for("login"))
+        return redirect("/")
+
+    password = request.form.get("password")
+    if not password:
+        password = generar_password()
 
     db.alumnos.insert_one({
-        "nombre": request.form.get("nombre"),
-        "apellido": request.form.get("apellido"),
-        "correo": request.form.get("correo"),
-        "grado": request.form.get("grado"),
-        "grupo": request.form.get("grupo")
+        "nombre": request.form["nombre"],
+        "apellido": request.form["apellido"],
+        "correo": request.form["correo"],
+        "grado": request.form["grado"],
+        "grupo": request.form["grupo"],
+        "password": password
     })
 
-    return redirect(url_for("admin"))
-
-# =====================================================
-# ELIMINAR ALUMNO
-# =====================================================
-@app.route("/eliminar_alumno/<id>")
-def eliminar_alumno(id):
-    if "direccion" not in session:
-        return redirect(url_for("login"))
-
-    db.alumnos.delete_one({"_id": ObjectId(id)})
-    return redirect(url_for("admin"))
+    session["nueva_password"] = f"Contraseña del alumno: {password}"
+    return redirect("/admin")
 
 # =====================================================
 # REGISTRAR MAESTRO
@@ -98,95 +85,72 @@ def eliminar_alumno(id):
 @app.route("/registrar_maestro", methods=["POST"])
 def registrar_maestro():
     if "direccion" not in session:
-        return redirect(url_for("login"))
+        return redirect("/")
+
+    password = request.form.get("password")
+    if not password:
+        password = generar_password()
 
     db.maestros.insert_one({
-        "nombre": request.form.get("nombre"),
-        "correo": request.form.get("correo"),
-        "materia": request.form.get("materia"),
-        "grupo": request.form.get("grupo"),
-        "password": "1234"
+        "nombre": request.form["nombre"],
+        "correo": request.form["correo"],
+        "materia": request.form["materia"],
+        "grupo": request.form["grupo"],
+        "password": password
     })
 
-    return redirect(url_for("admin"))
+    session["nueva_password"] = f"Contraseña del maestro: {password}"
+    return redirect("/admin")
 
 # =====================================================
-# ELIMINAR MAESTRO
-# =====================================================
-@app.route("/eliminar_maestro/<id>")
-def eliminar_maestro(id):
-    if "direccion" not in session:
-        return redirect(url_for("login"))
-
-    db.maestros.delete_one({"_id": ObjectId(id)})
-    return redirect(url_for("admin"))
-
-# =====================================================
-# RESET PASSWORD MAESTRO
+# RESTAURAR PASSWORD MAESTRO
 # =====================================================
 @app.route("/reset_password_maestro/<id>")
 def reset_password_maestro(id):
     if "direccion" not in session:
-        return redirect(url_for("login"))
+        return redirect("/")
+
+    nueva = generar_password()
 
     db.maestros.update_one(
         {"_id": ObjectId(id)},
-        {"$set": {"password": "maestro123"}}
+        {"$set": {"password": nueva}}
     )
 
-    return redirect(url_for("admin"))
+    session["nueva_password"] = f"Nueva contraseña del maestro: {nueva}"
+    return redirect("/admin")
 
 # =====================================================
-# LOGIN MAESTRO
+# RESTAURAR PASSWORD ALUMNO
 # =====================================================
-@app.route("/login_maestro", methods=["GET", "POST"])
-def login_maestro():
-    if request.method == "POST":
-        correo = request.form.get("correo")
-        password = request.form.get("password")
+@app.route("/reset_password_alumno/<id>")
+def reset_password_alumno(id):
+    if "direccion" not in session:
+        return redirect("/")
 
-        maestro = db.maestros.find_one({
-            "correo": correo,
-            "password": password
-        })
+    nueva = generar_password()
 
-        if maestro:
-            session.clear()
-            session["maestro_id"] = str(maestro["_id"])
-            return redirect(url_for("panel_maestro"))
-        else:
-            return render_template("login_maestro.html", error="Credenciales incorrectas")
-
-    return render_template("login_maestro.html")
-
-# =====================================================
-# PANEL MAESTRO
-# =====================================================
-@app.route("/panel_maestro")
-def panel_maestro():
-    if "maestro_id" not in session:
-        return redirect(url_for("login_maestro"))
-
-    maestro = db.maestros.find_one({"_id": ObjectId(session["maestro_id"])})
-
-    alumnos = list(db.alumnos.find({"grupo": maestro.get("grupo")}))
-
-    return render_template(
-        "panel_maestro.html",
-        maestro=maestro,
-        alumnos=alumnos
+    db.alumnos.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"password": nueva}}
     )
 
-# =====================================================
-# LOGOUT MAESTRO
-# =====================================================
-@app.route("/logout_maestro")
-def logout_maestro():
-    session.clear()
-    return redirect(url_for("login_maestro"))
+    session["nueva_password"] = f"Nueva contraseña del alumno: {nueva}"
+    return redirect("/admin")
 
 # =====================================================
-# EJECUCIÓN LOCAL
+# ELIMINAR
+# =====================================================
+@app.route("/eliminar_alumno/<id>")
+def eliminar_alumno(id):
+    db.alumnos.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin")
+
+@app.route("/eliminar_maestro/<id>")
+def eliminar_maestro(id):
+    db.maestros.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin")
+
 # =====================================================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

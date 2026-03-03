@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Control Escolar - Dirección</title>
+    <title>Panel Dirección - Control Escolar</title>
+
     <style>
         body {
             margin: 0;
@@ -21,7 +22,6 @@
 
         header h1 {
             margin: 0;
-            font-size: 20px;
         }
 
         .logout-btn {
@@ -38,10 +38,10 @@
         }
 
         .sidebar {
-            width: 220px;
+            width: 230px;
             background-color: #0d1b2a;
-            min-height: 100vh;
             color: white;
+            min-height: 100vh;
             padding: 20px;
         }
 
@@ -53,7 +53,7 @@
             display: block;
             color: white;
             text-decoration: none;
-            margin: 12px 0;
+            margin: 10px 0;
         }
 
         .content {
@@ -118,6 +118,14 @@
             background-color: #ecf0f1;
         }
 
+        .password-alert {
+            background: #27ae60;
+            color: white;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+        }
+
     </style>
 </head>
 <body>
@@ -132,16 +140,22 @@
 <div class="container">
 
     <div class="sidebar">
-        <h3>MENÚ PRINCIPAL</h3>
-        <a href="#">Inicio</a>
-        <a href="#">Registrar Alumno</a>
-        <a href="#">Registrar Maestro</a>
+        <h3>MENÚ</h3>
+        <a href="/admin">Inicio</a>
         <a href="#">Grupos</a>
         <a href="#">Asistencias</a>
         <a href="#">Calificaciones</a>
+        <a href="#">Reportes</a>
     </div>
 
     <div class="content">
+
+        <!-- MOSTRAR NUEVA CONTRASEÑA -->
+        {% if nueva_password %}
+        <div class="password-alert">
+            {{ nueva_password }}
+        </div>
+        {% endif %}
 
         <!-- REGISTRAR ALUMNO -->
         <div class="card">
@@ -152,11 +166,12 @@
                 <input type="email" name="correo" placeholder="Correo" required>
                 <input type="text" name="grado" placeholder="Grado" required>
                 <input type="text" name="grupo" placeholder="Grupo" required>
+                <input type="password" name="password" placeholder="Contraseña (opcional)">
                 <button type="submit" class="btn-primary">Registrar</button>
             </form>
         </div>
 
-        <!-- ALUMNOS -->
+        <!-- LISTA ALUMNOS -->
         <div class="card">
             <h2>Alumnos Registrados</h2>
             <table>
@@ -177,6 +192,9 @@
                         <td>{{ alumno.grado }}</td>
                         <td>{{ alumno.grupo }}</td>
                         <td>
+                            <a href="/reset_password_alumno/{{ alumno._id }}">
+                                <button class="btn-warning">Restaurar contraseña</button>
+                            </a>
                             <a href="/eliminar_alumno/{{ alumno._id }}">
                                 <button class="btn-danger">Eliminar</button>
                             </a>
@@ -194,11 +212,13 @@
                 <input type="text" name="nombre" placeholder="Nombre" required>
                 <input type="email" name="correo" placeholder="Correo" required>
                 <input type="text" name="materia" placeholder="Materia" required>
+                <input type="text" name="grupo" placeholder="Grupo" required>
+                <input type="password" name="password" placeholder="Contraseña (opcional)">
                 <button type="submit" class="btn-primary">Registrar</button>
             </form>
         </div>
 
-        <!-- MAESTROS -->
+        <!-- LISTA MAESTROS -->
         <div class="card">
             <h2>Maestros Registrados</h2>
             <table>
@@ -207,6 +227,7 @@
                         <th>Nombre</th>
                         <th>Correo</th>
                         <th>Materia</th>
+                        <th>Grupo</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -216,6 +237,7 @@
                         <td>{{ maestro.nombre }}</td>
                         <td>{{ maestro.correo }}</td>
                         <td>{{ maestro.materia }}</td>
+                        <td>{{ maestro.grupo }}</td>
                         <td>
                             <a href="/reset_password_maestro/{{ maestro._id }}">
                                 <button class="btn-warning">Restaurar contraseña</button>
