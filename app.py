@@ -8,23 +8,26 @@ import string
 app = Flask(__name__)
 app.secret_key = "control_escolar_secret_key"
 
+# ===============================
+# CONEXIÓN A MONGO
+# ===============================
 MONGO_URI = os.environ.get("MONGO_URI")
 
 if not MONGO_URI:
-    raise Exception("MONGO_URI no configurado")
+    raise Exception("MONGO_URI no configurado en Render")
 
 client = MongoClient(MONGO_URI)
 db = client["control_escolar"]
 
-# =====================================================
-# UTILIDAD GENERAR PASSWORD
-# =====================================================
+# ===============================
+# GENERADOR DE PASSWORD
+# ===============================
 def generar_password():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
-# =====================================================
+# ===============================
 # LOGIN DIRECCIÓN
-# =====================================================
+# ===============================
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -35,9 +38,17 @@ def login():
         return render_template("login.html", error="Credenciales incorrectas")
     return render_template("login.html")
 
-# =====================================================
+# ===============================
+# LOGOUT DIRECCIÓN
+# ===============================
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+# ===============================
 # PANEL DIRECCIÓN
-# =====================================================
+# ===============================
 @app.route("/admin")
 def admin():
     if "direccion" not in session:
@@ -45,6 +56,7 @@ def admin():
 
     alumnos = list(db.alumnos.find())
     maestros = list(db.maestros.find())
+    grupos = list(db.grupos.find())
 
     mensaje_password = session.pop("nueva_password", None)
 
@@ -52,12 +64,13 @@ def admin():
         "admin.html",
         alumnos=alumnos,
         maestros=maestros,
+        grupos=grupos,
         nueva_password=mensaje_password
     )
 
-# =====================================================
+# ===============================
 # REGISTRAR ALUMNO
-# =====================================================
+# ===============================
 @app.route("/registrar_alumno", methods=["POST"])
 def registrar_alumno():
     if "direccion" not in session:
@@ -79,9 +92,38 @@ def registrar_alumno():
     session["nueva_password"] = f"Contraseña del alumno: {password}"
     return redirect("/admin")
 
-# =====================================================
+# ===============================
+# ELIMINAR ALUMNO
+# ===============================
+@app.route("/eliminar_alumno/<id>")
+def eliminar_alumno(id):
+    if "direccion" not in session:
+        return redirect("/")
+
+    db.alumnos.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin")
+
+# ===============================
+# RESET PASSWORD ALUMNO
+# ===============================
+@app.route("/reset_password_alumno/<id>")
+def reset_password_alumno(id):
+    if "direccion" not in session:
+        return redirect("/")
+
+    nueva = generar_password()
+
+    db.alumnos.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"password": nueva}}
+    )
+
+    session["nueva_password"] = f"Nueva contraseña del alumno: {nueva}"
+    return redirect("/admin")
+
+# ===============================
 # REGISTRAR MAESTRO
-# =====================================================
+# ===============================
 @app.route("/registrar_maestro", methods=["POST"])
 def registrar_maestro():
     if "direccion" not in session:
@@ -102,9 +144,20 @@ def registrar_maestro():
     session["nueva_password"] = f"Contraseña del maestro: {password}"
     return redirect("/admin")
 
-# =====================================================
-# RESTAURAR PASSWORD MAESTRO
-# =====================================================
+# ===============================
+# ELIMINAR MAESTRO
+# ===============================
+@app.route("/eliminar_maestro/<id>")
+def eliminar_maestro(id):
+    if "direccion" not in session:
+        return redirect("/")
+
+    db.maestros.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin")
+
+# ===============================
+# RESET PASSWORD MAESTRO
+# ===============================
 @app.route("/reset_password_maestro/<id>")
 def reset_password_maestro(id):
     if "direccion" not in session:
@@ -120,37 +173,83 @@ def reset_password_maestro(id):
     session["nueva_password"] = f"Nueva contraseña del maestro: {nueva}"
     return redirect("/admin")
 
-# =====================================================
-# RESTAURAR PASSWORD ALUMNO
-# =====================================================
-@app.route("/reset_password_alumno/<id>")
-def reset_password_alumno(id):
+# ===============================
+# CREAR GRUPO
+# ===============================
+@app.route("/crear_grupo", methods=["POST"])
+def crear_grupo():
     if "direccion" not in session:
         return redirect("/")
 
-    nueva = generar_password()
+    nombre = request.form.get("nombre_grupo")
 
-    db.alumnos.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {"password": nueva}}
+    if not db.grupos.find_one({"nombre": nombre}):
+        db.grupos.insert_one({"nombre": nombre})
+
+    return redirect("/admin")
+
+# ===============================
+# ELIMINAR GRUPO
+# ===============================
+@app.route("/eliminar_grupo/<id>")
+def eliminar_grupo(id):
+    if "direccion" not in session:
+        return redirect("/")
+
+    db.grupos.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin")
+
+# ===============================
+# LOGIN MAESTRO
+# ===============================
+@app.route("/login_maestro", methods=["GET", "POST"])
+def login_maestro():
+    if request.method == "POST":
+        correo = request.form.get("correo")
+        password = request.form.get("password")
+
+        maestro = db.maestros.find_one({
+            "correo": correo,
+            "password": password
+        })
+
+        if maestro:
+            session.clear()
+            session["maestro_id"] = str(maestro["_id"])
+            return redirect("/panel_maestro")
+        else:
+            return render_template("login_maestro.html", error="Credenciales incorrectas")
+
+    return render_template("login_maestro.html")
+
+# ===============================
+# PANEL MAESTRO
+# ===============================
+@app.route("/panel_maestro")
+def panel_maestro():
+    if "maestro_id" not in session:
+        return redirect("/login_maestro")
+
+    maestro = db.maestros.find_one({"_id": ObjectId(session["maestro_id"])})
+
+    alumnos = list(db.alumnos.find({"grupo": maestro.get("grupo")}))
+
+    return render_template(
+        "panel_maestro.html",
+        maestro=maestro,
+        alumnos=alumnos
     )
 
-    session["nueva_password"] = f"Nueva contraseña del alumno: {nueva}"
-    return redirect("/admin")
+# ===============================
+# LOGOUT MAESTRO
+# ===============================
+@app.route("/logout_maestro")
+def logout_maestro():
+    session.clear()
+    return redirect("/login_maestro")
 
-# =====================================================
-# ELIMINAR
-# =====================================================
-@app.route("/eliminar_alumno/<id>")
-def eliminar_alumno(id):
-    db.alumnos.delete_one({"_id": ObjectId(id)})
-    return redirect("/admin")
-
-@app.route("/eliminar_maestro/<id>")
-def eliminar_maestro(id):
-    db.maestros.delete_one({"_id": ObjectId(id)})
-    return redirect("/admin")
-
-# =====================================================
+# ===============================
+# EJECUCIÓN LOCAL
+# ===============================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

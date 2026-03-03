@@ -1,133 +1,133 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Panel Dirección - Control Escolar</title>
+<meta charset="UTF-8">
+<title>Panel Dirección - Control Escolar</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: #f4f6f9;
-        }
+<style>
+body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:#f4f6f9;
+}
 
-        header {
-            background-color: #0d1b2a;
-            color: white;
-            padding: 15px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+header{
+    background:#0d1b2a;
+    color:white;
+    padding:15px 25px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
 
-        header h1 {
-            margin: 0;
-        }
+header h1{
+    margin:0;
+}
 
-        .logout-btn {
-            background-color: #e74c3c;
-            color: white;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
+.logout-btn{
+    background:#e74c3c;
+    color:white;
+    padding:8px 15px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
 
-        .container {
-            display: flex;
-        }
+.container{
+    display:flex;
+}
 
-        .sidebar {
-            width: 230px;
-            background-color: #0d1b2a;
-            color: white;
-            min-height: 100vh;
-            padding: 20px;
-        }
+.sidebar{
+    width:230px;
+    background:#0d1b2a;
+    color:white;
+    min-height:100vh;
+    padding:20px;
+}
 
-        .sidebar h3 {
-            margin-top: 0;
-        }
+.sidebar h3{
+    margin-top:0;
+}
 
-        .sidebar a {
-            display: block;
-            color: white;
-            text-decoration: none;
-            margin: 10px 0;
-        }
+.sidebar a{
+    display:block;
+    color:white;
+    text-decoration:none;
+    margin:10px 0;
+}
 
-        .content {
-            flex: 1;
-            padding: 30px;
-        }
+.content{
+    flex:1;
+    padding:30px;
+}
 
-        .card {
-            background-color: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.08);
-            margin-bottom: 30px;
-        }
+.card{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0px 4px 10px rgba(0,0,0,0.08);
+    margin-bottom:30px;
+}
 
-        h2 {
-            margin-top: 0;
-        }
+h2{
+    margin-top:0;
+}
 
-        input {
-            padding: 8px;
-            margin: 5px 5px 5px 0;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
+input{
+    padding:8px;
+    margin:5px 5px 5px 0;
+    border-radius:6px;
+    border:1px solid #ccc;
+}
 
-        button {
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-        }
+button{
+    padding:8px 12px;
+    border-radius:6px;
+    border:none;
+    cursor:pointer;
+}
 
-        .btn-primary {
-            background-color: #2ecc71;
-            color: white;
-        }
+.btn-primary{
+    background:#2ecc71;
+    color:white;
+}
 
-        .btn-danger {
-            background-color: #e74c3c;
-            color: white;
-        }
+.btn-danger{
+    background:#e74c3c;
+    color:white;
+}
 
-        .btn-warning {
-            background-color: #f39c12;
-            color: white;
-        }
+.btn-warning{
+    background:#f39c12;
+    color:white;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
 
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-        }
+th, td{
+    padding:10px;
+    border-bottom:1px solid #ddd;
+    text-align:left;
+}
 
-        th {
-            background-color: #ecf0f1;
-        }
+th{
+    background:#ecf0f1;
+}
 
-        .password-alert {
-            background: #27ae60;
-            color: white;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 6px;
-        }
-
-    </style>
+.password-alert{
+    background:#27ae60;
+    color:white;
+    padding:10px;
+    margin-bottom:20px;
+    border-radius:6px;
+}
+</style>
 </head>
+
 <body>
 
 <header>
@@ -150,12 +150,45 @@
 
     <div class="content">
 
-        <!-- MOSTRAR NUEVA CONTRASEÑA -->
         {% if nueva_password %}
         <div class="password-alert">
             {{ nueva_password }}
         </div>
         {% endif %}
+
+        <!-- CREAR GRUPO -->
+        <div class="card">
+            <h2>Crear Grupo</h2>
+            <form action="/crear_grupo" method="POST">
+                <input type="text" name="nombre_grupo" placeholder="Nombre del grupo" required>
+                <button type="submit" class="btn-primary">Crear Grupo</button>
+            </form>
+        </div>
+
+        <!-- LISTA GRUPOS -->
+        <div class="card">
+            <h2>Grupos Registrados</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grupo in grupos %}
+                    <tr>
+                        <td>{{ grupo.nombre }}</td>
+                        <td>
+                            <a href="/eliminar_grupo/{{ grupo._id }}">
+                                <button class="btn-danger">Eliminar</button>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <!-- REGISTRAR ALUMNO -->
         <div class="card">
