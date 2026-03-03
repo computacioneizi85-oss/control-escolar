@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, session
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+from datetime import datetime
 import os
 import random
 import string
@@ -76,9 +77,7 @@ def registrar_alumno():
     if "direccion" not in session:
         return redirect("/")
 
-    password = request.form.get("password")
-    if not password:
-        password = generar_password()
+    password = request.form.get("password") or generar_password()
 
     db.alumnos.insert_one({
         "nombre": request.form["nombre"],
@@ -112,12 +111,7 @@ def reset_password_alumno(id):
         return redirect("/")
 
     nueva = generar_password()
-
-    db.alumnos.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {"password": nueva}}
-    )
-
+    db.alumnos.update_one({"_id": ObjectId(id)}, {"$set": {"password": nueva}})
     session["nueva_password"] = f"Nueva contraseña del alumno: {nueva}"
     return redirect("/admin")
 
@@ -129,9 +123,7 @@ def registrar_maestro():
     if "direccion" not in session:
         return redirect("/")
 
-    password = request.form.get("password")
-    if not password:
-        password = generar_password()
+    password = request.form.get("password") or generar_password()
 
     db.maestros.insert_one({
         "nombre": request.form["nombre"],
@@ -164,12 +156,7 @@ def reset_password_maestro(id):
         return redirect("/")
 
     nueva = generar_password()
-
-    db.maestros.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {"password": nueva}}
-    )
-
+    db.maestros.update_one({"_id": ObjectId(id)}, {"$set": {"password": nueva}})
     session["nueva_password"] = f"Nueva contraseña del maestro: {nueva}"
     return redirect("/admin")
 
@@ -231,13 +218,61 @@ def panel_maestro():
         return redirect("/login_maestro")
 
     maestro = db.maestros.find_one({"_id": ObjectId(session["maestro_id"])})
-
     alumnos = list(db.alumnos.find({"grupo": maestro.get("grupo")}))
 
+    return render_template("panel_maestro.html", maestro=maestro, alumnos=alumnos)
+
+# ===============================
+# GUARDAR ASISTENCIA
+# ===============================
+@app.route("/guardar_asistencia", methods=["POST"])
+def guardar_asistencia():
+    if "maestro_id" not in session:
+        return redirect("/login_maestro")
+
+    maestro_id = session["maestro_id"]
+    maestro = db.maestros.find_one({"_id": ObjectId(maestro_id)})
+    fecha = datetime.now().strftime("%Y-%m-%d")
+
+    for key in request.form:
+        if key.startswith("alumno_"):
+            alumno_id = key.replace("alumno_", "")
+            estado = request.form.get(key)
+
+            alumno = db.alumnos.find_one({"_id": ObjectId(alumno_id)})
+
+            db.asistencias.insert_one({
+                "alumno_id": alumno_id,
+                "nombre_alumno": alumno["nombre"] + " " + alumno["apellido"],
+                "grupo": maestro["grupo"],
+                "fecha": fecha,
+                "estado": estado,
+                "maestro_id": maestro_id
+            })
+
+    return redirect("/panel_maestro")
+
+# ===============================
+# VER ASISTENCIAS EN DIRECCIÓN
+# ===============================
+@app.route("/asistencias_admin")
+def asistencias_admin():
+    if "direccion" not in session:
+        return redirect("/")
+
+    grupo = request.args.get("grupo")
+
+    if grupo:
+        asistencias = list(db.asistencias.find({"grupo": grupo}))
+    else:
+        asistencias = list(db.asistencias.find())
+
+    grupos = list(db.grupos.find())
+
     return render_template(
-        "panel_maestro.html",
-        maestro=maestro,
-        alumnos=alumnos
+        "asistencias_admin.html",
+        asistencias=asistencias,
+        grupos=grupos
     )
 
 # ===============================
@@ -248,8 +283,6 @@ def logout_maestro():
     session.clear()
     return redirect("/login_maestro")
 
-# ===============================
-# EJECUCIÓN LOCAL
 # ===============================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

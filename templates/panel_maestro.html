@@ -6,27 +6,36 @@
 <body>
 
 <h2>Bienvenido {{ maestro.nombre }}</h2>
-
 <a href="/logout_maestro">Cerrar sesión</a>
 
-<h3>Alumnos de tu grupo</h3>
+<h3>Tomar Asistencia - Grupo {{ maestro.grupo }}</h3>
+
+<form method="POST" action="/guardar_asistencia">
 
 <table border="1">
 <tr>
-    <th>Nombre</th>
-    <th>Grado</th>
-    <th>Grupo</th>
+    <th>Alumno</th>
+    <th>Estado</th>
 </tr>
 
 {% for alumno in alumnos %}
 <tr>
     <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
-    <td>{{ alumno.grado }}</td>
-    <td>{{ alumno.grupo }}</td>
+    <td>
+        <select name="alumno_{{ alumno._id }}">
+            <option value="Presente">Presente</option>
+            <option value="Falta">Falta</option>
+        </select>
+    </td>
 </tr>
 {% endfor %}
 
 </table>
+
+<br>
+<button type="submit">Guardar Asistencia</button>
+
+</form>
 
 </body>
 </html>
