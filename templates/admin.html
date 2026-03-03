@@ -6,26 +6,31 @@
     <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             background-color: #f4f6f9;
         }
 
         header {
-            background-color: #0b1c3d;
+            background-color: #0d1b2a;
             color: white;
-            padding: 15px 20px;
+            padding: 15px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
+        header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+
         .logout-btn {
             background-color: #e74c3c;
-            border: none;
-            padding: 8px 14px;
             color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
             cursor: pointer;
-            border-radius: 4px;
         }
 
         .container {
@@ -34,21 +39,21 @@
 
         .sidebar {
             width: 220px;
-            background-color: #0b1c3d;
+            background-color: #0d1b2a;
             min-height: 100vh;
             color: white;
-            padding-top: 20px;
+            padding: 20px;
+        }
+
+        .sidebar h3 {
+            margin-top: 0;
         }
 
         .sidebar a {
             display: block;
-            padding: 12px 20px;
             color: white;
             text-decoration: none;
-        }
-
-        .sidebar a:hover {
-            background-color: #132a57;
+            margin: 12px 0;
         }
 
         .content {
@@ -57,10 +62,10 @@
         }
 
         .card {
-            background: white;
+            background-color: white;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.08);
             margin-bottom: 30px;
         }
 
@@ -70,15 +75,15 @@
 
         input {
             padding: 8px;
-            margin: 5px 0;
-            width: 100%;
-            box-sizing: border-box;
+            margin: 5px 5px 5px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
         }
 
         button {
             padding: 8px 12px;
+            border-radius: 6px;
             border: none;
-            border-radius: 4px;
             cursor: pointer;
         }
 
@@ -92,29 +97,33 @@
             color: white;
         }
 
+        .btn-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 15px;
         }
 
         th, td {
             padding: 10px;
+            border-bottom: 1px solid #ddd;
             text-align: left;
         }
 
         th {
-            background-color: #f1f1f1;
+            background-color: #ecf0f1;
         }
 
-        tr:nth-child(even) {
-            background-color: #fafafa;
-        }
     </style>
 </head>
 <body>
 
 <header>
-    <h2>Control Escolar - Dirección</h2>
+    <h1>Control Escolar - Dirección</h1>
     <a href="/logout">
         <button class="logout-btn">Cerrar sesión</button>
     </a>
@@ -123,13 +132,13 @@
 <div class="container">
 
     <div class="sidebar">
-        <a href="/admin">Inicio</a>
+        <h3>MENÚ PRINCIPAL</h3>
+        <a href="#">Inicio</a>
+        <a href="#">Registrar Alumno</a>
         <a href="#">Registrar Maestro</a>
         <a href="#">Grupos</a>
         <a href="#">Asistencias</a>
-        <a href="#">Participaciones</a>
         <a href="#">Calificaciones</a>
-        <a href="#">Reportes Disciplinarios</a>
     </div>
 
     <div class="content">
@@ -147,15 +156,13 @@
             </form>
         </div>
 
-        <!-- LISTA DE ALUMNOS -->
+        <!-- ALUMNOS -->
         <div class="card">
             <h2>Alumnos Registrados</h2>
-
             <table>
                 <thead>
                     <tr>
                         <th>Nombre</th>
-                        <th>Apellido</th>
                         <th>Correo</th>
                         <th>Grado</th>
                         <th>Grupo</th>
@@ -165,8 +172,7 @@
                 <tbody>
                     {% for alumno in alumnos %}
                     <tr>
-                        <td>{{ alumno.nombre }}</td>
-                        <td>{{ alumno.apellido }}</td>
+                        <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
                         <td>{{ alumno.correo }}</td>
                         <td>{{ alumno.grado }}</td>
                         <td>{{ alumno.grupo }}</td>
@@ -179,11 +185,52 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
 
+        <!-- REGISTRAR MAESTRO -->
+        <div class="card">
+            <h2>Registrar Maestro</h2>
+            <form action="/registrar_maestro" method="POST">
+                <input type="text" name="nombre" placeholder="Nombre" required>
+                <input type="email" name="correo" placeholder="Correo" required>
+                <input type="text" name="materia" placeholder="Materia" required>
+                <button type="submit" class="btn-primary">Registrar</button>
+            </form>
+        </div>
+
+        <!-- MAESTROS -->
+        <div class="card">
+            <h2>Maestros Registrados</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Materia</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for maestro in maestros %}
+                    <tr>
+                        <td>{{ maestro.nombre }}</td>
+                        <td>{{ maestro.correo }}</td>
+                        <td>{{ maestro.materia }}</td>
+                        <td>
+                            <a href="/reset_password_maestro/{{ maestro._id }}">
+                                <button class="btn-warning">Restaurar contraseña</button>
+                            </a>
+                            <a href="/eliminar_maestro/{{ maestro._id }}">
+                                <button class="btn-danger">Eliminar</button>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
 
     </div>
-
 </div>
 
 </body>

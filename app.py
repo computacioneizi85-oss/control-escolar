@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 import os
 
 app = Flask(__name__)
@@ -24,7 +25,7 @@ def home():
     return redirect(url_for("login"))
 
 # ==========================
-# LOGIN
+# LOGIN DIRECCIÓN
 # ==========================
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -42,6 +43,14 @@ def login():
     return render_template("login.html")
 
 # ==========================
+# LOGOUT
+# ==========================
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+# ==========================
 # PANEL ADMIN
 # ==========================
 @app.route("/admin")
@@ -50,7 +59,9 @@ def admin():
         return redirect(url_for("login"))
 
     alumnos = list(db.alumnos.find())
-    return render_template("admin.html", alumnos=alumnos)
+    maestros = list(db.maestros.find())
+
+    return render_template("admin.html", alumnos=alumnos, maestros=maestros)
 
 # ==========================
 # REGISTRAR ALUMNO
@@ -84,18 +95,59 @@ def eliminar_alumno(id):
     if "usuario" not in session:
         return redirect(url_for("login"))
 
-    from bson.objectid import ObjectId
     db.alumnos.delete_one({"_id": ObjectId(id)})
+    return redirect(url_for("admin"))
+
+# ==========================
+# REGISTRAR MAESTRO
+# ==========================
+@app.route("/registrar_maestro", methods=["POST"])
+def registrar_maestro():
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+
+    nombre = request.form.get("nombre")
+    correo = request.form.get("correo")
+    materia = request.form.get("materia")
+
+    password = "1234"  # contraseña inicial
+
+    db.maestros.insert_one({
+        "nombre": nombre,
+        "correo": correo,
+        "materia": materia,
+        "password": password
+    })
 
     return redirect(url_for("admin"))
 
 # ==========================
-# LOGOUT
+# ELIMINAR MAESTRO
 # ==========================
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("login"))
+@app.route("/eliminar_maestro/<id>")
+def eliminar_maestro(id):
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+
+    db.maestros.delete_one({"_id": ObjectId(id)})
+    return redirect(url_for("admin"))
+
+# ==========================
+# RESTAURAR CONTRASEÑA MAESTRO
+# ==========================
+@app.route("/reset_password_maestro/<id>")
+def reset_password_maestro(id):
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+
+    nueva_password = "maestro123"
+
+    db.maestros.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"password": nueva_password}}
+    )
+
+    return redirect(url_for("admin"))
 
 # ==========================
 # EJECUCIÓN LOCAL
