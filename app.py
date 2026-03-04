@@ -1,294 +1,222 @@
-from flask import Flask, render_template, request, redirect, session, send_file
-from pymongo import MongoClient
-from bson.objectid import ObjectId
-from datetime import datetime
-import os
-import random
-import string
-from werkzeug.utils import secure_filename
-
-# PDF
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4
+from flask import Flask, render_template, request, redirect, url_for, session, send_file
+import sqlite3
+import io
+from reportlab.pdfgen import canvas
 
 app = Flask(__name__)
 app.secret_key = "control_escolar_secret"
 
-# ===============================
-# CONEXIÓN MONGO
-# ===============================
-MONGO_URI = os.environ.get("MONGO_URI")
-if not MONGO_URI:
-    raise Exception("MONGO_URI no configurado")
 
-client = MongoClient(MONGO_URI)
-db = client["control_escolar"]
+# -------------------------------
+# CONEXION BASE DE DATOS
+# -------------------------------
 
-# ===============================
-# UTILIDADES
-# ===============================
-def generar_password():
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+def get_db():
+    conn = sqlite3.connect("escuela.db")
+    conn.row_factory = sqlite3.Row
+    return conn
 
-def ciclo_escolar_actual():
-    hoy = datetime.now()
-    año = hoy.year
-    if hoy.month >= 8:
-        return f"{año}-{año+1}"
-    else:
-        return f"{año-1}-{año}"
 
-# ===============================
-# LOGIN DIRECCIÓN
-# ===============================
-@app.route("/", methods=["GET", "POST"])
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        usuario = request.form.get("usuario", "").strip()
-        password = request.form.get("password", "").strip()
+# -------------------------------
+# INICIO
+# -------------------------------
 
-        if usuario == "direccion" and password == "1234":
-            session.clear()
-            session["direccion"] = True
-            return redirect("/admin")
+@app.route('/')
+def index():
+    return render_template("index.html")
 
-        return render_template("login.html", error="Credenciales incorrectas")
 
-    return render_template("login.html")
+# -------------------------------
+# LOGIN ADMIN
+# -------------------------------
 
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
+@app.route('/login_admin', methods=['POST'])
+def login_admin():
 
-# ===============================
-# PANEL ADMIN
-# ===============================
-@app.route("/admin")
-def admin():
-    if "direccion" not in session:
-        return redirect("/")
+    usuario = request.form['usuario']
+    password = request.form['password']
 
-    alumnos = list(db.alumnos.find())
-    maestros = list(db.maestros.find())
-    grupos = list(db.grupos.find())
-    reportes = list(db.reportes.find())
-    mensaje_password = session.pop("nueva_password", None)
+    conn = get_db()
+    cursor = conn.cursor()
 
-    return render_template(
-        "admin.html",
-        alumnos=alumnos,
-        maestros=maestros,
-        grupos=grupos,
-        reportes=reportes,
-        nueva_password=mensaje_password
+    cursor.execute(
+        "SELECT * FROM administradores WHERE usuario=? AND password=?",
+        (usuario, password)
     )
 
-# ===============================
-# REGISTRO ALUMNO
-# ===============================
-@app.route("/registrar_alumno", methods=["POST"])
-def registrar_alumno():
-    if "direccion" not in session:
-        return redirect("/")
+    admin = cursor.fetchone()
+    conn.close()
 
-    password = request.form.get("password") or generar_password()
+    if admin:
+        session['admin'] = usuario
+        return redirect(url_for('panel_admin'))
+    else:
+        return "Credenciales incorrectas"
 
-    db.alumnos.insert_one({
-        "nombre": request.form["nombre"],
-        "apellido": request.form["apellido"],
-        "correo": request.form["correo"].strip().lower(),
-        "grado": request.form["grado"],
-        "grupo": request.form["grupo"],
-        "password": password
-    })
 
-    session["nueva_password"] = f"Contraseña alumno: {password}"
-    return redirect("/admin")
+# -------------------------------
+# LOGIN MAESTRO
+# -------------------------------
 
-@app.route("/eliminar_alumno/<id>")
-def eliminar_alumno(id):
-    if "direccion" not in session:
-        return redirect("/")
-    db.alumnos.delete_one({"_id": ObjectId(id)})
-    return redirect("/admin")
-
-@app.route("/reset_password_alumno/<id>")
-def reset_password_alumno(id):
-    if "direccion" not in session:
-        return redirect("/")
-    nueva = generar_password()
-    db.alumnos.update_one({"_id": ObjectId(id)}, {"$set": {"password": nueva}})
-    session["nueva_password"] = f"Nueva contraseña alumno: {nueva}"
-    return redirect("/admin")
-
-# ===============================
-# REGISTRO MAESTRO
-# ===============================
-@app.route("/registrar_maestro", methods=["POST"])
-def registrar_maestro():
-    if "direccion" not in session:
-        return redirect("/")
-
-    password = request.form.get("password") or generar_password()
-
-    db.maestros.insert_one({
-        "nombre": request.form["nombre"],
-        "correo": request.form["correo"].strip().lower(),
-        "materia": request.form["materia"],
-        "grupo": request.form["grupo"],
-        "password": password
-    })
-
-    session["nueva_password"] = f"Contraseña maestro: {password}"
-    return redirect("/admin")
-
-@app.route("/eliminar_maestro/<id>")
-def eliminar_maestro(id):
-    if "direccion" not in session:
-        return redirect("/")
-    db.maestros.delete_one({"_id": ObjectId(id)})
-    return redirect("/admin")
-
-@app.route("/reset_password_maestro/<id>")
-def reset_password_maestro(id):
-    if "direccion" not in session:
-        return redirect("/")
-    nueva = generar_password()
-    db.maestros.update_one({"_id": ObjectId(id)}, {"$set": {"password": nueva}})
-    session["nueva_password"] = f"Nueva contraseña maestro: {nueva}"
-    return redirect("/admin")
-
-# ===============================
-# GRUPOS
-# ===============================
-@app.route("/crear_grupo", methods=["POST"])
-def crear_grupo():
-    if "direccion" not in session:
-        return redirect("/")
-    nombre = request.form.get("nombre_grupo")
-    if not db.grupos.find_one({"nombre": nombre}):
-        db.grupos.insert_one({"nombre": nombre})
-    return redirect("/admin")
-
-@app.route("/eliminar_grupo/<id>")
-def eliminar_grupo(id):
-    if "direccion" not in session:
-        return redirect("/")
-    db.grupos.delete_one({"_id": ObjectId(id)})
-    return redirect("/admin")
-
-# ===============================
-# LOGIN MAESTRO (100% FUNCIONAL)
-# ===============================
-@app.route("/login_maestro", methods=["GET", "POST"])
+@app.route('/login_maestro', methods=['POST'])
 def login_maestro():
 
-    if request.method == "POST":
+    usuario = request.form['usuario']
+    password = request.form['password']
 
-        correo = request.form.get("correo", "").strip().lower()
-        password = request.form.get("password", "").strip()
+    conn = get_db()
+    cursor = conn.cursor()
 
-        maestro = db.maestros.find_one({"correo": correo})
-
-        if not maestro:
-            return render_template("login_maestro.html",
-                                   error="Usuario no encontrado")
-
-        if maestro["password"] != password:
-            return render_template("login_maestro.html",
-                                   error="Contraseña incorrecta")
-
-        session.clear()
-        session["maestro_id"] = str(maestro["_id"])
-        return redirect("/panel_maestro")
-
-    return render_template("login_maestro.html")
-
-@app.route("/panel_maestro")
-def panel_maestro():
-    if "maestro_id" not in session:
-        return redirect("/login_maestro")
-
-    maestro = db.maestros.find_one({"_id": ObjectId(session["maestro_id"])})
-    alumnos = list(db.alumnos.find({"grupo": maestro["grupo"]}))
-
-    return render_template("panel_maestro.html", maestro=maestro, alumnos=alumnos)
-
-# ===============================
-# KARDEX PDF DESCARGA AUTOMÁTICA
-# ===============================
-@app.route("/kardex/<id>")
-def generar_kardex(id):
-
-    if "direccion" not in session and "maestro_id" not in session:
-        return redirect("/")
-
-    alumno = db.alumnos.find_one({"_id": ObjectId(id)})
-    if not alumno:
-        return "Alumno no encontrado"
-
-    ruta = f"static/kardex_{id}.pdf"
-
-    doc = SimpleDocTemplate(ruta, pagesize=A4)
-    elementos = []
-    styles = getSampleStyleSheet()
-
-    elementos.append(Paragraph("<b>KARDEX ACADÉMICO</b>", styles["Title"]))
-    elementos.append(Spacer(1, 20))
-
-    datos = [
-        ["Alumno:", alumno["nombre"] + " " + alumno["apellido"]],
-        ["Grado:", alumno["grado"]],
-        ["Grupo:", alumno["grupo"]],
-        ["Ciclo Escolar:", ciclo_escolar_actual()]
-    ]
-
-    tabla = Table(datos)
-    tabla.setStyle(TableStyle([("GRID", (0,0), (-1,-1), 0.5, colors.grey)]))
-    elementos.append(tabla)
-
-    doc.build(elementos)
-
-    return send_file(
-        ruta,
-        as_attachment=True,
-        download_name=f"Kardex_{alumno['nombre']}.pdf"
+    cursor.execute(
+        "SELECT * FROM maestros WHERE usuario=? AND password=?",
+        (usuario, password)
     )
 
-# ===============================
-# ASISTENCIAS ADMIN
-# ===============================
-@app.route("/asistencias_admin")
-def asistencias_admin():
-    if "direccion" not in session:
-        return redirect("/")
+    maestro = cursor.fetchone()
+    conn.close()
 
-    asistencias = list(db.asistencias.find())
-    alumnos = {str(a["_id"]): a for a in db.alumnos.find()}
-
-    return render_template("asistencias_admin.html",
-                           asistencias=asistencias,
-                           alumnos=alumnos)
+    if maestro:
+        session['maestro'] = usuario
+        return redirect(url_for('panel_maestro'))
+    else:
+        return "Credenciales incorrectas"
 
 
-# ===============================
-# REPORTES ADMIN
-# ===============================
-@app.route("/reportes_admin")
-def reportes_admin():
-    if "direccion" not in session:
-        return redirect("/")
+# -------------------------------
+# PANEL ADMIN
+# -------------------------------
 
-    reportes = list(db.reportes.find())
-    return render_template("reportes_admin.html",
-                           reportes=reportes)
+@app.route('/panel_admin')
+def panel_admin():
 
-# ===============================
-# INICIO APP
-# ===============================
+    if 'admin' not in session:
+        return redirect(url_for('index'))
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM alumnos")
+    alumnos = cursor.fetchall()
+
+    conn.close()
+
+    return render_template("panel_admin.html", alumnos=alumnos)
+
+
+# -------------------------------
+# PANEL MAESTRO
+# -------------------------------
+
+@app.route('/panel_maestro')
+def panel_maestro():
+
+    if 'maestro' not in session:
+        return redirect(url_for('index'))
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM alumnos")
+    alumnos = cursor.fetchall()
+
+    conn.close()
+
+    return render_template("panel_maestro.html", alumnos=alumnos)
+
+
+# -------------------------------
+# KARDEX ALUMNO
+# -------------------------------
+
+@app.route('/kardex/<int:alumno_id>')
+def kardex(alumno_id):
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    SELECT materias.nombre, calificaciones.calificacion
+    FROM calificaciones
+    JOIN materias ON calificaciones.materia_id = materias.id
+    WHERE calificaciones.alumno_id = ?
+    """, (alumno_id,))
+
+    datos = cursor.fetchall()
+    conn.close()
+
+    return render_template("kardex.html", datos=datos)
+
+
+# -------------------------------
+# REPORTE PDF
+# -------------------------------
+
+@app.route('/reporte_pdf/<int:alumno_id>')
+def reporte_pdf(alumno_id):
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    SELECT materias.nombre, calificaciones.calificacion
+    FROM calificaciones
+    JOIN materias ON calificaciones.materia_id = materias.id
+    WHERE alumno_id = ?
+    """, (alumno_id,))
+
+    datos = cursor.fetchall()
+    conn.close()
+
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer)
+
+    p.drawString(200, 800, "REPORTE DE CALIFICACIONES")
+
+    y = 750
+
+    for materia, calificacion in datos:
+        texto = f"{materia} : {calificacion}"
+        p.drawString(100, y, texto)
+        y -= 30
+
+    p.save()
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name="reporte_calificaciones.pdf",
+        mimetype="application/pdf"
+    )
+
+
+# -------------------------------
+# CONFIGURACION INSTITUCIONAL
+# -------------------------------
+
+@app.route('/configuracion')
+def configuracion():
+
+    if 'admin' not in session:
+        return redirect(url_for('index'))
+
+    return render_template("configuracion.html")
+
+
+# -------------------------------
+# CERRAR SESION
+# -------------------------------
+
+@app.route('/logout')
+def logout():
+
+    session.clear()
+    return redirect(url_for('index'))
+
+
+# -------------------------------
+# RUN APP
+# -------------------------------
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(debug=True)
