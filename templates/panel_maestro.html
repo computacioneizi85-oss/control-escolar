@@ -2,183 +2,106 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Panel Maestro</title>
+<title>Panel del Maestro</title>
 
 <style>
+
 body{
-    font-family: Arial, sans-serif;
-    background:#f4f6f9;
-    margin:0;
+font-family:Arial;
+background:#f4f6f9;
+margin:0;
 }
 
 header{
-    background:#1b263b;
-    color:white;
-    padding:15px 25px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+background:#1e3c72;
+color:white;
+padding:20px;
+text-align:center;
 }
 
 .container{
-    padding:30px;
-}
-
-.card{
-    background:white;
-    padding:20px;
-    border-radius:12px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.08);
-    margin-bottom:30px;
-}
-
-h2{
-    margin-top:0;
+padding:30px;
 }
 
 table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:15px;
+width:100%;
+border-collapse:collapse;
+background:white;
 }
 
-th, td{
-    padding:10px;
-    border-bottom:1px solid #ddd;
-    text-align:left;
+th,td{
+padding:12px;
+border-bottom:1px solid #ddd;
+text-align:left;
 }
 
 th{
-    background:#ecf0f1;
+background:#2a5298;
+color:white;
 }
 
-select, textarea{
-    padding:6px;
-    border-radius:6px;
-    border:1px solid #ccc;
+a{
+text-decoration:none;
+color:white;
+background:#1e3c72;
+padding:6px 12px;
+border-radius:4px;
+font-size:13px;
 }
 
-button{
-    padding:6px 10px;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
+.logout{
+float:right;
+background:#c0392b;
 }
 
-.btn-primary{
-    background:#2ecc71;
-    color:white;
-}
-
-.btn-warning{
-    background:#f39c12;
-    color:white;
-}
-
-.btn-info{
-    background:#3498db;
-    color:white;
-}
 </style>
+
 </head>
 
 <body>
 
 <header>
-    <h2>Panel Maestro - {{ maestro.nombre }}</h2>
-    <a href="/logout_maestro">
-        <button class="btn-warning">Cerrar sesión</button>
-    </a>
+
+<h2>Panel del Maestro</h2>
+
+<a class="logout" href="/logout">Cerrar sesión</a>
+
 </header>
 
 <div class="container">
 
-    <!-- ================= ASISTENCIAS ================= -->
-    <div class="card">
-        <h2>Registrar Asistencia</h2>
+<h3>Lista de alumnos</h3>
 
-        <form method="POST" action="/guardar_asistencia">
-        <table>
-            <tr>
-                <th>Alumno</th>
-                <th>Estado</th>
-            </tr>
+<table>
 
-            {% for alumno in alumnos %}
-            <tr>
-                <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
-                <td>
-                    <select name="alumno_{{ alumno._id }}">
-                        <option value="Presente">Presente</option>
-                        <option value="Ausente">Ausente</option>
-                        <option value="Retardo">Retardo</option>
-                        <option value="Justificado">Justificado</option>
-                    </select>
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
+<tr>
+<th>ID</th>
+<th>Nombre</th>
+<th>Kardex</th>
+<th>Reporte</th>
+</tr>
 
-        <br>
-        <button type="submit" class="btn-primary">Guardar Asistencia</button>
-        </form>
-    </div>
+{% for alumno in alumnos %}
 
-    <!-- ================= REPORTES DISCIPLINARIOS ================= -->
-    <div class="card">
-        <h2>Crear Reporte Disciplinario</h2>
+<tr>
 
-        <form method="POST" action="/crear_reporte">
+<td>{{ alumno.id }}</td>
 
-            <label>Alumno:</label><br>
-            <select name="alumno_id" required>
-                {% for alumno in alumnos %}
-                <option value="{{ alumno._id }}">
-                    {{ alumno.nombre }} {{ alumno.apellido }}
-                </option>
-                {% endfor %}
-            </select>
+<td>{{ alumno.nombre }}</td>
 
-            <br><br>
+<td>
+<a href="/kardex/{{ alumno.id }}">Ver Kardex</a>
+</td>
 
-            <label>Motivo:</label><br>
-            <textarea name="motivo" rows="3" cols="60" required></textarea>
+<td>
+<a href="/reporte_pdf/{{ alumno.id }}">PDF</a>
+</td>
 
-            <br><br>
+</tr>
 
-            <label>Consecuencia:</label><br>
-            <textarea name="consecuencia" rows="3" cols="60" required></textarea>
+{% endfor %}
 
-            <br><br>
-
-            <button type="submit" class="btn-warning">
-                Enviar Reporte (Pendiente Aprobación)
-            </button>
-        </form>
-    </div>
-
-    <!-- ================= KARDEX ================= -->
-    <div class="card">
-        <h2>Kardex de Alumnos</h2>
-
-        <table>
-            <tr>
-                <th>Alumno</th>
-                <th>Generar Kardex</th>
-            </tr>
-
-            {% for alumno in alumnos %}
-            <tr>
-                <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
-                <td>
-                    <a href="/kardex/{{ alumno._id }}" target="_blank">
-                        <button class="btn-info">Generar PDF</button>
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
+</table>
 
 </div>
 

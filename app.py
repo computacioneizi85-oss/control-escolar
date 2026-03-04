@@ -190,15 +190,24 @@ def panel_maestro():
     if 'maestro' not in session:
         return redirect("/")
 
-    conn = get_db()
-    cursor = conn.cursor()
+    try:
 
-    cursor.execute("SELECT * FROM alumnos")
-    alumnos = cursor.fetchall()
+        conn = get_db()
+        cursor = conn.cursor()
 
-    conn.close()
+        cursor.execute("SELECT * FROM alumnos")
+        alumnos = cursor.fetchall()
 
-    return render_template("panel_maestro.html", alumnos=alumnos)
+        conn.close()
+
+        if alumnos is None:
+            alumnos = []
+
+        return render_template("panel_maestro.html", alumnos=alumnos)
+
+    except Exception as e:
+
+        return f"Error en panel maestro: {str(e)}"
 
 
 # ---------------------------
