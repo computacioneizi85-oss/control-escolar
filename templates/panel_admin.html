@@ -1,26 +1,68 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 <meta charset="UTF-8">
-<title>Panel Dirección</title>
+<title>Panel de Dirección</title>
 
 <style>
 
 body{
-font-family:Arial;
+font-family: Arial, Helvetica, sans-serif;
 background:#f4f6f9;
 margin:0;
 }
 
 header{
-background:#2c3e50;
+background:#34495e;
 color:white;
 padding:20px;
 text-align:center;
+position:relative;
+}
+
+.logout{
+position:absolute;
+right:20px;
+top:20px;
+background:#e74c3c;
+padding:8px 14px;
+color:white;
+text-decoration:none;
+border-radius:4px;
+font-size:14px;
 }
 
 .container{
 padding:30px;
+}
+
+h3{
+margin-top:0;
+}
+
+form{
+margin-bottom:25px;
+}
+
+input{
+padding:10px;
+width:250px;
+border:1px solid #ccc;
+border-radius:4px;
+}
+
+button{
+padding:10px 15px;
+border:none;
+background:#2c3e50;
+color:white;
+border-radius:4px;
+cursor:pointer;
+}
+
+button:hover{
+background:#1a252f;
 }
 
 table{
@@ -41,20 +83,21 @@ color:white;
 
 a{
 text-decoration:none;
+padding:6px 12px;
 background:#2c3e50;
 color:white;
-padding:6px 12px;
 border-radius:4px;
+font-size:13px;
 }
 
-.logout{
-float:right;
+.delete{
 background:#c0392b;
 }
 
 </style>
 
 </head>
+
 
 <body>
 
@@ -66,7 +109,19 @@ background:#c0392b;
 
 </header>
 
+
 <div class="container">
+
+<h3>Registrar alumno</h3>
+
+<form action="/agregar_alumno" method="post">
+
+<input type="text" name="nombre" placeholder="Nombre del alumno" required>
+
+<button type="submit">Agregar alumno</button>
+
+</form>
+
 
 <h3>Lista de alumnos</h3>
 
@@ -75,6 +130,8 @@ background:#c0392b;
 <tr>
 <th>ID</th>
 <th>Nombre</th>
+<th>Kardex</th>
+<th>Eliminar</th>
 </tr>
 
 {% for alumno in alumnos %}
@@ -82,7 +139,16 @@ background:#c0392b;
 <tr>
 
 <td>{{ alumno.id }}</td>
+
 <td>{{ alumno.nombre }}</td>
+
+<td>
+<a href="/kardex/{{ alumno.id }}">Ver Kardex</a>
+</td>
+
+<td>
+<a class="delete" href="/eliminar_alumno/{{ alumno.id }}">Eliminar</a>
+</td>
 
 </tr>
 

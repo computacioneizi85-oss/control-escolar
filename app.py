@@ -11,7 +11,7 @@ DATABASE = "escuela.db"
 
 
 # ------------------------------
-# CONEXION DB
+# CONEXION BASE DE DATOS
 # ------------------------------
 
 def get_db():
@@ -68,10 +68,7 @@ def init_db():
     )
     """)
 
-    # ------------------------------
-    # USUARIOS POR DEFECTO
-    # ------------------------------
-
+    # USUARIO ADMIN
     cursor.execute("SELECT * FROM administradores WHERE usuario='admin'")
     if cursor.fetchone() is None:
         cursor.execute(
@@ -79,6 +76,7 @@ def init_db():
             ("admin","1234")
         )
 
+    # USUARIO MAESTRO
     cursor.execute("SELECT * FROM maestros WHERE usuario='maestro'")
     if cursor.fetchone() is None:
         cursor.execute(
@@ -177,6 +175,53 @@ def panel_admin():
     conn.close()
 
     return render_template("panel_admin.html", alumnos=alumnos)
+
+
+# ------------------------------
+# AGREGAR ALUMNO
+# ------------------------------
+
+@app.route('/agregar_alumno', methods=['POST'])
+def agregar_alumno():
+
+    if 'admin' not in session:
+        return redirect("/")
+
+    nombre = request.form['nombre']
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "INSERT INTO alumnos (nombre) VALUES (?)",
+        (nombre,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/panel_admin")
+
+
+# ------------------------------
+# ELIMINAR ALUMNO
+# ------------------------------
+
+@app.route('/eliminar_alumno/<int:id>')
+def eliminar_alumno(id):
+
+    if 'admin' not in session:
+        return redirect("/")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM alumnos WHERE id=?", (id,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/panel_admin")
 
 
 # ------------------------------
