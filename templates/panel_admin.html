@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel Dirección</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f6f9;
+margin:0;
+}
+
+header{
+background:#2c3e50;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+padding:30px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:white;
+}
+
+th,td{
+padding:12px;
+border-bottom:1px solid #ddd;
+}
+
+th{
+background:#34495e;
+color:white;
+}
+
+a{
+text-decoration:none;
+background:#2c3e50;
+color:white;
+padding:6px 12px;
+border-radius:4px;
+}
+
+.logout{
+float:right;
+background:#c0392b;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h2>Panel de Dirección</h2>
+
+<a class="logout" href="/logout">Cerrar sesión</a>
+
+</header>
+
+<div class="container">
+
+<h3>Lista de alumnos</h3>
+
+<table>
+
+<tr>
+<th>ID</th>
+<th>Nombre</th>
+</tr>
+
+{% for alumno in alumnos %}
+
+<tr>
+
+<td>{{ alumno.id }}</td>
+<td>{{ alumno.nombre }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+</body>
+</html>

@@ -1,7 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, session, send_file
+from flask import Flask, render_template, request, redirect, session, send_file
 import sqlite3
-import io
 import os
+import io
 from reportlab.pdfgen import canvas
 
 app = Flask(__name__)
@@ -10,9 +10,19 @@ app.secret_key = "control_escolar_secret"
 DATABASE = "escuela.db"
 
 
-# ---------------------------
+# ------------------------------
+# CONEXION DB
+# ------------------------------
+
+def get_db():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+# ------------------------------
 # CREAR BASE DE DATOS
-# ---------------------------
+# ------------------------------
 
 def init_db():
 
@@ -58,22 +68,22 @@ def init_db():
     )
     """)
 
-    # ---------------------------
+    # ------------------------------
     # USUARIOS POR DEFECTO
-    # ---------------------------
-
-    cursor.execute("SELECT * FROM maestros WHERE usuario='maestro'")
-    if cursor.fetchone() is None:
-        cursor.execute(
-            "INSERT INTO maestros (usuario,password) VALUES (?,?)",
-            ("maestro","1234")
-        )
+    # ------------------------------
 
     cursor.execute("SELECT * FROM administradores WHERE usuario='admin'")
     if cursor.fetchone() is None:
         cursor.execute(
             "INSERT INTO administradores (usuario,password) VALUES (?,?)",
             ("admin","1234")
+        )
+
+    cursor.execute("SELECT * FROM maestros WHERE usuario='maestro'")
+    if cursor.fetchone() is None:
+        cursor.execute(
+            "INSERT INTO maestros (usuario,password) VALUES (?,?)",
+            ("maestro","1234")
         )
 
     conn.commit()
@@ -83,29 +93,18 @@ def init_db():
 init_db()
 
 
-# ---------------------------
-# CONEXION DB
-# ---------------------------
-
-def get_db():
-
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-# ---------------------------
-# PAGINA PRINCIPAL (LOGIN)
-# ---------------------------
+# ------------------------------
+# PAGINA PRINCIPAL
+# ------------------------------
 
 @app.route('/')
 def index():
     return render_template("index.html")
 
 
-# ---------------------------
+# ------------------------------
 # LOGIN ADMIN
-# ---------------------------
+# ------------------------------
 
 @app.route('/login_admin', methods=['POST'])
 def login_admin():
@@ -131,9 +130,9 @@ def login_admin():
         return "Credenciales incorrectas"
 
 
-# ---------------------------
+# ------------------------------
 # LOGIN MAESTRO
-# ---------------------------
+# ------------------------------
 
 @app.route('/login_maestro', methods=['POST'])
 def login_maestro():
@@ -159,9 +158,9 @@ def login_maestro():
         return "Credenciales incorrectas"
 
 
-# ---------------------------
-# PANEL ADMIN
-# ---------------------------
+# ------------------------------
+# PANEL DIRECCION
+# ------------------------------
 
 @app.route('/panel_admin')
 def panel_admin():
@@ -180,9 +179,9 @@ def panel_admin():
     return render_template("panel_admin.html", alumnos=alumnos)
 
 
-# ---------------------------
+# ------------------------------
 # PANEL MAESTRO
-# ---------------------------
+# ------------------------------
 
 @app.route('/panel_maestro')
 def panel_maestro():
@@ -190,29 +189,20 @@ def panel_maestro():
     if 'maestro' not in session:
         return redirect("/")
 
-    try:
+    conn = get_db()
+    cursor = conn.cursor()
 
-        conn = get_db()
-        cursor = conn.cursor()
+    cursor.execute("SELECT * FROM alumnos")
+    alumnos = cursor.fetchall()
 
-        cursor.execute("SELECT * FROM alumnos")
-        alumnos = cursor.fetchall()
+    conn.close()
 
-        conn.close()
-
-        if alumnos is None:
-            alumnos = []
-
-        return render_template("panel_maestro.html", alumnos=alumnos)
-
-    except Exception as e:
-
-        return f"Error en panel maestro: {str(e)}"
+    return render_template("panel_maestro.html", alumnos=alumnos)
 
 
-# ---------------------------
+# ------------------------------
 # KARDEX
-# ---------------------------
+# ------------------------------
 
 @app.route('/kardex/<int:alumno_id>')
 def kardex(alumno_id):
@@ -233,9 +223,9 @@ def kardex(alumno_id):
     return render_template("kardex.html", datos=datos)
 
 
-# ---------------------------
+# ------------------------------
 # REPORTE PDF
-# ---------------------------
+# ------------------------------
 
 @app.route('/reporte_pdf/<int:alumno_id>')
 def reporte_pdf(alumno_id):
@@ -261,8 +251,7 @@ def reporte_pdf(alumno_id):
     y = 750
 
     for materia,calificacion in datos:
-        texto = f"{materia}: {calificacion}"
-        pdf.drawString(100,y,texto)
+        pdf.drawString(100,y,f"{materia}: {calificacion}")
         y -= 30
 
     pdf.save()
@@ -276,18 +265,18 @@ def reporte_pdf(alumno_id):
     )
 
 
-# ---------------------------
+# ------------------------------
 # CONFIGURACION
-# ---------------------------
+# ------------------------------
 
 @app.route('/configuracion')
 def configuracion():
     return render_template("configuracion.html")
 
 
-# ---------------------------
+# ------------------------------
 # LOGOUT
-# ---------------------------
+# ------------------------------
 
 @app.route('/logout')
 def logout():
@@ -295,9 +284,9 @@ def logout():
     return redirect("/")
 
 
-# ---------------------------
-# RUN SERVER
-# ---------------------------
+# ------------------------------
+# SERVIDOR
+# ------------------------------
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT",10000))
