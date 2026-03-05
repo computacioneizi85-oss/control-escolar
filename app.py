@@ -9,12 +9,13 @@ from reportlab.pdfgen import canvas
 app = Flask(__name__)
 app.secret_key = "control_escolar_secret"
 
-DATABASE = os.path.join(os.getcwd(), "escuela.db")
+# BASE DE DATOS PERSISTENTE EN RENDER
+DATABASE = "/var/data/escuela.db"
 
 
-# -----------------------------------
-# CONEXIÓN A BASE DE DATOS
-# -----------------------------------
+# -------------------------------
+# CONEXION A BASE DE DATOS
+# -------------------------------
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
@@ -22,9 +23,9 @@ def get_db():
     return conn
 
 
-# -----------------------------------
-# CREAR BASE DE DATOS
-# -----------------------------------
+# -------------------------------
+# CREAR TABLAS
+# -------------------------------
 
 def init_db():
 
@@ -77,19 +78,19 @@ def init_db():
     """)
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS asistencias(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    alumno_id INTEGER,
-    fecha TEXT,
-    estado TEXT)
-    """)
-
-    cursor.execute("""
     CREATE TABLE IF NOT EXISTS reportes(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     maestro TEXT,
     alumno TEXT,
     descripcion TEXT,
+    estado TEXT)
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS asistencias(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    alumno_id INTEGER,
+    fecha TEXT,
     estado TEXT)
     """)
 
@@ -107,9 +108,9 @@ def init_db():
 init_db()
 
 
-# -----------------------------------
+# -------------------------------
 # LOGIN
-# -----------------------------------
+# -------------------------------
 
 @app.route('/')
 def index():
@@ -138,7 +139,7 @@ def login():
         session['usuario'] = usuario
         session['rol'] = user['rol']
 
-        if user['rol'] == 'maestro':
+        if user['rol'] == "maestro":
             return redirect("/panel_maestro")
 
         return redirect("/admin")
@@ -146,9 +147,9 @@ def login():
     return "Credenciales incorrectas"
 
 
-# -----------------------------------
-# DASHBOARD ADMIN
-# -----------------------------------
+# -------------------------------
+# DASHBOARD
+# -------------------------------
 
 @app.route('/admin')
 def admin():
@@ -179,9 +180,9 @@ def admin():
     )
 
 
-# -----------------------------------
+# -------------------------------
 # ALUMNOS
-# -----------------------------------
+# -------------------------------
 
 @app.route('/alumnos')
 def alumnos():
@@ -215,7 +216,7 @@ def crear_alumno():
     cursor.execute("""
     INSERT INTO alumnos(nombre,apellido,correo,grado,grupo)
     VALUES (?,?,?,?,?)
-    """, (nombre, apellido, correo, grado, grupo))
+    """,(nombre,apellido,correo,grado,grupo))
 
     conn.commit()
     conn.close()
@@ -223,9 +224,9 @@ def crear_alumno():
     return redirect("/alumnos")
 
 
-# -----------------------------------
+# -------------------------------
 # IMPORTAR ALUMNOS EXCEL
-# -----------------------------------
+# -------------------------------
 
 @app.route('/importar_alumnos', methods=['POST'])
 def importar_alumnos():
@@ -255,9 +256,9 @@ def importar_alumnos():
     return redirect("/alumnos")
 
 
-# -----------------------------------
+# -------------------------------
 # MAESTROS
-# -----------------------------------
+# -------------------------------
 
 @app.route('/maestros')
 def maestros():
@@ -293,9 +294,9 @@ def crear_maestro():
     return redirect("/maestros")
 
 
-# -----------------------------------
+# -------------------------------
 # MATERIAS
-# -----------------------------------
+# -------------------------------
 
 @app.route('/materias')
 def materias():
@@ -319,10 +320,7 @@ def crear_materia():
     conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute(
-        "INSERT INTO materias(nombre) VALUES (?)",
-        (nombre,)
-    )
+    cursor.execute("INSERT INTO materias(nombre) VALUES (?)",(nombre,))
 
     conn.commit()
     conn.close()
@@ -330,34 +328,9 @@ def crear_materia():
     return redirect("/materias")
 
 
-# -----------------------------------
-# CALIFICACIONES
-# -----------------------------------
-
-@app.route('/guardar_calificacion', methods=['POST'])
-def guardar_calificacion():
-
-    alumno = request.form['alumno']
-    materia = request.form['materia']
-    calificacion = request.form['calificacion']
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-    INSERT INTO calificaciones(alumno_id,materia_id,calificacion)
-    VALUES (?,?,?)
-    """,(alumno,materia,calificacion))
-
-    conn.commit()
-    conn.close()
-
-    return redirect("/admin")
-
-
-# -----------------------------------
+# -------------------------------
 # KARDEX
-# -----------------------------------
+# -------------------------------
 
 @app.route('/kardex/<int:id>')
 def kardex(id):
@@ -379,9 +352,9 @@ def kardex(id):
     return render_template("kardex.html", datos=datos)
 
 
-# -----------------------------------
+# -------------------------------
 # BOLETA PDF
-# -----------------------------------
+# -------------------------------
 
 @app.route('/boleta_pdf/<int:id>')
 def boleta_pdf(id):
@@ -419,9 +392,9 @@ def boleta_pdf(id):
     )
 
 
-# -----------------------------------
-# REPORTES DISCIPLINARIOS
-# -----------------------------------
+# -------------------------------
+# REPORTES
+# -------------------------------
 
 @app.route('/reportes')
 def reportes():
@@ -476,42 +449,9 @@ def aprobar_reporte(id):
     return redirect("/reportes")
 
 
-# -----------------------------------
-# REPORTE PDF
-# -----------------------------------
-
-@app.route('/reporte_pdf/<int:id>')
-def reporte_pdf(id):
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM reportes WHERE id=?", (id,))
-    reporte = cursor.fetchone()
-
-    buffer = io.BytesIO()
-    pdf = canvas.Canvas(buffer)
-
-    pdf.drawString(200,800,"Reporte Disciplinario")
-
-    pdf.drawString(100,760,"Maestro: "+reporte['maestro'])
-    pdf.drawString(100,730,"Alumno: "+reporte['alumno'])
-    pdf.drawString(100,700,"Descripcion: "+reporte['descripcion'])
-
-    pdf.save()
-    buffer.seek(0)
-
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name="reporte.pdf",
-        mimetype='application/pdf'
-    )
-
-
-# -----------------------------------
+# -------------------------------
 # PANEL MAESTRO
-# -----------------------------------
+# -------------------------------
 
 @app.route('/panel_maestro')
 def panel_maestro():
@@ -527,9 +467,9 @@ def panel_maestro():
     return render_template("panel_maestro.html", reportes=reportes)
 
 
-# -----------------------------------
+# -------------------------------
 # LOGOUT
-# -----------------------------------
+# -------------------------------
 
 @app.route('/logout')
 def logout():
@@ -539,12 +479,11 @@ def logout():
     return redirect("/")
 
 
-# -----------------------------------
-# RUN SERVER
-# -----------------------------------
+# -------------------------------
+# SERVIDOR
+# -------------------------------
 
 if __name__ == "__main__":
 
     port = int(os.environ.get("PORT",10000))
-
     app.run(host="0.0.0.0", port=port)
