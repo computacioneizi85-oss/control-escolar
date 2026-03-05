@@ -1,64 +1,42 @@
 from flask import Flask, render_template, request, redirect, session
-import sqlite3
+from pymongo import MongoClient
 import os
 
 app = Flask(__name__)
-app.secret_key = "control_escolar"
-
-DATABASE = "/var/data/database.db"
+app.secret_key = "control_escolar_secret"
 
 
-def get_db():
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    return conn
+# ======================================
+# CONEXION A MONGODB ATLAS
+# ======================================
+
+MONGO_URI = "mongodb+srv://joel:CAMELLO2052@cluster0.ethhsnm.mongodb.net/control_escolar?retryWrites=true&w=majority"
+
+client = MongoClient(MONGO_URI)
+
+db = client["control_escolar"]
+
+usuarios = db["usuarios"]
+alumnos = db["alumnos"]
+grupos = db["grupos"]
 
 
-def init_db():
+# ======================================
+# CREAR ADMIN SI NO EXISTE
+# ======================================
 
-    conn = get_db()
-    cursor = conn.cursor()
+if usuarios.count_documents({"usuario": "admin"}) == 0:
 
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS usuarios(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        usuario TEXT UNIQUE,
-        password TEXT,
-        rol TEXT
-    )
-    """)
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS alumnos(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT,
-        apellido TEXT,
-        correo TEXT,
-        grupo TEXT
-    )
-    """)
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS grupos(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT
-    )
-    """)
-
-    cursor.execute("""
-    INSERT OR IGNORE INTO usuarios(id,usuario,password,rol)
-    VALUES(1,'admin','1234','admin')
-    """)
-
-    conn.commit()
-    conn.close()
+    usuarios.insert_one({
+        "usuario": "admin",
+        "password": "1234",
+        "rol": "admin"
+    })
 
 
-init_db()
-
-# =========================
+# ======================================
 # LOGIN
-# =========================
+# ======================================
 
 @app.route('/')
 def index():
@@ -71,21 +49,15 @@ def login():
     usuario = request.form['usuario']
     password = request.form['password']
 
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-    SELECT * FROM usuarios
-    WHERE usuario=? AND password=?
-    """,(usuario,password))
-
-    user = cursor.fetchone()
-    conn.close()
+    user = usuarios.find_one({
+        "usuario": usuario,
+        "password": password
+    })
 
     if user:
 
-        session['usuario'] = usuario
-        session['rol'] = user["rol"]
+        session["usuario"] = usuario
+        session["rol"] = user["rol"]
 
         if user["rol"] == "admin":
             return redirect("/admin")
@@ -96,135 +68,119 @@ def login():
     return "Credenciales incorrectas"
 
 
-# =========================
+# ======================================
 # PANEL ADMIN
-# =========================
+# ======================================
 
 @app.route('/admin')
 def admin():
 
-    conn = get_db()
-    cursor = conn.cursor()
+    lista_alumnos = list(alumnos.find())
+    lista_grupos = list(grupos.find())
 
-    cursor.execute("SELECT * FROM alumnos")
-    alumnos = cursor.fetchall()
+    for a in lista_alumnos:
+        a["_id"] = str(a["_id"])
 
-    cursor.execute("SELECT * FROM grupos")
-    grupos = cursor.fetchall()
+    for g in lista_grupos:
+        g["_id"] = str(g["_id"])
 
-    conn.close()
+    return render_template(
+        "admin.html",
+        alumnos=lista_alumnos,
+        grupos=lista_grupos
+    )
 
-    return render_template("admin.html",
-                           alumnos=alumnos,
-                           grupos=grupos)
 
-
-# =========================
+# ======================================
 # CREAR ALUMNO
-# =========================
+# ======================================
 
 @app.route('/crear_alumno', methods=['POST'])
 def crear_alumno():
 
-    nombre = request.form['nombre']
-    apellido = request.form['apellido']
-    correo = request.form['correo']
-    grupo = request.form['grupo']
+    alumnos.insert_one({
 
-    conn = get_db()
-    cursor = conn.cursor()
+        "nombre": request.form['nombre'],
+        "apellido": request.form['apellido'],
+        "correo": request.form['correo'],
+        "grupo": request.form['grupo']
 
-    cursor.execute("""
-    INSERT INTO alumnos(nombre,apellido,correo,grupo)
-    VALUES(?,?,?,?)
-    """,(nombre,apellido,correo,grupo))
-
-    conn.commit()
-    conn.close()
+    })
 
     return redirect("/admin")
 
 
-# =========================
+# ======================================
 # CREAR GRUPO
-# =========================
+# ======================================
 
 @app.route('/crear_grupo', methods=['POST'])
 def crear_grupo():
 
-    nombre = request.form['nombre']
+    grupos.insert_one({
 
-    conn = get_db()
-    cursor = conn.cursor()
+        "nombre": request.form['nombre']
 
-    cursor.execute("INSERT INTO grupos(nombre) VALUES(?)",(nombre,))
-
-    conn.commit()
-    conn.close()
+    })
 
     return redirect("/admin")
 
 
-# =========================
+# ======================================
 # CREAR MAESTRO
-# =========================
+# ======================================
 
 @app.route('/crear_maestro', methods=['POST'])
 def crear_maestro():
 
-    usuario = request.form['usuario']
-    password = request.form['password']
+    usuarios.insert_one({
 
-    conn = get_db()
-    cursor = conn.cursor()
+        "usuario": request.form['usuario'],
+        "password": request.form['password'],
+        "rol": "maestro"
 
-    cursor.execute("""
-    INSERT INTO usuarios(usuario,password,rol)
-    VALUES(?,?,?)
-    """,(usuario,password,"maestro"))
-
-    conn.commit()
-    conn.close()
+    })
 
     return redirect("/admin")
 
 
-# =========================
+# ======================================
 # PANEL MAESTRO
-# =========================
+# ======================================
 
 @app.route('/panel_maestro')
 def panel_maestro():
 
-    conn = get_db()
-    cursor = conn.cursor()
+    lista_alumnos = list(alumnos.find())
 
-    cursor.execute("SELECT * FROM alumnos")
-    alumnos = cursor.fetchall()
+    for a in lista_alumnos:
+        a["_id"] = str(a["_id"])
 
-    conn.close()
+    return render_template(
+        "panel_maestro.html",
+        alumnos=lista_alumnos
+    )
 
-    return render_template("panel_maestro.html",
-                           alumnos=alumnos)
 
-
-# =========================
+# ======================================
 # LOGOUT
-# =========================
+# ======================================
 
 @app.route('/logout')
 def logout():
+
     session.clear()
+
     return redirect("/")
 
 
-# =========================
-# RUN
-# =========================
+# ======================================
+# RUN SERVER
+# ======================================
 
 if __name__ == "__main__":
 
-    port = int(os.environ.get("PORT",10000))
+    port = int(os.environ.get("PORT", 10000))
 
     app.run(
         host="0.0.0.0",
