@@ -1,84 +1,45 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 
 <head>
 
-<meta charset="UTF-8">
-<title>Sistema de Control Escolar</title>
+<title>Login</title>
 
 <style>
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial, Helvetica, sans-serif;
-}
-
 body{
-
-height:100vh;
+font-family:Arial;
 display:flex;
 justify-content:center;
 align-items:center;
-background:linear-gradient(135deg,#0d1b2a,#1b263b);
-
+height:100vh;
+background:#1b263b;
 }
 
-.login-container{
+.login{
 
 background:white;
 padding:40px;
-width:350px;
 border-radius:10px;
-box-shadow:0 10px 25px rgba(0,0,0,0.3);
-
-}
-
-.login-container h2{
-
-text-align:center;
-margin-bottom:25px;
-color:#0d1b2a;
+width:300px;
 
 }
 
 input{
 
 width:100%;
-padding:12px;
-margin-bottom:15px;
-border:1px solid #ccc;
-border-radius:6px;
-font-size:14px;
+padding:10px;
+margin-bottom:10px;
 
 }
 
 button{
 
 width:100%;
-padding:12px;
+padding:10px;
 background:#0d1b2a;
 color:white;
 border:none;
-border-radius:6px;
-font-size:15px;
-cursor:pointer;
-
-}
-
-button:hover{
-
-background:#1b263b;
-
-}
-
-.footer{
-
-text-align:center;
-margin-top:15px;
-font-size:12px;
-color:#777;
 
 }
 
@@ -89,38 +50,21 @@ color:#777;
 
 <body>
 
-<div class="login-container">
+<div class="login">
 
 <h2>Control Escolar</h2>
 
 <form method="POST" action="/login">
 
-<input
-type="text"
-name="usuario"
-placeholder="Usuario"
-required
->
+<input name="usuario" placeholder="Usuario">
 
-<input
-type="password"
-name="password"
-placeholder="Contraseña"
-required
->
+<input name="password" type="password" placeholder="Contraseña">
 
-<button type="submit">Iniciar sesión</button>
+<button>Entrar</button>
 
 </form>
-
-<div class="footer">
-
-Sistema de Gestión Escolar
-
-</div>
 
 </div>
 
 </body>
-
 </html>

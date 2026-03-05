@@ -3,111 +3,85 @@
 {% block contenido %}
 
 <div class="card">
-<h2>Dashboard del Sistema</h2>
-<p>Bienvenido al panel de dirección del sistema de control escolar.</p>
+
+<h2>Crear grupo</h2>
+
+<form method="POST" action="/crear_grupo">
+
+<input name="nombre" placeholder="Nombre grupo">
+
+<button>Crear</button>
+
+</form>
+
 </div>
 
 
 <div class="card">
 
-<h3>Estadísticas Generales</h3>
+<h2>Crear maestro</h2>
+
+<form method="POST" action="/crear_maestro">
+
+<input name="usuario" placeholder="Usuario maestro">
+
+<input name="password" placeholder="Contraseña">
+
+<button>Crear maestro</button>
+
+</form>
+
+</div>
+
+
+<div class="card">
+
+<h2>Registrar alumno</h2>
+
+<form method="POST" action="/crear_alumno">
+
+<input name="nombre" placeholder="Nombre">
+
+<input name="apellido" placeholder="Apellido">
+
+<input name="correo" placeholder="Correo">
+
+<input name="grupo" placeholder="Grupo">
+
+<button>Registrar</button>
+
+</form>
+
+</div>
+
+
+<div class="card">
+
+<h2>Alumnos registrados</h2>
 
 <table>
 
 <tr>
-<th>Total de alumnos</th>
-<th>Total de maestros</th>
-<th>Total de grupos</th>
-<th>Reportes pendientes</th>
+
+<th>Nombre</th>
+<th>Apellido</th>
+<th>Grupo</th>
+
 </tr>
 
+{% for a in alumnos %}
+
 <tr>
-<td>{{ total_alumnos }}</td>
-<td>{{ total_maestros }}</td>
-<td>{{ total_grupos }}</td>
-<td>{{ total_reportes }}</td>
+
+<td>{{a.nombre}}</td>
+<td>{{a.apellido}}</td>
+<td>{{a.grupo}}</td>
+
 </tr>
+
+{% endfor %}
 
 </table>
-
-</div>
-
-
-<div class="card">
-
-<h3>Accesos rápidos</h3>
-
-<table>
-
-<tr>
-<th>Módulo</th>
-<th>Acción</th>
-</tr>
-
-<tr>
-<td>Gestión de alumnos</td>
-<td>
-<a href="/alumnos">
-<button class="btn-green">Administrar alumnos</button>
-</a>
-</td>
-</tr>
-
-<tr>
-<td>Gestión de maestros</td>
-<td>
-<a href="/maestros">
-<button class="btn-green">Administrar maestros</button>
-</a>
-</td>
-</tr>
-
-<tr>
-<td>Materias</td>
-<td>
-<a href="/materias">
-<button class="btn-green">Administrar materias</button>
-</a>
-</td>
-</tr>
-
-<tr>
-<td>Reportes disciplinarios</td>
-<td>
-<a href="/reportes">
-<button class="btn-green">Ver reportes</button>
-</a>
-</td>
-</tr>
-
-<tr>
-<td>Panel maestro</td>
-<td>
-<a href="/panel_maestro">
-<button class="btn-green">Acceder</button>
-</a>
-</td>
-</tr>
-
-</table>
-
-</div>
-
-
-<div class="card">
-
-<h3>Estado del sistema</h3>
-
-<p>El sistema de control escolar está funcionando correctamente.</p>
-
-<ul>
-
-<li>Registro de alumnos activo</li>
-<li>Gestión de maestros activa</li>
-<li>Reportes disciplinarios activos</li>
-<li>Generación de PDF habilitada</li>
-
-</ul>
 
 </div>
 

@@ -4,42 +4,23 @@
 
 <div class="card">
 
-<h2>Crear reporte disciplinario</h2>
-
-<form method="POST" action="/crear_reporte">
-
-<input name="maestro" placeholder="Nombre del maestro">
-
-<input name="alumno" placeholder="Alumno">
-
-<textarea name="descripcion" placeholder="Descripción del incidente"></textarea>
-
-<button class="btn-green">Enviar reporte</button>
-
-</form>
-
-</div>
-
-
-<div class="card">
-
-<h2>Reportes enviados</h2>
+<h2>Panel del Maestro</h2>
 
 <table>
 
 <tr>
+
 <th>Alumno</th>
-<th>Descripción</th>
-<th>Estado</th>
+<th>Grupo</th>
+
 </tr>
 
-{% for r in reportes %}
+{% for a in alumnos %}
 
 <tr>
 
-<td>{{r.alumno}}</td>
-<td>{{r.descripcion}}</td>
-<td>{{r.estado}}</td>
+<td>{{a.nombre}} {{a.apellido}}</td>
+<td>{{a.grupo}}</td>
 
 </tr>
 

@@ -1,44 +1,26 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 
 <head>
 
-<meta charset="UTF-8">
 <title>Control Escolar</title>
 
 <style>
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial, Helvetica, sans-serif;
-}
-
 body{
-
+margin:0;
+font-family:Arial;
 display:flex;
-height:100vh;
 background:#eef2f7;
-
 }
-
-
-/* SIDEBAR */
 
 .sidebar{
 
-width:230px;
+width:220px;
 background:#0d1b2a;
 color:white;
+height:100vh;
 padding:20px;
-
-}
-
-.sidebar h2{
-
-text-align:center;
-margin-bottom:30px;
 
 }
 
@@ -47,9 +29,8 @@ margin-bottom:30px;
 display:block;
 color:white;
 text-decoration:none;
-padding:12px;
+padding:10px;
 margin-bottom:5px;
-border-radius:5px;
 
 }
 
@@ -59,113 +40,62 @@ background:#1b263b;
 
 }
 
-
-/* MAIN */
-
 .main{
 
 flex:1;
-display:flex;
-flex-direction:column;
 
 }
-
-
-/* HEADER */
 
 .header{
 
 background:#0d1b2a;
 color:white;
-padding:15px 25px;
-display:flex;
-justify-content:space-between;
-align-items:center;
+padding:15px;
 
 }
-
-
-/* CONTENT */
 
 .content{
 
 padding:30px;
-overflow:auto;
 
 }
-
-
-/* CARDS */
 
 .card{
 
 background:white;
 padding:20px;
 border-radius:10px;
-margin-bottom:25px;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
+margin-bottom:20px;
 
 }
-
-
-/* TABLE */
 
 table{
 
 width:100%;
 border-collapse:collapse;
-margin-top:15px;
 
 }
 
 th,td{
 
-padding:12px;
+padding:10px;
 border-bottom:1px solid #ddd;
 
 }
 
-th{
-
-background:#f2f2f2;
-text-align:left;
-
-}
-
-
-/* BUTTONS */
-
 button{
 
-padding:8px 12px;
-border:none;
-border-radius:5px;
-cursor:pointer;
-
-}
-
-.btn-green{
-
+padding:8px;
 background:#2ecc71;
+border:none;
 color:white;
+border-radius:5px;
 
 }
 
-.btn-red{
-
-background:#e74c3c;
-color:white;
-
-}
-
-
-/* INPUTS */
-
-input,select,textarea{
+input{
 
 padding:8px;
-border:1px solid #ccc;
-border-radius:5px;
 margin-bottom:8px;
 width:100%;
 
@@ -178,41 +108,24 @@ width:100%;
 
 <body>
 
-
-<!-- SIDEBAR -->
-
 <div class="sidebar">
 
 <h2>Control Escolar</h2>
 
-<a href="/admin">🏠 Dashboard</a>
+<a href="/admin">Dashboard</a>
 
-<a href="/grupos">👥 Grupos</a>
-
-<a href="/materias">📚 Materias</a>
-
-<a href="/capturar_calificaciones">📝 Calificaciones</a>
-
-<a href="/panel_maestro">👨‍🏫 Panel Maestro</a>
-
-<a href="/logout">🚪 Cerrar sesión</a>
+<a href="/logout">Cerrar sesión</a>
 
 </div>
-
 
 
 <div class="main">
 
-<!-- HEADER -->
-
 <div class="header">
 
-<h3>Sistema de Control Escolar</h3>
+Sistema de Control Escolar
 
 </div>
-
-
-<!-- CONTENIDO DINÁMICO -->
 
 <div class="content">
 
@@ -223,7 +136,6 @@ width:100%;
 </div>
 
 </div>
-
 
 </body>
 </html>

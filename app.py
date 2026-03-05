@@ -1,28 +1,18 @@
-from flask import Flask, render_template, request, redirect, session, send_file
+from flask import Flask, render_template, request, redirect, session
 import sqlite3
 import os
-import io
-from reportlab.pdfgen import canvas
 
 app = Flask(__name__)
-app.secret_key = "control_escolar_secret"
+app.secret_key = "control_escolar"
 
-DATABASE = "database.db"
+DATABASE = "/var/data/database.db"
 
-
-# =============================
-# CONEXION DB
-# =============================
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
 
-
-# =============================
-# CREAR BASE DE DATOS
-# =============================
 
 def init_db():
 
@@ -32,7 +22,7 @@ def init_db():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS usuarios(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        usuario TEXT,
+        usuario TEXT UNIQUE,
         password TEXT,
         rol TEXT
     )
@@ -49,14 +39,6 @@ def init_db():
     """)
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS maestros(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT,
-        correo TEXT
-    )
-    """)
-
-    cursor.execute("""
     CREATE TABLE IF NOT EXISTS grupos(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT
@@ -64,41 +46,8 @@ def init_db():
     """)
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS materias(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT
-    )
-    """)
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS grupo_materias(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        grupo TEXT,
-        materia_id INTEGER
-    )
-    """)
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS calificaciones(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        alumno_id INTEGER,
-        materia_id INTEGER,
-        calificacion REAL
-    )
-    """)
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS reportes(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        alumno_id INTEGER,
-        descripcion TEXT,
-        aprobado INTEGER DEFAULT 0
-    )
-    """)
-
-    cursor.execute("""
     INSERT OR IGNORE INTO usuarios(id,usuario,password,rol)
-    VALUES (1,'admin','1234','admin')
+    VALUES(1,'admin','1234','admin')
     """)
 
     conn.commit()
@@ -107,10 +56,9 @@ def init_db():
 
 init_db()
 
-
-# =============================
+# =========================
 # LOGIN
-# =============================
+# =========================
 
 @app.route('/')
 def index():
@@ -148,9 +96,9 @@ def login():
     return "Credenciales incorrectas"
 
 
-# =============================
+# =========================
 # PANEL ADMIN
-# =============================
+# =========================
 
 @app.route('/admin')
 def admin():
@@ -166,16 +114,14 @@ def admin():
 
     conn.close()
 
-    return render_template(
-        "admin.html",
-        alumnos=alumnos,
-        grupos=grupos
-    )
+    return render_template("admin.html",
+                           alumnos=alumnos,
+                           grupos=grupos)
 
 
-# =============================
-# REGISTRAR ALUMNO
-# =============================
+# =========================
+# CREAR ALUMNO
+# =========================
 
 @app.route('/crear_alumno', methods=['POST'])
 def crear_alumno():
@@ -190,7 +136,7 @@ def crear_alumno():
 
     cursor.execute("""
     INSERT INTO alumnos(nombre,apellido,correo,grupo)
-    VALUES (?,?,?,?)
+    VALUES(?,?,?,?)
     """,(nombre,apellido,correo,grupo))
 
     conn.commit()
@@ -199,23 +145,9 @@ def crear_alumno():
     return redirect("/admin")
 
 
-# =============================
-# GRUPOS
-# =============================
-
-@app.route('/grupos')
-def grupos():
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM grupos")
-    grupos = cursor.fetchall()
-
-    conn.close()
-
-    return render_template("grupos.html",grupos=grupos)
-
+# =========================
+# CREAR GRUPO
+# =========================
 
 @app.route('/crear_grupo', methods=['POST'])
 def crear_grupo():
@@ -225,177 +157,41 @@ def crear_grupo():
     conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute("INSERT INTO grupos(nombre) VALUES (?)",(nombre,))
+    cursor.execute("INSERT INTO grupos(nombre) VALUES(?)",(nombre,))
 
     conn.commit()
     conn.close()
 
-    return redirect("/grupos")
+    return redirect("/admin")
 
 
-# =============================
-# MATERIAS
-# =============================
+# =========================
+# CREAR MAESTRO
+# =========================
 
-@app.route('/materias')
-def materias():
+@app.route('/crear_maestro', methods=['POST'])
+def crear_maestro():
 
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM materias")
-    materias = cursor.fetchall()
-
-    conn.close()
-
-    return render_template("materias.html",materias=materias)
-
-
-@app.route('/crear_materia', methods=['POST'])
-def crear_materia():
-
-    nombre = request.form['nombre']
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("INSERT INTO materias(nombre) VALUES (?)",(nombre,))
-
-    conn.commit()
-    conn.close()
-
-    return redirect("/materias")
-
-
-# =============================
-# CAPTURAR CALIFICACIONES
-# =============================
-
-@app.route('/capturar_calificaciones')
-def capturar_calificaciones():
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM alumnos")
-    alumnos = cursor.fetchall()
-
-    cursor.execute("SELECT * FROM materias")
-    materias = cursor.fetchall()
-
-    conn.close()
-
-    return render_template(
-        "capturar_calificaciones.html",
-        alumnos=alumnos,
-        materias=materias
-    )
-
-
-@app.route('/guardar_calificacion', methods=['POST'])
-def guardar_calificacion():
-
-    alumno = request.form['alumno']
-    materia = request.form['materia']
-    calificacion = request.form['calificacion']
+    usuario = request.form['usuario']
+    password = request.form['password']
 
     conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("""
-    INSERT INTO calificaciones(alumno_id,materia_id,calificacion)
-    VALUES (?,?,?)
-    """,(alumno,materia,calificacion))
+    INSERT INTO usuarios(usuario,password,rol)
+    VALUES(?,?,?)
+    """,(usuario,password,"maestro"))
 
     conn.commit()
     conn.close()
 
-    return redirect("/capturar_calificaciones")
+    return redirect("/admin")
 
 
-# =============================
-# KARDEX
-# =============================
-
-@app.route('/kardex/<int:id>')
-def kardex(id):
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-    SELECT materias.nombre, calificaciones.calificacion
-    FROM calificaciones
-    JOIN materias ON materias.id = calificaciones.materia_id
-    WHERE alumno_id=?
-    """,(id,))
-
-    datos = cursor.fetchall()
-
-    conn.close()
-
-    return render_template("kardex.html",datos=datos)
-
-
-# =============================
-# BOLETA PDF
-# =============================
-
-@app.route('/boleta_pdf/<int:id>')
-def boleta_pdf(id):
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-    SELECT materias.nombre, calificaciones.calificacion
-    FROM calificaciones
-    JOIN materias ON materias.id = calificaciones.materia_id
-    WHERE alumno_id=?
-    """,(id,))
-
-    datos = cursor.fetchall()
-
-    promedio = 0
-    total = 0
-
-    for d in datos:
-        promedio += d["calificacion"]
-        total += 1
-
-    if total > 0:
-        promedio = promedio / total
-
-    buffer = io.BytesIO()
-    pdf = canvas.Canvas(buffer)
-
-    y = 800
-
-    pdf.drawString(200,820,"BOLETA ESCOLAR")
-
-    for d in datos:
-
-        texto = f"{d['nombre']} : {d['calificacion']}"
-        pdf.drawString(100,y,texto)
-
-        y -= 25
-
-    pdf.drawString(100,y-20,f"Promedio final: {round(promedio,2)}")
-
-    pdf.save()
-    buffer.seek(0)
-
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name="boleta.pdf",
-        mimetype='application/pdf'
-    )
-
-
-# =============================
+# =========================
 # PANEL MAESTRO
-# =============================
+# =========================
 
 @app.route('/panel_maestro')
 def panel_maestro():
@@ -408,26 +204,23 @@ def panel_maestro():
 
     conn.close()
 
-    return render_template(
-        "panel_maestro.html",
-        alumnos=alumnos
-    )
+    return render_template("panel_maestro.html",
+                           alumnos=alumnos)
 
 
-# =============================
+# =========================
 # LOGOUT
-# =============================
+# =========================
 
 @app.route('/logout')
 def logout():
-
     session.clear()
     return redirect("/")
 
 
-# =============================
-# RUN SERVER
-# =============================
+# =========================
+# RUN
+# =========================
 
 if __name__ == "__main__":
 
