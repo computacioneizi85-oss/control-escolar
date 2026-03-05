@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block contenido %}
+
+<div class="card">
+
+<h2>Reportes del Sistema</h2>
+
+<table>
+
+<tr>
+<th>Alumno</th>
+<th>Correo</th>
+<th>Grupo</th>
+</tr>
+
+{% for alumno in alumnos %}
+
+<tr>
+
+<td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+<td>{{ alumno.correo }}</td>
+<td>{{ alumno.grupo }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+{% endblock %}

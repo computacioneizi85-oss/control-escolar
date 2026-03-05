@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block contenido %}
+
+<div class="card">
+
+<h2>Registro de Asistencia</h2>
+
+<table>
+
+<tr>
+<th>Alumno</th>
+<th>Asistencia</th>
+</tr>
+
+{% for alumno in alumnos %}
+
+<tr>
+
+<td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+
+<td>
+
+<select>
+<option>Presente</option>
+<option>Ausente</option>
+</select>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+{% endblock %}

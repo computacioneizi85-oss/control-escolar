@@ -1,34 +1,23 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Configuración Institucional</title>
-</head>
-<body>
+{% extends "layout.html" %}
+
+{% block contenido %}
+
+<div class="card">
 
 <h2>Configuración Institucional</h2>
-<a href="/admin">Volver</a>
 
-<form method="POST" enctype="multipart/form-data">
+<p>Aquí podrás configurar información de la escuela.</p>
 
-<label>Nombre del Colegio:</label><br>
-<input type="text" name="nombre_colegio"
-value="{{ config.nombre_colegio if config else '' }}" required>
+<form>
 
-<br><br>
+<input type="text" placeholder="Nombre de la escuela">
 
-<label>Logo Institucional:</label><br>
-<input type="file" name="logo">
+<input type="text" placeholder="Ciclo escolar">
 
-<br><br>
-
-<button type="submit">Guardar Configuración</button>
+<button class="btn-green">Guardar</button>
 
 </form>
 
-{% if config and config.logo %}
-<h3>Logo Actual:</h3>
-<img src="/static/{{ config.logo }}" width="150">
-{% endif %}
+</div>
 
-</body>
-</html>
+{% endblock %}
