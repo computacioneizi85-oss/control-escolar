@@ -3,115 +3,111 @@
 {% block contenido %}
 
 <div class="card">
-
-<h2>Crear Grupo</h2>
-
-<form method="POST" action="/crear_grupo">
-
-<input type="text" name="nombre_grupo" placeholder="Nombre del grupo">
-
-<button class="btn-green">Crear</button>
-
-</form>
+<h2>Dashboard del Sistema</h2>
+<p>Bienvenido al panel de dirección del sistema de control escolar.</p>
+</div>
 
 
-<h3>Grupos Registrados</h3>
+<div class="card">
+
+<h3>Estadísticas Generales</h3>
 
 <table>
 
 <tr>
-<th>Nombre</th>
-<th>Acción</th>
+<th>Total de alumnos</th>
+<th>Total de maestros</th>
+<th>Total de grupos</th>
+<th>Reportes pendientes</th>
 </tr>
-
-{% for grupo in grupos %}
 
 <tr>
-<td>{{ grupo.nombre }}</td>
-
-<td>
-<a href="/eliminar_grupo/{{ grupo.id }}">
-<button class="btn-red">Eliminar</button>
-</a>
-</td>
-
+<td>{{ total_alumnos }}</td>
+<td>{{ total_maestros }}</td>
+<td>{{ total_grupos }}</td>
+<td>{{ total_reportes }}</td>
 </tr>
-
-{% endfor %}
 
 </table>
 
 </div>
 
 
-
 <div class="card">
 
-<h2>Registrar Alumno</h2>
-
-<form method="POST" action="/crear_alumno">
-
-<input type="text" name="nombre" placeholder="Nombre">
-
-<input type="text" name="apellido" placeholder="Apellido">
-
-<input type="text" name="correo" placeholder="Correo">
-
-<input type="text" name="grado" placeholder="Grado">
-
-<input type="text" name="grupo" placeholder="Grupo">
-
-<input type="password" name="password" placeholder="Contraseña (opcional)">
-
-<button class="btn-green">Registrar</button>
-
-</form>
-
-
-<h3>Alumnos Registrados</h3>
+<h3>Accesos rápidos</h3>
 
 <table>
 
 <tr>
-<th>Nombre</th>
-<th>Correo</th>
-<th>Grado</th>
-<th>Grupo</th>
-<th>Kardex</th>
-<th>Acciones</th>
+<th>Módulo</th>
+<th>Acción</th>
 </tr>
-
-{% for alumno in alumnos %}
 
 <tr>
-
-<td>{{ alumno.nombre }}</td>
-<td>{{ alumno.correo }}</td>
-<td>{{ alumno.grado }}</td>
-<td>{{ alumno.grupo }}</td>
-
+<td>Gestión de alumnos</td>
 <td>
-<a href="/kardex_pdf/{{ alumno.id }}">
-<button>Kardex PDF</button>
+<a href="/alumnos">
+<button class="btn-green">Administrar alumnos</button>
 </a>
 </td>
-
-<td>
-<a href="/reset_password/{{ alumno.id }}">
-<button>Reset</button>
-</a>
-
-<a href="/eliminar_alumno/{{ alumno.id }}">
-<button class="btn-red">Eliminar</button>
-</a>
-
-</td>
-
 </tr>
 
-{% endfor %}
+<tr>
+<td>Gestión de maestros</td>
+<td>
+<a href="/maestros">
+<button class="btn-green">Administrar maestros</button>
+</a>
+</td>
+</tr>
+
+<tr>
+<td>Materias</td>
+<td>
+<a href="/materias">
+<button class="btn-green">Administrar materias</button>
+</a>
+</td>
+</tr>
+
+<tr>
+<td>Reportes disciplinarios</td>
+<td>
+<a href="/reportes">
+<button class="btn-green">Ver reportes</button>
+</a>
+</td>
+</tr>
+
+<tr>
+<td>Panel maestro</td>
+<td>
+<a href="/panel_maestro">
+<button class="btn-green">Acceder</button>
+</a>
+</td>
+</tr>
 
 </table>
+
+</div>
+
+
+<div class="card">
+
+<h3>Estado del sistema</h3>
+
+<p>El sistema de control escolar está funcionando correctamente.</p>
+
+<ul>
+
+<li>Registro de alumnos activo</li>
+<li>Gestión de maestros activa</li>
+<li>Reportes disciplinarios activos</li>
+<li>Generación de PDF habilitada</li>
+
+</ul>
 
 </div>
 

@@ -1,36 +1,19 @@
 {% extends "layout.html" %}
+
 {% block contenido %}
 
 <div class="card">
 
-<h2>Crear Reporte</h2>
-
-<form method="POST" action="/crear_reporte">
-
-<input name="maestro" placeholder="Maestro">
-
-<input name="alumno" placeholder="Alumno">
-
-<textarea name="descripcion" placeholder="Descripcion"></textarea>
-
-<button>Enviar</button>
-
-</form>
-
-</div>
-
-
-<div class="card">
-
-<h2>Reportes</h2>
+<h2>Reportes disciplinarios</h2>
 
 <table>
 
 <tr>
 <th>Maestro</th>
 <th>Alumno</th>
+<th>Descripción</th>
 <th>Estado</th>
-<th>Accion</th>
+<th>Acción</th>
 </tr>
 
 {% for r in reportes %}
@@ -39,11 +22,12 @@
 
 <td>{{r.maestro}}</td>
 <td>{{r.alumno}}</td>
+<td>{{r.descripcion}}</td>
 <td>{{r.estado}}</td>
 
 <td>
 
-{% if r.estado=='pendiente' %}
+{% if r.estado == 'pendiente' %}
 
 <a href="/aprobar_reporte/{{r.id}}">
 <button>Aprobar</button>
