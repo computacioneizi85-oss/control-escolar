@@ -1,274 +1,118 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Panel Dirección - Control Escolar</title>
+{% extends "layout.html" %}
 
-<style>
-body{
-    margin:0;
-    font-family: Arial, Helvetica, sans-serif;
-    background:#f4f6f9;
-}
+{% block contenido %}
 
-header{
-    background:#0d1b2a;
-    color:white;
-    padding:15px 25px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
+<div class="card">
 
-header h1{
-    margin:0;
-    font-size:20px;
-}
+<h2>Crear Grupo</h2>
 
-.logout-btn{
-    background:#e74c3c;
-    color:white;
-    padding:8px 15px;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-}
+<form method="POST" action="/crear_grupo">
 
-.container{
-    display:flex;
-}
+<input type="text" name="nombre_grupo" placeholder="Nombre del grupo">
 
-.sidebar{
-    width:240px;
-    background:#0d1b2a;
-    color:white;
-    min-height:100vh;
-    padding:20px;
-}
+<button class="btn-green">Crear</button>
 
-.sidebar h3{
-    margin-top:0;
-}
+</form>
 
-.sidebar a{
-    display:block;
-    color:white;
-    text-decoration:none;
-    margin:10px 0;
-    padding:6px;
-    border-radius:6px;
-}
 
-.sidebar a:hover{
-    background:#1b263b;
-}
+<h3>Grupos Registrados</h3>
 
-.content{
-    flex:1;
-    padding:30px;
-}
+<table>
 
-.card{
-    background:white;
-    padding:20px;
-    border-radius:12px;
-    box-shadow:0px 4px 10px rgba(0,0,0,0.08);
-    margin-bottom:30px;
-}
+<tr>
+<th>Nombre</th>
+<th>Acción</th>
+</tr>
 
-h2{
-    margin-top:0;
-}
+{% for grupo in grupos %}
 
-input, select{
-    padding:8px;
-    margin:5px 5px 5px 0;
-    border-radius:6px;
-    border:1px solid #ccc;
-}
+<tr>
+<td>{{ grupo.nombre }}</td>
 
-button{
-    padding:8px 12px;
-    border-radius:6px;
-    border:none;
-    cursor:pointer;
-}
+<td>
+<a href="/eliminar_grupo/{{ grupo.id }}">
+<button class="btn-red">Eliminar</button>
+</a>
+</td>
 
-.btn-primary{ background:#2ecc71; color:white; }
-.btn-danger{ background:#e74c3c; color:white; }
-.btn-warning{ background:#f39c12; color:white; }
-.btn-info{ background:#3498db; color:white; }
+</tr>
 
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:15px;
-}
+{% endfor %}
 
-th, td{
-    padding:10px;
-    border-bottom:1px solid #ddd;
-    text-align:left;
-}
+</table>
 
-th{
-    background:#ecf0f1;
-}
-
-.password-alert{
-    background:#27ae60;
-    color:white;
-    padding:10px;
-    margin-bottom:20px;
-    border-radius:6px;
-}
-</style>
-</head>
-
-<body>
-
-<header>
-    <h1>Panel Dirección - Control Escolar</h1>
-    <a href="/logout">
-        <button class="logout-btn">Cerrar sesión</button>
-    </a>
-</header>
-
-<div class="container">
-
-    <!-- ================= MENÚ LATERAL ================= -->
-    <div class="sidebar">
-        <h3>MENÚ</h3>
-        <a href="/admin">Inicio</a>
-        <a href="/configuracion">Configuración Institucional</a>
-        <a href="/asistencias_admin">Asistencias</a>
-        <a href="/reportes_admin">Reportes Disciplinarios</a>
-    </div>
-
-    <div class="content">
-
-        {% if nueva_password %}
-        <div class="password-alert">
-            {{ nueva_password }}
-        </div>
-        {% endif %}
-
-        <!-- ================= GRUPOS ================= -->
-        <div class="card">
-            <h2>Crear Grupo</h2>
-            <form action="/crear_grupo" method="POST">
-                <input type="text" name="nombre_grupo" placeholder="Nombre del grupo" required>
-                <button type="submit" class="btn-primary">Crear</button>
-            </form>
-
-            <h3>Grupos Registrados</h3>
-            <table>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Acción</th>
-                </tr>
-                {% for grupo in grupos %}
-                <tr>
-                    <td>{{ grupo.nombre }}</td>
-                    <td>
-                        <a href="/eliminar_grupo/{{ grupo._id }}">
-                            <button class="btn-danger">Eliminar</button>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
-
-        <!-- ================= ALUMNOS ================= -->
-        <div class="card">
-            <h2>Registrar Alumno</h2>
-            <form action="/registrar_alumno" method="POST">
-                <input type="text" name="nombre" placeholder="Nombre" required>
-                <input type="text" name="apellido" placeholder="Apellido" required>
-                <input type="email" name="correo" placeholder="Correo" required>
-                <input type="text" name="grado" placeholder="Grado" required>
-                <input type="text" name="grupo" placeholder="Grupo" required>
-                <input type="password" name="password" placeholder="Contraseña (opcional)">
-                <button type="submit" class="btn-primary">Registrar</button>
-            </form>
-
-            <h3>Alumnos Registrados</h3>
-            <table>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Correo</th>
-                    <th>Grado</th>
-                    <th>Grupo</th>
-                    <th>Kardex</th>
-                    <th>Acciones</th>
-                </tr>
-                {% for alumno in alumnos %}
-                <tr>
-                    <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
-                    <td>{{ alumno.correo }}</td>
-                    <td>{{ alumno.grado }}</td>
-                    <td>{{ alumno.grupo }}</td>
-                    <td>
-                        <a href="/kardex/{{ alumno._id }}" target="_blank">
-                            <button class="btn-info">Kardex PDF</button>
-                        </a>
-                    </td>
-                    <td>
-                        <a href="/reset_password_alumno/{{ alumno._id }}">
-                            <button class="btn-warning">Reset</button>
-                        </a>
-                        <a href="/eliminar_alumno/{{ alumno._id }}">
-                            <button class="btn-danger">Eliminar</button>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
-
-        <!-- ================= MAESTROS ================= -->
-        <div class="card">
-            <h2>Registrar Maestro</h2>
-            <form action="/registrar_maestro" method="POST">
-                <input type="text" name="nombre" placeholder="Nombre" required>
-                <input type="email" name="correo" placeholder="Correo" required>
-                <input type="text" name="materia" placeholder="Materia" required>
-                <input type="text" name="grupo" placeholder="Grupo" required>
-                <input type="password" name="password" placeholder="Contraseña (opcional)">
-                <button type="submit" class="btn-primary">Registrar</button>
-            </form>
-
-            <h3>Maestros Registrados</h3>
-            <table>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Correo</th>
-                    <th>Materia</th>
-                    <th>Grupo</th>
-                    <th>Acciones</th>
-                </tr>
-                {% for maestro in maestros %}
-                <tr>
-                    <td>{{ maestro.nombre }}</td>
-                    <td>{{ maestro.correo }}</td>
-                    <td>{{ maestro.materia }}</td>
-                    <td>{{ maestro.grupo }}</td>
-                    <td>
-                        <a href="/reset_password_maestro/{{ maestro._id }}">
-                            <button class="btn-warning">Reset</button>
-                        </a>
-                        <a href="/eliminar_maestro/{{ maestro._id }}">
-                            <button class="btn-danger">Eliminar</button>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
-
-    </div>
 </div>
 
-</body>
-</html>
+
+
+<div class="card">
+
+<h2>Registrar Alumno</h2>
+
+<form method="POST" action="/crear_alumno">
+
+<input type="text" name="nombre" placeholder="Nombre">
+
+<input type="text" name="apellido" placeholder="Apellido">
+
+<input type="text" name="correo" placeholder="Correo">
+
+<input type="text" name="grado" placeholder="Grado">
+
+<input type="text" name="grupo" placeholder="Grupo">
+
+<input type="password" name="password" placeholder="Contraseña (opcional)">
+
+<button class="btn-green">Registrar</button>
+
+</form>
+
+
+<h3>Alumnos Registrados</h3>
+
+<table>
+
+<tr>
+<th>Nombre</th>
+<th>Correo</th>
+<th>Grado</th>
+<th>Grupo</th>
+<th>Kardex</th>
+<th>Acciones</th>
+</tr>
+
+{% for alumno in alumnos %}
+
+<tr>
+
+<td>{{ alumno.nombre }}</td>
+<td>{{ alumno.correo }}</td>
+<td>{{ alumno.grado }}</td>
+<td>{{ alumno.grupo }}</td>
+
+<td>
+<a href="/kardex_pdf/{{ alumno.id }}">
+<button>Kardex PDF</button>
+</a>
+</td>
+
+<td>
+<a href="/reset_password/{{ alumno.id }}">
+<button>Reset</button>
+</a>
+
+<a href="/eliminar_alumno/{{ alumno.id }}">
+<button class="btn-red">Eliminar</button>
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+{% endblock %}

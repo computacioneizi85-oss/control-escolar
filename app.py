@@ -1,8 +1,6 @@
-from flask import Flask, render_template, request, redirect, session, send_file
+from flask import Flask, render_template, request, redirect, session
 import sqlite3
 import os
-import io
-from reportlab.pdfgen import canvas
 
 app = Flask(__name__)
 app.secret_key = "control_escolar_secret"
@@ -11,7 +9,7 @@ DATABASE = "escuela.db"
 
 
 # ------------------------------
-# CONEXION BASE DE DATOS
+# CONEXIÓN A BASE DE DATOS
 # ------------------------------
 
 def get_db():
@@ -30,21 +28,6 @@ def init_db():
     cursor = conn.cursor()
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS alumnos(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT
-    )
-    """)
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS maestros(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        usuario TEXT,
-        password TEXT
-    )
-    """)
-
-    cursor.execute("""
     CREATE TABLE IF NOT EXISTS administradores(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         usuario TEXT,
@@ -53,35 +36,30 @@ def init_db():
     """)
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS materias(
+    CREATE TABLE IF NOT EXISTS grupos(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT
     )
     """)
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS calificaciones(
+    CREATE TABLE IF NOT EXISTS alumnos(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        alumno_id INTEGER,
-        materia_id INTEGER,
-        calificacion INTEGER
+        nombre TEXT,
+        apellido TEXT,
+        correo TEXT,
+        grado TEXT,
+        grupo TEXT,
+        password TEXT
     )
     """)
 
-    # USUARIO ADMIN
+    # ADMIN POR DEFECTO
     cursor.execute("SELECT * FROM administradores WHERE usuario='admin'")
     if cursor.fetchone() is None:
         cursor.execute(
             "INSERT INTO administradores (usuario,password) VALUES (?,?)",
             ("admin","1234")
-        )
-
-    # USUARIO MAESTRO
-    cursor.execute("SELECT * FROM maestros WHERE usuario='maestro'")
-    if cursor.fetchone() is None:
-        cursor.execute(
-            "INSERT INTO maestros (usuario,password) VALUES (?,?)",
-            ("maestro","1234")
         )
 
     conn.commit()
@@ -92,17 +70,13 @@ init_db()
 
 
 # ------------------------------
-# PAGINA PRINCIPAL
+# LOGIN
 # ------------------------------
 
 @app.route('/')
 def index():
     return render_template("index.html")
 
-
-# ------------------------------
-# LOGIN ADMIN
-# ------------------------------
 
 @app.route('/login_admin', methods=['POST'])
 def login_admin():
@@ -123,84 +97,116 @@ def login_admin():
 
     if admin:
         session['admin'] = usuario
-        return redirect("/panel_admin")
+        return redirect("/admin")
     else:
         return "Credenciales incorrectas"
 
 
 # ------------------------------
-# LOGIN MAESTRO
+# DASHBOARD ADMIN
 # ------------------------------
 
-@app.route('/login_maestro', methods=['POST'])
-def login_maestro():
-
-    usuario = request.form['usuario']
-    password = request.form['password']
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "SELECT * FROM maestros WHERE usuario=? AND password=?",
-        (usuario,password)
-    )
-
-    maestro = cursor.fetchone()
-    conn.close()
-
-    if maestro:
-        session['maestro'] = usuario
-        return redirect("/panel_maestro")
-    else:
-        return "Credenciales incorrectas"
-
-
-# ------------------------------
-# PANEL DIRECCION
-# ------------------------------
-
-@app.route('/panel_admin')
-def panel_admin():
+@app.route('/admin')
+def admin():
 
     if 'admin' not in session:
         return redirect("/")
 
     conn = get_db()
     cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM grupos")
+    grupos = cursor.fetchall()
 
     cursor.execute("SELECT * FROM alumnos")
     alumnos = cursor.fetchall()
 
     conn.close()
 
-    return render_template("dashboard_admin.html", alumnos=alumnos)
+    return render_template(
+        "admin.html",
+        grupos=grupos,
+        alumnos=alumnos
+    )
 
 
 # ------------------------------
-# AGREGAR ALUMNO
+# CREAR GRUPO
 # ------------------------------
 
-@app.route('/agregar_alumno', methods=['POST'])
-def agregar_alumno():
+@app.route('/crear_grupo', methods=['POST'])
+def crear_grupo():
 
     if 'admin' not in session:
         return redirect("/")
 
-    nombre = request.form['nombre']
+    nombre = request.form['nombre_grupo']
 
     conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute(
-        "INSERT INTO alumnos (nombre) VALUES (?)",
+        "INSERT INTO grupos (nombre) VALUES (?)",
         (nombre,)
     )
 
     conn.commit()
     conn.close()
 
-    return redirect("/panel_admin")
+    return redirect("/admin")
+
+
+# ------------------------------
+# ELIMINAR GRUPO
+# ------------------------------
+
+@app.route('/eliminar_grupo/<int:id>')
+def eliminar_grupo(id):
+
+    if 'admin' not in session:
+        return redirect("/")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM grupos WHERE id=?", (id,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/admin")
+
+
+# ------------------------------
+# CREAR ALUMNO
+# ------------------------------
+
+@app.route('/crear_alumno', methods=['POST'])
+def crear_alumno():
+
+    if 'admin' not in session:
+        return redirect("/")
+
+    nombre = request.form['nombre']
+    apellido = request.form['apellido']
+    correo = request.form['correo']
+    grado = request.form['grado']
+    grupo = request.form['grupo']
+    password = request.form['password']
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO alumnos
+        (nombre,apellido,correo,grado,grupo,password)
+        VALUES (?,?,?,?,?,?)
+    """,(nombre,apellido,correo,grado,grupo,password))
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/admin")
 
 
 # ------------------------------
@@ -221,102 +227,7 @@ def eliminar_alumno(id):
     conn.commit()
     conn.close()
 
-    return redirect("/panel_admin")
-
-
-# ------------------------------
-# PANEL MAESTRO
-# ------------------------------
-
-@app.route('/panel_maestro')
-def panel_maestro():
-
-    if 'maestro' not in session:
-        return redirect("/")
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM alumnos")
-    alumnos = cursor.fetchall()
-
-    conn.close()
-
-    return render_template("panel_maestro.html", alumnos=alumnos)
-
-
-# ------------------------------
-# KARDEX
-# ------------------------------
-
-@app.route('/kardex/<int:alumno_id>')
-def kardex(alumno_id):
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-    SELECT materias.nombre, calificaciones.calificacion
-    FROM calificaciones
-    JOIN materias ON calificaciones.materia_id = materias.id
-    WHERE alumno_id = ?
-    """, (alumno_id,))
-
-    datos = cursor.fetchall()
-    conn.close()
-
-    return render_template("kardex.html", datos=datos)
-
-
-# ------------------------------
-# REPORTE PDF
-# ------------------------------
-
-@app.route('/reporte_pdf/<int:alumno_id>')
-def reporte_pdf(alumno_id):
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-    SELECT materias.nombre, calificaciones.calificacion
-    FROM calificaciones
-    JOIN materias ON calificaciones.materia_id = materias.id
-    WHERE alumno_id = ?
-    """, (alumno_id,))
-
-    datos = cursor.fetchall()
-    conn.close()
-
-    buffer = io.BytesIO()
-    pdf = canvas.Canvas(buffer)
-
-    pdf.drawString(200,800,"Reporte de Calificaciones")
-
-    y = 750
-
-    for materia,calificacion in datos:
-        pdf.drawString(100,y,f"{materia}: {calificacion}")
-        y -= 30
-
-    pdf.save()
-    buffer.seek(0)
-
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name="reporte.pdf",
-        mimetype="application/pdf"
-    )
-
-
-# ------------------------------
-# CONFIGURACION
-# ------------------------------
-
-@app.route('/configuracion')
-def configuracion():
-    return render_template("configuracion.html")
+    return redirect("/admin")
 
 
 # ------------------------------
