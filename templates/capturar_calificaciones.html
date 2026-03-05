@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block contenido %}
+
+<div class="card">
+
+<h2>Capturar calificaciones</h2>
+
+<form method="POST" action="/guardar_calificacion">
+
+<select name="alumno">
+
+{% for a in alumnos %}
+<option value="{{a.id}}">
+{{a.nombre}} {{a.apellido}}
+</option>
+{% endfor %}
+
+</select>
+
+<select name="materia">
+
+{% for m in materias %}
+<option value="{{m.id}}">{{m.nombre}}</option>
+{% endfor %}
+
+</select>
+
+<input name="calificacion" placeholder="Calificación">
+
+<button class="btn-green">Guardar</button>
+
+</form>
+
+</div>
+
+{% endblock %}

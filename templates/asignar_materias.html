@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block contenido %}
+
+<div class="card">
+
+<h2>Asignar materia a grupo</h2>
+
+<form method="POST" action="/guardar_asignacion">
+
+<select name="grupo">
+
+{% for g in grupos %}
+<option value="{{g.nombre}}">{{g.nombre}}</option>
+{% endfor %}
+
+</select>
+
+<select name="materia">
+
+{% for m in materias %}
+<option value="{{m.id}}">{{m.nombre}}</option>
+{% endfor %}
+
+</select>
+
+<button class="btn-green">Asignar</button>
+
+</form>
+
+</div>
+
+{% endblock %}
