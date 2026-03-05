@@ -6,7 +6,7 @@ from datetime import date
 app = Flask(__name__)
 app.secret_key = "control_escolar_secret"
 
-DATABASE = "escuela.db"
+DATABASE = os.path.join(os.getcwd(), "escuela.db")
 
 
 # ---------------------------------------------------------
@@ -243,7 +243,6 @@ def alumnos():
     conn.close()
 
     return render_template("alumnos.html", alumnos=alumnos, grupos=grupos)
-
 
 @app.route('/crear_alumno', methods=['POST'])
 def crear_alumno():
