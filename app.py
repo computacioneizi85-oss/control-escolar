@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, send_file
 import sqlite3
 import os
-from datetime import date
 import io
 import pandas as pd
 from reportlab.pdfgen import canvas
@@ -9,13 +8,13 @@ from reportlab.pdfgen import canvas
 app = Flask(__name__)
 app.secret_key = "control_escolar_secret"
 
-# BASE DE DATOS PERSISTENTE EN RENDER
+# BASE DE DATOS PERSISTENTE PARA RENDER
 DATABASE = "/var/data/escuela.db"
 
 
-# -------------------------------
-# CONEXION A BASE DE DATOS
-# -------------------------------
+# -----------------------------------
+# CONEXION BASE DE DATOS
+# -----------------------------------
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
@@ -23,9 +22,9 @@ def get_db():
     return conn
 
 
-# -------------------------------
+# -----------------------------------
 # CREAR TABLAS
-# -------------------------------
+# -----------------------------------
 
 def init_db():
 
@@ -34,72 +33,82 @@ def init_db():
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS usuarios(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    usuario TEXT,
-    password TEXT,
-    rol TEXT)
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        usuario TEXT,
+        password TEXT,
+        rol TEXT
+    )
     """)
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS alumnos(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT,
-    apellido TEXT,
-    correo TEXT,
-    grado TEXT,
-    grupo TEXT)
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT,
+        apellido TEXT,
+        correo TEXT,
+        grado TEXT,
+        grupo TEXT
+    )
     """)
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS maestros(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT,
-    correo TEXT)
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT,
+        correo TEXT
+    )
     """)
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS grupos(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT)
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT
+    )
     """)
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS materias(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT)
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT
+    )
     """)
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS calificaciones(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    alumno_id INTEGER,
-    materia_id INTEGER,
-    calificacion REAL)
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        alumno_id INTEGER,
+        materia_id INTEGER,
+        calificacion REAL
+    )
     """)
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS reportes(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    maestro TEXT,
-    alumno TEXT,
-    descripcion TEXT,
-    estado TEXT)
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        maestro TEXT,
+        alumno TEXT,
+        descripcion TEXT,
+        estado TEXT
+    )
     """)
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS asistencias(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    alumno_id INTEGER,
-    fecha TEXT,
-    estado TEXT)
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        alumno_id INTEGER,
+        fecha TEXT,
+        estado TEXT
+    )
     """)
 
+    # CREAR ADMIN SI NO EXISTE
     cursor.execute("SELECT * FROM usuarios WHERE usuario='admin'")
     if cursor.fetchone() is None:
-        cursor.execute(
-            "INSERT INTO usuarios(usuario,password,rol) VALUES (?,?,?)",
-            ("admin","1234","admin")
-        )
+
+        cursor.execute("""
+        INSERT INTO usuarios(usuario,password,rol)
+        VALUES ('admin','1234','admin')
+        """)
 
     conn.commit()
     conn.close()
@@ -108,14 +117,18 @@ def init_db():
 init_db()
 
 
-# -------------------------------
-# LOGIN
-# -------------------------------
+# -----------------------------------
+# PAGINA PRINCIPAL
+# -----------------------------------
 
 @app.route('/')
 def index():
     return render_template("index.html")
 
+
+# -----------------------------------
+# LOGIN GENERAL
+# -----------------------------------
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -147,9 +160,9 @@ def login():
     return "Credenciales incorrectas"
 
 
-# -------------------------------
-# DASHBOARD
-# -------------------------------
+# -----------------------------------
+# DASHBOARD ADMIN
+# -----------------------------------
 
 @app.route('/admin')
 def admin():
@@ -158,31 +171,31 @@ def admin():
     cursor = conn.cursor()
 
     cursor.execute("SELECT COUNT(*) FROM alumnos")
-    alumnos = cursor.fetchone()[0]
+    total_alumnos = cursor.fetchone()[0]
 
     cursor.execute("SELECT COUNT(*) FROM maestros")
-    maestros = cursor.fetchone()[0]
+    total_maestros = cursor.fetchone()[0]
 
     cursor.execute("SELECT COUNT(*) FROM grupos")
-    grupos = cursor.fetchone()[0]
+    total_grupos = cursor.fetchone()[0]
 
     cursor.execute("SELECT COUNT(*) FROM reportes WHERE estado='pendiente'")
-    reportes = cursor.fetchone()[0]
+    total_reportes = cursor.fetchone()[0]
 
     conn.close()
 
     return render_template(
         "admin.html",
-        total_alumnos=alumnos,
-        total_maestros=maestros,
-        total_grupos=grupos,
-        total_reportes=reportes
+        total_alumnos=total_alumnos,
+        total_maestros=total_maestros,
+        total_grupos=total_grupos,
+        total_reportes=total_reportes
     )
 
 
-# -------------------------------
+# -----------------------------------
 # ALUMNOS
-# -------------------------------
+# -----------------------------------
 
 @app.route('/alumnos')
 def alumnos():
@@ -216,7 +229,7 @@ def crear_alumno():
     cursor.execute("""
     INSERT INTO alumnos(nombre,apellido,correo,grado,grupo)
     VALUES (?,?,?,?,?)
-    """,(nombre,apellido,correo,grado,grupo))
+    """, (nombre, apellido, correo, grado, grupo))
 
     conn.commit()
     conn.close()
@@ -224,9 +237,9 @@ def crear_alumno():
     return redirect("/alumnos")
 
 
-# -------------------------------
-# IMPORTAR ALUMNOS EXCEL
-# -------------------------------
+# -----------------------------------
+# IMPORTAR ALUMNOS DESDE EXCEL
+# -----------------------------------
 
 @app.route('/importar_alumnos', methods=['POST'])
 def importar_alumnos():
@@ -256,9 +269,9 @@ def importar_alumnos():
     return redirect("/alumnos")
 
 
-# -------------------------------
+# -----------------------------------
 # MAESTROS
-# -------------------------------
+# -----------------------------------
 
 @app.route('/maestros')
 def maestros():
@@ -286,7 +299,7 @@ def crear_maestro():
     cursor.execute("""
     INSERT INTO maestros(nombre,correo)
     VALUES (?,?)
-    """,(nombre,correo))
+    """, (nombre, correo))
 
     conn.commit()
     conn.close()
@@ -294,9 +307,9 @@ def crear_maestro():
     return redirect("/maestros")
 
 
-# -------------------------------
+# -----------------------------------
 # MATERIAS
-# -------------------------------
+# -----------------------------------
 
 @app.route('/materias')
 def materias():
@@ -320,7 +333,10 @@ def crear_materia():
     conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute("INSERT INTO materias(nombre) VALUES (?)",(nombre,))
+    cursor.execute(
+        "INSERT INTO materias(nombre) VALUES (?)",
+        (nombre,)
+    )
 
     conn.commit()
     conn.close()
@@ -328,9 +344,9 @@ def crear_materia():
     return redirect("/materias")
 
 
-# -------------------------------
+# -----------------------------------
 # KARDEX
-# -------------------------------
+# -----------------------------------
 
 @app.route('/kardex/<int:id>')
 def kardex(id):
@@ -343,7 +359,7 @@ def kardex(id):
     FROM calificaciones
     JOIN materias ON materias.id = calificaciones.materia_id
     WHERE alumno_id=?
-    """,(id,))
+    """, (id,))
 
     datos = cursor.fetchall()
 
@@ -352,9 +368,9 @@ def kardex(id):
     return render_template("kardex.html", datos=datos)
 
 
-# -------------------------------
+# -----------------------------------
 # BOLETA PDF
-# -------------------------------
+# -----------------------------------
 
 @app.route('/boleta_pdf/<int:id>')
 def boleta_pdf(id):
@@ -367,7 +383,7 @@ def boleta_pdf(id):
     FROM calificaciones
     JOIN materias ON materias.id = calificaciones.materia_id
     WHERE alumno_id=?
-    """,(id,))
+    """, (id,))
 
     datos = cursor.fetchall()
 
@@ -375,10 +391,10 @@ def boleta_pdf(id):
     pdf = canvas.Canvas(buffer)
 
     y = 800
-    pdf.drawString(200,820,"Boleta Escolar")
+    pdf.drawString(200, 820, "Boleta Escolar")
 
     for d in datos:
-        pdf.drawString(100,y,f"{d['nombre']} : {d['calificacion']}")
+        pdf.drawString(100, y, f"{d['nombre']} : {d['calificacion']}")
         y -= 30
 
     pdf.save()
@@ -392,9 +408,9 @@ def boleta_pdf(id):
     )
 
 
-# -------------------------------
-# REPORTES
-# -------------------------------
+# -----------------------------------
+# REPORTES DISCIPLINARIOS
+# -----------------------------------
 
 @app.route('/reportes')
 def reportes():
@@ -423,7 +439,7 @@ def crear_reporte():
     cursor.execute("""
     INSERT INTO reportes(maestro,alumno,descripcion,estado)
     VALUES (?,?,?,'pendiente')
-    """,(maestro,alumno,descripcion))
+    """, (maestro, alumno, descripcion))
 
     conn.commit()
     conn.close()
@@ -441,7 +457,7 @@ def aprobar_reporte(id):
     UPDATE reportes
     SET estado='aprobado'
     WHERE id=?
-    """,(id,))
+    """, (id,))
 
     conn.commit()
     conn.close()
@@ -449,9 +465,9 @@ def aprobar_reporte(id):
     return redirect("/reportes")
 
 
-# -------------------------------
+# -----------------------------------
 # PANEL MAESTRO
-# -------------------------------
+# -----------------------------------
 
 @app.route('/panel_maestro')
 def panel_maestro():
@@ -467,23 +483,26 @@ def panel_maestro():
     return render_template("panel_maestro.html", reportes=reportes)
 
 
-# -------------------------------
-# LOGOUT
-# -------------------------------
+# -----------------------------------
+# CERRAR SESION
+# -----------------------------------
 
 @app.route('/logout')
 def logout():
 
     session.clear()
-
     return redirect("/")
 
 
-# -------------------------------
+# -----------------------------------
 # SERVIDOR
-# -------------------------------
+# -----------------------------------
 
 if __name__ == "__main__":
 
-    port = int(os.environ.get("PORT",10000))
-    app.run(host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 10000))
+
+    app.run(
+        host="0.0.0.0",
+        port=port
+    )
