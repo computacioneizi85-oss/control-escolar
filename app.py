@@ -174,7 +174,7 @@ def panel_admin():
 
     conn.close()
 
-    return render_template("panel_admin.html", alumnos=alumnos)
+    return render_template("dashboard_admin.html", alumnos=alumnos)
 
 
 # ------------------------------
