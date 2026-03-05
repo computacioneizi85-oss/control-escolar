@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block contenido %}
+
+<div class="card">
+
+<h2>Kardex del Alumno</h2>
+
+<table>
+
+<tr>
+<th>Materia</th>
+<th>Calificación</th>
+</tr>
+
+{% for d in datos %}
+
+<tr>
+
+<td>{{ d.nombre }}</td>
+<td>{{ d.calificacion }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+{% endblock %}

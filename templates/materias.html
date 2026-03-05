@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block contenido %}
+
+<div class="card">
+
+<h2>Registrar Materia</h2>
+
+<form method="POST" action="/crear_materia">
+
+<input type="text" name="nombre" placeholder="Nombre de la materia">
+
+<button class="btn-green">Agregar</button>
+
+</form>
+
+</div>
+
+
+<div class="card">
+
+<h2>Lista de Materias</h2>
+
+<table>
+
+<tr>
+<th>Materia</th>
+</tr>
+
+{% for materia in materias %}
+
+<tr>
+
+<td>{{ materia.nombre }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+{% endblock %}

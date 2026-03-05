@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+{% block contenido %}
+
+<div class="card">
+
+<h2>Registrar Alumno</h2>
+
+<form method="POST" action="/crear_alumno">
+
+<input type="text" name="nombre" placeholder="Nombre" required>
+
+<input type="text" name="apellido" placeholder="Apellido" required>
+
+<input type="email" name="correo" placeholder="Correo">
+
+<input type="text" name="grado" placeholder="Grado">
+
+<select name="grupo">
+{% for g in grupos %}
+<option value="{{ g.nombre }}">{{ g.nombre }}</option>
+{% endfor %}
+</select>
+
+<button class="btn-green">Registrar</button>
+
+</form>
+
+</div>
+
+
+<div class="card">
+
+<h2>Lista de Alumnos</h2>
+
+<table>
+
+<tr>
+<th>Nombre</th>
+<th>Apellido</th>
+<th>Correo</th>
+<th>Grado</th>
+<th>Grupo</th>
+<th>Kardex</th>
+<th>Eliminar</th>
+</tr>
+
+{% for alumno in alumnos %}
+
+<tr>
+
+<td>{{ alumno.nombre }}</td>
+<td>{{ alumno.apellido }}</td>
+<td>{{ alumno.correo }}</td>
+<td>{{ alumno.grado }}</td>
+<td>{{ alumno.grupo }}</td>
+
+<td>
+<a href="/kardex/{{ alumno.id }}">
+<button>Kardex</button>
+</a>
+</td>
+
+<td>
+<a href="/eliminar_alumno/{{ alumno.id }}">
+<button class="btn-red">Eliminar</button>
+</a>
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+{% endblock %}

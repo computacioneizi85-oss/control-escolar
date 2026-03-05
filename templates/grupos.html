@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block contenido %}
+
+<div class="card">
+
+<h2>Crear Grupo</h2>
+
+<form method="POST" action="/crear_grupo">
+
+<input type="text" name="nombre_grupo" placeholder="Nombre del grupo">
+
+<button class="btn-green">Crear</button>
+
+</form>
+
+</div>
+
+
+<div class="card">
+
+<h2>Grupos Registrados</h2>
+
+<table>
+
+<tr>
+<th>Nombre</th>
+<th>Eliminar</th>
+</tr>
+
+{% for grupo in grupos %}
+
+<tr>
+
+<td>{{ grupo.nombre }}</td>
+
+<td>
+<a href="/eliminar_grupo/{{ grupo.id }}">
+<button class="btn-red">Eliminar</button>
+</a>
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+{% endblock %}

@@ -3,26 +3,27 @@
 
 <div class="card">
 
-<h2>Registro de Asistencia</h2>
+<h2>Registrar Calificación</h2>
 
-<form method="POST" action="/guardar_asistencia">
+<form method="POST" action="/guardar_calificacion">
 
 <select name="alumno">
-
 {% for alumno in alumnos %}
-
 <option value="{{ alumno.id }}">
 {{ alumno.nombre }} {{ alumno.apellido }}
 </option>
-
 {% endfor %}
-
 </select>
 
-<select name="estado">
-<option value="Presente">Presente</option>
-<option value="Ausente">Ausente</option>
+<select name="materia">
+{% for materia in materias %}
+<option value="{{ materia.id }}">
+{{ materia.nombre }}
+</option>
+{% endfor %}
 </select>
+
+<input type="number" name="calificacion" placeholder="Calificación">
 
 <button class="btn-green">Guardar</button>
 
