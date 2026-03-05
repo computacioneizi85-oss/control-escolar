@@ -1,204 +1,70 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-
-<meta charset="UTF-8">
 <title>Control Escolar</title>
 
 <style>
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial, Helvetica, sans-serif;
-}
-
 body{
+margin:0;
+font-family:Arial;
 display:flex;
-height:100vh;
-background:#eef1f5;
 }
-
-
-/* SIDEBAR */
 
 .sidebar{
-width:240px;
+width:230px;
 background:#0d1b2a;
 color:white;
 padding:20px;
-}
-
-.sidebar h2{
-font-size:20px;
-margin-bottom:20px;
-text-align:center;
+height:100vh;
 }
 
 .sidebar a{
 display:block;
 color:white;
 text-decoration:none;
-padding:12px;
+padding:10px;
 margin-bottom:5px;
-border-radius:6px;
 }
 
 .sidebar a:hover{
 background:#1b263b;
 }
 
-
-/* MAIN AREA */
-
-.main{
-flex:1;
-display:flex;
-flex-direction:column;
-}
-
-
-/* HEADER */
-
-.header{
-background:#0d1b2a;
-color:white;
-padding:15px 25px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-.logout{
-background:#e63946;
-padding:8px 14px;
-color:white;
-text-decoration:none;
-border-radius:5px;
-}
-
-
-/* CONTENT */
-
 .content{
+flex:1;
 padding:30px;
-overflow:auto;
+background:#eef1f5;
 }
-
-
-/* CARDS */
 
 .card{
 background:white;
 padding:20px;
-border-radius:10px;
-margin-bottom:25px;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
-
-
-/* TABLE */
-
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:15px;
-}
-
-th,td{
-padding:12px;
-border-bottom:1px solid #ddd;
-}
-
-th{
-background:#f2f2f2;
-text-align:left;
-}
-
-
-/* BUTTONS */
-
-button{
-padding:8px 12px;
-border:none;
-border-radius:5px;
-cursor:pointer;
-}
-
-.btn-green{
-background:#2ecc71;
-color:white;
-}
-
-.btn-red{
-background:#e74c3c;
-color:white;
-}
-
-input,select{
-padding:8px;
-border:1px solid #ccc;
-border-radius:5px;
-margin-right:5px;
-margin-bottom:5px;
+border-radius:8px;
+margin-bottom:20px;
 }
 
 </style>
-
 </head>
 
-
 <body>
-
-<!-- SIDEBAR -->
 
 <div class="sidebar">
 
 <h2>Control Escolar</h2>
 
-<a href="/admin">🏠 Dashboard</a>
+<a href="/admin">Dashboard</a>
+<a href="/alumnos">Alumnos</a>
+<a href="/maestros">Maestros</a>
+<a href="/reportes">Reportes</a>
 
-<a href="/alumnos">👨‍🎓 Alumnos</a>
-
-<a href="/grupos">👨‍👩‍👧‍👦 Grupos</a>
-
-<a href="/materias">📚 Materias</a>
-
-<a href="/calificaciones">📝 Calificaciones</a>
-
-<a href="/asistencias">📅 Asistencias</a>
-
-<a href="/reportes">📊 Reportes</a>
-
-<a href="/configuracion">⚙️ Configuración</a>
+<a href="/logout">Cerrar sesión</a>
 
 </div>
-
-
-
-<div class="main">
-
-<!-- HEADER -->
-
-<div class="header">
-
-<h3>Sistema de Control Escolar</h3>
-
-<a class="logout" href="/logout">Cerrar sesión</a>
-
-</div>
-
-
-<!-- CONTENT -->
 
 <div class="content">
 
-{% block contenido %}
-
-{% endblock %}
-
-</div>
+{% block contenido %}{% endblock %}
 
 </div>
 

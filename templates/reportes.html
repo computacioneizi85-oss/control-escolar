@@ -3,28 +3,58 @@
 
 <div class="card">
 
-<h2>Reportes de Alumnos</h2>
+<h2>Crear Reporte</h2>
+
+<form method="POST" action="/crear_reporte">
+
+<input name="maestro" placeholder="Maestro">
+
+<input name="alumno" placeholder="Alumno">
+
+<textarea name="descripcion" placeholder="Descripcion"></textarea>
+
+<button>Enviar</button>
+
+</form>
+
+</div>
+
+
+<div class="card">
+
+<h2>Reportes</h2>
 
 <table>
 
 <tr>
+<th>Maestro</th>
 <th>Alumno</th>
-<th>Grupo</th>
-<th>Kardex</th>
+<th>Estado</th>
+<th>Accion</th>
 </tr>
 
-{% for alumno in alumnos %}
+{% for r in reportes %}
 
 <tr>
 
-<td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
-
-<td>{{ alumno.grupo }}</td>
+<td>{{r.maestro}}</td>
+<td>{{r.alumno}}</td>
+<td>{{r.estado}}</td>
 
 <td>
-<a href="/kardex/{{ alumno.id }}">
-<button>Ver Kardex</button>
+
+{% if r.estado=='pendiente' %}
+
+<a href="/aprobar_reporte/{{r.id}}">
+<button>Aprobar</button>
 </a>
+
+{% endif %}
+
+<a href="/reporte_pdf/{{r.id}}">
+<button>PDF</button>
+</a>
+
 </td>
 
 </tr>
