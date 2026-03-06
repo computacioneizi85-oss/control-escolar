@@ -1,5 +1,197 @@
+/* ========================= */
+/* RESET */
+/* ========================= */
 
-body { background:#f4f6fb; font-family:Arial, Helvetica, sans-serif; }
-.card { box-shadow:0 6px 18px rgba(0,0,0,.1); border-radius:14px; }
-h2 { font-weight:700; }
-.btn-primary { border-radius:10px; }
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, Helvetica, sans-serif;
+}
+
+
+/* ========================= */
+/* BODY */
+/* ========================= */
+
+body{
+background:#f4f6f9;
+color:#333;
+}
+
+
+/* ========================= */
+/* SIDEBAR */
+/* ========================= */
+
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+width:220px;
+height:100vh;
+background:#1e293b;
+padding:20px;
+color:white;
+}
+
+.sidebar h2{
+margin-bottom:30px;
+font-size:22px;
+}
+
+.sidebar a{
+display:block;
+padding:10px;
+margin-bottom:10px;
+color:white;
+text-decoration:none;
+border-radius:6px;
+transition:0.2s;
+}
+
+.sidebar a:hover{
+background:#334155;
+}
+
+
+/* ========================= */
+/* CONTENT */
+/* ========================= */
+
+.content{
+margin-left:240px;
+padding:30px;
+}
+
+
+/* ========================= */
+/* CARDS */
+/* ========================= */
+
+.card{
+background:white;
+padding:20px;
+border-radius:8px;
+margin-bottom:25px;
+box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+.card h3{
+margin-bottom:15px;
+}
+
+
+/* ========================= */
+/* FORMULARIOS */
+/* ========================= */
+
+input,
+select{
+padding:10px;
+margin-right:10px;
+margin-bottom:10px;
+border:1px solid #ccc;
+border-radius:6px;
+font-size:14px;
+}
+
+input:focus{
+outline:none;
+border-color:#2563eb;
+}
+
+
+/* ========================= */
+/* BOTONES */
+/* ========================= */
+
+button{
+padding:10px 16px;
+border:none;
+border-radius:6px;
+background:#2563eb;
+color:white;
+cursor:pointer;
+font-size:14px;
+transition:0.2s;
+}
+
+button:hover{
+background:#1d4ed8;
+}
+
+
+/* ========================= */
+/* TABLAS */
+/* ========================= */
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+table th{
+background:#f1f5f9;
+text-align:left;
+padding:10px;
+font-weight:bold;
+}
+
+table td{
+padding:10px;
+border-bottom:1px solid #e2e8f0;
+}
+
+table tr:hover{
+background:#f9fafb;
+}
+
+
+/* ========================= */
+/* LISTAS */
+/* ========================= */
+
+ul{
+list-style:none;
+}
+
+ul li{
+padding:6px 0;
+}
+
+
+/* ========================= */
+/* LOGIN */
+/* ========================= */
+
+.login-container{
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:linear-gradient(120deg,#2563eb,#1e3a8a);
+}
+
+.login-box{
+background:white;
+padding:40px;
+border-radius:10px;
+width:320px;
+box-shadow:0 5px 20px rgba(0,0,0,0.2);
+text-align:center;
+}
+
+.login-box h1{
+margin-bottom:20px;
+}
+
+.login-box input{
+width:100%;
+margin-bottom:15px;
+}
+
+.login-box button{
+width:100%;
+}
