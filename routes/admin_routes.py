@@ -1,74 +1,46 @@
 from flask import Blueprint, render_template, request, redirect, session
-from database.mongo import alumnos, grupos
+from bson.objectid import ObjectId
+
+from database.mongo import db
 
 admin_bp = Blueprint("admin", __name__)
 
+
+# COLECCIONES
+
+alumnos = db.alumnos
+grupos = db.grupos
+maestros = db.maestros
+reportes = db.reportes
+
+
+# -------------------------------
+# DASHBOARD
+# -------------------------------
+
 @admin_bp.route("/admin")
-def admin_panel():
+def dashboard():
 
     if "rol" not in session:
         return redirect("/")
 
-    if session["rol"] != "admin":
-        return redirect("/")
-
     lista_alumnos = list(alumnos.find())
     lista_grupos = list(grupos.find())
+    lista_maestros = list(maestros.find())
+    lista_reportes = list(reportes.find())
 
     return render_template(
         "admin.html",
         alumnos=lista_alumnos,
-        grupos=lista_grupos
+        grupos=lista_grupos,
+        maestros=lista_maestros,
+        reportes=lista_reportes
     )
 
 
-# =========================
-# Crear grupo
-# =========================
-
-@admin_bp.route("/crear_grupo", methods=["POST"])
-def crear_grupo():
-
-    nombre = request.form.get("grupo")
-
-    grupos.insert_one({
-        "nombre": nombre
-    })
-
-    return redirect("/admin")
-
-
-# =========================
-# Crear alumno
-# =========================
-
-@admin_bp.route("/crear_alumno", methods=["POST"])
-def crear_alumno():
-
-    nombre = request.form.get("nombre")
-    grupo = request.form.get("grupo")
-
-    alumnos.insert_one({
-        "nombre": nombre,
-        "grupo": grupo
-    })
-
-    return redirect("/admin")
-
-@admin_bp.route("/crear_alumno", methods=["POST"])
-def crear_alumno():
-
-    nombre = request.form.get("nombre")
-    grupo = request.form.get("grupo")
-
-    alumnos.insert_one({
-
-        "nombre": nombre,
-        "grupo": grupo
-
-    })
-
-    return redirect("/alumnos")
+# -------------------------------
+# VER ALUMNOS
+# -------------------------------
 
 @admin_bp.route("/alumnos")
 def ver_alumnos():
@@ -85,27 +57,48 @@ def ver_alumnos():
         grupos=lista_grupos
     )
 
-from bson.objectid import ObjectId
 
+# -------------------------------
+# CREAR ALUMNO
+# -------------------------------
+
+@admin_bp.route("/crear_alumno", methods=["POST"])
+def crear_alumno():
+
+    nombre = request.form.get("nombre")
+    grupo = request.form.get("grupo")
+
+    alumnos.insert_one({
+        "nombre": nombre,
+        "grupo": grupo
+    })
+
+    return redirect("/alumnos")
+
+
+# -------------------------------
+# ELIMINAR ALUMNO
+# -------------------------------
 
 @admin_bp.route("/eliminar_alumno/<id>")
 def eliminar_alumno(id):
 
     alumnos.delete_one({
-
         "_id": ObjectId(id)
-
     })
 
     return redirect("/alumnos")
+
+
+# -------------------------------
+# EDITAR ALUMNO
+# -------------------------------
 
 @admin_bp.route("/editar_alumno/<id>")
 def editar_alumno(id):
 
     alumno = alumnos.find_one({
-
         "_id": ObjectId(id)
-
     })
 
     lista_grupos = list(grupos.find())
@@ -116,6 +109,11 @@ def editar_alumno(id):
         grupos=lista_grupos
     )
 
+
+# -------------------------------
+# ACTUALIZAR ALUMNO
+# -------------------------------
+
 @admin_bp.route("/actualizar_alumno/<id>", methods=["POST"])
 def actualizar_alumno(id):
 
@@ -123,16 +121,56 @@ def actualizar_alumno(id):
     grupo = request.form.get("grupo")
 
     alumnos.update_one(
-
         {"_id": ObjectId(id)},
-
         {"$set": {
-
             "nombre": nombre,
             "grupo": grupo
-
         }}
-
     )
 
     return redirect("/alumnos")
+
+
+# -------------------------------
+# VER GRUPOS
+# -------------------------------
+
+@admin_bp.route("/grupos")
+def ver_grupos():
+
+    lista_grupos = list(grupos.find())
+
+    return render_template(
+        "grupos.html",
+        grupos=lista_grupos
+    )
+
+
+# -------------------------------
+# CREAR GRUPO
+# -------------------------------
+
+@admin_bp.route("/crear_grupo", methods=["POST"])
+def crear_grupo():
+
+    nombre = request.form.get("nombre")
+
+    grupos.insert_one({
+        "nombre": nombre
+    })
+
+    return redirect("/grupos")
+
+
+# -------------------------------
+# ELIMINAR GRUPO
+# -------------------------------
+
+@admin_bp.route("/eliminar_grupo/<id>")
+def eliminar_grupo(id):
+
+    grupos.delete_one({
+        "_id": ObjectId(id)
+    })
+
+    return redirect("/grupos")
