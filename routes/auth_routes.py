@@ -1,24 +1,18 @@
-from flask import Blueprint, render_template, request, redirect, session
-from database.mongo import usuarios
-
-auth_bp = Blueprint("auth", __name__)
-
-
-@auth_bp.route("/")
-def login_page():
-    return render_template("login.html")
-
-
 @auth_bp.route("/login", methods=["POST"])
 def login():
 
     usuario = request.form.get("usuario")
     password = request.form.get("password")
 
+    print("USUARIO RECIBIDO:", usuario)
+    print("PASSWORD RECIBIDO:", password)
+
     user = usuarios.find_one({
         "usuario": usuario,
         "password": password
     })
+
+    print("USUARIO ENCONTRADO EN MONGO:", user)
 
     if user:
 
@@ -30,13 +24,5 @@ def login():
 
         if user["rol"] == "maestro":
             return redirect("/maestro")
-
-    return redirect("/")
-
-
-@auth_bp.route("/logout")
-def logout():
-
-    session.clear()
 
     return redirect("/")
