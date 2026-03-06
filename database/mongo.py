@@ -7,3 +7,7 @@ client = MongoClient(MONGO_URI)
 db = client["control_escolar"]
 
 usuarios = db["usuarios"]
+alumnos = db["alumnos"]
+grupos = db["grupos"]
+materias = db["materias"]
+reportes = db["reportes"]

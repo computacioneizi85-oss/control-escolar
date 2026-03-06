@@ -7,11 +7,10 @@ app = Flask(__name__)
 
 app.secret_key = "control_escolar_secret"
 
-# Registrar rutas
+# Registrar blueprints
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(maestro_bp)
-
 
 if __name__ == "__main__":
     app.run(debug=True)
