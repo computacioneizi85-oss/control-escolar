@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block titulo %}
+Editar alumno
+{% endblock %}
+
+{% block contenido %}
+
+<h2>Editar alumno</h2>
+
+<form action="/actualizar_alumno/{{ alumno._id }}" method="POST">
+
+<input type="text" name="nombre" value="{{ alumno.nombre }}">
+
+<select name="grupo">
+
+{% for grupo in grupos %}
+
+<option value="{{ grupo.nombre }}"
+
+{% if grupo.nombre == alumno.grupo %}
+
+selected
+
+{% endif %}
+
+>
+
+{{ grupo.nombre }}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+<button type="submit">Guardar</button>
+
+</form>
+
+{% endblock %}

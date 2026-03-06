@@ -1,78 +1,72 @@
 {% extends "layout.html" %}
 
+{% block titulo %}
+Gestión de Alumnos
+{% endblock %}
+
 {% block contenido %}
 
-<div class="card">
+<h2>Registrar alumno</h2>
 
-<h2>Registrar Alumno</h2>
+<form action="/crear_alumno" method="POST">
 
-<form method="POST" action="/crear_alumno">
-
-<input name="nombre" placeholder="Nombre" required>
-<input name="apellido" placeholder="Apellido" required>
-<input name="correo" placeholder="Correo">
-<input name="grado" placeholder="Grado">
+<input type="text" name="nombre" placeholder="Nombre del alumno" required>
 
 <select name="grupo">
-{% for g in grupos %}
-<option value="{{g.nombre}}">{{g.nombre}}</option>
+
+{% for grupo in grupos %}
+
+<option value="{{ grupo.nombre }}">{{ grupo.nombre }}</option>
+
 {% endfor %}
+
 </select>
 
-<button class="btn-green">Registrar</button>
+<button type="submit">Registrar</button>
 
 </form>
 
-</div>
 
+<br><br>
 
-<div class="card">
-
-<h2>Importar alumnos desde Excel</h2>
-
-<form method="POST" action="/importar_alumnos" enctype="multipart/form-data">
-
-<input type="file" name="archivo">
-
-<button class="btn-green">Importar</button>
-
-</form>
-
-</div>
-
-
-<div class="card">
-
-<h2>Lista de Alumnos</h2>
+<h2>Lista de alumnos</h2>
 
 <table>
 
 <tr>
+
 <th>Nombre</th>
-<th>Apellido</th>
 <th>Grupo</th>
-<th>Kardex</th>
-<th>Boleta</th>
+<th>Acciones</th>
+
 </tr>
 
 {% for alumno in alumnos %}
 
 <tr>
 
-<td>{{alumno.nombre}}</td>
-<td>{{alumno.apellido}}</td>
-<td>{{alumno.grupo}}</td>
+<td>{{ alumno.nombre }}</td>
+
+<td>{{ alumno.grupo }}</td>
 
 <td>
-<a href="/kardex/{{alumno.id}}">
-<button>Ver</button>
-</a>
-</td>
 
-<td>
-<a href="/boleta_pdf/{{alumno.id}}">
-<button>PDF</button>
+<a href="/editar_alumno/{{ alumno._id }}">
+<button>Editar</button>
 </a>
+
+<a href="/eliminar_alumno/{{ alumno._id }}">
+<button>Eliminar</button>
+</a>
+
+<a href="/kardex/{{ alumno.nombre }}">
+<button>Kardex</button>
+</a>
+
+<a href="/boleta/{{ alumno.nombre }}">
+<button>Boleta</button>
+</a>
+
 </td>
 
 </tr>
@@ -80,7 +74,5 @@
 {% endfor %}
 
 </table>
-
-</div>
 
 {% endblock %}
