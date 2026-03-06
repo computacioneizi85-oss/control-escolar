@@ -1,31 +1,19 @@
 {% extends "layout.html" %}
 
-{% block contenido %}
-
-<div class="card">
+{% block content %}
 
 <h2>Panel Maestro</h2>
 
-<table>
+<h3>Lista de alumnos</h3>
 
-<tr>
-<th>Alumno</th>
-<th>Grupo</th>
-</tr>
+<ul>
 
-{% for a in alumnos %}
+{% for alumno in alumnos %}
 
-<tr>
-
-<td>{{a.nombre}} {{a.apellido}}</td>
-<td>{{a.grupo}}</td>
-
-</tr>
+<li>{{ alumno.nombre }} - {{ alumno.grupo }}</li>
 
 {% endfor %}
 
-</table>
-
-</div>
+</ul>
 
 {% endblock %}

@@ -5,66 +5,34 @@
 
 <title>Login</title>
 
-<style>
-
-body{
-font-family:Arial;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-background:#1b263b;
-}
-
-.login{
-
-background:white;
-padding:40px;
-border-radius:10px;
-width:300px;
-
-}
-
-input{
-
-width:100%;
-padding:10px;
-margin-bottom:10px;
-
-}
-
-button{
-
-width:100%;
-padding:10px;
-background:#0d1b2a;
-color:white;
-border:none;
-
-}
-
-</style>
-
 </head>
-
 
 <body>
 
-<div class="login">
+<h2>Login Dirección</h2>
 
-<h2>Control Escolar</h2>
-
-<form method="POST" action="/login">
+<form action="/login_admin" method="POST">
 
 <input name="usuario" placeholder="Usuario">
-
 <input name="password" type="password" placeholder="Contraseña">
 
 <button>Entrar</button>
 
 </form>
 
-</div>
+<hr>
+
+<h2>Login Maestro</h2>
+
+<form action="/login_maestro" method="POST">
+
+<input name="correo" placeholder="Correo">
+<input name="password" type="password" placeholder="Contraseña">
+
+<button>Entrar</button>
+
+</form>
 
 </body>
+
 </html>

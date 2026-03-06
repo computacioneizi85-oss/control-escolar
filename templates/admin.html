@@ -1,12 +1,12 @@
 {% extends "layout.html" %}
 
-{% block contenido %}
+{% block content %}
 
-<div class="card">
+<h2>Panel Dirección</h2>
 
-<h2>Crear grupo</h2>
+<h3>Crear Grupo</h3>
 
-<form method="POST" action="/crear_grupo">
+<form action="/crear_grupo" method="POST">
 
 <input name="nombre" placeholder="Nombre grupo">
 
@@ -14,73 +14,46 @@
 
 </form>
 
-</div>
+<hr>
 
+<h3>Crear Alumno</h3>
 
-<div class="card">
-
-<h2>Crear maestro</h2>
-
-<form method="POST" action="/crear_maestro">
-
-<input name="usuario" placeholder="Usuario maestro">
-
-<input name="password" placeholder="Contraseña">
-
-<button>Crear maestro</button>
-
-</form>
-
-</div>
-
-
-<div class="card">
-
-<h2>Registrar alumno</h2>
-
-<form method="POST" action="/crear_alumno">
+<form action="/crear_alumno" method="POST">
 
 <input name="nombre" placeholder="Nombre">
-
-<input name="apellido" placeholder="Apellido">
-
 <input name="correo" placeholder="Correo">
-
 <input name="grupo" placeholder="Grupo">
 
-<button>Registrar</button>
+<button>Crear</button>
 
 </form>
 
-</div>
+<hr>
 
+<h3>Crear Maestro</h3>
 
-<div class="card">
+<form action="/crear_maestro" method="POST">
 
-<h2>Alumnos registrados</h2>
+<input name="nombre" placeholder="Nombre">
+<input name="correo" placeholder="Correo">
+<input name="password" placeholder="Password">
 
-<table>
+<button>Crear</button>
 
-<tr>
-<th>Nombre</th>
-<th>Apellido</th>
-<th>Grupo</th>
-</tr>
+</form>
 
-{% for a in alumnos %}
+<hr>
 
-<tr>
+<h3>Alumnos</h3>
 
-<td>{{a.nombre}}</td>
-<td>{{a.apellido}}</td>
-<td>{{a.grupo}}</td>
+<ul>
 
-</tr>
+{% for alumno in alumnos %}
+
+<li>{{ alumno.nombre }} - {{ alumno.grupo }}</li>
 
 {% endfor %}
 
-</table>
-
-</div>
+</ul>
 
 {% endblock %}

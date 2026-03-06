@@ -1,13 +1,13 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session
 from pymongo import MongoClient
 import os
 
 app = Flask(__name__)
 app.secret_key = "control_escolar_secret"
 
-# =============================
+# ===============================
 # CONEXION MONGODB ATLAS
-# =============================
+# ===============================
 
 MONGO_URI = "mongodb+srv://joel:CAMELLO2052@cluster0.ethhsnm.mongodb.net/control_escolar?retryWrites=true&w=majority"
 
@@ -19,19 +19,17 @@ alumnos = db.alumnos
 maestros = db.maestros
 grupos = db.grupos
 
-
-# =============================
+# ===============================
 # PAGINA PRINCIPAL
-# =============================
+# ===============================
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
-
-# =============================
-# LOGIN ADMIN
-# =============================
+# ===============================
+# LOGIN DIRECCION
+# ===============================
 
 @app.route("/login_admin", methods=["POST"])
 def login_admin():
@@ -41,16 +39,16 @@ def login_admin():
 
     if usuario == "admin" and password == "admin123":
 
-        session["admin"] = True
+        session.clear()
+        session["rol"] = "admin"
 
         return redirect("/admin")
 
     return redirect("/")
 
-
-# =============================
+# ===============================
 # LOGIN MAESTRO
-# =============================
+# ===============================
 
 @app.route("/login_maestro", methods=["POST"])
 def login_maestro():
@@ -65,21 +63,22 @@ def login_maestro():
 
     if maestro:
 
-        session["maestro"] = correo
+        session.clear()
+        session["rol"] = "maestro"
+        session["correo"] = correo
 
         return redirect("/panel_maestro")
 
     return redirect("/")
 
-
-# =============================
-# PANEL ADMIN
-# =============================
+# ===============================
+# PANEL DIRECCION
+# ===============================
 
 @app.route("/admin")
 def admin():
 
-    if "admin" not in session:
+    if session.get("rol") != "admin":
         return redirect("/")
 
     lista_alumnos = list(alumnos.find())
@@ -93,15 +92,14 @@ def admin():
         grupos=lista_grupos
     )
 
-
-# =============================
+# ===============================
 # PANEL MAESTRO
-# =============================
+# ===============================
 
 @app.route("/panel_maestro")
 def panel_maestro():
 
-    if "maestro" not in session:
+    if session.get("rol") != "maestro":
         return redirect("/")
 
     lista_alumnos = list(alumnos.find())
@@ -111,13 +109,15 @@ def panel_maestro():
         alumnos=lista_alumnos
     )
 
-
-# =============================
+# ===============================
 # CREAR GRUPO
-# =============================
+# ===============================
 
 @app.route("/crear_grupo", methods=["POST"])
 def crear_grupo():
+
+    if session.get("rol") != "admin":
+        return redirect("/")
 
     nombre = request.form["nombre"]
 
@@ -127,13 +127,15 @@ def crear_grupo():
 
     return redirect("/admin")
 
-
-# =============================
+# ===============================
 # CREAR ALUMNO
-# =============================
+# ===============================
 
 @app.route("/crear_alumno", methods=["POST"])
 def crear_alumno():
+
+    if session.get("rol") != "admin":
+        return redirect("/")
 
     nombre = request.form["nombre"]
     correo = request.form["correo"]
@@ -147,13 +149,15 @@ def crear_alumno():
 
     return redirect("/admin")
 
-
-# =============================
+# ===============================
 # CREAR MAESTRO
-# =============================
+# ===============================
 
 @app.route("/crear_maestro", methods=["POST"])
 def crear_maestro():
+
+    if session.get("rol") != "admin":
+        return redirect("/")
 
     nombre = request.form["nombre"]
     correo = request.form["correo"]
@@ -167,10 +171,9 @@ def crear_maestro():
 
     return redirect("/admin")
 
-
-# =============================
-# CERRAR SESION
-# =============================
+# ===============================
+# LOGOUT
+# ===============================
 
 @app.route("/logout")
 def logout():
@@ -179,10 +182,9 @@ def logout():
 
     return redirect("/")
 
-
-# =============================
-# INICIAR SERVIDOR
-# =============================
+# ===============================
+# SERVIDOR RENDER
+# ===============================
 
 if __name__ == "__main__":
 

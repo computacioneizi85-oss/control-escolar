@@ -3,139 +3,64 @@
 
 <head>
 
-<title>Control Escolar</title>
+<title>Sistema Control Escolar</title>
 
 <style>
 
 body{
-margin:0;
 font-family:Arial;
-display:flex;
-background:#eef2f7;
+margin:0;
+background:#f4f6f9;
 }
 
-.sidebar{
-
-width:220px;
-background:#0d1b2a;
-color:white;
-height:100vh;
-padding:20px;
-
-}
-
-.sidebar a{
-
-display:block;
-color:white;
-text-decoration:none;
-padding:10px;
-margin-bottom:5px;
-
-}
-
-.sidebar a:hover{
-
-background:#1b263b;
-
-}
-
-.main{
-
-flex:1;
-
-}
-
-.header{
-
-background:#0d1b2a;
+header{
+background:#1e3a5f;
 color:white;
 padding:15px;
+}
 
+.menu{
+width:200px;
+background:#0f2740;
+height:100vh;
+position:fixed;
+color:white;
+}
+
+.menu a{
+display:block;
+padding:10px;
+color:white;
+text-decoration:none;
+}
+
+.menu a:hover{
+background:#1e3a5f;
 }
 
 .content{
-
-padding:30px;
-
-}
-
-.card{
-
-background:white;
+margin-left:210px;
 padding:20px;
-border-radius:10px;
-margin-bottom:20px;
-
-}
-
-table{
-
-width:100%;
-border-collapse:collapse;
-
-}
-
-th,td{
-
-padding:10px;
-border-bottom:1px solid #ddd;
-
-}
-
-button{
-
-padding:8px;
-background:#2ecc71;
-border:none;
-color:white;
-border-radius:5px;
-
-}
-
-input{
-
-padding:8px;
-margin-bottom:8px;
-width:100%;
-
 }
 
 </style>
 
 </head>
 
-
 <body>
 
-<div class="sidebar">
+<header>
 
-<h2>Control Escolar</h2>
+Sistema Control Escolar
 
-<a href="/admin">Dashboard</a>
+<a href="/logout" style="float:right;color:white;">Cerrar sesión</a>
 
-<a href="/logout">Cerrar sesión</a>
+</header>
 
-</div>
-
-
-<div class="main">
-
-<div class="header">
-
-Sistema de Control Escolar
-
-</div>
-
-<div class="content">
-
-{% block contenido %}
+{% block content %}
 
 {% endblock %}
 
-</div>
-
-</div>
-
 </body>
+
 </html>
