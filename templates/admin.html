@@ -1,107 +1,87 @@
-<!DOCTYPE html>
-<html lang="es">
+{% extends "layout.html" %}
 
-<head>
-<meta charset="UTF-8">
-<title>Panel de Dirección</title>
+{% block titulo %}
+Dashboard
+{% endblock %}
 
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
-</head>
+{% block contenido %}
 
 
-<body>
-
-
-<!-- SIDEBAR -->
-
-<div class="sidebar">
-
-<h2>Control Escolar</h2>
-
-<a href="/admin">Dashboard</a>
-<a href="#alumnos">Alumnos</a>
-<a href="#grupos">Grupos</a>
-<a href="/logout">Cerrar sesión</a>
-
-</div>
-
-
-
-<!-- CONTENIDO -->
-
-<div class="content">
-
-<h1>Panel de Dirección</h1>
-
-
-<!-- ESTADISTICAS -->
+<div class="cards">
 
 <div class="card">
 
-<h3>Estadísticas</h3>
+<h3>Alumnos</h3>
 
-<ul>
-<li>Total alumnos: {{ alumnos|length }}</li>
-<li>Total grupos: {{ grupos|length }}</li>
-</ul>
+<p>{{ alumnos|length }}</p>
 
 </div>
 
-
-
-<!-- REGISTRAR ALUMNO -->
-
-<div class="card" id="alumnos">
-
-<h3>Registrar alumno</h3>
-
-<form action="/crear_alumno" method="POST">
-
-<input type="text" name="nombre" placeholder="Nombre del alumno" required>
-
-<input type="text" name="grupo" placeholder="Grupo" required>
-
-<button type="submit">Registrar</button>
-
-</form>
-
-</div>
-
-
-
-<!-- LISTA DE ALUMNOS -->
 
 <div class="card">
 
-<h3>Lista de alumnos</h3>
+<h3>Grupos</h3>
+
+<p>{{ grupos|length }}</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>Maestros</h3>
+
+<p>{{ maestros|length }}</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>Reportes</h3>
+
+<p>{{ reportes|length }}</p>
+
+</div>
+
+
+</div>
+
+
+<h2>Alumnos registrados</h2>
 
 <table>
 
 <tr>
 
 <th>Alumno</th>
+
 <th>Grupo</th>
-<th>Documentos</th>
+
+<th>PDF</th>
 
 </tr>
-
 
 {% for alumno in alumnos %}
 
 <tr>
 
 <td>{{ alumno.nombre }}</td>
+
 <td>{{ alumno.grupo }}</td>
 
 <td>
 
 <a href="/kardex/{{ alumno.nombre }}">
-<button>Kardex PDF</button>
+
+<button>Kardex</button>
+
 </a>
 
 <a href="/boleta/{{ alumno.nombre }}">
-<button>Boleta PDF</button>
+
+<button>Boleta</button>
+
 </a>
 
 </td>
@@ -112,58 +92,4 @@
 
 </table>
 
-</div>
-
-
-
-<!-- REGISTRAR GRUPO -->
-
-<div class="card" id="grupos">
-
-<h3>Registrar grupo</h3>
-
-<form action="/crear_grupo" method="POST">
-
-<input type="text" name="nombre" placeholder="Nombre del grupo" required>
-
-<button type="submit">Crear grupo</button>
-
-</form>
-
-</div>
-
-
-
-<!-- LISTA DE GRUPOS -->
-
-<div class="card">
-
-<h3>Lista de grupos</h3>
-
-<table>
-
-<tr>
-<th>Grupo</th>
-</tr>
-
-{% for grupo in grupos %}
-
-<tr>
-<td>{{ grupo.nombre }}</td>
-</tr>
-
-{% endfor %}
-
-</table>
-
-</div>
-
-
-
-</div>
-
-
-
-</body>
-
-</html>
+{% endblock %}

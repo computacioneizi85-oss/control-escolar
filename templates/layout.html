@@ -1,65 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 
 <head>
 
-<title>Sistema Control Escolar</title>
+<meta charset="UTF-8">
 
-<style>
+<title>Control Escolar PRO</title>
 
-body{
-font-family:Arial;
-margin:0;
-background:#f4f6f9;
-}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-header{
-background:#1e3a5f;
-color:white;
-padding:15px;
-}
+<link rel="preconnect" href="https://fonts.googleapis.com">
 
-.menu{
-width:200px;
-background:#0f2740;
-height:100vh;
-position:fixed;
-color:white;
-}
-
-.menu a{
-display:block;
-padding:10px;
-color:white;
-text-decoration:none;
-}
-
-.menu a:hover{
-background:#1e3a5f;
-}
-
-.content{
-margin-left:210px;
-padding:20px;
-}
-
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 </head>
 
+
 <body>
 
-<header>
 
-Sistema Control Escolar
+<!-- SIDEBAR -->
 
-<a href="/logout" style="float:right;color:white;">Cerrar sesión</a>
+<div class="sidebar">
 
-</header>
+<h2>Control Escolar</h2>
 
-{% block content %}
+<a href="/admin">Dashboard</a>
+
+<a href="/alumnos">Alumnos</a>
+
+<a href="/maestros">Maestros</a>
+
+<a href="/grupos">Grupos</a>
+
+<a href="/materias">Materias</a>
+
+<a href="/reportes">Reportes</a>
+
+<a href="/logout">Cerrar sesión</a>
+
+</div>
+
+
+
+<!-- CONTENIDO -->
+
+<div class="main">
+
+<div class="topbar">
+
+<h1>{% block titulo %}{% endblock %}</h1>
+
+</div>
+
+<div class="contenido">
+
+{% block contenido %}
 
 {% endblock %}
+
+</div>
+
+</div>
+
 
 </body>
 
