@@ -1,118 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 
 <head>
-
-<title>Panel Dirección</title>
+<meta charset="UTF-8">
+<title>Panel de Dirección</title>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-<style>
-
-body{
-font-family:Arial;
-margin:0;
-background:#f5f6fa;
-}
-
-.sidebar{
-width:220px;
-background:#2f3640;
-height:100vh;
-position:fixed;
-color:white;
-padding:20px;
-}
-
-.sidebar h2{
-margin-bottom:30px;
-}
-
-.sidebar a{
-display:block;
-color:white;
-text-decoration:none;
-margin:10px 0;
-}
-
-.content{
-margin-left:240px;
-padding:30px;
-}
-
-.card{
-background:white;
-padding:20px;
-border-radius:8px;
-margin-bottom:20px;
-box-shadow:0 2px 5px rgba(0,0,0,0.1);
-}
-
-input{
-padding:8px;
-margin-right:10px;
-}
-
-button{
-padding:8px 15px;
-background:#0984e3;
-color:white;
-border:none;
-border-radius:4px;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-}
-
-table th, table td{
-border-bottom:1px solid #ddd;
-padding:8px;
-text-align:left;
-}
-
-</style>
-
 </head>
 
+
 <body>
+
+
+<!-- SIDEBAR -->
 
 <div class="sidebar">
 
 <h2>Control Escolar</h2>
 
 <a href="/admin">Dashboard</a>
+<a href="#alumnos">Alumnos</a>
+<a href="#grupos">Grupos</a>
 <a href="/logout">Cerrar sesión</a>
 
 </div>
 
+
+
+<!-- CONTENIDO -->
+
 <div class="content">
+
+<h1>Panel de Dirección</h1>
+
+
+<!-- ESTADISTICAS -->
 
 <div class="card">
 
-<h3>Crear Grupo</h3>
+<h3>Estadísticas</h3>
 
-<form action="/crear_grupo" method="POST">
-
-<input name="grupo" placeholder="Nombre del grupo">
-
-<button type="submit">Crear</button>
-
-</form>
+<ul>
+<li>Total alumnos: {{ alumnos|length }}</li>
+<li>Total grupos: {{ grupos|length }}</li>
+</ul>
 
 </div>
 
 
-<div class="card">
 
-<h3>Registrar Alumno</h3>
+<!-- REGISTRAR ALUMNO -->
+
+<div class="card" id="alumnos">
+
+<h3>Registrar alumno</h3>
 
 <form action="/crear_alumno" method="POST">
 
-<input name="nombre" placeholder="Nombre alumno">
+<input type="text" name="nombre" placeholder="Nombre del alumno" required>
 
-<input name="grupo" placeholder="Grupo">
+<input type="text" name="grupo" placeholder="Grupo" required>
 
 <button type="submit">Registrar</button>
 
@@ -121,22 +69,43 @@ text-align:left;
 </div>
 
 
+
+<!-- LISTA DE ALUMNOS -->
+
 <div class="card">
 
-<h3>Alumnos Registrados</h3>
+<h3>Lista de alumnos</h3>
 
 <table>
 
 <tr>
-<th>Nombre</th>
+
+<th>Alumno</th>
 <th>Grupo</th>
+<th>Documentos</th>
+
 </tr>
+
 
 {% for alumno in alumnos %}
 
 <tr>
+
 <td>{{ alumno.nombre }}</td>
 <td>{{ alumno.grupo }}</td>
+
+<td>
+
+<a href="/kardex/{{ alumno.nombre }}">
+<button>Kardex PDF</button>
+</a>
+
+<a href="/boleta/{{ alumno.nombre }}">
+<button>Boleta PDF</button>
+</a>
+
+</td>
+
 </tr>
 
 {% endfor %}
@@ -146,23 +115,55 @@ text-align:left;
 </div>
 
 
+
+<!-- REGISTRAR GRUPO -->
+
+<div class="card" id="grupos">
+
+<h3>Registrar grupo</h3>
+
+<form action="/crear_grupo" method="POST">
+
+<input type="text" name="nombre" placeholder="Nombre del grupo" required>
+
+<button type="submit">Crear grupo</button>
+
+</form>
+
+</div>
+
+
+
+<!-- LISTA DE GRUPOS -->
+
 <div class="card">
 
-<h3>Grupos</h3>
+<h3>Lista de grupos</h3>
 
-<ul>
+<table>
+
+<tr>
+<th>Grupo</th>
+</tr>
 
 {% for grupo in grupos %}
 
-<li>{{ grupo.nombre }}</li>
+<tr>
+<td>{{ grupo.nombre }}</td>
+</tr>
 
 {% endfor %}
 
-</ul>
+</table>
 
 </div>
 
+
+
 </div>
+
+
 
 </body>
+
 </html>
