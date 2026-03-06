@@ -3,8 +3,10 @@ from database.mongo import usuarios
 
 auth_bp = Blueprint("auth", __name__)
 
+
 @auth_bp.route("/")
 def login_page():
+
     return render_template("login.html")
 
 
@@ -14,10 +16,15 @@ def login():
     usuario = request.form.get("usuario")
     password = request.form.get("password")
 
+    print("Usuario:", usuario)
+    print("Password:", password)
+
     user = usuarios.find_one({
         "usuario": usuario,
         "password": password
     })
+
+    print("Mongo:", user)
 
     if user:
 
@@ -29,13 +36,5 @@ def login():
 
         if user["rol"] == "maestro":
             return redirect("/maestro/dashboard")
-
-    return redirect("/")
-
-
-@auth_bp.route("/logout")
-def logout():
-
-    session.clear()
 
     return redirect("/")
