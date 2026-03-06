@@ -1,17 +1,14 @@
 from flask import Blueprint, render_template, session, redirect
-from database.mongo import alumnos
 
-maestro_bp = Blueprint("maestro", __name__, url_prefix="/maestro")
+maestro_bp = Blueprint("maestro", __name__)
 
-@maestro_bp.route("/dashboard")
-def dashboard():
+@maestro_bp.route("/maestro/dashboard")
+def maestro_dashboard():
 
-    if session.get("rol") != "maestro":
+    if "rol" not in session:
         return redirect("/")
 
-    lista_alumnos = list(alumnos.find())
+    if session["rol"] != "maestro":
+        return redirect("/")
 
-    return render_template(
-        "maestro/dashboard.html",
-        alumnos=lista_alumnos
-    )
+    return render_template("maestro.html")

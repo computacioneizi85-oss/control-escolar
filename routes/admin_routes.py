@@ -1,21 +1,31 @@
-from flask import Blueprint, render_template, session, redirect
-from database.mongo import alumnos, maestros, grupos
+from flask import Blueprint, render_template, session, redirect, request
+from database.mongo import alumnos
 
-admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
+admin_bp = Blueprint("admin", __name__)
 
-@admin_bp.route("/dashboard")
-def dashboard():
+@admin_bp.route("/admin/dashboard")
+def admin_dashboard():
 
-    if session.get("rol") != "admin":
+    if "rol" not in session:
         return redirect("/")
 
-    total_alumnos = alumnos.count_documents({})
-    total_maestros = maestros.count_documents({})
-    total_grupos = grupos.count_documents({})
+    if session["rol"] != "admin":
+        return redirect("/")
 
-    return render_template(
-        "admin/dashboard.html",
-        alumnos=total_alumnos,
-        maestros=total_maestros,
-        grupos=total_grupos
-    )
+    lista_alumnos = list(alumnos.find())
+
+    return render_template("admin.html", alumnos=lista_alumnos)
+
+
+@admin_bp.route("/admin/crear_alumno", methods=["POST"])
+def crear_alumno():
+
+    nombre = request.form.get("nombre")
+    grupo = request.form.get("grupo")
+
+    alumnos.insert_one({
+        "nombre": nombre,
+        "grupo": grupo
+    })
+
+    return redirect("/admin/dashboard")

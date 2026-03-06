@@ -21,6 +21,7 @@ def login():
 
     if user:
 
+        session["usuario"] = usuario
         session["rol"] = user["rol"]
 
         if user["rol"] == "admin":
@@ -28,5 +29,13 @@ def login():
 
         if user["rol"] == "maestro":
             return redirect("/maestro/dashboard")
+
+    return redirect("/")
+
+
+@auth_bp.route("/logout")
+def logout():
+
+    session.clear()
 
     return redirect("/")
