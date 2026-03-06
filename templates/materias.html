@@ -1,44 +1,68 @@
 {% extends "layout.html" %}
 
+{% block titulo %}
+Gestión de Materias
+{% endblock %}
+
 {% block contenido %}
 
-<div class="card">
+<h2>Registrar materia</h2>
 
-<h2>Registrar Materia</h2>
+<form action="/crear_materia" method="POST">
 
-<form method="POST" action="/crear_materia">
+<input type="text" name="nombre" placeholder="Nombre de la materia" required>
 
-<input name="nombre" placeholder="Nombre de la materia">
+<select name="grupo">
 
-<button class="btn-green">Registrar</button>
+{% for grupo in grupos %}
+
+<option value="{{ grupo.nombre }}">{{ grupo.nombre }}</option>
+
+{% endfor %}
+
+</select>
+
+<button type="submit">Registrar</button>
 
 </form>
 
-</div>
 
+<br><br>
 
-<div class="card">
-
-<h2>Lista de Materias</h2>
+<h2>Lista de materias</h2>
 
 <table>
 
 <tr>
+
 <th>Materia</th>
+<th>Grupo</th>
+<th>Acciones</th>
+
 </tr>
 
-{% for m in materias %}
+{% for materia in materias %}
 
 <tr>
 
-<td>{{m.nombre}}</td>
+<td>{{ materia.nombre }}</td>
+
+<td>{{ materia.grupo }}</td>
+
+<td>
+
+<a href="/eliminar_materia/{{ materia._id }}">
+
+<button>Eliminar</button>
+
+</a>
+
+</td>
 
 </tr>
 
 {% endfor %}
 
 </table>
-
-</div>
 
 {% endblock %}
