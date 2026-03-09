@@ -4,66 +4,38 @@
 <head>
 
 <meta charset="UTF-8">
-
-<title>Control Escolar PRO</title>
+<title>Control Escolar</title>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-
 </head>
 
-
 <body>
-
-
-<!-- SIDEBAR -->
 
 <div class="sidebar">
 
 <h2>Control Escolar</h2>
 
 <a href="/admin">Dashboard</a>
-
 <a href="/alumnos">Alumnos</a>
-
 <a href="/maestros">Maestros</a>
-
 <a href="/grupos">Grupos</a>
-
 <a href="/materias">Materias</a>
-
 <a href="/reportes">Reportes</a>
-
+<a href="/configuracion">Configuración</a>
 <a href="/logout">Cerrar sesión</a>
 
 </div>
 
 
+<div class="content">
 
-<!-- CONTENIDO -->
-
-<div class="main">
-
-<div class="topbar">
-
-<h1>{% block titulo %}{% endblock %}</h1>
-
-</div>
-
-<div class="contenido">
-
-{% block contenido %}
+{% block content %}
 
 {% endblock %}
 
 </div>
 
-</div>
-
 
 </body>
-
 </html>
