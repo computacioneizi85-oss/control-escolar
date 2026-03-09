@@ -1,19 +1,20 @@
 from flask import Blueprint, render_template, request, redirect, session
-from bson.objectid import ObjectId
-
-from database.mongo import maestros, alumnos, materias, grupos
+from database.mongo import alumnos, materias
 
 maestro_bp = Blueprint("maestro", __name__)
 
 
-# PANEL MAESTRO
+# =========================
+# PANEL DEL MAESTRO
+# =========================
 @maestro_bp.route("/panel_maestro")
 def panel_maestro():
 
-    if "rol" not in session or session["rol"] != "maestro":
+    if "rol" not in session:
         return redirect("/")
 
-    nombre_maestro = session["usuario"]
+    if session["rol"] != "maestro":
+        return redirect("/")
 
     lista_alumnos = list(alumnos.find())
     lista_materias = list(materias.find())
@@ -21,16 +22,20 @@ def panel_maestro():
     return render_template(
         "panel_maestro.html",
         alumnos=lista_alumnos,
-        materias=lista_materias,
-        maestro=nombre_maestro
+        materias=lista_materias
     )
 
 
+# =========================
 # CAPTURAR CALIFICACIONES
+# =========================
 @maestro_bp.route("/capturar_calificaciones", methods=["POST"])
 def capturar_calificaciones():
 
-    if "rol" not in session or session["rol"] != "maestro":
+    if "rol" not in session:
+        return redirect("/")
+
+    if session["rol"] != "maestro":
         return redirect("/")
 
     alumno = request.form.get("alumno")

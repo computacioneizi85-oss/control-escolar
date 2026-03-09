@@ -4,12 +4,17 @@
 
 <h1>Panel del Maestro</h1>
 
-<h3>Bienvenido {{ maestro }}</h3>
+<h3>Bienvenido {{ session["usuario"] }}</h3>
 
+<br>
+
+<div class="card">
 
 <h2>Capturar calificaciones</h2>
 
 <form action="/capturar_calificaciones" method="POST">
+
+<label>Alumno</label>
 
 <select name="alumno">
 
@@ -23,6 +28,9 @@
 
 </select>
 
+<br><br>
+
+<label>Materia</label>
 
 <select name="materia">
 
@@ -36,15 +44,29 @@
 
 </select>
 
+<br><br>
 
-<input type="number" name="cal1" placeholder="1er parcial" required>
-<input type="number" name="cal2" placeholder="2do parcial" required>
-<input type="number" name="cal3" placeholder="3er parcial" required>
+<label>Primer parcial</label>
+<input type="number" name="cal1" required>
+
+<br><br>
+
+<label>Segundo parcial</label>
+<input type="number" name="cal2" required>
+
+<br><br>
+
+<label>Tercer parcial</label>
+<input type="number" name="cal3" required>
+
+<br><br>
 
 <button type="submit">
 Guardar calificaciones
 </button>
 
 </form>
+
+</div>
 
 {% endblock %}

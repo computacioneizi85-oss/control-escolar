@@ -1,17 +1,22 @@
 from flask import Blueprint, render_template, request, redirect, session
-
 from database.mongo import usuarios
-
 
 auth_bp = Blueprint("auth", __name__)
 
 
 # =========================
-# LOGIN
+# PÁGINA LOGIN
 # =========================
-
 @auth_bp.route("/")
 def login():
+
+    if "rol" in session:
+
+        if session["rol"] == "admin":
+            return redirect("/admin")
+
+        if session["rol"] == "maestro":
+            return redirect("/panel_maestro")
 
     return render_template("login.html")
 
@@ -19,7 +24,6 @@ def login():
 # =========================
 # PROCESAR LOGIN
 # =========================
-
 @auth_bp.route("/login", methods=["POST"])
 def procesar_login():
 
@@ -36,11 +40,9 @@ def procesar_login():
         session["usuario"] = user["usuario"]
         session["rol"] = user["rol"]
 
-        # ADMIN
         if user["rol"] == "admin":
             return redirect("/admin")
 
-        # MAESTRO
         if user["rol"] == "maestro":
             return redirect("/panel_maestro")
 
@@ -48,9 +50,8 @@ def procesar_login():
 
 
 # =========================
-# LOGOUT
+# CERRAR SESIÓN
 # =========================
-
 @auth_bp.route("/logout")
 def logout():
 
