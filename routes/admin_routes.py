@@ -85,6 +85,47 @@ def eliminar_alumno(id):
 
 
 # =========================
+# MAESTROS
+# =========================
+
+@admin_bp.route("/maestros")
+def ver_maestros():
+
+    lista_maestros = list(maestros.find())
+
+    return render_template(
+        "maestros.html",
+        maestros=lista_maestros
+    )
+
+
+@admin_bp.route("/crear_maestro", methods=["POST"])
+def crear_maestro():
+
+    nombre = request.form.get("nombre")
+    usuario = request.form.get("usuario")
+    password = request.form.get("password")
+
+    maestros.insert_one({
+        "nombre": nombre,
+        "usuario": usuario,
+        "password": password
+    })
+
+    return redirect("/maestros")
+
+
+@admin_bp.route("/eliminar_maestro/<id>")
+def eliminar_maestro(id):
+
+    maestros.delete_one({
+        "_id": ObjectId(id)
+    })
+
+    return redirect("/maestros")
+
+
+# =========================
 # GRUPOS
 # =========================
 
@@ -160,37 +201,6 @@ def eliminar_materia(id):
     })
 
     return redirect("/materias")
-
-
-# =========================
-# MAESTROS
-# =========================
-
-@admin_bp.route("/maestros")
-def ver_maestros():
-
-    lista_maestros = list(maestros.find())
-
-    return render_template(
-        "maestros.html",
-        maestros=lista_maestros
-    )
-
-
-@admin_bp.route("/crear_maestro", methods=["POST"])
-def crear_maestro():
-
-    nombre = request.form.get("nombre")
-    usuario = request.form.get("usuario")
-    password = request.form.get("password")
-
-    maestros.insert_one({
-        "nombre": nombre,
-        "usuario": usuario,
-        "password": password
-    })
-
-    return redirect("/maestros")
 
 
 # =========================
@@ -270,7 +280,7 @@ def guardar_configuracion():
 
 
 # =========================
-# GENERAR KARDEX PDF
+# GENERAR KARDEX
 # =========================
 
 @admin_bp.route("/kardex/<nombre>")
@@ -285,7 +295,7 @@ def kardex(nombre):
 
 
 # =========================
-# GENERAR BOLETA PDF
+# GENERAR BOLETA
 # =========================
 
 @admin_bp.route("/boleta/<nombre>")

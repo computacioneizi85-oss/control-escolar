@@ -1,23 +1,26 @@
 {% extends "layout.html" %}
 
-{% block titulo %}
-Gestión de Grupos
-{% endblock %}
+{% block content %}
 
-{% block contenido %}
+<h1>Gestión de grupos</h1>
+
 
 <h2>Crear grupo</h2>
 
 <form action="/crear_grupo" method="POST">
 
-<input type="text" name="nombre" placeholder="Nombre del grupo" required>
+<input type="text" name="nombre" placeholder="Nombre del grupo (Ej. 1A, 2B)" required>
 
-<button type="submit">Crear</button>
+<button type="submit">
+Crear grupo
+</button>
 
 </form>
 
 
-<br><br>
+<br>
+<br>
+
 
 <h2>Lista de grupos</h2>
 
@@ -26,7 +29,7 @@ Gestión de Grupos
 <tr>
 
 <th>Grupo</th>
-<th>Acciones</th>
+<th>Eliminar</th>
 
 </tr>
 
@@ -40,7 +43,9 @@ Gestión de Grupos
 
 <a href="/eliminar_grupo/{{ grupo._id }}">
 
-<button>Eliminar</button>
+<button style="background:red;">
+Eliminar
+</button>
 
 </a>
 

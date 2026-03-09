@@ -1,10 +1,9 @@
 {% extends "layout.html" %}
 
-{% block titulo %}
-Gestión de Materias
-{% endblock %}
+{% block content %}
 
-{% block contenido %}
+<h1>Gestión de materias</h1>
+
 
 <h2>Registrar materia</h2>
 
@@ -16,18 +15,24 @@ Gestión de Materias
 
 {% for grupo in grupos %}
 
-<option value="{{ grupo.nombre }}">{{ grupo.nombre }}</option>
+<option value="{{ grupo.nombre }}">
+{{ grupo.nombre }}
+</option>
 
 {% endfor %}
 
 </select>
 
-<button type="submit">Registrar</button>
+<button type="submit">
+Registrar materia
+</button>
 
 </form>
 
 
-<br><br>
+<br>
+<br>
+
 
 <h2>Lista de materias</h2>
 
@@ -37,7 +42,7 @@ Gestión de Materias
 
 <th>Materia</th>
 <th>Grupo</th>
-<th>Acciones</th>
+<th>Eliminar</th>
 
 </tr>
 
@@ -53,7 +58,9 @@ Gestión de Materias
 
 <a href="/eliminar_materia/{{ materia._id }}">
 
-<button>Eliminar</button>
+<button style="background:red;">
+Eliminar
+</button>
 
 </a>
 

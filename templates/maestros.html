@@ -1,47 +1,67 @@
 {% extends "layout.html" %}
 
-{% block contenido %}
+{% block content %}
 
-<div class="card">
+<h1>Gestión de maestros</h1>
 
-<h2>Registrar Maestro</h2>
 
-<form method="POST" action="/crear_maestro">
+<h2>Registrar maestro</h2>
 
-<input name="nombre" placeholder="Nombre del maestro">
-<input name="correo" placeholder="Correo">
+<form action="/crear_maestro" method="POST">
 
-<button class="btn-green">Registrar</button>
+<input type="text" name="nombre" placeholder="Nombre del maestro" required>
+
+<input type="text" name="usuario" placeholder="Usuario" required>
+
+<input type="password" name="password" placeholder="Contraseña" required>
+
+<button type="submit">
+Registrar maestro
+</button>
 
 </form>
 
-</div>
+
+<br>
+<br>
 
 
-<div class="card">
-
-<h2>Lista de Maestros</h2>
+<h2>Lista de maestros</h2>
 
 <table>
 
 <tr>
+
 <th>Nombre</th>
-<th>Correo</th>
+<th>Usuario</th>
+<th>Eliminar</th>
+
 </tr>
 
-{% for m in maestros %}
+{% for maestro in maestros %}
 
 <tr>
 
-<td>{{m.nombre}}</td>
-<td>{{m.correo}}</td>
+<td>{{ maestro.nombre }}</td>
+
+<td>{{ maestro.usuario }}</td>
+
+<td>
+
+<a href="/eliminar_maestro/{{ maestro._id }}">
+
+<button style="background:red;">
+Eliminar
+</button>
+
+</a>
+
+</td>
 
 </tr>
 
 {% endfor %}
 
 </table>
-
-</div>
 
 {% endblock %}

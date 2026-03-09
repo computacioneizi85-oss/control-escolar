@@ -1,10 +1,8 @@
 {% extends "layout.html" %}
 
-{% block titulo %}
-Gestión de Alumnos
-{% endblock %}
+{% block content %}
 
-{% block contenido %}
+<h1>Gestión de alumnos</h1>
 
 <h2>Registrar alumno</h2>
 
@@ -16,29 +14,33 @@ Gestión de Alumnos
 
 {% for grupo in grupos %}
 
-<option value="{{ grupo.nombre }}">{{ grupo.nombre }}</option>
+<option value="{{ grupo.nombre }}">
+{{ grupo.nombre }}
+</option>
 
 {% endfor %}
 
 </select>
 
-<button type="submit">Registrar</button>
+<button type="submit">
+Registrar alumno
+</button>
 
 </form>
 
-
-<br><br>
+<br>
+<br>
 
 <h2>Lista de alumnos</h2>
 
 <table>
 
 <tr>
-
-<th>Nombre</th>
+<th>Alumno</th>
 <th>Grupo</th>
-<th>Acciones</th>
-
+<th>Kardex</th>
+<th>Boleta</th>
+<th>Eliminar</th>
 </tr>
 
 {% for alumno in alumnos %}
@@ -50,23 +52,21 @@ Gestión de Alumnos
 <td>{{ alumno.grupo }}</td>
 
 <td>
-
-<a href="/editar_alumno/{{ alumno._id }}">
-<button>Editar</button>
-</a>
-
-<a href="/eliminar_alumno/{{ alumno._id }}">
-<button>Eliminar</button>
-</a>
-
 <a href="/kardex/{{ alumno.nombre }}">
 <button>Kardex</button>
 </a>
+</td>
 
+<td>
 <a href="/boleta/{{ alumno.nombre }}">
 <button>Boleta</button>
 </a>
+</td>
 
+<td>
+<a href="/eliminar_alumno/{{ alumno._id }}">
+<button style="background:red;">Eliminar</button>
+</a>
 </td>
 
 </tr>
