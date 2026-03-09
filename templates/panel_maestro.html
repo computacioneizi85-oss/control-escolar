@@ -2,18 +2,49 @@
 
 {% block content %}
 
-<h2>Panel Maestro</h2>
+<h1>Panel del Maestro</h1>
 
-<h3>Lista de alumnos</h3>
+<h3>Bienvenido {{ maestro }}</h3>
 
-<ul>
+
+<h2>Capturar calificaciones</h2>
+
+<form action="/capturar_calificaciones" method="POST">
+
+<select name="alumno">
 
 {% for alumno in alumnos %}
 
-<li>{{ alumno.nombre }} - {{ alumno.grupo }}</li>
+<option value="{{ alumno.nombre }}">
+{{ alumno.nombre }}
+</option>
 
 {% endfor %}
 
-</ul>
+</select>
+
+
+<select name="materia">
+
+{% for materia in materias %}
+
+<option value="{{ materia.nombre }}">
+{{ materia.nombre }}
+</option>
+
+{% endfor %}
+
+</select>
+
+
+<input type="number" name="cal1" placeholder="1er parcial" required>
+<input type="number" name="cal2" placeholder="2do parcial" required>
+<input type="number" name="cal3" placeholder="3er parcial" required>
+
+<button type="submit">
+Guardar calificaciones
+</button>
+
+</form>
 
 {% endblock %}

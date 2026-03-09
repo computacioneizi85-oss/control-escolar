@@ -3,10 +3,13 @@ from flask import Flask, render_template, session, redirect
 # BLUEPRINTS
 from routes.auth_routes import auth_bp
 from routes.admin_routes import admin_bp
+from routes.maestro_routes import maestro_bp
 
 app = Flask(__name__)
 
 app.secret_key = "control_escolar_secret"
+
+app.register_blueprint(maestro_bp)
 
 
 # Registrar blueprints
