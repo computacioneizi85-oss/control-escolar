@@ -1,66 +1,92 @@
-{% extends "layout.html" %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
 
-{% block titulo %}
-Dashboard
-{% endblock %}
+<meta charset="UTF-8">
+<title>Control Escolar PRO</title>
 
-{% block contenido %}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
+</head>
+
+
+<body>
+
+
+<!-- SIDEBAR -->
+
+<div class="sidebar">
+
+<h2>Control Escolar</h2>
+
+<a href="/admin">Dashboard</a>
+<a href="/alumnos">Alumnos</a>
+<a href="/maestros">Maestros</a>
+<a href="/grupos">Grupos</a>
+<a href="/materias">Materias</a>
+<a href="/reportes">Reportes</a>
+
+<a href="/logout">Cerrar sesión</a>
+
+</div>
+
+
+
+<!-- CONTENIDO -->
+
+<div class="content">
+
+<h1>Dashboard</h1>
+
+
+<!-- TARJETAS -->
 
 <div class="cards">
 
 <div class="card">
-
 <h3>Alumnos</h3>
-
 <p>{{ alumnos|length }}</p>
-
 </div>
 
-
 <div class="card">
-
 <h3>Grupos</h3>
-
 <p>{{ grupos|length }}</p>
-
 </div>
 
-
 <div class="card">
-
 <h3>Maestros</h3>
-
 <p>{{ maestros|length }}</p>
-
 </div>
-
 
 <div class="card">
-
 <h3>Reportes</h3>
-
 <p>{{ reportes|length }}</p>
+</div>
 
 </div>
 
 
-</div>
 
+<!-- TABLA -->
 
 <h2>Alumnos registrados</h2>
 
 <table>
 
+<thead>
+
 <tr>
 
 <th>Alumno</th>
-
 <th>Grupo</th>
-
 <th>PDF</th>
 
 </tr>
+
+</thead>
+
+
+<tbody>
 
 {% for alumno in alumnos %}
 
@@ -73,15 +99,11 @@ Dashboard
 <td>
 
 <a href="/kardex/{{ alumno.nombre }}">
-
-<button>Kardex</button>
-
+<button class="btn">Kardex</button>
 </a>
 
 <a href="/boleta/{{ alumno.nombre }}">
-
-<button>Boleta</button>
-
+<button class="btn">Boleta</button>
 </a>
 
 </td>
@@ -90,6 +112,14 @@ Dashboard
 
 {% endfor %}
 
+</tbody>
+
 </table>
 
-{% endblock %}
+
+
+</div>
+
+
+</body>
+</html>
