@@ -1,16 +1,24 @@
 from flask import Blueprint, render_template, request, redirect, session, send_file
 from bson.objectid import ObjectId
 
-from database.mongo import alumnos, grupos, materias, maestros, reportes
+from database.mongo import (
+    alumnos,
+    grupos,
+    materias,
+    maestros,
+    reportes,
+    configuracion
+)
+
 from pdf.generador import generar_kardex, generar_boleta
 
 
 admin_bp = Blueprint("admin", __name__)
 
 
-# ===============================
-# DASHBOARD ADMIN
-# ===============================
+# =========================
+# DASHBOARD
+# =========================
 
 @admin_bp.route("/admin")
 def dashboard():
@@ -32,9 +40,9 @@ def dashboard():
     )
 
 
-# ===============================
+# =========================
 # ALUMNOS
-# ===============================
+# =========================
 
 @admin_bp.route("/alumnos")
 def ver_alumnos():
@@ -73,9 +81,9 @@ def eliminar_alumno(id):
     return redirect("/alumnos")
 
 
-# ===============================
+# =========================
 # GRUPOS
-# ===============================
+# =========================
 
 @admin_bp.route("/grupos")
 def ver_grupos():
@@ -110,9 +118,9 @@ def eliminar_grupo(id):
     return redirect("/grupos")
 
 
-# ===============================
+# =========================
 # MATERIAS
-# ===============================
+# =========================
 
 @admin_bp.route("/materias")
 def ver_materias():
@@ -151,9 +159,9 @@ def eliminar_materia(id):
     return redirect("/materias")
 
 
-# ===============================
+# =========================
 # MAESTROS
-# ===============================
+# =========================
 
 @admin_bp.route("/maestros")
 def ver_maestros():
@@ -182,9 +190,9 @@ def crear_maestro():
     return redirect("/maestros")
 
 
-# ===============================
+# =========================
 # REPORTES DISCIPLINARIOS
-# ===============================
+# =========================
 
 @admin_bp.route("/reportes")
 def ver_reportes():
@@ -197,9 +205,48 @@ def ver_reportes():
     )
 
 
-# ===============================
-# PDF KARDEX
-# ===============================
+# =========================
+# CONFIGURACION ESCOLAR
+# =========================
+
+@admin_bp.route("/configuracion")
+def ver_configuracion():
+
+    datos = configuracion.find_one()
+
+    return render_template(
+        "configuracion.html",
+        config=datos
+    )
+
+
+@admin_bp.route("/guardar_configuracion", methods=["POST"])
+def guardar_configuracion():
+
+    escuela = request.form.get("escuela")
+    ciclo = request.form.get("ciclo")
+    director = request.form.get("director")
+    direccion = request.form.get("direccion")
+
+    configuracion.update_one(
+        {},
+        {
+            "$set": {
+                "escuela": escuela,
+                "ciclo": ciclo,
+                "director": director,
+                "direccion": direccion
+            }
+        },
+        upsert=True
+    )
+
+    return redirect("/configuracion")
+
+
+# =========================
+# GENERAR KARDEX PDF
+# =========================
 
 @admin_bp.route("/kardex/<nombre>")
 def kardex(nombre):
@@ -212,9 +259,9 @@ def kardex(nombre):
     )
 
 
-# ===============================
-# PDF BOLETA
-# ===============================
+# =========================
+# GENERAR BOLETA PDF
+# =========================
 
 @admin_bp.route("/boleta/<nombre>")
 def boleta(nombre):

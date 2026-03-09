@@ -1,20 +1,60 @@
-{% extends "layout.html" %}
-{% block contenido %}
+<!DOCTYPE html>
+<html>
 
-<div class="card">
+<head>
 
-<h2>Configuración Institucional</h2>
+<title>Configuración escolar</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-<form>
+</head>
 
-<input type="text" placeholder="Nombre de la escuela">
+<body>
 
-<input type="text" placeholder="Ciclo escolar">
 
-<button class="btn-green">Guardar</button>
+<div class="sidebar">
+
+<h2>Control Escolar</h2>
+
+<a href="/admin">Dashboard</a>
+<a href="/alumnos">Alumnos</a>
+<a href="/maestros">Maestros</a>
+<a href="/grupos">Grupos</a>
+<a href="/materias">Materias</a>
+<a href="/reportes">Reportes</a>
+<a href="/configuracion">Configuración</a>
+
+<a href="/logout">Cerrar sesión</a>
+
+</div>
+
+
+<div class="content">
+
+<h1>Configuración de la escuela</h1>
+
+
+<form action="/guardar_configuracion" method="POST">
+
+<label>Nombre de la escuela</label>
+<input type="text" name="escuela" value="{{ config.escuela if config else '' }}">
+
+<label>Ciclo escolar</label>
+<input type="text" name="ciclo" value="{{ config.ciclo if config else '' }}">
+
+<label>Director</label>
+<input type="text" name="director" value="{{ config.director if config else '' }}">
+
+<label>Dirección</label>
+<input type="text" name="direccion" value="{{ config.direccion if config else '' }}">
+
+<br><br>
+
+<button type="submit">Guardar configuración</button>
 
 </form>
 
 </div>
 
-{% endblock %}
+
+</body>
+</html>

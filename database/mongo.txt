@@ -16,3 +16,6 @@ maestros = db["maestros"]
 materias = db["materias"]
 reportes = db["reportes"]
 calificaciones = db["calificaciones"]
+
+# NUEVA COLECCION
+configuracion = db["configuracion"]
