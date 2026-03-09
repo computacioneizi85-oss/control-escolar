@@ -10,12 +10,14 @@ maestro_bp = Blueprint("maestro", __name__)
 @maestro_bp.route("/panel_maestro")
 def panel_maestro():
 
+    # verificar sesión
     if "rol" not in session:
         return redirect("/")
 
     if session["rol"] != "maestro":
         return redirect("/")
 
+    # obtener datos
     lista_alumnos = list(alumnos.find())
     lista_materias = list(materias.find())
 
@@ -32,6 +34,7 @@ def panel_maestro():
 @maestro_bp.route("/capturar_calificaciones", methods=["POST"])
 def capturar_calificaciones():
 
+    # verificar sesión
     if "rol" not in session:
         return redirect("/")
 
