@@ -1,6 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, session, send_file
 from bson.objectid import ObjectId
 
+import os
+from werkzeug.utils import secure_filename
+
 from database.mongo import (
     alumnos,
     grupos,
@@ -228,16 +231,38 @@ def guardar_configuracion():
     director = request.form.get("director")
     direccion = request.form.get("direccion")
 
+    archivo = request.files.get("escudo")
+
+    escudo_path = None
+
+    if archivo and archivo.filename != "":
+
+        nombre_archivo = secure_filename(archivo.filename)
+
+        carpeta = "static/uploads"
+
+        if not os.path.exists(carpeta):
+            os.makedirs(carpeta)
+
+        ruta = os.path.join(carpeta, nombre_archivo)
+
+        archivo.save(ruta)
+
+        escudo_path = ruta
+
+    datos = {
+        "escuela": escuela,
+        "ciclo": ciclo,
+        "director": director,
+        "direccion": direccion
+    }
+
+    if escudo_path:
+        datos["escudo"] = escudo_path
+
     configuracion.update_one(
         {},
-        {
-            "$set": {
-                "escuela": escuela,
-                "ciclo": ciclo,
-                "director": director,
-                "direccion": direccion
-            }
-        },
+        {"$set": datos},
         upsert=True
     )
 
