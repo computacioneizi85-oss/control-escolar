@@ -1,18 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, session, send_file
 from bson.objectid import ObjectId
-
 import os
 from werkzeug.utils import secure_filename
 
-from database.mongo import (
-    alumnos,
-    grupos,
-    materias,
-    maestros,
-    reportes,
-    configuracion
-)
-
+from database.mongo import alumnos, grupos, materias, maestros, reportes, configuracion
 from pdf.generador import generar_kardex, generar_boleta
 
 
@@ -20,13 +11,28 @@ admin_bp = Blueprint("admin", __name__)
 
 
 # =========================
+# VERIFICAR ADMIN
+# =========================
+
+def verificar_admin():
+
+    if "rol" not in session:
+        return False
+
+    if session["rol"] != "admin":
+        return False
+
+    return True
+
+
+# =========================
 # DASHBOARD
 # =========================
 
 @admin_bp.route("/admin")
-def dashboard():
+def admin_dashboard():
 
-    if "rol" not in session:
+    if not verificar_admin():
         return redirect("/")
 
     lista_alumnos = list(alumnos.find())
@@ -50,6 +56,9 @@ def dashboard():
 @admin_bp.route("/alumnos")
 def ver_alumnos():
 
+    if not verificar_admin():
+        return redirect("/")
+
     lista_alumnos = list(alumnos.find())
     lista_grupos = list(grupos.find())
 
@@ -63,12 +72,17 @@ def ver_alumnos():
 @admin_bp.route("/crear_alumno", methods=["POST"])
 def crear_alumno():
 
+    if not verificar_admin():
+        return redirect("/")
+
     nombre = request.form.get("nombre")
     grupo = request.form.get("grupo")
 
     alumnos.insert_one({
         "nombre": nombre,
-        "grupo": grupo
+        "grupo": grupo,
+        "calificaciones": [],
+        "asistencias": []
     })
 
     return redirect("/alumnos")
@@ -77,9 +91,10 @@ def crear_alumno():
 @admin_bp.route("/eliminar_alumno/<id>")
 def eliminar_alumno(id):
 
-    alumnos.delete_one({
-        "_id": ObjectId(id)
-    })
+    if not verificar_admin():
+        return redirect("/")
+
+    alumnos.delete_one({"_id": ObjectId(id)})
 
     return redirect("/alumnos")
 
@@ -90,6 +105,9 @@ def eliminar_alumno(id):
 
 @admin_bp.route("/maestros")
 def ver_maestros():
+
+    if not verificar_admin():
+        return redirect("/")
 
     lista_maestros = list(maestros.find())
 
@@ -102,6 +120,9 @@ def ver_maestros():
 @admin_bp.route("/crear_maestro", methods=["POST"])
 def crear_maestro():
 
+    if not verificar_admin():
+        return redirect("/")
+
     nombre = request.form.get("nombre")
     usuario = request.form.get("usuario")
     password = request.form.get("password")
@@ -109,7 +130,9 @@ def crear_maestro():
     maestros.insert_one({
         "nombre": nombre,
         "usuario": usuario,
-        "password": password
+        "password": password,
+        "grupos": [],
+        "materias": []
     })
 
     return redirect("/maestros")
@@ -118,9 +141,10 @@ def crear_maestro():
 @admin_bp.route("/eliminar_maestro/<id>")
 def eliminar_maestro(id):
 
-    maestros.delete_one({
-        "_id": ObjectId(id)
-    })
+    if not verificar_admin():
+        return redirect("/")
+
+    maestros.delete_one({"_id": ObjectId(id)})
 
     return redirect("/maestros")
 
@@ -132,6 +156,9 @@ def eliminar_maestro(id):
 @admin_bp.route("/grupos")
 def ver_grupos():
 
+    if not verificar_admin():
+        return redirect("/")
+
     lista_grupos = list(grupos.find())
 
     return render_template(
@@ -142,6 +169,9 @@ def ver_grupos():
 
 @admin_bp.route("/crear_grupo", methods=["POST"])
 def crear_grupo():
+
+    if not verificar_admin():
+        return redirect("/")
 
     nombre = request.form.get("nombre")
 
@@ -155,9 +185,10 @@ def crear_grupo():
 @admin_bp.route("/eliminar_grupo/<id>")
 def eliminar_grupo(id):
 
-    grupos.delete_one({
-        "_id": ObjectId(id)
-    })
+    if not verificar_admin():
+        return redirect("/")
+
+    grupos.delete_one({"_id": ObjectId(id)})
 
     return redirect("/grupos")
 
@@ -168,6 +199,9 @@ def eliminar_grupo(id):
 
 @admin_bp.route("/materias")
 def ver_materias():
+
+    if not verificar_admin():
+        return redirect("/")
 
     lista_materias = list(materias.find())
     lista_grupos = list(grupos.find())
@@ -181,6 +215,9 @@ def ver_materias():
 
 @admin_bp.route("/crear_materia", methods=["POST"])
 def crear_materia():
+
+    if not verificar_admin():
+        return redirect("/")
 
     nombre = request.form.get("nombre")
     grupo = request.form.get("grupo")
@@ -196,9 +233,10 @@ def crear_materia():
 @admin_bp.route("/eliminar_materia/<id>")
 def eliminar_materia(id):
 
-    materias.delete_one({
-        "_id": ObjectId(id)
-    })
+    if not verificar_admin():
+        return redirect("/")
+
+    materias.delete_one({"_id": ObjectId(id)})
 
     return redirect("/materias")
 
@@ -210,6 +248,9 @@ def eliminar_materia(id):
 @admin_bp.route("/reportes")
 def ver_reportes():
 
+    if not verificar_admin():
+        return redirect("/")
+
     lista_reportes = list(reportes.find())
 
     return render_template(
@@ -219,11 +260,14 @@ def ver_reportes():
 
 
 # =========================
-# CONFIGURACION ESCOLAR
+# CONFIGURACIÓN ESCOLAR
 # =========================
 
 @admin_bp.route("/configuracion")
 def ver_configuracion():
+
+    if not verificar_admin():
+        return redirect("/")
 
     datos = configuracion.find_one()
 
@@ -235,6 +279,9 @@ def ver_configuracion():
 
 @admin_bp.route("/guardar_configuracion", methods=["POST"])
 def guardar_configuracion():
+
+    if not verificar_admin():
+        return redirect("/")
 
     escuela = request.form.get("escuela")
     ciclo = request.form.get("ciclo")
@@ -270,11 +317,7 @@ def guardar_configuracion():
     if escudo_path:
         datos["escudo"] = escudo_path
 
-    configuracion.update_one(
-        {},
-        {"$set": datos},
-        upsert=True
-    )
+    configuracion.update_one({}, {"$set": datos}, upsert=True)
 
     return redirect("/configuracion")
 
@@ -285,6 +328,9 @@ def guardar_configuracion():
 
 @admin_bp.route("/kardex/<nombre>")
 def kardex(nombre):
+
+    if not verificar_admin():
+        return redirect("/")
 
     archivo = generar_kardex(nombre)
 
@@ -300,6 +346,9 @@ def kardex(nombre):
 
 @admin_bp.route("/boleta/<nombre>")
 def boleta(nombre):
+
+    if not verificar_admin():
+        return redirect("/")
 
     archivo = generar_boleta(nombre)
 

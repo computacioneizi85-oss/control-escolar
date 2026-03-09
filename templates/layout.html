@@ -4,14 +4,12 @@
 <head>
 
 <meta charset="UTF-8">
-<title>Control Escolar PRO</title>
+<title>Control Escolar</title>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-<meta name="viewport" content="width=device-width, initial-scale=1">
 
 </head>
 
@@ -19,92 +17,72 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 <body>
 
 
-<!-- SIDEBAR -->
-
 <div class="sidebar">
 
-<div class="logo">
-
-<i class="fa-solid fa-school"></i>
-<span>Control Escolar</span>
-
-</div>
+<h2>Control Escolar</h2>
 
 
-<nav>
+{% if session["rol"] == "admin" %}
 
 <a href="/admin">
-<i class="fa-solid fa-chart-line"></i>
-<span>Dashboard</span>
+<i class="fa-solid fa-chart-line"></i> Dashboard
 </a>
 
 <a href="/alumnos">
-<i class="fa-solid fa-user-graduate"></i>
-<span>Alumnos</span>
+<i class="fa-solid fa-user-graduate"></i> Alumnos
 </a>
 
 <a href="/maestros">
-<i class="fa-solid fa-chalkboard-user"></i>
-<span>Maestros</span>
+<i class="fa-solid fa-chalkboard-user"></i> Maestros
 </a>
 
 <a href="/grupos">
-<i class="fa-solid fa-users"></i>
-<span>Grupos</span>
+<i class="fa-solid fa-users"></i> Grupos
 </a>
 
 <a href="/materias">
-<i class="fa-solid fa-book"></i>
-<span>Materias</span>
+<i class="fa-solid fa-book"></i> Materias
 </a>
 
 <a href="/reportes">
-<i class="fa-solid fa-file-lines"></i>
-<span>Reportes</span>
+<i class="fa-solid fa-file"></i> Reportes
 </a>
 
 <a href="/configuracion">
-<i class="fa-solid fa-gear"></i>
-<span>Configuración</span>
+<i class="fa-solid fa-gear"></i> Configuración
 </a>
+
+{% endif %}
+
+
+{% if session["rol"] == "maestro" %}
+
+<a href="/panel_maestro">
+<i class="fa-solid fa-chalkboard-user"></i> Panel Maestro
+</a>
+
+{% endif %}
+
 
 <a href="/logout">
-<i class="fa-solid fa-right-from-bracket"></i>
-<span>Cerrar sesión</span>
+<i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
 </a>
 
-</nav>
 
 </div>
 
 
-
-<!-- CONTENIDO -->
 
 <div class="content">
 
-
-<!-- TOPBAR -->
-
 <div class="topbar">
 
-<div class="title">
-Sistema de Control Escolar
-</div>
-
-<div class="user">
-
-<i class="fa-solid fa-user"></i>
-
-</div>
+<h1>Sistema de Control Escolar</h1>
 
 </div>
 
 
-
-<!-- CONTENIDO DINÁMICO -->
-
-<div class="main">
+<div class="main-content">
 
 {% block content %}
 
@@ -116,6 +94,6 @@ Sistema de Control Escolar
 </div>
 
 
-
 </body>
+
 </html>

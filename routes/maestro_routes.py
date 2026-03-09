@@ -6,13 +6,28 @@ maestro_bp = Blueprint("maestro", __name__)
 
 
 # =========================
+# VERIFICAR MAESTRO
+# =========================
+
+def verificar_maestro():
+
+    if "rol" not in session:
+        return False
+
+    if session["rol"] != "maestro":
+        return False
+
+    return True
+
+
+# =========================
 # PANEL DEL MAESTRO
 # =========================
 
 @maestro_bp.route("/panel_maestro")
 def panel_maestro():
 
-    if "rol" not in session or session["rol"] != "maestro":
+    if not verificar_maestro():
         return redirect("/")
 
     maestro = maestros.find_one({"usuario": session["usuario"]})
@@ -29,13 +44,13 @@ def panel_maestro():
 
 
 # =========================
-# CAPTURAR CALIFICACIONES
+# GUARDAR CALIFICACIONES
 # =========================
 
 @maestro_bp.route("/guardar_calificaciones", methods=["POST"])
 def guardar_calificaciones():
 
-    if "rol" not in session or session["rol"] != "maestro":
+    if not verificar_maestro():
         return redirect("/")
 
     alumno = request.form.get("alumno")
@@ -65,7 +80,7 @@ def guardar_calificaciones():
 @maestro_bp.route("/registrar_asistencia", methods=["POST"])
 def registrar_asistencia():
 
-    if "rol" not in session or session["rol"] != "maestro":
+    if not verificar_maestro():
         return redirect("/")
 
     alumno = request.form.get("alumno")
@@ -87,23 +102,25 @@ def registrar_asistencia():
 
 
 # =========================
-# GENERAR REPORTE
+# CREAR REPORTE DISCIPLINARIO
 # =========================
 
 @maestro_bp.route("/crear_reporte", methods=["POST"])
 def crear_reporte():
 
-    if "rol" not in session or session["rol"] != "maestro":
+    if not verificar_maestro():
         return redirect("/")
 
     alumno = request.form.get("alumno")
     comentario = request.form.get("comentario")
 
     reportes.insert_one({
+
         "alumno": alumno,
         "maestro": session["usuario"],
         "comentario": comentario,
         "estatus": "pendiente"
+
     })
 
     return redirect("/panel_maestro")
