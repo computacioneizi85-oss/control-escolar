@@ -4,37 +4,117 @@
 <head>
 
 <meta charset="UTF-8">
-<title>Control Escolar</title>
+<title>Control Escolar PRO</title>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 </head>
+
 
 <body>
 
+
+<!-- SIDEBAR -->
+
 <div class="sidebar">
 
-<h2>Control Escolar</h2>
+<div class="logo">
 
-<a href="/admin">Dashboard</a>
-<a href="/alumnos">Alumnos</a>
-<a href="/maestros">Maestros</a>
-<a href="/grupos">Grupos</a>
-<a href="/materias">Materias</a>
-<a href="/reportes">Reportes</a>
-<a href="/configuracion">Configuración</a>
-<a href="/logout">Cerrar sesión</a>
+<i class="fa-solid fa-school"></i>
+<span>Control Escolar</span>
 
 </div>
 
 
+<nav>
+
+<a href="/admin">
+<i class="fa-solid fa-chart-line"></i>
+<span>Dashboard</span>
+</a>
+
+<a href="/alumnos">
+<i class="fa-solid fa-user-graduate"></i>
+<span>Alumnos</span>
+</a>
+
+<a href="/maestros">
+<i class="fa-solid fa-chalkboard-user"></i>
+<span>Maestros</span>
+</a>
+
+<a href="/grupos">
+<i class="fa-solid fa-users"></i>
+<span>Grupos</span>
+</a>
+
+<a href="/materias">
+<i class="fa-solid fa-book"></i>
+<span>Materias</span>
+</a>
+
+<a href="/reportes">
+<i class="fa-solid fa-file-lines"></i>
+<span>Reportes</span>
+</a>
+
+<a href="/configuracion">
+<i class="fa-solid fa-gear"></i>
+<span>Configuración</span>
+</a>
+
+<a href="/logout">
+<i class="fa-solid fa-right-from-bracket"></i>
+<span>Cerrar sesión</span>
+</a>
+
+</nav>
+
+</div>
+
+
+
+<!-- CONTENIDO -->
+
 <div class="content">
+
+
+<!-- TOPBAR -->
+
+<div class="topbar">
+
+<div class="title">
+Sistema de Control Escolar
+</div>
+
+<div class="user">
+
+<i class="fa-solid fa-user"></i>
+
+</div>
+
+</div>
+
+
+
+<!-- CONTENIDO DINÁMICO -->
+
+<div class="main">
 
 {% block content %}
 
 {% endblock %}
 
 </div>
+
+
+</div>
+
 
 
 </body>
