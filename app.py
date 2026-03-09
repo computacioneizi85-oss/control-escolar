@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, redirect
+from flask import Flask, session, redirect, request
 
 # BLUEPRINTS
 from routes.auth_routes import auth_bp
@@ -7,36 +7,41 @@ from routes.maestro_routes import maestro_bp
 
 app = Flask(__name__)
 
+# clave para sesiones
 app.secret_key = "control_escolar_secret"
 
+
+# =========================
+# REGISTRAR BLUEPRINTS
+# =========================
+
+app.register_blueprint(auth_bp)
+app.register_blueprint(admin_bp)
 app.register_blueprint(maestro_bp)
 
 
-# Registrar blueprints
-app.register_blueprint(auth_bp)
-app.register_blueprint(admin_bp)
+# =========================
+# PROTEGER RUTAS
+# =========================
+
+@app.before_request
+def proteger_rutas():
+
+    rutas_publicas = ["/", "/login"]
+
+    if request.path.startswith("/static"):
+        return
+
+    if request.path in rutas_publicas:
+        return
+
+    if "usuario" not in session:
+        return redirect("/")
 
 
-@app.route("/")
-def index():
-
-    if "rol" in session:
-
-        if session["rol"] == "admin":
-            return redirect("/admin")
-
-        if session["rol"] == "maestro":
-            return redirect("/maestro")
-
-    return render_template("login.html")
-
-
-@app.route("/logout")
-def logout():
-
-    session.clear()
-    return redirect("/")
-
+# =========================
+# EJECUTAR APP
+# =========================
 
 if __name__ == "__main__":
     app.run(debug=True)
