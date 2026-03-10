@@ -4,7 +4,7 @@ from reportlab.lib.utils import ImageReader
 
 import os
 
-from database.mongo import configuracion, materias
+from database.mongo import configuracion, materias, alumnos
 
 
 # ==============================
@@ -41,6 +41,8 @@ def obtener_config():
 def generar_kardex(nombre):
 
     escuela, ciclo, director, direccion, escudo = obtener_config()
+
+    alumno = alumnos.find_one({"nombre": nombre})
 
     carpeta = "pdf_generados"
 
@@ -81,27 +83,72 @@ def generar_kardex(nombre):
 
     # ALUMNO
 
+    grupo = alumno.get("grupo", "") if alumno else ""
+
     c.setFont("Helvetica", 12)
     c.drawString(80, 630, f"Alumno: {nombre}")
+    c.drawString(80, 610, f"Grupo: {grupo}")
 
     # TABLA
 
-    c.drawString(80, 590, "Materia")
-    c.drawString(350, 590, "Calificación")
+    c.drawString(80, 570, "Materia")
+    c.drawString(350, 570, "Calificación")
 
     lista_materias = list(materias.find())
 
-    y = 560
+    y = 540
+
+    calificaciones = []
 
     for materia in lista_materias:
 
         nombre_materia = materia.get("nombre", "")
-        calificacion = "—"
+
+        calificacion = alumno.get("cal1", "—") if alumno else "—"
+
+        if isinstance(calificacion, int):
+            calificaciones.append(calificacion)
 
         c.drawString(80, y, nombre_materia)
-        c.drawString(350, y, calificacion)
+        c.drawString(350, y, str(calificacion))
 
         y -= 25
+
+
+    # PROMEDIO
+
+    if calificaciones:
+        promedio = round(sum(calificaciones) / len(calificaciones), 2)
+    else:
+        promedio = "—"
+
+    c.drawString(80, y-10, f"Promedio: {promedio}")
+
+
+    # ASISTENCIAS
+
+    asistencias = alumno.get("asistencias", []) if alumno else []
+
+    total_asistencia = 0
+    total_faltas = 0
+    total_retardos = 0
+
+    for a in asistencias:
+
+        if a["estado"] == "asistencia":
+            total_asistencia += 1
+
+        if a["estado"] == "falta":
+            total_faltas += 1
+
+        if a["estado"] == "retardo":
+            total_retardos += 1
+
+
+    c.drawString(80, 200, f"Asistencias: {total_asistencia}")
+    c.drawString(80, 180, f"Faltas: {total_faltas}")
+    c.drawString(80, 160, f"Retardos: {total_retardos}")
+
 
     # FIRMA
 
@@ -119,6 +166,8 @@ def generar_kardex(nombre):
 def generar_boleta(nombre):
 
     escuela, ciclo, director, direccion, escudo = obtener_config()
+
+    alumno = alumnos.find_one({"nombre": nombre})
 
     carpeta = "pdf_generados"
 
@@ -159,27 +208,32 @@ def generar_boleta(nombre):
 
     # ALUMNO
 
+    grupo = alumno.get("grupo", "") if alumno else ""
+
     c.setFont("Helvetica", 12)
     c.drawString(80, 630, f"Alumno: {nombre}")
+    c.drawString(80, 610, f"Grupo: {grupo}")
 
     # TABLA
 
-    c.drawString(80, 590, "Materia")
-    c.drawString(350, 590, "Calificación")
+    c.drawString(80, 570, "Materia")
+    c.drawString(350, 570, "Calificación")
 
     lista_materias = list(materias.find())
 
-    y = 560
+    y = 540
 
     for materia in lista_materias:
 
         nombre_materia = materia.get("nombre", "")
-        calificacion = "—"
+
+        calificacion = alumno.get("cal1", "—") if alumno else "—"
 
         c.drawString(80, y, nombre_materia)
-        c.drawString(350, y, calificacion)
+        c.drawString(350, y, str(calificacion))
 
         y -= 25
+
 
     # FIRMA
 
