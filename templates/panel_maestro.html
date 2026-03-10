@@ -2,16 +2,115 @@
 
 {% block content %}
 
-<h2>Panel del Maestro</h2>
+<style>
+
+.panel-container{
+display:flex;
+gap:20px;
+}
+
+.menu-maestro{
+width:220px;
+background:#243b5a;
+padding:20px;
+border-radius:8px;
+color:white;
+}
+
+.menu-maestro button{
+width:100%;
+padding:10px;
+margin-bottom:10px;
+border:none;
+background:#2f4f75;
+color:white;
+cursor:pointer;
+border-radius:5px;
+}
+
+.menu-maestro button:hover{
+background:#3e6aa1;
+}
+
+.seccion{
+display:none;
+}
+
+.seccion.activa{
+display:block;
+}
+
+.menu-toggle{
+font-size:24px;
+cursor:pointer;
+margin-bottom:15px;
+}
+
+</style>
+
+
+
+<div class="menu-toggle" onclick="toggleMenu()">☰ Panel del Maestro</div>
+
+
+<div class="panel-container">
+
+
+<!-- MENU -->
+
+<div class="menu-maestro" id="menuMaestro">
+
+<button onclick="mostrarSeccion('inicio')">Dashboard</button>
+
+<button onclick="mostrarSeccion('clases')">Mis clases</button>
+
+<button onclick="mostrarSeccion('evaluaciones')">Evaluaciones</button>
+
+<button onclick="mostrarSeccion('alumnos')">Lista alumnos</button>
+
+</div>
+
+
+
+<div style="flex:1;">
+
+
+
+<!-- =========================
+DASHBOARD
+========================= -->
+
+<div id="inicio" class="seccion activa">
+
+<h2>Resumen</h2>
+
+<div class="cards">
+
+<div class="card">
+<h3>Alumnos</h3>
+<p>{{ alumnos|length }}</p>
+</div>
+
+<div class="card">
+<h3>Clases</h3>
+<p>{{ horarios|length }}</p>
+</div>
+
+</div>
+
+</div>
+
 
 
 <!-- =========================
 HORARIOS DEL MAESTRO
 ========================= -->
 
-{% if horarios %}
+<div id="clases" class="seccion">
 
 <h3>Mis clases</h3>
+
+{% if horarios %}
 
 <table>
 
@@ -37,16 +136,21 @@ HORARIOS DEL MAESTRO
 
 </table>
 
-<br>
-<br>
+{% else %}
+
+<p>No tienes clases asignadas.</p>
 
 {% endif %}
+
+</div>
 
 
 
 <!-- =========================
 EVALUACIONES TRIMESTRALES
 ========================= -->
+
+<div id="evaluaciones" class="seccion">
 
 <h3>Evaluaciones disponibles</h3>
 
@@ -76,14 +180,15 @@ EVALUACIONES TRIMESTRALES
 
 {% endif %}
 
-<br>
-<br>
+</div>
 
 
 
 <!-- =========================
 LISTA DE ALUMNOS
 ========================= -->
+
+<div id="alumnos" class="seccion">
 
 <h3>Lista de alumnos</h3>
 
@@ -107,9 +212,7 @@ LISTA DE ALUMNOS
 
 
 
-<!-- =========================
-CALIFICACIONES
-========================= -->
+<!-- CALIFICACIONES -->
 
 <td>
 
@@ -131,9 +234,7 @@ CALIFICACIONES
 
 
 
-<!-- =========================
-ASISTENCIA
-========================= -->
+<!-- ASISTENCIA -->
 
 <td>
 
@@ -144,9 +245,7 @@ ASISTENCIA
 <select name="estado">
 
 <option value="asistencia">Asistencia</option>
-
 <option value="retardo">Retardo</option>
-
 <option value="falta">Falta</option>
 
 </select>
@@ -159,9 +258,7 @@ ASISTENCIA
 
 
 
-<!-- =========================
-REPORTE DISCIPLINARIO
-========================= -->
+<!-- REPORTE -->
 
 <td>
 
@@ -182,5 +279,42 @@ REPORTE DISCIPLINARIO
 {% endfor %}
 
 </table>
+
+</div>
+
+
+
+</div>
+
+</div>
+
+
+
+<script>
+
+function mostrarSeccion(id){
+
+document.querySelectorAll(".seccion").forEach(function(sec){
+sec.classList.remove("activa")
+})
+
+document.getElementById(id).classList.add("activa")
+
+}
+
+function toggleMenu(){
+
+let menu = document.getElementById("menuMaestro")
+
+if(menu.style.display === "none"){
+menu.style.display = "block"
+}else{
+menu.style.display = "none"
+}
+
+}
+
+</script>
+
 
 {% endblock %}
