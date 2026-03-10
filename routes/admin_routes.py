@@ -5,6 +5,7 @@ from werkzeug.utils import secure_filename
 
 from database.mongo import alumnos, grupos, materias, maestros, reportes, configuracion
 from pdf.generador import generar_kardex, generar_boleta
+from database.mongo import alumnos, grupos, materias, maestros, reportes, configuracion, horarios
 
 
 admin_bp = Blueprint("admin", __name__)
@@ -396,3 +397,58 @@ def boleta(nombre):
         archivo,
         as_attachment=True
     )
+
+# =========================
+# HORARIOS ESCOLARES
+# =========================
+
+@admin_bp.route("/horarios")
+def ver_horarios():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    lista_horarios = list(horarios.find())
+    lista_grupos = list(grupos.find())
+    lista_materias = list(materias.find())
+    lista_maestros = list(maestros.find())
+
+    return render_template(
+        "horarios.html",
+        horarios=lista_horarios,
+        grupos=lista_grupos,
+        materias=lista_materias,
+        maestros=lista_maestros
+    )
+
+@admin_bp.route("/crear_horario", methods=["POST"])
+def crear_horario():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    grupo = request.form.get("grupo")
+    materia = request.form.get("materia")
+    maestro = request.form.get("maestro")
+    dia = request.form.get("dia")
+    hora = request.form.get("hora")
+
+    horarios.insert_one({
+        "grupo": grupo,
+        "materia": materia,
+        "maestro": maestro,
+        "dia": dia,
+        "hora": hora
+    })
+
+    return redirect("/horarios")
+
+@admin_bp.route("/eliminar_horario/<id>")
+def eliminar_horario(id):
+
+    if not verificar_admin():
+        return redirect("/")
+
+    horarios.delete_one({"_id": ObjectId(id)})
+
+    return redirect("/horarios")

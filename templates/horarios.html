@@ -1,0 +1,101 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>Gestión de horarios</h1>
+
+<h2>Crear horario</h2>
+
+<form action="/crear_horario" method="POST">
+
+<select name="grupo">
+
+{% for grupo in grupos %}
+<option value="{{ grupo.nombre }}">
+{{ grupo.nombre }}
+</option>
+{% endfor %}
+
+</select>
+
+
+<select name="materia">
+
+{% for materia in materias %}
+<option value="{{ materia.nombre }}">
+{{ materia.nombre }}
+</option>
+{% endfor %}
+
+</select>
+
+
+<select name="maestro">
+
+{% for maestro in maestros %}
+<option value="{{ maestro.nombre }}">
+{{ maestro.nombre }}
+</option>
+{% endfor %}
+
+</select>
+
+
+<select name="dia">
+
+<option>Lunes</option>
+<option>Martes</option>
+<option>Miércoles</option>
+<option>Jueves</option>
+<option>Viernes</option>
+
+</select>
+
+
+<input type="time" name="hora">
+
+<button type="submit">Crear horario</button>
+
+</form>
+
+
+<br>
+<br>
+
+
+<h2>Lista de horarios</h2>
+
+<table>
+
+<tr>
+<th>Grupo</th>
+<th>Materia</th>
+<th>Maestro</th>
+<th>Día</th>
+<th>Hora</th>
+<th>Eliminar</th>
+</tr>
+
+{% for horario in horarios %}
+
+<tr>
+
+<td>{{ horario.grupo }}</td>
+<td>{{ horario.materia }}</td>
+<td>{{ horario.maestro }}</td>
+<td>{{ horario.dia }}</td>
+<td>{{ horario.hora }}</td>
+
+<td>
+<a href="/eliminar_horario/{{ horario._id }}">
+<button style="background:red;">Eliminar</button>
+</a>
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}

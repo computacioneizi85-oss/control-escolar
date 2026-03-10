@@ -19,3 +19,5 @@ calificaciones = db["calificaciones"]
 
 # NUEVA COLECCION
 configuracion = db["configuracion"]
+
+horarios = db["horarios"]
