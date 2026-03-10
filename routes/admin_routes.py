@@ -452,3 +452,26 @@ def eliminar_horario(id):
     horarios.delete_one({"_id": ObjectId(id)})
 
     return redirect("/horarios")
+
+# =========================
+# ACTIVAR TRIMESTRES
+# =========================
+
+@admin_bp.route("/activar_trimestre", methods=["POST"])
+def activar_trimestre():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    trimestre = request.form.get("trimestre")
+    estado = request.form.get("estado") == "true"
+
+    campo = f"trimestre{trimestre}"
+
+    configuracion.update_one(
+        {},
+        {"$set": {campo: estado}},
+        upsert=True
+    )
+
+    return redirect("/admin")

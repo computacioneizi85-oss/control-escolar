@@ -45,6 +45,43 @@ HORARIOS DEL MAESTRO
 
 
 <!-- =========================
+EVALUACIONES TRIMESTRALES
+========================= -->
+
+<h3>Evaluaciones disponibles</h3>
+
+{% if config %}
+
+{% if config.trimestre1 %}
+<a href="/descargar_trimestre/1">
+<button>Descargar Evaluación Trimestre 1</button>
+</a>
+{% endif %}
+
+{% if config.trimestre2 %}
+<a href="/descargar_trimestre/2">
+<button>Descargar Evaluación Trimestre 2</button>
+</a>
+{% endif %}
+
+{% if config.trimestre3 %}
+<a href="/descargar_trimestre/3">
+<button>Descargar Evaluación Trimestre 3</button>
+</a>
+{% endif %}
+
+{% else %}
+
+<p>No hay evaluaciones habilitadas.</p>
+
+{% endif %}
+
+<br>
+<br>
+
+
+
+<!-- =========================
 LISTA DE ALUMNOS
 ========================= -->
 

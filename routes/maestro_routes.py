@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, session
-from database.mongo import alumnos, maestros, reportes, horarios
+from database.mongo import alumnos, maestros, reportes, horarios, configuracion
 from datetime import datetime
 
 maestro_bp = Blueprint("maestro", __name__)
@@ -49,11 +49,15 @@ def panel_maestro():
     # buscar alumnos de esos grupos
     lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
 
+    # obtener configuracion de evaluaciones
+    config = configuracion.find_one()
+
     return render_template(
         "panel_maestro.html",
         alumnos=lista_alumnos,
         grupos=grupos,
-        horarios=lista_horarios
+        horarios=lista_horarios,
+        config=config
     )
 
 
@@ -138,3 +142,26 @@ def crear_reporte():
     })
 
     return redirect("/panel_maestro")
+
+
+# =========================
+# DESCARGAR EVALUACION TRIMESTRAL
+# =========================
+
+@maestro_bp.route("/descargar_trimestre/<numero>")
+def descargar_trimestre(numero):
+
+    if not verificar_maestro():
+        return redirect("/")
+
+    config = configuracion.find_one()
+
+    if not config:
+        return "Evaluaciones no configuradas"
+
+    campo = f"trimestre{numero}"
+
+    if not config.get(campo, False):
+        return "Este trimestre no está habilitado por dirección"
+
+    return f"Descarga de evaluación del trimestre {numero} habilitada"
