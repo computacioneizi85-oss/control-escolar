@@ -475,3 +475,20 @@ def activar_trimestre():
     )
 
     return redirect("/admin")
+
+@admin_bp.route("/asistencias_admin")
+def asistencias_admin():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    lista_alumnos = list(alumnos.find())
+    lista_maestros = list(maestros.find())
+    lista_grupos = list(grupos.find())
+
+    return render_template(
+        "asistencias_admin.html",
+        alumnos=lista_alumnos,
+        maestros=lista_maestros,
+        grupos=lista_grupos
+    )

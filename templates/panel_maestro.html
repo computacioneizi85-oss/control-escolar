@@ -52,7 +52,6 @@ margin-bottom:15px;
 
 <div class="menu-toggle" onclick="toggleMenu()">☰ Panel del Maestro</div>
 
-
 <div class="panel-container">
 
 
@@ -67,6 +66,8 @@ margin-bottom:15px;
 <button onclick="mostrarSeccion('evaluaciones')">Evaluaciones</button>
 
 <button onclick="mostrarSeccion('alumnos')">Lista alumnos</button>
+
+<button onclick="mostrarSeccion('asistencias')">Asistencias</button>
 
 </div>
 
@@ -147,7 +148,7 @@ HORARIOS DEL MAESTRO
 
 
 <!-- =========================
-EVALUACIONES TRIMESTRALES
+EVALUACIONES
 ========================= -->
 
 <div id="evaluaciones" class="seccion">
@@ -198,7 +199,6 @@ LISTA DE ALUMNOS
 <th>Alumno</th>
 <th>Grupo</th>
 <th>Calificaciones</th>
-<th>Asistencia</th>
 <th>Reporte</th>
 </tr>
 
@@ -209,8 +209,6 @@ LISTA DE ALUMNOS
 <td>{{ alumno.nombre }}</td>
 
 <td>{{ alumno.grupo }}</td>
-
-
 
 <!-- CALIFICACIONES -->
 
@@ -232,32 +230,6 @@ LISTA DE ALUMNOS
 
 </td>
 
-
-
-<!-- ASISTENCIA -->
-
-<td>
-
-<form action="/registrar_asistencia" method="POST">
-
-<input type="hidden" name="alumno" value="{{ alumno.nombre }}">
-
-<select name="estado">
-
-<option value="asistencia">Asistencia</option>
-<option value="retardo">Retardo</option>
-<option value="falta">Falta</option>
-
-</select>
-
-<button type="submit">Registrar</button>
-
-</form>
-
-</td>
-
-
-
 <!-- REPORTE -->
 
 <td>
@@ -273,6 +245,67 @@ LISTA DE ALUMNOS
 </form>
 
 </td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+
+
+<!-- =========================
+ASISTENCIAS
+========================= -->
+
+<div id="asistencias" class="seccion">
+
+<h3>Registro de asistencias</h3>
+
+<table>
+
+<tr>
+<th>Alumno</th>
+<th>Grupo</th>
+<th>Fecha</th>
+<th>Estado</th>
+<th>Guardar</th>
+</tr>
+
+{% for alumno in alumnos %}
+
+<tr>
+
+<td>{{ alumno.nombre }}</td>
+<td>{{ alumno.grupo }}</td>
+
+<form action="/guardar_asistencia_fecha" method="POST">
+
+<input type="hidden" name="alumno" value="{{ alumno.nombre }}">
+
+<td>
+<input type="date" name="fecha" required>
+</td>
+
+<td>
+
+<select name="estado">
+
+<option value="asistencia">Asistencia</option>
+<option value="retardo">Retardo</option>
+<option value="falta">Falta</option>
+
+</select>
+
+</td>
+
+<td>
+<button type="submit">Guardar</button>
+</td>
+
+</form>
 
 </tr>
 
@@ -315,6 +348,5 @@ menu.style.display = "none"
 }
 
 </script>
-
 
 {% endblock %}

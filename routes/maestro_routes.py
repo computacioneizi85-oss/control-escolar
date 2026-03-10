@@ -165,3 +165,31 @@ def descargar_trimestre(numero):
         return "Este trimestre no está habilitado por dirección"
 
     return f"Descarga de evaluación del trimestre {numero} habilitada"
+
+# =========================
+# GUARDAR ASISTENCIAS
+# =========================
+
+@maestro_bp.route("/guardar_asistencia_fecha", methods=["POST"])
+def guardar_asistencia_fecha():
+
+    if not verificar_maestro():
+        return redirect("/")
+
+    alumno = request.form.get("alumno")
+    fecha = request.form.get("fecha")
+    estado = request.form.get("estado")
+
+    alumnos.update_one(
+        {"nombre": alumno},
+        {
+            "$push": {
+                "asistencias": {
+                    "fecha": fecha,
+                    "estado": estado
+                }
+            }
+        }
+    )
+
+    return redirect("/panel_maestro")

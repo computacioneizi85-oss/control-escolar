@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>Reporte de asistencias</h2>
+
+<form method="GET">
+
+<select name="grupo">
+<option value="">Grupo</option>
+
+{% for grupo in grupos %}
+<option value="{{ grupo.nombre }}">{{ grupo.nombre }}</option>
+{% endfor %}
+
+</select>
+
+<select name="maestro">
+<option value="">Maestro</option>
+
+{% for maestro in maestros %}
+<option value="{{ maestro.nombre }}">{{ maestro.nombre }}</option>
+{% endfor %}
+
+</select>
+
+<input type="text" name="alumno" placeholder="Alumno">
+
+<button type="submit">Filtrar</button>
+
+</form>
+
+
+<table>
+
+<tr>
+<th>Alumno</th>
+<th>Grupo</th>
+<th>Fecha</th>
+<th>Estado</th>
+</tr>
+
+{% for alumno in alumnos %}
+
+{% if alumno.asistencias %}
+
+{% for a in alumno.asistencias %}
+
+<tr>
+
+<td>{{ alumno.nombre }}</td>
+<td>{{ alumno.grupo }}</td>
+<td>{{ a.fecha }}</td>
+<td>{{ a.estado }}</td>
+
+</tr>
+
+{% endfor %}
+
+{% endif %}
+
+{% endfor %}
+
+</table>
+
+{% endblock %}
