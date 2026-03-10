@@ -13,13 +13,51 @@
 
 <input type="text" name="usuario" placeholder="Usuario" required>
 
-<input type="password" name="password" placeholder="Contraseña" required>
+<input type="text" name="password" placeholder="Contraseña" required>
 
-<button type="submit">
-Registrar maestro
-</button>
+<button type="submit">Registrar maestro</button>
 
 </form>
+
+
+<br>
+<br>
+
+
+<h2>Asignar grupo a maestro</h2>
+
+<form action="/asignar_grupo_maestro" method="POST">
+
+<select name="maestro">
+
+{% for maestro in maestros %}
+
+<option value="{{ maestro._id }}">
+{{ maestro.nombre }}
+</option>
+
+{% endfor %}
+
+</select>
+
+
+<select name="grupo">
+
+{% for grupo in grupos %}
+
+<option value="{{ grupo.nombre }}">
+{{ grupo.nombre }}
+</option>
+
+{% endfor %}
+
+</select>
+
+
+<button type="submit">Asignar grupo</button>
+
+</form>
+
 
 
 <br>
@@ -31,11 +69,9 @@ Registrar maestro
 <table>
 
 <tr>
-
 <th>Nombre</th>
 <th>Usuario</th>
-<th>Eliminar</th>
-
+<th>Grupos</th>
 </tr>
 
 {% for maestro in maestros %}
@@ -48,13 +84,11 @@ Registrar maestro
 
 <td>
 
-<a href="/eliminar_maestro/{{ maestro._id }}">
+{% for grupo in maestro.grupos %}
 
-<button style="background:red;">
-Eliminar
-</button>
+{{ grupo }} 
 
-</a>
+{% endfor %}
 
 </td>
 

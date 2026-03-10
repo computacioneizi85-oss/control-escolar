@@ -158,6 +158,22 @@ def crear_maestro():
 
     return redirect("/maestros")
 
+@admin_bp.route("/asignar_grupo_maestro", methods=["POST"])
+def asignar_grupo_maestro():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    maestro_id = request.form.get("maestro")
+    grupo = request.form.get("grupo")
+
+    maestros.update_one(
+        {"_id": ObjectId(maestro_id)},
+        {"$addToSet": {"grupos": grupo}}
+    )
+
+    return redirect("/maestros")
+
 
 @admin_bp.route("/eliminar_maestro/<id>")
 def eliminar_maestro(id):
