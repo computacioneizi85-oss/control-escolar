@@ -4,6 +4,7 @@
 
 <h1>Gestión de alumnos</h1>
 
+
 <h2>Registrar alumno</h2>
 
 <form action="/crear_alumno" method="POST">
@@ -28,8 +29,60 @@ Registrar alumno
 
 </form>
 
+
 <br>
 <br>
+
+
+<!-- =========================
+FILTROS
+========================= -->
+
+<h2>Filtros</h2>
+
+<form method="GET" action="/alumnos">
+
+<select name="grupo">
+
+<option value="">Filtrar por grupo</option>
+
+{% for grupo in grupos %}
+
+<option value="{{ grupo.nombre }}">
+{{ grupo.nombre }}
+</option>
+
+{% endfor %}
+
+</select>
+
+
+<select name="maestro">
+
+<option value="">Filtrar por maestro</option>
+
+{% for maestro in maestros %}
+
+<option value="{{ maestro.nombre }}">
+{{ maestro.nombre }}
+</option>
+
+{% endfor %}
+
+</select>
+
+<button type="submit">Filtrar</button>
+
+<a href="/alumnos">
+<button type="button">Limpiar</button>
+</a>
+
+</form>
+
+
+<br>
+<br>
+
 
 <h2>Lista de alumnos</h2>
 

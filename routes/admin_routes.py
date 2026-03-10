@@ -50,7 +50,7 @@ def admin_dashboard():
 
 
 # =========================
-# ALUMNOS
+# ALUMNOS (CON FILTROS)
 # =========================
 
 @admin_bp.route("/alumnos")
@@ -59,13 +59,32 @@ def ver_alumnos():
     if not verificar_admin():
         return redirect("/")
 
-    lista_alumnos = list(alumnos.find())
+    grupo = request.args.get("grupo")
+    maestro = request.args.get("maestro")
+
+    filtro = {}
+
+    # filtro por grupo
+    if grupo and grupo != "":
+        filtro["grupo"] = grupo
+
+    # filtro por maestro
+    if maestro and maestro != "":
+        maestro_doc = maestros.find_one({"nombre": maestro})
+
+        if maestro_doc:
+            grupos_maestro = maestro_doc.get("grupos", [])
+            filtro["grupo"] = {"$in": grupos_maestro}
+
+    lista_alumnos = list(alumnos.find(filtro))
     lista_grupos = list(grupos.find())
+    lista_maestros = list(maestros.find())
 
     return render_template(
         "alumnos.html",
         alumnos=lista_alumnos,
-        grupos=lista_grupos
+        grupos=lista_grupos,
+        maestros=lista_maestros
     )
 
 
@@ -110,10 +129,12 @@ def ver_maestros():
         return redirect("/")
 
     lista_maestros = list(maestros.find())
+    lista_grupos = list(grupos.find())
 
     return render_template(
         "maestros.html",
-        maestros=lista_maestros
+        maestros=lista_maestros,
+        grupos=lista_grupos
     )
 
 

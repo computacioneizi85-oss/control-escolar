@@ -23,13 +23,13 @@
 
 <td>
 
-<form method="POST" action="/guardar_calificaciones">
+<form action="/guardar_calificaciones" method="POST">
 
 <input type="hidden" name="alumno" value="{{ alumno.nombre }}">
 
-<input type="number" name="cal1" placeholder="C1">
-<input type="number" name="cal2" placeholder="C2">
-<input type="number" name="cal3" placeholder="C3">
+<input type="number" name="cal1" placeholder="C1" required>
+<input type="number" name="cal2" placeholder="C2" required>
+<input type="number" name="cal3" placeholder="C3" required>
 
 <button type="submit">Guardar</button>
 
@@ -37,9 +37,10 @@
 
 </td>
 
+
 <td>
 
-<form method="POST" action="/registrar_asistencia">
+<form action="/registrar_asistencia" method="POST">
 
 <input type="hidden" name="alumno" value="{{ alumno.nombre }}">
 
@@ -57,13 +58,14 @@
 
 </td>
 
+
 <td>
 
-<form method="POST" action="/crear_reporte">
+<form action="/crear_reporte" method="POST">
 
 <input type="hidden" name="alumno" value="{{ alumno.nombre }}">
 
-<input type="text" name="comentario">
+<input type="text" name="comentario" placeholder="Comentario">
 
 <button type="submit">Enviar</button>
 
