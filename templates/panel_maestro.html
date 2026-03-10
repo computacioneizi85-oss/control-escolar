@@ -4,6 +4,52 @@
 
 <h2>Panel del Maestro</h2>
 
+
+<!-- =========================
+HORARIOS DEL MAESTRO
+========================= -->
+
+{% if horarios %}
+
+<h3>Mis clases</h3>
+
+<table>
+
+<tr>
+<th>Grupo</th>
+<th>Materia</th>
+<th>Día</th>
+<th>Hora</th>
+</tr>
+
+{% for horario in horarios %}
+
+<tr>
+
+<td>{{ horario.grupo }}</td>
+<td>{{ horario.materia }}</td>
+<td>{{ horario.dia }}</td>
+<td>{{ horario.hora }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<br>
+<br>
+
+{% endif %}
+
+
+
+<!-- =========================
+LISTA DE ALUMNOS
+========================= -->
+
+<h3>Lista de alumnos</h3>
+
 <table>
 
 <tr>
@@ -19,7 +65,14 @@
 <tr>
 
 <td>{{ alumno.nombre }}</td>
+
 <td>{{ alumno.grupo }}</td>
+
+
+
+<!-- =========================
+CALIFICACIONES
+========================= -->
 
 <td>
 
@@ -27,9 +80,11 @@
 
 <input type="hidden" name="alumno" value="{{ alumno.nombre }}">
 
-<input type="number" name="cal1" placeholder="C1" required>
-<input type="number" name="cal2" placeholder="C2" required>
-<input type="number" name="cal3" placeholder="C3" required>
+<input type="number" name="cal1" placeholder="C1" min="0" max="10" required>
+
+<input type="number" name="cal2" placeholder="C2" min="0" max="10" required>
+
+<input type="number" name="cal3" placeholder="C3" min="0" max="10" required>
 
 <button type="submit">Guardar</button>
 
@@ -37,6 +92,11 @@
 
 </td>
 
+
+
+<!-- =========================
+ASISTENCIA
+========================= -->
 
 <td>
 
@@ -47,7 +107,9 @@
 <select name="estado">
 
 <option value="asistencia">Asistencia</option>
+
 <option value="retardo">Retardo</option>
+
 <option value="falta">Falta</option>
 
 </select>
@@ -59,13 +121,18 @@
 </td>
 
 
+
+<!-- =========================
+REPORTE DISCIPLINARIO
+========================= -->
+
 <td>
 
 <form action="/crear_reporte" method="POST">
 
 <input type="hidden" name="alumno" value="{{ alumno.nombre }}">
 
-<input type="text" name="comentario" placeholder="Comentario">
+<input type="text" name="comentario" placeholder="Comentario" required>
 
 <button type="submit">Enviar</button>
 

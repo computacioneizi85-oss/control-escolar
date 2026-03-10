@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, session
-from database.mongo import alumnos, maestros, reportes
+from database.mongo import alumnos, maestros, reportes, horarios
 from datetime import datetime
 
 maestro_bp = Blueprint("maestro", __name__)
@@ -32,14 +32,28 @@ def panel_maestro():
 
     maestro = maestros.find_one({"usuario": session["usuario"]})
 
+    if not maestro:
+        return redirect("/")
+
+    # grupos asignados al maestro
     grupos = maestro.get("grupos", [])
 
+    # buscar horarios del maestro
+    lista_horarios = list(horarios.find({"maestro": maestro["nombre"]}))
+
+    # si el maestro tiene horarios usar esos grupos
+    if lista_horarios:
+        grupos_horario = [h["grupo"] for h in lista_horarios]
+        grupos = list(set(grupos + grupos_horario))
+
+    # buscar alumnos de esos grupos
     lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
 
     return render_template(
         "panel_maestro.html",
         alumnos=lista_alumnos,
-        grupos=grupos
+        grupos=grupos,
+        horarios=lista_horarios
     )
 
 
