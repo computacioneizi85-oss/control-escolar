@@ -266,6 +266,16 @@ def crear_materia():
 
     return redirect("/materias")
 
+@admin_bp.route("/eliminar_materia/<id>")
+def eliminar_materia(id):
+
+    if not verificar_admin():
+        return redirect("/")
+
+    materias.delete_one({"_id": ObjectId(id)})
+
+    return redirect("/materias")
+
 
 @admin_bp.route("/eliminar_materia/<id>")
 def eliminar_materia(id):
