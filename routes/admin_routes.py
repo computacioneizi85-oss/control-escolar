@@ -50,7 +50,7 @@ def admin_dashboard():
 
 
 # =========================
-# ALUMNOS (CON FILTROS)
+# ALUMNOS
 # =========================
 
 @admin_bp.route("/alumnos")
@@ -64,11 +64,9 @@ def ver_alumnos():
 
     filtro = {}
 
-    # filtro por grupo
     if grupo and grupo != "":
         filtro["grupo"] = grupo
 
-    # filtro por maestro
     if maestro and maestro != "":
         maestro_doc = maestros.find_one({"nombre": maestro})
 
@@ -158,6 +156,22 @@ def crear_maestro():
 
     return redirect("/maestros")
 
+
+@admin_bp.route("/eliminar_maestro/<id>")
+def eliminar_maestro(id):
+
+    if not verificar_admin():
+        return redirect("/")
+
+    maestros.delete_one({"_id": ObjectId(id)})
+
+    return redirect("/maestros")
+
+
+# =========================
+# ASIGNAR GRUPO A MAESTRO
+# =========================
+
 @admin_bp.route("/asignar_grupo_maestro", methods=["POST"])
 def asignar_grupo_maestro():
 
@@ -171,17 +185,6 @@ def asignar_grupo_maestro():
         {"_id": ObjectId(maestro_id)},
         {"$addToSet": {"grupos": grupo}}
     )
-
-    return redirect("/maestros")
-
-
-@admin_bp.route("/eliminar_maestro/<id>")
-def eliminar_maestro(id):
-
-    if not verificar_admin():
-        return redirect("/")
-
-    maestros.delete_one({"_id": ObjectId(id)})
 
     return redirect("/maestros")
 
@@ -263,16 +266,6 @@ def crear_materia():
         "nombre": nombre,
         "grupo": grupo
     })
-
-    return redirect("/materias")
-
-@admin_bp.route("/eliminar_materia/<id>")
-def eliminar_materia(id):
-
-    if not verificar_admin():
-        return redirect("/")
-
-    materias.delete_one({"_id": ObjectId(id)})
 
     return redirect("/materias")
 
