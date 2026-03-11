@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 from database.mongo import alumnos, grupos, materias, maestros, reportes, configuracion
 from pdf.generador import generar_kardex, generar_boleta
 from database.mongo import alumnos, grupos, materias, maestros, reportes, configuracion, horarios
+from pdf.generador import generar_citatorio_pdf
 
 from database.mongo import citatorios
 
@@ -595,5 +596,25 @@ def crear_citatorio():
         "estado": "pendiente"
 
     })
+
+    return redirect("/citatorios")
+
+@admin_bp.route("/generar_citatorio/<id>")
+def generar_citatorio(id):
+
+    if not verificar_admin():
+        return redirect("/")
+
+    citatorio = citatorios.find_one({"_id": ObjectId(id)})
+
+    if not citatorio:
+        return redirect("/citatorios")
+
+    ruta_pdf = generar_citatorio_pdf(citatorio)
+
+    citatorios.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"pdf": ruta_pdf}}
+    )
 
     return redirect("/citatorios")

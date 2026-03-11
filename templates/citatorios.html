@@ -45,6 +45,7 @@
 <th>Fecha</th>
 <th>Hora</th>
 <th>Estado</th>
+<th>PDF</th>
 </tr>
 
 {% for c in citatorios %}
@@ -57,6 +58,24 @@
 <td>{{ c.fecha_cita }}</td>
 <td>{{ c.hora }}</td>
 <td>{{ c.estado }}</td>
+
+<td>
+
+{% if c.pdf %}
+
+<a href="/{{ c.pdf }}" target="_blank">
+<button>Descargar</button>
+</a>
+
+{% else %}
+
+<a href="/generar_citatorio/{{ c._id }}">
+<button>Generar PDF</button>
+</a>
+
+{% endif %}
+
+</td>
 
 </tr>
 

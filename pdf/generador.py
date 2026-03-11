@@ -234,3 +234,58 @@ def generar_reporte_pdf(reporte):
     c.save()
 
     return ruta
+
+# ==============================
+# GENERAR CITATORIO
+# ==============================
+
+def generar_citatorio_pdf(citatorio):
+
+    escuela, ciclo, director, direccion, escudo = obtener_config()
+
+    carpeta = "static"
+
+    if not os.path.exists(carpeta):
+        os.makedirs(carpeta)
+
+    ruta = f"{carpeta}/citatorio_{citatorio['_id']}.pdf"
+
+    c = canvas.Canvas(ruta, pagesize=letter)
+
+    # ESCUDO
+    dibujar_escudo(c, escudo)
+
+    # ENCABEZADO
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(140, 750, escuela)
+
+    c.setFont("Helvetica", 12)
+    c.drawString(140, 730, f"Ciclo Escolar: {ciclo}")
+    c.drawString(140, 710, direccion)
+
+    # TITULO
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(230, 670, "CITATORIO A PADRES DE FAMILIA")
+
+    # CONTENIDO
+    c.setFont("Helvetica", 12)
+
+    c.drawString(80, 620, f"Alumno: {citatorio.get('alumno','')}")
+    c.drawString(80, 600, f"Grupo: {citatorio.get('grupo','')}")
+
+    c.drawString(80, 560, "Motivo del citatorio:")
+    c.drawString(80, 540, citatorio.get("motivo",""))
+
+    c.drawString(80, 500, f"Fecha de cita: {citatorio.get('fecha_cita','')}")
+    c.drawString(80, 480, f"Hora: {citatorio.get('hora','')}")
+
+    c.drawString(80, 420, "Se solicita la presencia del padre, madre o tutor")
+    c.drawString(80, 400, "para tratar asuntos relacionados con el alumno.")
+
+    # FIRMA
+    c.drawString(80, 200, "____________________________")
+    c.drawString(80, 180, f"Dirección - {director}")
+
+    c.save()
+
+    return ruta
