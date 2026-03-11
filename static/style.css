@@ -17,6 +17,7 @@ BODY
 body{
 background:#f4f6f8;
 color:#333;
+display:flex;
 }
 
 
@@ -25,47 +26,39 @@ SIDEBAR
 ========================= */
 
 .sidebar{
-
 position:fixed;
 left:0;
 top:0;
-width:230px;
-height:100%;
-
-background:#1f3a5f;
+width:240px;
+height:100vh;
+background:#2c3e50;
 color:white;
-
-padding-top:20px;
-
-display:flex;
-flex-direction:column;
-
+padding:20px;
 }
 
 .sidebar h2{
-
-text-align:center;
-margin-bottom:30px;
-
+margin-bottom:20px;
 }
 
-.sidebar a{
+.sidebar ul{
+list-style:none;
+}
 
+.sidebar ul li{
+margin-bottom:10px;
+}
+
+.sidebar ul li a{
 color:white;
 text-decoration:none;
-
-padding:12px 20px;
-
 display:block;
-
-transition:0.2s;
-
+padding:10px;
+border-radius:5px;
+transition:0.3s;
 }
 
-.sidebar a:hover{
-
-background:#294b78;
-
+.sidebar ul li a:hover{
+background:#34495e;
 }
 
 
@@ -73,37 +66,10 @@ background:#294b78;
 CONTENIDO PRINCIPAL
 ========================= */
 
-.content{
-
-margin-left:230px;
-padding:25px;
-
-min-height:100vh;
-
-}
-
-
-/* =========================
-TOPBAR
-========================= */
-
-.topbar{
-
-background:white;
-padding:12px 20px;
-
-border-radius:6px;
-
-box-shadow:0 2px 5px rgba(0,0,0,0.1);
-
-margin-bottom:20px;
-
-}
-
-.topbar h1{
-
-font-size:20px;
-
+.main-content{
+margin-left:240px;
+padding:20px;
+width:100%;
 }
 
 
@@ -112,16 +78,89 @@ TITULOS
 ========================= */
 
 h1{
-margin-bottom:15px;
+margin-bottom:20px;
 }
 
 h2{
-margin-top:15px;
+margin-bottom:15px;
+}
+
+
+/* =========================
+TARJETAS GENERALES
+========================= */
+
+.card{
+background:white;
+padding:20px;
+border-radius:8px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+margin-bottom:20px;
+}
+
+
+/* =========================
+DASHBOARD ESTADISTICAS
+========================= */
+
+.dashboard-stats{
+display:flex;
+gap:20px;
+flex-wrap:wrap;
+}
+
+.stat{
+flex:1;
+min-width:180px;
+background:white;
+padding:20px;
+border-radius:8px;
+text-align:center;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.stat h3{
 margin-bottom:10px;
 }
 
-h3{
-margin-bottom:10px;
+.stat p{
+font-size:22px;
+font-weight:bold;
+}
+
+
+/* =========================
+ACCESOS RAPIDOS
+========================= */
+
+.accesos-rapidos{
+display:flex;
+gap:20px;
+flex-wrap:wrap;
+}
+
+.acceso{
+flex:1;
+min-width:200px;
+background:white;
+padding:20px;
+border-radius:8px;
+text-align:center;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.acceso button{
+margin-top:10px;
+padding:8px 15px;
+border:none;
+background:#2c3e50;
+color:white;
+border-radius:5px;
+cursor:pointer;
+}
+
+.acceso button:hover{
+background:#34495e;
 }
 
 
@@ -130,61 +169,27 @@ FORMULARIOS
 ========================= */
 
 form{
-
-background:white;
-
-padding:12px;
-
-border-radius:6px;
-
-box-shadow:0 1px 3px rgba(0,0,0,0.1);
-
-margin-bottom:15px;
-
-display:flex;
-flex-wrap:wrap;
-gap:8px;
-
-align-items:center;
-
+margin-top:10px;
 }
 
-input{
-
-padding:6px 8px;
+input, select{
+padding:8px;
 border:1px solid #ccc;
-border-radius:4px;
-
-}
-
-select{
-
-padding:6px 8px;
-border:1px solid #ccc;
-border-radius:4px;
-
+border-radius:5px;
+margin-right:10px;
 }
 
 button{
-
-padding:7px 12px;
-
-border:none;
-border-radius:4px;
-
-background:#1f3a5f;
+padding:8px 15px;
+background:#2c3e50;
 color:white;
-
+border:none;
+border-radius:5px;
 cursor:pointer;
-
-transition:0.2s;
-
 }
 
 button:hover{
-
-background:#294b78;
-
+background:#34495e;
 }
 
 
@@ -193,167 +198,23 @@ TABLAS
 ========================= */
 
 table{
-
 width:100%;
 border-collapse:collapse;
-
-background:white;
-
-box-shadow:0 2px 4px rgba(0,0,0,0.1);
-
-border-radius:6px;
-
-overflow:hidden;
-
+margin-top:10px;
 }
 
 table th{
-
-background:#1f3a5f;
+background:#2c3e50;
 color:white;
-
 padding:10px;
-
 text-align:left;
-
-font-size:14px;
-
 }
 
 table td{
-
-padding:8px;
-
-border-bottom:1px solid #eee;
-
-font-size:14px;
-
+padding:10px;
+border-bottom:1px solid #ddd;
 }
 
 table tr:hover{
-
-background:#f2f2f2;
-
-}
-
-
-/* =========================
-BOTONES ESPECIALES
-========================= */
-
-button[style*="red"]{
-
-background:#c0392b;
-
-}
-
-button[style*="red"]:hover{
-
-background:#e74c3c;
-
-}
-
-
-/* =========================
-FILTROS
-========================= */
-
-.filtros{
-
-margin-bottom:15px;
-
-}
-
-
-/* =========================
-DASHBOARD CARDS COMPACTAS
-========================= */
-
-.dashboard{
-
-display:grid;
-
-grid-template-columns:repeat(auto-fit, minmax(150px,1fr));
-
-gap:12px;
-
-margin-bottom:20px;
-
-}
-
-.card{
-
-background:white;
-
-padding:12px;
-
-border-radius:6px;
-
-box-shadow:0 2px 4px rgba(0,0,0,0.08);
-
-text-align:center;
-
-min-height:70px;
-
-display:flex;
-flex-direction:column;
-justify-content:center;
-
-}
-
-.card h3{
-
-font-size:15px;
-
-margin-bottom:4px;
-
-color:#555;
-
-}
-
-.card p{
-
-font-size:20px;
-
-font-weight:bold;
-
-color:#1f3a5f;
-
-}
-
-
-/* =========================
-RESPONSIVE
-========================= */
-
-@media (max-width:900px){
-
-.sidebar{
-
-width:180px;
-
-}
-
-.content{
-
-margin-left:180px;
-
-}
-
-}
-
-@media (max-width:600px){
-
-.sidebar{
-
-display:none;
-
-}
-
-.content{
-
-margin-left:0;
-
-}
-
+background:#f1f1f1;
 }
