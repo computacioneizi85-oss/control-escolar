@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
 <title>Dashboard Dirección</title>
 
 <style>
+
+/* ===== RESET ===== */
 
 *{
 margin:0;
@@ -13,13 +16,16 @@ box-sizing:border-box;
 font-family:Arial, Helvetica, sans-serif;
 }
 
+/* ===== BODY ===== */
+
 body{
 display:flex;
 height:100vh;
-background:#f4f6f9;
+background:#e9eef4;
 }
 
-/* SIDEBAR */
+
+/* ===== SIDEBAR ===== */
 
 .sidebar{
 width:220px;
@@ -30,7 +36,7 @@ padding-top:20px;
 
 .sidebar h2{
 text-align:center;
-margin-bottom:20px;
+margin-bottom:25px;
 }
 
 .sidebar a{
@@ -39,13 +45,15 @@ padding:15px 20px;
 color:white;
 text-decoration:none;
 border-bottom:1px solid rgba(255,255,255,0.1);
+transition:0.3s;
 }
 
 .sidebar a:hover{
 background:#34495e;
 }
 
-/* CONTENIDO */
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
 
 .main{
 flex:1;
@@ -53,15 +61,20 @@ display:flex;
 flex-direction:column;
 }
 
-/* HEADER */
+
+/* ===== HEADER ===== */
 
 .header{
-background:#34495e;
-color:white;
-padding:15px 20px;
+background:white;
+padding:18px 25px;
 display:flex;
 justify-content:space-between;
 align-items:center;
+box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.header h2{
+color:#333;
 }
 
 .logout{
@@ -69,14 +82,20 @@ background:#e74c3c;
 color:white;
 padding:8px 14px;
 text-decoration:none;
-border-radius:4px;
+border-radius:6px;
+font-size:14px;
 }
 
-/* CONTENIDO */
+
+/* ===== CONTENIDO ===== */
 
 .content{
 padding:30px;
+overflow:auto;
 }
+
+
+/* ===== TARJETAS ===== */
 
 .cards{
 display:flex;
@@ -88,31 +107,97 @@ margin-bottom:30px;
 flex:1;
 background:white;
 padding:20px;
-border-radius:6px;
-box-shadow:0 2px 5px rgba(0,0,0,0.1);
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.08);
+transition:0.3s;
+}
+
+.card:hover{
+transform:translateY(-3px);
 }
 
 .card h3{
-margin-bottom:10px;
+margin-bottom:8px;
+color:#555;
 }
 
-/* TABLA */
+.card p{
+font-size:28px;
+font-weight:bold;
+color:#2c3e50;
+}
+
+
+/* ===== FORMULARIO ===== */
+
+form{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+}
+
+form input{
+padding:10px;
+border-radius:6px;
+border:1px solid #ccc;
+flex:1;
+}
+
+form button{
+background:#3498db;
+border:none;
+color:white;
+padding:10px 16px;
+border-radius:6px;
+cursor:pointer;
+}
+
+form button:hover{
+background:#2980b9;
+}
+
+
+/* ===== TABLA ===== */
 
 table{
 width:100%;
 border-collapse:collapse;
 background:white;
+border-radius:10px;
+overflow:hidden;
+box-shadow:0 3px 10px rgba(0,0,0,0.08);
 }
 
 th,td{
 padding:12px;
-border-bottom:1px solid #ddd;
+border-bottom:1px solid #eee;
 text-align:left;
 }
 
 th{
-background:#34495e;
+background:#2c3e50;
 color:white;
+font-size:14px;
+}
+
+tr:hover{
+background:#f8f9fa;
+}
+
+
+/* ===== BOTON ELIMINAR ===== */
+
+table a{
+background:#e74c3c;
+color:white;
+padding:6px 10px;
+border-radius:5px;
+text-decoration:none;
+font-size:13px;
+}
+
+table a:hover{
+background:#c0392b;
 }
 
 </style>
@@ -158,6 +243,7 @@ color:white;
 
 <div class="content">
 
+
 <!-- TARJETAS -->
 
 <div class="cards">
@@ -184,6 +270,7 @@ color:white;
 
 <br>
 
+
 <form action="/agregar_alumno" method="post">
 
 <input type="text" name="nombre" placeholder="Nombre del alumno" required>
@@ -191,8 +278,6 @@ color:white;
 <button type="submit">Agregar alumno</button>
 
 </form>
-
-<br><br>
 
 
 <table>
