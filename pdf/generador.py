@@ -35,6 +35,29 @@ def obtener_config():
 
 
 # ==============================
+# FUNCION PARA DIBUJAR ESCUDO
+# ==============================
+
+def dibujar_escudo(c, escudo):
+
+    if escudo:
+
+        ruta_escudo = os.path.abspath(escudo)
+
+        if os.path.exists(ruta_escudo):
+
+            logo = ImageReader(ruta_escudo)
+
+            c.drawImage(
+                logo,
+                40,
+                700,
+                width=80,
+                height=80
+            )
+
+
+# ==============================
 # GENERAR KARDEX
 # ==============================
 
@@ -52,21 +75,9 @@ def generar_kardex(nombre):
     c = canvas.Canvas(ruta, pagesize=letter)
 
     # ESCUDO
-
-    if escudo and os.path.exists(escudo):
-
-        logo = ImageReader(escudo)
-
-        c.drawImage(
-            logo,
-            40,
-            700,
-            width=80,
-            height=80
-        )
+    dibujar_escudo(c, escudo)
 
     # ENCABEZADO
-
     c.setFont("Helvetica-Bold", 16)
     c.drawString(140, 750, escuela)
 
@@ -75,17 +86,14 @@ def generar_kardex(nombre):
     c.drawString(140, 710, direccion)
 
     # TITULO
-
     c.setFont("Helvetica-Bold", 14)
     c.drawString(230, 670, "KARDEX ACADÉMICO")
 
     # ALUMNO
-
     c.setFont("Helvetica", 12)
     c.drawString(80, 630, f"Alumno: {nombre}")
 
     # TABLA
-
     c.drawString(80, 590, "Materia")
     c.drawString(350, 590, "Calificación")
 
@@ -104,7 +112,6 @@ def generar_kardex(nombre):
         y -= 25
 
     # FIRMA
-
     c.drawString(80, 120, f"Director: {director}")
 
     c.save()
@@ -130,21 +137,9 @@ def generar_boleta(nombre):
     c = canvas.Canvas(ruta, pagesize=letter)
 
     # ESCUDO
-
-    if escudo and os.path.exists(escudo):
-
-        logo = ImageReader(escudo)
-
-        c.drawImage(
-            logo,
-            40,
-            700,
-            width=80,
-            height=80
-        )
+    dibujar_escudo(c, escudo)
 
     # ENCABEZADO
-
     c.setFont("Helvetica-Bold", 16)
     c.drawString(140, 750, escuela)
 
@@ -153,17 +148,14 @@ def generar_boleta(nombre):
     c.drawString(140, 710, direccion)
 
     # TITULO
-
     c.setFont("Helvetica-Bold", 14)
     c.drawString(220, 670, "BOLETA DE CALIFICACIONES")
 
     # ALUMNO
-
     c.setFont("Helvetica", 12)
     c.drawString(80, 630, f"Alumno: {nombre}")
 
     # TABLA
-
     c.drawString(80, 590, "Materia")
     c.drawString(350, 590, "Calificación")
 
@@ -182,7 +174,6 @@ def generar_boleta(nombre):
         y -= 25
 
     # FIRMA
-
     c.drawString(80, 120, f"Director: {director}")
 
     c.save()
@@ -208,21 +199,9 @@ def generar_reporte_pdf(reporte):
     c = canvas.Canvas(ruta, pagesize=letter)
 
     # ESCUDO
-
-    if escudo and os.path.exists(escudo):
-
-        logo = ImageReader(escudo)
-
-        c.drawImage(
-            logo,
-            40,
-            700,
-            width=80,
-            height=80
-        )
+    dibujar_escudo(c, escudo)
 
     # ENCABEZADO
-
     c.setFont("Helvetica-Bold", 16)
     c.drawString(140, 750, escuela)
 
@@ -231,12 +210,10 @@ def generar_reporte_pdf(reporte):
     c.drawString(140, 710, direccion)
 
     # TITULO
-
     c.setFont("Helvetica-Bold", 14)
     c.drawString(200, 670, "REPORTE DISCIPLINARIO")
 
     # CONTENIDO
-
     c.setFont("Helvetica", 12)
 
     c.drawString(80, 620, f"Alumno: {reporte.get('alumno','')}")
@@ -246,7 +223,6 @@ def generar_reporte_pdf(reporte):
     c.drawString(80, 540, "Estado: Autorizado")
 
     # FIRMA
-
     c.drawString(80, 120, f"Director: {director}")
 
     c.save()
