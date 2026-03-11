@@ -305,9 +305,23 @@ def aprobar_reporte(id):
     if not verificar_admin():
         return redirect("/")
 
+    reporte = reportes.find_one({"_id": ObjectId(id)})
+
+    if not reporte:
+        return redirect("/reportes")
+
+    from pdf.generador import generar_reporte_pdf
+
+    ruta_pdf = generar_reporte_pdf(reporte)
+
     reportes.update_one(
         {"_id": ObjectId(id)},
-        {"$set": {"estatus": "aprobado"}}
+        {
+            "$set": {
+                "estatus": "aprobado",
+                "pdf": ruta_pdf
+            }
+        }
     )
 
     return redirect("/reportes")

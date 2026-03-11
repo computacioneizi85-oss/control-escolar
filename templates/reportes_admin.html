@@ -42,12 +42,11 @@
 
 {% else %}
 
-<a href="/static/reporte_{{ r._id }}.pdf" target="_blank">
+<a href="{{ r.pdf }}" target="_blank">
 <button>Descargar PDF</button>
 </a>
 
 {% endif %}
-
 </td>
 
 </tr>
