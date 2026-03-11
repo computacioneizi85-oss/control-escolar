@@ -370,9 +370,9 @@ def guardar_configuracion():
 
         ruta = os.path.join(carpeta, nombre_archivo)
 
-        archivo.save(ruta)
+	archivo.save(ruta)
 
-        escudo_path = ruta
+	escudo_path = os.path.abspath(ruta)
 
     datos = {
         "escuela": escuela,
