@@ -7,6 +7,8 @@ from database.mongo import alumnos, grupos, materias, maestros, reportes, config
 from pdf.generador import generar_kardex, generar_boleta
 from database.mongo import alumnos, grupos, materias, maestros, reportes, configuracion, horarios
 
+from database.mongo import citatorios
+
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -550,3 +552,48 @@ def ver_asistencias():
         grupos=lista_grupos,
         maestros=lista_maestros
     )
+
+# =========================
+# CITATORIOS
+# =========================
+
+@admin_bp.route("/citatorios")
+def ver_citatorios():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    lista_citatorios = list(citatorios.find())
+    lista_alumnos = list(alumnos.find())
+
+    return render_template(
+        "citatorios.html",
+        citatorios=lista_citatorios,
+        alumnos=lista_alumnos
+    )
+
+
+@admin_bp.route("/crear_citatorio", methods=["POST"])
+def crear_citatorio():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    alumno = request.form.get("alumno")
+    grupo = request.form.get("grupo")
+    motivo = request.form.get("motivo")
+    fecha = request.form.get("fecha")
+    hora = request.form.get("hora")
+
+    citatorios.insert_one({
+
+        "alumno": alumno,
+        "grupo": grupo,
+        "motivo": motivo,
+        "fecha_cita": fecha,
+        "hora": hora,
+        "estado": "pendiente"
+
+    })
+
+    return redirect("/citatorios")

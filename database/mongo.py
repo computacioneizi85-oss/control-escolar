@@ -21,3 +21,5 @@ calificaciones = db["calificaciones"]
 configuracion = db["configuracion"]
 
 horarios = db["horarios"]
+
+citatorios = db["citatorios"]

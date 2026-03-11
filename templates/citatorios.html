@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>Citatorios a Padres de Familia</h2>
+
+<h3>Generar citatorio</h3>
+
+<form action="/crear_citatorio" method="POST">
+
+<select name="alumno">
+
+{% for alumno in alumnos %}
+
+<option value="{{ alumno.nombre }}">
+{{ alumno.nombre }} - {{ alumno.grupo }}
+</option>
+
+{% endfor %}
+
+</select>
+
+<input type="text" name="grupo" placeholder="Grupo" required>
+
+<input type="text" name="motivo" placeholder="Motivo del citatorio" required>
+
+<input type="date" name="fecha" required>
+
+<input type="time" name="hora" required>
+
+<button type="submit">Guardar citatorio</button>
+
+</form>
+
+<br><br>
+
+<h3>Citatorios registrados</h3>
+
+<table>
+
+<tr>
+<th>Alumno</th>
+<th>Grupo</th>
+<th>Motivo</th>
+<th>Fecha</th>
+<th>Hora</th>
+<th>Estado</th>
+</tr>
+
+{% for c in citatorios %}
+
+<tr>
+
+<td>{{ c.alumno }}</td>
+<td>{{ c.grupo }}</td>
+<td>{{ c.motivo }}</td>
+<td>{{ c.fecha_cita }}</td>
+<td>{{ c.hora }}</td>
+<td>{{ c.estado }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}

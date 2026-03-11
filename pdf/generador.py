@@ -42,19 +42,25 @@ def dibujar_escudo(c, escudo):
 
     if escudo:
 
-        ruta_escudo = os.path.abspath(escudo)
+        # convertir ruta relativa a ruta real del servidor
+        ruta_escudo = os.path.join(os.getcwd(), escudo)
 
         if os.path.exists(ruta_escudo):
 
-            logo = ImageReader(ruta_escudo)
+            try:
 
-            c.drawImage(
-                logo,
-                40,
-                700,
-                width=80,
-                height=80
-            )
+                logo = ImageReader(ruta_escudo)
+
+                c.drawImage(
+                    logo,
+                    40,
+                    700,
+                    width=80,
+                    height=80
+                )
+
+            except:
+                pass
 
 
 # ==============================
