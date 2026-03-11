@@ -1,43 +1,59 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Reportes Disciplinarios</title>
-</head>
-<body>
+{% extends "layout.html" %}
+
+{% block content %}
 
 <h2>Reportes Disciplinarios</h2>
-<a href="/admin">Volver</a>
 
-<table border="1">
+<a href="/admin">
+<button>Volver</button>
+</a>
+
+<br><br>
+
+<table>
+
 <tr>
 <th>Alumno</th>
-<th>Grupo</th>
-<th>Motivo</th>
+<th>Maestro</th>
+<th>Comentario</th>
 <th>Estado</th>
 <th>Acción</th>
 </tr>
 
 {% for r in reportes %}
+
 <tr>
-<td>{{ r.nombre_alumno }}</td>
-<td>{{ r.grupo }}</td>
-<td>{{ r.motivo }}</td>
-<td>{{ r.estado }}</td>
+
+<td>{{ r.alumno }}</td>
+
+<td>{{ r.maestro }}</td>
+
+<td>{{ r.comentario }}</td>
+
+<td>{{ r.estatus }}</td>
+
 <td>
-{% if r.estado == "Pendiente" %}
-<a href="/autorizar_reporte/{{ r._id }}">
+
+{% if r.estatus == "pendiente" %}
+
+<a href="/aprobar_reporte/{{ r._id }}">
 <button>Autorizar</button>
 </a>
+
 {% else %}
+
 <a href="/static/reporte_{{ r._id }}.pdf" target="_blank">
 <button>Descargar PDF</button>
 </a>
+
 {% endif %}
+
 </td>
+
 </tr>
+
 {% endfor %}
 
 </table>
 
-</body>
-</html>
+{% endblock %}

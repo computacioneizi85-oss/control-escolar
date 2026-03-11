@@ -299,6 +299,18 @@ def ver_reportes():
         reportes=lista_reportes
     )
 
+@admin_bp.route("/aprobar_reporte/<id>")
+def aprobar_reporte(id):
+
+    if not verificar_admin():
+        return redirect("/")
+
+    reportes.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"estatus": "aprobado"}}
+    )
+
+    return redirect("/reportes")
 
 # =========================
 # CONFIGURACIÓN ESCOLAR
