@@ -492,3 +492,35 @@ def asistencias_admin():
         maestros=lista_maestros,
         grupos=lista_grupos
     )
+
+# =========================
+# REPORTE DE ASISTENCIAS
+# =========================
+
+@admin_bp.route("/asistencias")
+def ver_asistencias():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    grupo = request.args.get("grupo")
+    alumno = request.args.get("alumno")
+
+    filtro = {}
+
+    if grupo and grupo != "":
+        filtro["grupo"] = grupo
+
+    if alumno and alumno != "":
+        filtro["nombre"] = {"$regex": alumno, "$options": "i"}
+
+    lista_alumnos = list(alumnos.find(filtro))
+    lista_grupos = list(grupos.find())
+    lista_maestros = list(maestros.find())
+
+    return render_template(
+        "asistencias_admin.html",
+        alumnos=lista_alumnos,
+        grupos=lista_grupos,
+        maestros=lista_maestros
+    )

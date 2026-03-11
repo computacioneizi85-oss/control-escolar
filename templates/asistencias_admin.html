@@ -2,34 +2,32 @@
 
 {% block content %}
 
-<h2>Reporte de asistencias</h2>
+<h2>Reporte de Asistencias</h2>
 
 <form method="GET">
 
 <select name="grupo">
-<option value="">Grupo</option>
+
+<option value="">Todos los grupos</option>
 
 {% for grupo in grupos %}
-<option value="{{ grupo.nombre }}">{{ grupo.nombre }}</option>
+
+<option value="{{ grupo.nombre }}">
+{{ grupo.nombre }}
+</option>
+
 {% endfor %}
 
 </select>
 
-<select name="maestro">
-<option value="">Maestro</option>
 
-{% for maestro in maestros %}
-<option value="{{ maestro.nombre }}">{{ maestro.nombre }}</option>
-{% endfor %}
-
-</select>
-
-<input type="text" name="alumno" placeholder="Alumno">
+<input type="text" name="alumno" placeholder="Buscar alumno">
 
 <button type="submit">Filtrar</button>
 
 </form>
 
+<br>
 
 <table>
 
@@ -44,14 +42,17 @@
 
 {% if alumno.asistencias %}
 
-{% for a in alumno.asistencias %}
+{% for asistencia in alumno.asistencias %}
 
 <tr>
 
 <td>{{ alumno.nombre }}</td>
+
 <td>{{ alumno.grupo }}</td>
-<td>{{ a.fecha }}</td>
-<td>{{ a.estado }}</td>
+
+<td>{{ asistencia.fecha }}</td>
+
+<td>{{ asistencia.estado }}</td>
 
 </tr>
 
