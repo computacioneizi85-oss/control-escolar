@@ -22,7 +22,9 @@ width:230px;
 background:#2c3e50;
 color:white;
 position:fixed;
-height:100%;
+left:0;
+top:0;
+height:100vh;
 padding-top:20px;
 }
 
@@ -42,96 +44,85 @@ text-decoration:none;
 background:#34495e;
 }
 
-/* MAIN */
-
-.main{
-margin-left:230px;
-width:100%;
-}
-
-/* HEADER */
-
-.header{
-background:white;
-padding:18px 30px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
-
-.logout{
-background:#e74c3c;
-color:white;
-padding:8px 14px;
-border-radius:6px;
-text-decoration:none;
-}
-
-/* CONTENIDO */
+/* CONTENIDO PRINCIPAL */
 
 .content{
+margin-left:230px;
 padding:30px;
+width:calc(100% - 230px);
+max-width:1200px;
+}
+
+/* TITULOS */
+
+h1{
+margin-bottom:20px;
+}
+
+h2{
+margin-top:20px;
+margin-bottom:10px;
 }
 
 /* TARJETAS */
 
 .cards{
 display:grid;
-grid-template-columns:repeat(4,1fr);
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
 gap:20px;
-margin-bottom:30px;
+margin-bottom:25px;
 }
 
 .card{
 background:white;
 padding:20px;
-border-radius:8px;
+border-radius:10px;
 box-shadow:0 3px 8px rgba(0,0,0,0.08);
-}
-
-.card h3{
-font-size:14px;
-margin-bottom:10px;
-color:#666;
-}
-
-.card p{
-font-size:26px;
-font-weight:bold;
-}
-
-/* ACCESOS */
-
-.quick-actions{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:20px;
-margin-bottom:30px;
-}
-
-.action{
-background:white;
-padding:18px;
-border-radius:8px;
 text-align:center;
-box-shadow:0 2px 6px rgba(0,0,0,0.08);
+}
+
+.small-card p{
+font-size:28px;
+font-weight:bold;
+margin-top:5px;
+}
+
+/* BOTONES */
+
+.btn{
+background:#3498db;
+border:none;
+color:white;
+padding:8px 14px;
+border-radius:6px;
 cursor:pointer;
 }
 
-.action:hover{
-background:#f1f1f1;
+.btn:hover{
+background:#2980b9;
 }
 
-/* TABLAS */
+/* FORM */
+
+form{
+margin-top:10px;
+margin-bottom:20px;
+}
+
+select{
+padding:6px;
+margin-right:10px;
+}
+
+/* TABLA */
 
 table{
 width:100%;
 border-collapse:collapse;
 background:white;
-box-shadow:0 3px 8px rgba(0,0,0,0.08);
-border-radius:6px;
+border-radius:10px;
 overflow:hidden;
+box-shadow:0 3px 8px rgba(0,0,0,0.08);
 }
 
 th{
@@ -148,18 +139,4 @@ border-bottom:1px solid #eee;
 
 tr:hover{
 background:#f8f8f8;
-}
-
-/* RESPONSIVE */
-
-@media(max-width:1000px){
-
-.cards{
-grid-template-columns:repeat(2,1fr);
-}
-
-.quick-actions{
-grid-template-columns:repeat(2,1fr);
-}
-
 }
