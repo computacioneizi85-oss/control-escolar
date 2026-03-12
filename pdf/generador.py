@@ -2,6 +2,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 
+from io import BytesIO
 import os
 
 from database.mongo import configuracion, materias
@@ -35,7 +36,7 @@ def obtener_config():
 
 
 # ==============================
-# FUNCION PARA DIBUJAR ESCUDO
+# DIBUJAR ESCUDO
 # ==============================
 
 def dibujar_escudo(c, escudo):
@@ -63,32 +64,27 @@ def dibujar_escudo(c, escudo):
 
 
 # ==============================
-# CREAR CARPETA PDF
+# CREAR PDF EN MEMORIA
 # ==============================
 
-def crear_carpeta_pdf():
+def crear_pdf():
 
-    carpeta = "pdf_generados"
+    buffer = BytesIO()
 
-    if not os.path.exists(carpeta):
-        os.makedirs(carpeta)
+    c = canvas.Canvas(buffer, pagesize=letter)
 
-    return carpeta
+    return c, buffer
 
 
 # ==============================
-# GENERAR KARDEX
+# KARDEX
 # ==============================
 
 def generar_kardex(nombre):
 
     escuela, ciclo, director, direccion, escudo = obtener_config()
 
-    carpeta = crear_carpeta_pdf()
-
-    ruta = f"{carpeta}/kardex_{nombre}.pdf"
-
-    c = canvas.Canvas(ruta, pagesize=letter)
+    c, buffer = crear_pdf()
 
     dibujar_escudo(c, escudo)
 
@@ -114,11 +110,8 @@ def generar_kardex(nombre):
 
     for materia in lista_materias:
 
-        nombre_materia = materia.get("nombre", "")
-        calificacion = "—"
-
-        c.drawString(80, y, nombre_materia)
-        c.drawString(350, y, calificacion)
+        c.drawString(80, y, materia.get("nombre", ""))
+        c.drawString(350, y, "—")
 
         y -= 25
 
@@ -126,22 +119,20 @@ def generar_kardex(nombre):
 
     c.save()
 
-    return ruta
+    buffer.seek(0)
+
+    return buffer
 
 
 # ==============================
-# GENERAR BOLETA
+# BOLETA
 # ==============================
 
 def generar_boleta(nombre):
 
     escuela, ciclo, director, direccion, escudo = obtener_config()
 
-    carpeta = crear_carpeta_pdf()
-
-    ruta = f"{carpeta}/boleta_{nombre}.pdf"
-
-    c = canvas.Canvas(ruta, pagesize=letter)
+    c, buffer = crear_pdf()
 
     dibujar_escudo(c, escudo)
 
@@ -167,11 +158,8 @@ def generar_boleta(nombre):
 
     for materia in lista_materias:
 
-        nombre_materia = materia.get("nombre", "")
-        calificacion = "—"
-
-        c.drawString(80, y, nombre_materia)
-        c.drawString(350, y, calificacion)
+        c.drawString(80, y, materia.get("nombre", ""))
+        c.drawString(350, y, "—")
 
         y -= 25
 
@@ -179,22 +167,20 @@ def generar_boleta(nombre):
 
     c.save()
 
-    return ruta
+    buffer.seek(0)
+
+    return buffer
 
 
 # ==============================
-# GENERAR REPORTE DISCIPLINARIO
+# REPORTE DISCIPLINARIO
 # ==============================
 
 def generar_reporte_pdf(reporte):
 
     escuela, ciclo, director, direccion, escudo = obtener_config()
 
-    carpeta = crear_carpeta_pdf()
-
-    ruta = f"{carpeta}/reporte_{reporte['_id']}.pdf"
-
-    c = canvas.Canvas(ruta, pagesize=letter)
+    c, buffer = crear_pdf()
 
     dibujar_escudo(c, escudo)
 
@@ -220,22 +206,20 @@ def generar_reporte_pdf(reporte):
 
     c.save()
 
-    return ruta
+    buffer.seek(0)
+
+    return buffer
 
 
 # ==============================
-# GENERAR CITATORIO
+# CITATORIO
 # ==============================
 
 def generar_citatorio_pdf(citatorio):
 
     escuela, ciclo, director, direccion, escudo = obtener_config()
 
-    carpeta = crear_carpeta_pdf()
-
-    ruta = f"{carpeta}/citatorio_{citatorio['_id']}.pdf"
-
-    c = canvas.Canvas(ruta, pagesize=letter)
+    c, buffer = crear_pdf()
 
     dibujar_escudo(c, escudo)
 
@@ -268,4 +252,6 @@ def generar_citatorio_pdf(citatorio):
 
     c.save()
 
-    return ruta
+    buffer.seek(0)
+
+    return buffer

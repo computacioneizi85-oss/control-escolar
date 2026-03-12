@@ -78,21 +78,17 @@ def aprobar_reporte(id):
     if not reporte:
         return redirect("/reportes")
 
-    ruta_pdf = generar_reporte_pdf(reporte)
+    pdf_buffer = generar_reporte_pdf(reporte)
 
     reportes.update_one(
         {"_id": ObjectId(id)},
-        {
-            "$set": {
-                "estatus": "aprobado",
-                "pdf": ruta_pdf
-            }
-        }
+        {"$set": {"estatus": "aprobado"}}
     )
 
     return send_file(
-        ruta_pdf,
-        as_attachment=True
+        pdf_buffer,
+        mimetype="application/pdf",
+        download_name="reporte.pdf"
     )
 
 
@@ -106,11 +102,12 @@ def kardex(nombre):
     if not verificar_admin():
         return redirect("/")
 
-    archivo = generar_kardex(nombre)
+    pdf_buffer = generar_kardex(nombre)
 
     return send_file(
-        archivo,
-        as_attachment=True
+        pdf_buffer,
+        mimetype="application/pdf",
+        download_name=f"kardex_{nombre}.pdf"
     )
 
 
@@ -124,11 +121,12 @@ def boleta(nombre):
     if not verificar_admin():
         return redirect("/")
 
-    archivo = generar_boleta(nombre)
+    pdf_buffer = generar_boleta(nombre)
 
     return send_file(
-        archivo,
-        as_attachment=True
+        pdf_buffer,
+        mimetype="application/pdf",
+        download_name=f"boleta_{nombre}.pdf"
     )
 
 
@@ -163,14 +161,15 @@ def generar_citatorio(id):
     if not citatorio:
         return redirect("/citatorios")
 
-    ruta_pdf = generar_citatorio_pdf(citatorio)
+    pdf_buffer = generar_citatorio_pdf(citatorio)
 
     citatorios.update_one(
         {"_id": ObjectId(id)},
-        {"$set": {"pdf": ruta_pdf}}
+        {"$set": {"estado": "generado"}}
     )
 
     return send_file(
-        ruta_pdf,
-        as_attachment=True
+        pdf_buffer,
+        mimetype="application/pdf",
+        download_name="citatorio.pdf"
     )
