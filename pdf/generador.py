@@ -42,7 +42,6 @@ def dibujar_escudo(c, escudo):
 
     if escudo:
 
-        # convertir ruta relativa a ruta real del servidor
         ruta_escudo = os.path.join(os.getcwd(), escudo)
 
         if os.path.exists(ruta_escudo):
@@ -64,6 +63,20 @@ def dibujar_escudo(c, escudo):
 
 
 # ==============================
+# CREAR CARPETA PDF
+# ==============================
+
+def crear_carpeta_pdf():
+
+    carpeta = "pdf_generados"
+
+    if not os.path.exists(carpeta):
+        os.makedirs(carpeta)
+
+    return carpeta
+
+
+# ==============================
 # GENERAR KARDEX
 # ==============================
 
@@ -71,19 +84,14 @@ def generar_kardex(nombre):
 
     escuela, ciclo, director, direccion, escudo = obtener_config()
 
-    carpeta = "pdf_generados"
-
-    if not os.path.exists(carpeta):
-        os.makedirs(carpeta)
+    carpeta = crear_carpeta_pdf()
 
     ruta = f"{carpeta}/kardex_{nombre}.pdf"
 
     c = canvas.Canvas(ruta, pagesize=letter)
 
-    # ESCUDO
     dibujar_escudo(c, escudo)
 
-    # ENCABEZADO
     c.setFont("Helvetica-Bold", 16)
     c.drawString(140, 750, escuela)
 
@@ -91,15 +99,12 @@ def generar_kardex(nombre):
     c.drawString(140, 730, f"Ciclo Escolar: {ciclo}")
     c.drawString(140, 710, direccion)
 
-    # TITULO
     c.setFont("Helvetica-Bold", 14)
     c.drawString(230, 670, "KARDEX ACADÉMICO")
 
-    # ALUMNO
     c.setFont("Helvetica", 12)
     c.drawString(80, 630, f"Alumno: {nombre}")
 
-    # TABLA
     c.drawString(80, 590, "Materia")
     c.drawString(350, 590, "Calificación")
 
@@ -117,7 +122,6 @@ def generar_kardex(nombre):
 
         y -= 25
 
-    # FIRMA
     c.drawString(80, 120, f"Director: {director}")
 
     c.save()
@@ -133,19 +137,14 @@ def generar_boleta(nombre):
 
     escuela, ciclo, director, direccion, escudo = obtener_config()
 
-    carpeta = "pdf_generados"
-
-    if not os.path.exists(carpeta):
-        os.makedirs(carpeta)
+    carpeta = crear_carpeta_pdf()
 
     ruta = f"{carpeta}/boleta_{nombre}.pdf"
 
     c = canvas.Canvas(ruta, pagesize=letter)
 
-    # ESCUDO
     dibujar_escudo(c, escudo)
 
-    # ENCABEZADO
     c.setFont("Helvetica-Bold", 16)
     c.drawString(140, 750, escuela)
 
@@ -153,15 +152,12 @@ def generar_boleta(nombre):
     c.drawString(140, 730, f"Ciclo Escolar: {ciclo}")
     c.drawString(140, 710, direccion)
 
-    # TITULO
     c.setFont("Helvetica-Bold", 14)
     c.drawString(220, 670, "BOLETA DE CALIFICACIONES")
 
-    # ALUMNO
     c.setFont("Helvetica", 12)
     c.drawString(80, 630, f"Alumno: {nombre}")
 
-    # TABLA
     c.drawString(80, 590, "Materia")
     c.drawString(350, 590, "Calificación")
 
@@ -179,7 +175,6 @@ def generar_boleta(nombre):
 
         y -= 25
 
-    # FIRMA
     c.drawString(80, 120, f"Director: {director}")
 
     c.save()
@@ -195,19 +190,14 @@ def generar_reporte_pdf(reporte):
 
     escuela, ciclo, director, direccion, escudo = obtener_config()
 
-    carpeta = "static"
-
-    if not os.path.exists(carpeta):
-        os.makedirs(carpeta)
+    carpeta = crear_carpeta_pdf()
 
     ruta = f"{carpeta}/reporte_{reporte['_id']}.pdf"
 
     c = canvas.Canvas(ruta, pagesize=letter)
 
-    # ESCUDO
     dibujar_escudo(c, escudo)
 
-    # ENCABEZADO
     c.setFont("Helvetica-Bold", 16)
     c.drawString(140, 750, escuela)
 
@@ -215,11 +205,9 @@ def generar_reporte_pdf(reporte):
     c.drawString(140, 730, f"Ciclo Escolar: {ciclo}")
     c.drawString(140, 710, direccion)
 
-    # TITULO
     c.setFont("Helvetica-Bold", 14)
     c.drawString(200, 670, "REPORTE DISCIPLINARIO")
 
-    # CONTENIDO
     c.setFont("Helvetica", 12)
 
     c.drawString(80, 620, f"Alumno: {reporte.get('alumno','')}")
@@ -228,12 +216,12 @@ def generar_reporte_pdf(reporte):
 
     c.drawString(80, 540, "Estado: Autorizado")
 
-    # FIRMA
     c.drawString(80, 120, f"Director: {director}")
 
     c.save()
 
     return ruta
+
 
 # ==============================
 # GENERAR CITATORIO
@@ -243,19 +231,14 @@ def generar_citatorio_pdf(citatorio):
 
     escuela, ciclo, director, direccion, escudo = obtener_config()
 
-    carpeta = "static"
-
-    if not os.path.exists(carpeta):
-        os.makedirs(carpeta)
+    carpeta = crear_carpeta_pdf()
 
     ruta = f"{carpeta}/citatorio_{citatorio['_id']}.pdf"
 
     c = canvas.Canvas(ruta, pagesize=letter)
 
-    # ESCUDO
     dibujar_escudo(c, escudo)
 
-    # ENCABEZADO
     c.setFont("Helvetica-Bold", 16)
     c.drawString(140, 750, escuela)
 
@@ -263,11 +246,9 @@ def generar_citatorio_pdf(citatorio):
     c.drawString(140, 730, f"Ciclo Escolar: {ciclo}")
     c.drawString(140, 710, direccion)
 
-    # TITULO
     c.setFont("Helvetica-Bold", 14)
     c.drawString(230, 670, "CITATORIO A PADRES DE FAMILIA")
 
-    # CONTENIDO
     c.setFont("Helvetica", 12)
 
     c.drawString(80, 620, f"Alumno: {citatorio.get('alumno','')}")
@@ -282,7 +263,6 @@ def generar_citatorio_pdf(citatorio):
     c.drawString(80, 420, "Se solicita la presencia del padre, madre o tutor")
     c.drawString(80, 400, "para tratar asuntos relacionados con el alumno.")
 
-    # FIRMA
     c.drawString(80, 200, "____________________________")
     c.drawString(80, 180, f"Dirección - {director}")
 
