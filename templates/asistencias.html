@@ -7,49 +7,12 @@
 
 <form method="POST" action="/guardar_asistencia">
 
-<select name="alumno">
-
-{% for alumno in alumnos %}
-
-<option value="{{ alumno.id }}">
-{{ alumno.nombre }} {{ alumno.apellido }}
-</option>
-
-{% endfor %}
-
-</select>
-
-<br><br>
-
-<select name="estado">
-<option value="Presente">Presente</option>
-<option value="Ausente">Ausente</option>
-</select>
-
-<br><br>
-
-<button class="btn-green">Guardar</button>
-
-</form>
-
-</div>
-
-
-<br>
-
-
-<!-- LISTA VISUAL DE ALUMNOS CON FOTO -->
-
-<div class="card">
-
-<h3>Alumnos del grupo</h3>
-
 <table>
 
 <tr>
 <th>Foto</th>
 <th>Alumno</th>
-<th>Grupo</th>
+<th>Estado</th>
 </tr>
 
 {% for alumno in alumnos %}
@@ -59,22 +22,42 @@
 <td>
 
 {% if alumno.foto %}
-<img src="{{ alumno.foto }}" width="50" height="50" style="border-radius:50%; object-fit:cover;">
+<img src="{{ alumno.foto }}" width="50" height="50"
+style="border-radius:50%; object-fit:cover;">
 {% else %}
 Sin foto
 {% endif %}
 
 </td>
 
-<td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+<td>
+{{ alumno.nombre }}
+</td>
 
-<td>{{ alumno.grupo }}</td>
+<td>
+
+<select name="estado_{{ alumno._id }}">
+
+<option value="Presente">Presente</option>
+<option value="Ausente">Ausente</option>
+
+</select>
+
+<input type="hidden" name="alumno_{{ alumno._id }}" value="{{ alumno._id }}">
+
+</td>
 
 </tr>
 
 {% endfor %}
 
 </table>
+
+<br>
+
+<button class="btn-green">Guardar asistencia</button>
+
+</form>
 
 </div>
 
