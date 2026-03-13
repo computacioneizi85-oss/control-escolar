@@ -6,7 +6,6 @@ from werkzeug.utils import secure_filename
 from database.mongo import alumnos, grupos, materias, maestros, reportes, configuracion, horarios, citatorios
 from pdf.generador import generar_kardex, generar_boleta, generar_reporte_pdf, generar_citatorio_pdf
 
-
 admin_bp = Blueprint("admin", __name__)
 
 
@@ -35,17 +34,99 @@ def admin_dashboard():
     if not verificar_admin():
         return redirect("/")
 
-    lista_alumnos = list(alumnos.find())
-    lista_grupos = list(grupos.find())
-    lista_maestros = list(maestros.find())
-    lista_reportes = list(reportes.find())
-
     return render_template(
         "admin.html",
-        alumnos=lista_alumnos,
-        grupos=lista_grupos,
-        maestros=lista_maestros,
-        reportes=lista_reportes
+        alumnos=list(alumnos.find()),
+        grupos=list(grupos.find()),
+        maestros=list(maestros.find()),
+        reportes=list(reportes.find())
+    )
+
+
+# =========================
+# ALUMNOS
+# =========================
+
+@admin_bp.route("/alumnos")
+def ver_alumnos():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    return render_template(
+        "alumnos.html",
+        alumnos=list(alumnos.find()),
+        grupos=list(grupos.find()),
+        maestros=list(maestros.find())
+    )
+
+
+# =========================
+# MAESTROS
+# =========================
+
+@admin_bp.route("/maestros")
+def ver_maestros():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    return render_template(
+        "maestros.html",
+        maestros=list(maestros.find()),
+        grupos=list(grupos.find())
+    )
+
+
+# =========================
+# GRUPOS
+# =========================
+
+@admin_bp.route("/grupos")
+def ver_grupos():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    return render_template(
+        "grupos.html",
+        grupos=list(grupos.find())
+    )
+
+
+# =========================
+# MATERIAS
+# =========================
+
+@admin_bp.route("/materias")
+def ver_materias():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    return render_template(
+        "materias.html",
+        materias=list(materias.find()),
+        grupos=list(grupos.find())
+    )
+
+
+# =========================
+# HORARIOS
+# =========================
+
+@admin_bp.route("/horarios")
+def ver_horarios():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    return render_template(
+        "horarios.html",
+        horarios=list(horarios.find()),
+        grupos=list(grupos.find()),
+        materias=list(materias.find()),
+        maestros=list(maestros.find())
     )
 
 
@@ -59,11 +140,9 @@ def ver_reportes():
     if not verificar_admin():
         return redirect("/")
 
-    lista_reportes = list(reportes.find())
-
     return render_template(
         "reportes_admin.html",
-        reportes=lista_reportes
+        reportes=list(reportes.find())
     )
 
 
@@ -93,7 +172,7 @@ def aprobar_reporte(id):
 
 
 # =========================
-# GENERAR KARDEX
+# KARDEX
 # =========================
 
 @admin_bp.route("/kardex/<nombre>")
@@ -112,7 +191,7 @@ def kardex(nombre):
 
 
 # =========================
-# GENERAR BOLETA
+# BOLETA
 # =========================
 
 @admin_bp.route("/boleta/<nombre>")
@@ -140,13 +219,10 @@ def ver_citatorios():
     if not verificar_admin():
         return redirect("/")
 
-    lista_citatorios = list(citatorios.find())
-    lista_alumnos = list(alumnos.find())
-
     return render_template(
         "citatorios.html",
-        citatorios=lista_citatorios,
-        alumnos=lista_alumnos
+        citatorios=list(citatorios.find()),
+        alumnos=list(alumnos.find())
     )
 
 
@@ -172,4 +248,20 @@ def generar_citatorio(id):
         pdf_buffer,
         mimetype="application/pdf",
         download_name="citatorio.pdf"
+    )
+
+
+# =========================
+# CONFIGURACION
+# =========================
+
+@admin_bp.route("/configuracion")
+def ver_configuracion():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    return render_template(
+        "configuracion.html",
+        config=configuracion.find_one()
     )
