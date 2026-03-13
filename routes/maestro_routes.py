@@ -193,3 +193,27 @@ def guardar_asistencia_fecha():
     )
 
     return redirect("/panel_maestro")
+
+@maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])
+def guardar_asistencia_ajax():
+
+    if "rol" not in session:
+        return {"status":"error"}
+
+    alumno = request.form.get("alumno")
+    estado = request.form.get("estado")
+    fecha = request.form.get("fecha")
+
+    alumnos.update_one(
+        {"nombre": alumno},
+        {
+            "$push":{
+                "asistencias":{
+                    "fecha": fecha,
+                    "estado": estado
+                }
+            }
+        }
+    )
+
+    return {"status":"ok"}
