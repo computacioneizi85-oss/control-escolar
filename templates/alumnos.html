@@ -7,7 +7,7 @@
 
 <h2>Registrar alumno</h2>
 
-<form action="/crear_alumno" method="POST">
+<form action="/crear_alumno" method="POST" enctype="multipart/form-data">
 
 <input type="text" name="nombre" placeholder="Nombre del alumno" required>
 
@@ -22,6 +22,8 @@
 {% endfor %}
 
 </select>
+
+<input type="file" name="foto">
 
 <button type="submit">
 Registrar alumno
@@ -89,16 +91,28 @@ FILTROS
 <table>
 
 <tr>
+<th>Foto</th>
 <th>Alumno</th>
 <th>Grupo</th>
 <th>Kardex</th>
 <th>Boleta</th>
+<th>Cambiar foto</th>
 <th>Eliminar</th>
 </tr>
 
 {% for alumno in alumnos %}
 
 <tr>
+
+<td>
+
+{% if alumno.foto %}
+<img src="{{ alumno.foto }}" width="50" height="50" style="border-radius:50%; object-fit:cover;">
+{% else %}
+Sin foto
+{% endif %}
+
+</td>
 
 <td>{{ alumno.nombre }}</td>
 
@@ -114,6 +128,18 @@ FILTROS
 <a href="/boleta/{{ alumno.nombre }}">
 <button>Boleta</button>
 </a>
+</td>
+
+<td>
+
+<form action="/subir_foto_alumno/{{ alumno._id }}" method="POST" enctype="multipart/form-data">
+
+<input type="file" name="foto" required>
+
+<button type="submit">Subir</button>
+
+</form>
+
 </td>
 
 <td>

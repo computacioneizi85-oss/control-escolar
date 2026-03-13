@@ -20,7 +20,6 @@
 
 </select>
 
-
 <input type="text" name="alumno" placeholder="Buscar alumno">
 
 <button type="submit">Filtrar</button>
@@ -32,6 +31,7 @@
 <table>
 
 <tr>
+<th>Foto</th>
 <th>Alumno</th>
 <th>Grupo</th>
 <th>Fecha</th>
@@ -45,6 +45,16 @@
 {% for asistencia in alumno.asistencias %}
 
 <tr>
+
+<td>
+
+{% if alumno.foto %}
+<img src="{{ alumno.foto }}" width="50" height="50" style="border-radius:50%; object-fit:cover;">
+{% else %}
+Sin foto
+{% endif %}
+
+</td>
 
 <td>{{ alumno.nombre }}</td>
 

@@ -62,6 +62,82 @@ def ver_alumnos():
 
 
 # =========================
+# CREAR ALUMNO (con foto)
+# =========================
+
+@admin_bp.route("/crear_alumno", methods=["POST"])
+def crear_alumno():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    nombre = request.form.get("nombre")
+    grupo = request.form.get("grupo")
+
+    foto = request.files.get("foto")
+
+    foto_ruta = ""
+
+    if foto and foto.filename != "":
+
+        nombre_archivo = secure_filename(foto.filename)
+
+        carpeta = "static/uploads/alumnos"
+
+        if not os.path.exists(carpeta):
+            os.makedirs(carpeta)
+
+        ruta = os.path.join(carpeta, nombre_archivo)
+
+        foto.save(ruta)
+
+        foto_ruta = "/" + ruta
+
+    alumnos.insert_one({
+        "nombre": nombre,
+        "grupo": grupo,
+        "foto": foto_ruta,
+        "calificaciones": [],
+        "asistencias": []
+    })
+
+    return redirect("/alumnos")
+
+
+# =========================
+# SUBIR FOTO A ALUMNO
+# =========================
+
+@admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
+def subir_foto_alumno(id):
+
+    if not verificar_admin():
+        return redirect("/")
+
+    foto = request.files.get("foto")
+
+    if foto and foto.filename != "":
+
+        nombre_archivo = secure_filename(foto.filename)
+
+        carpeta = "static/uploads/alumnos"
+
+        if not os.path.exists(carpeta):
+            os.makedirs(carpeta)
+
+        ruta = os.path.join(carpeta, nombre_archivo)
+
+        foto.save(ruta)
+
+        alumnos.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": {"foto": "/" + ruta}}
+        )
+
+    return redirect("/alumnos")
+
+
+# =========================
 # MAESTROS
 # =========================
 

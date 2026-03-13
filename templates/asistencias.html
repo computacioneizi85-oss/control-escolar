@@ -19,14 +19,62 @@
 
 </select>
 
+<br><br>
+
 <select name="estado">
 <option value="Presente">Presente</option>
 <option value="Ausente">Ausente</option>
 </select>
 
+<br><br>
+
 <button class="btn-green">Guardar</button>
 
 </form>
+
+</div>
+
+
+<br>
+
+
+<!-- LISTA VISUAL DE ALUMNOS CON FOTO -->
+
+<div class="card">
+
+<h3>Alumnos del grupo</h3>
+
+<table>
+
+<tr>
+<th>Foto</th>
+<th>Alumno</th>
+<th>Grupo</th>
+</tr>
+
+{% for alumno in alumnos %}
+
+<tr>
+
+<td>
+
+{% if alumno.foto %}
+<img src="{{ alumno.foto }}" width="50" height="50" style="border-radius:50%; object-fit:cover;">
+{% else %}
+Sin foto
+{% endif %}
+
+</td>
+
+<td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+
+<td>{{ alumno.grupo }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
 
 </div>
 
