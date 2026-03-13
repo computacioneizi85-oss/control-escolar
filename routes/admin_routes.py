@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, session, send_file
 from bson.objectid import ObjectId
 import os
+import uuid
 from werkzeug.utils import secure_filename
 
 from database.mongo import alumnos, grupos, materias, maestros, reportes, configuracion, horarios, citatorios
@@ -62,7 +63,7 @@ def ver_alumnos():
 
 
 # =========================
-# CREAR ALUMNO (con foto)
+# CREAR ALUMNO (CON FOTO)
 # =========================
 
 @admin_bp.route("/crear_alumno", methods=["POST"])
@@ -80,7 +81,7 @@ def crear_alumno():
 
     if foto and foto.filename != "":
 
-        nombre_archivo = secure_filename(foto.filename)
+        nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
 
         carpeta = "static/uploads/alumnos"
 
@@ -105,7 +106,7 @@ def crear_alumno():
 
 
 # =========================
-# SUBIR FOTO A ALUMNO
+# SUBIR FOTO A ALUMNO EXISTENTE
 # =========================
 
 @admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
@@ -118,7 +119,7 @@ def subir_foto_alumno(id):
 
     if foto and foto.filename != "":
 
-        nombre_archivo = secure_filename(foto.filename)
+        nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
 
         carpeta = "static/uploads/alumnos"
 
