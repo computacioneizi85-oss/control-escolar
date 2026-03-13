@@ -46,6 +46,13 @@ cursor:pointer;
 margin-bottom:15px;
 }
 
+.foto-alumno{
+width:40px;
+height:40px;
+border-radius:50%;
+object-fit:cover;
+}
+
 </style>
 
 
@@ -196,6 +203,7 @@ LISTA DE ALUMNOS
 <table>
 
 <tr>
+<th>Foto</th>
 <th>Alumno</th>
 <th>Grupo</th>
 <th>Calificaciones</th>
@@ -206,11 +214,20 @@ LISTA DE ALUMNOS
 
 <tr>
 
+<td>
+
+{% if alumno.foto %}
+<img src="/{{ alumno.foto }}" class="foto-alumno">
+{% else %}
+—
+{% endif %}
+
+</td>
+
 <td>{{ alumno.nombre }}</td>
 
 <td>{{ alumno.grupo }}</td>
 
-<!-- CALIFICACIONES -->
 
 <td>
 
@@ -230,7 +247,6 @@ LISTA DE ALUMNOS
 
 </td>
 
-<!-- REPORTE -->
 
 <td>
 
@@ -267,6 +283,7 @@ ASISTENCIAS
 <table>
 
 <tr>
+<th>Foto</th>
 <th>Alumno</th>
 <th>Grupo</th>
 <th>Fecha</th>
@@ -277,6 +294,16 @@ ASISTENCIAS
 {% for alumno in alumnos %}
 
 <tr>
+
+<td>
+
+{% if alumno.foto %}
+<img src="/{{ alumno.foto }}" class="foto-alumno">
+{% else %}
+—
+{% endif %}
+
+</td>
 
 <td>{{ alumno.nombre }}</td>
 <td>{{ alumno.grupo }}</td>
