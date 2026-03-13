@@ -92,7 +92,7 @@ def crear_alumno():
 
         foto.save(ruta)
 
-        foto_ruta = "/" + ruta
+        foto_ruta = ruta.replace("\\", "/")
 
     alumnos.insert_one({
         "nombre": nombre,
@@ -106,7 +106,7 @@ def crear_alumno():
 
 
 # =========================
-# SUBIR FOTO A ALUMNO EXISTENTE
+# CAMBIAR FOTO ALUMNO
 # =========================
 
 @admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
@@ -130,9 +130,11 @@ def subir_foto_alumno(id):
 
         foto.save(ruta)
 
+        foto_ruta = ruta.replace("\\", "/")
+
         alumnos.update_one(
             {"_id": ObjectId(id)},
-            {"$set": {"foto": "/" + ruta}}
+            {"$set": {"foto": foto_ruta}}
         )
 
     return redirect("/alumnos")
