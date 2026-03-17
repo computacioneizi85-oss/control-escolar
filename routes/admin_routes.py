@@ -58,7 +58,7 @@ def ver_alumnos():
 
 
 # =========================
-# CREAR ALUMNO (CON FOTO SEGURA)
+# CREAR ALUMNO
 # =========================
 
 @admin_bp.route("/crear_alumno", methods=["POST"])
@@ -111,7 +111,7 @@ def crear_alumno():
 
 
 # =========================
-# CAMBIAR FOTO ALUMNO (SEGURA)
+# CAMBIAR FOTO
 # =========================
 
 @admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
@@ -124,30 +124,21 @@ def subir_foto_alumno(id):
 
     if foto and foto.filename != "":
 
-        extensiones = ["jpg", "jpeg", "png"]
+        nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
 
-        if "." in foto.filename:
-            ext = foto.filename.rsplit(".", 1)[1].lower()
+        carpeta = "static/uploads/alumnos"
 
-            if ext in extensiones:
+        if not os.path.exists(carpeta):
+            os.makedirs(carpeta)
 
-                nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
+        ruta = os.path.join(carpeta, nombre_archivo)
 
-                carpeta = "static/uploads/alumnos"
+        foto.save(ruta)
 
-                if not os.path.exists(carpeta):
-                    os.makedirs(carpeta)
-
-                ruta = os.path.join(carpeta, nombre_archivo)
-
-                foto.save(ruta)
-
-                foto_ruta = ruta.replace("\\", "/")
-
-                alumnos.update_one(
-                    {"_id": ObjectId(id)},
-                    {"$set": {"foto": foto_ruta}}
-                )
+        alumnos.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": {"foto": ruta.replace("\\", "/")}}
+        )
 
     return redirect("/alumnos")
 
@@ -169,28 +160,17 @@ def ver_maestros():
     )
 
 
-# =========================
-# CREAR MAESTRO (PASSWORD SEGURA 🔐)
-# =========================
-
 @admin_bp.route("/crear_maestro", methods=["POST"])
 def crear_maestro():
 
     if not verificar_admin():
         return redirect("/")
 
-    nombre = request.form.get("nombre")
-    usuario = request.form.get("usuario")
-    password = request.form.get("password")
-
-    if not nombre or not usuario or not password:
-        return redirect("/maestros")
-
-    password_hash = generate_password_hash(password)
+    password_hash = generate_password_hash(request.form.get("password"))
 
     maestros.insert_one({
-        "nombre": nombre,
-        "usuario": usuario,
+        "nombre": request.form.get("nombre"),
+        "usuario": request.form.get("usuario"),
         "password": password_hash,
         "grupos": [],
         "materias": []
@@ -200,59 +180,7 @@ def crear_maestro():
 
 
 # =========================
-# GRUPOS
-# =========================
-
-@admin_bp.route("/grupos")
-def ver_grupos():
-
-    if not verificar_admin():
-        return redirect("/")
-
-    return render_template(
-        "grupos.html",
-        grupos=list(grupos.find())
-    )
-
-
-# =========================
-# MATERIAS
-# =========================
-
-@admin_bp.route("/materias")
-def ver_materias():
-
-    if not verificar_admin():
-        return redirect("/")
-
-    return render_template(
-        "materias.html",
-        materias=list(materias.find()),
-        grupos=list(grupos.find())
-    )
-
-
-# =========================
-# HORARIOS
-# =========================
-
-@admin_bp.route("/horarios")
-def ver_horarios():
-
-    if not verificar_admin():
-        return redirect("/")
-
-    return render_template(
-        "horarios.html",
-        horarios=list(horarios.find()),
-        grupos=list(grupos.find()),
-        materias=list(materias.find()),
-        maestros=list(maestros.find())
-    )
-
-
-# =========================
-# REPORTES DISCIPLINARIOS
+# REPORTES
 # =========================
 
 @admin_bp.route("/reportes")
@@ -285,7 +213,12 @@ def aprobar_reporte(id):
         {"$set": {"estatus": "aprobado"}}
     )
 
-    return send_file(pdf_buffer, mimetype="application/pdf")
+    return send_file(
+        pdf_buffer,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=f"reporte_{reporte.get('alumno','')}.pdf"
+    )
 
 
 # =========================
@@ -298,7 +231,12 @@ def kardex(nombre):
     if not verificar_admin():
         return redirect("/")
 
-    return send_file(generar_kardex(nombre), mimetype="application/pdf")
+    return send_file(
+        generar_kardex(nombre),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=f"kardex_{nombre}.pdf"
+    )
 
 
 # =========================
@@ -311,7 +249,12 @@ def boleta(nombre):
     if not verificar_admin():
         return redirect("/")
 
-    return send_file(generar_boleta(nombre), mimetype="application/pdf")
+    return send_file(
+        generar_boleta(nombre),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=f"boleta_{nombre}.pdf"
+    )
 
 
 # =========================
@@ -349,7 +292,12 @@ def generar_citatorio(id):
         {"$set": {"estado": "generado"}}
     )
 
-    return send_file(pdf_buffer, mimetype="application/pdf")
+    return send_file(
+        pdf_buffer,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=f"citatorio_{citatorio.get('alumno','')}.pdf"
+    )
 
 
 # =========================
