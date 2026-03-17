@@ -17,15 +17,12 @@ def obtener_config():
     config = configuracion.find_one()
 
     if config:
-
         escuela = config.get("escuela", "Nombre de la escuela")
         ciclo = config.get("ciclo", "Ciclo escolar")
         director = config.get("director", "Director")
         direccion = config.get("direccion", "")
         escudo = config.get("escudo", None)
-
     else:
-
         escuela = "Nombre de la escuela"
         ciclo = "Ciclo escolar"
         director = "Director"
@@ -36,18 +33,22 @@ def obtener_config():
 
 
 # ==============================
-# DIBUJAR ESCUDO
+# DIBUJAR ESCUDO (CORREGIDO)
 # ==============================
 
 def dibujar_escudo(c, escudo):
 
-    if escudo:
+    try:
+        if escudo:
 
-        ruta_escudo = os.path.join(os.getcwd(), escudo)
+            # 🔥 NORMALIZAR RUTA
+            ruta_escudo = escudo.replace("\\", "/")
 
-        if os.path.exists(ruta_escudo):
+            # 🔥 SI NO EXISTE, INTENTAR DESDE ROOT
+            if not os.path.exists(ruta_escudo):
+                ruta_escudo = os.path.join(os.getcwd(), ruta_escudo)
 
-            try:
+            if os.path.exists(ruta_escudo):
 
                 logo = ImageReader(ruta_escudo)
 
@@ -59,8 +60,8 @@ def dibujar_escudo(c, escudo):
                     height=80
                 )
 
-            except:
-                pass
+    except Exception as e:
+        print("Error cargando escudo:", e)
 
 
 # ==============================
@@ -70,7 +71,6 @@ def dibujar_escudo(c, escudo):
 def crear_pdf():
 
     buffer = BytesIO()
-
     c = canvas.Canvas(buffer, pagesize=letter)
 
     return c, buffer
@@ -104,11 +104,9 @@ def generar_kardex(nombre):
     c.drawString(80, 590, "Materia")
     c.drawString(350, 590, "Calificación")
 
-    lista_materias = list(materias.find())
-
     y = 560
 
-    for materia in lista_materias:
+    for materia in materias.find():
 
         c.drawString(80, y, materia.get("nombre", ""))
         c.drawString(350, y, "—")
@@ -118,7 +116,6 @@ def generar_kardex(nombre):
     c.drawString(80, 120, f"Director: {director}")
 
     c.save()
-
     buffer.seek(0)
 
     return buffer
@@ -152,11 +149,9 @@ def generar_boleta(nombre):
     c.drawString(80, 590, "Materia")
     c.drawString(350, 590, "Calificación")
 
-    lista_materias = list(materias.find())
-
     y = 560
 
-    for materia in lista_materias:
+    for materia in materias.find():
 
         c.drawString(80, y, materia.get("nombre", ""))
         c.drawString(350, y, "—")
@@ -166,7 +161,6 @@ def generar_boleta(nombre):
     c.drawString(80, 120, f"Director: {director}")
 
     c.save()
-
     buffer.seek(0)
 
     return buffer
@@ -205,7 +199,6 @@ def generar_reporte_pdf(reporte):
     c.drawString(80, 120, f"Director: {director}")
 
     c.save()
-
     buffer.seek(0)
 
     return buffer
@@ -251,7 +244,6 @@ def generar_citatorio_pdf(citatorio):
     c.drawString(80, 180, f"Dirección - {director}")
 
     c.save()
-
     buffer.seek(0)
 
     return buffer
