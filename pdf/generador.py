@@ -8,11 +8,11 @@ import os
 from datetime import datetime
 import uuid
 
-from database.mongo import configuracion, materias
+from database.mongo import configuracion, materias, alumnos
 
 
 # ==============================
-# CONFIG
+# CONFIGURACIÓN
 # ==============================
 
 def obtener_config():
@@ -36,7 +36,7 @@ def obtener_config():
 
 
 # ==============================
-# UTILIDADES PRO
+# UTILIDADES
 # ==============================
 
 def generar_folio():
@@ -72,7 +72,7 @@ def dibujar_escudo(c, escudo):
 
 
 # ==============================
-# ENCABEZADO PRO
+# ENCABEZADO
 # ==============================
 
 def encabezado(c, escuela, ciclo, direccion, escudo, titulo):
@@ -86,27 +86,14 @@ def encabezado(c, escuela, ciclo, direccion, escudo, titulo):
     c.drawCentredString(300, 755, f"Ciclo Escolar: {ciclo}")
     c.drawCentredString(300, 740, direccion)
 
-    # línea
     c.line(40, 730, 550, 730)
 
-    # título
     c.setFont("Helvetica-Bold", 13)
     c.drawCentredString(300, 705, titulo)
 
-    # folio y fecha
     c.setFont("Helvetica", 9)
     c.drawString(40, 715, f"Folio: {generar_folio()}")
     c.drawRightString(550, 715, f"Fecha: {fecha_actual()}")
-
-
-# ==============================
-# PDF BASE
-# ==============================
-
-def crear_pdf():
-    buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
-    return c, buffer
 
 
 # ==============================
@@ -121,7 +108,17 @@ def firma(c, director):
 
 
 # ==============================
-# KARDEX
+# CREAR PDF
+# ==============================
+
+def crear_pdf():
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+    return c, buffer
+
+
+# ==============================
+# 🔥 KARDEX PRO (MEJORADO)
 # ==============================
 
 def generar_kardex(nombre):
@@ -131,20 +128,49 @@ def generar_kardex(nombre):
 
     encabezado(c, escuela, ciclo, direccion, escudo, "KARDEX ACADÉMICO")
 
+    alumno = alumnos.find_one({"nombre": nombre})
+
     c.setFont("Helvetica", 11)
     c.drawString(50, 670, f"Alumno: {nombre}")
+    c.drawString(50, 650, f"Grupo: {alumno.get('grupo','')}")
 
-    c.line(50, 660, 550, 660)
+    # FOTO DEL ALUMNO
+    try:
+        if alumno.get("foto"):
+            foto_bytes = base64.b64decode(alumno["foto"])
+            foto_stream = BytesIO(foto_bytes)
+            img = ImageReader(foto_stream)
 
-    c.drawString(50, 640, "Materia")
-    c.drawString(400, 640, "Calificación")
+            c.drawImage(img, 450, 630, width=80, height=80)
+    except:
+        pass
 
-    y = 620
+    c.line(50, 630, 550, 630)
 
-    for materia in list(materias.find()):
-        c.drawString(50, y, materia.get("nombre", ""))
-        c.drawString(420, y, "—")
+    c.drawString(50, 610, "Materia")
+    c.drawString(300, 610, "Calificación")
+
+    y = 590
+    suma = 0
+    total = 0
+
+    for cal in alumno.get("calificaciones", []):
+        materia = cal.get("materia", "")
+        valor = cal.get("calificacion", 0)
+
+        c.drawString(50, y, materia)
+        c.drawString(320, y, str(valor))
+
+        suma += valor
+        total += 1
+
         y -= 25
+
+    # PROMEDIO
+    promedio = round(suma / total, 2) if total > 0 else 0
+
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y - 20, f"Promedio general: {promedio}")
 
     firma(c, director)
 
@@ -165,20 +191,53 @@ def generar_boleta(nombre):
 
     encabezado(c, escuela, ciclo, direccion, escudo, "BOLETA DE CALIFICACIONES")
 
+    alumno = alumnos.find_one({"nombre": nombre})
+
     c.setFont("Helvetica", 11)
     c.drawString(50, 670, f"Alumno: {nombre}")
+    c.drawString(50, 650, f"Grupo: {alumno.get('grupo','')}")
 
-    c.line(50, 660, 550, 660)
+    # FOTO
+    try:
+        if alumno.get("foto"):
+            foto_bytes = base64.b64decode(alumno["foto"])
+            foto_stream = BytesIO(foto_bytes)
+            img = ImageReader(foto_stream)
 
-    c.drawString(50, 640, "Materia")
-    c.drawString(400, 640, "Calificación")
+            c.drawImage(img, 450, 630, width=80, height=80)
+    except:
+        pass
 
-    y = 620
+    c.line(50, 630, 550, 630)
 
-    for materia in list(materias.find()):
-        c.drawString(50, y, materia.get("nombre", ""))
-        c.drawString(420, y, "—")
-        y -= 25
+    c.drawString(50, 610, "Materia")
+    c.drawString(300, 610, "Calificación")
+
+    y = 590
+    suma = 0
+    total = 0
+
+    calificaciones = alumno.get("calificaciones", [])
+
+    if calificaciones:
+        for cal in calificaciones:
+            materia = cal.get("materia", "")
+            valor = cal.get("calificacion", 0)
+
+            c.drawString(50, y, materia)
+            c.drawString(320, y, str(valor))
+
+            suma += valor
+            total += 1
+
+            y -= 25
+    else:
+        c.drawString(50, y, "Sin calificaciones registradas")
+
+    promedio = round(suma / total, 2) if total > 0 else 0
+
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y - 20, f"Promedio: {promedio}")
 
     firma(c, director)
 
