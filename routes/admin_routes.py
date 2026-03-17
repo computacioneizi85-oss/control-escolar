@@ -165,21 +165,26 @@ def aprobar_reporte(id):
 
     try:
         reporte = reportes.find_one({"_id": ObjectId(id)})
-    except:
-        return redirect("/reportes")
 
-    if not reporte:
-        return redirect("/reportes")
+        if not reporte:
+            return "❌ Reporte no encontrado"
 
-    pdf = generar_reporte_pdf(reporte)
-    pdf.seek(0)
+        pdf = generar_reporte_pdf(reporte)
 
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name="reporte.pdf"
-    )
+        if not pdf:
+            return "❌ Error generando PDF"
+
+        pdf.seek(0)
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name="reporte.pdf"
+        )
+
+    except Exception as e:
+        return f"🔥 ERROR REPORTE: {str(e)}"
 
 
 # =========================
@@ -192,15 +197,19 @@ def kardex(nombre):
     if not verificar_admin():
         return redirect("/")
 
-    pdf = generar_kardex(nombre)
-    pdf.seek(0)
+    try:
+        pdf = generar_kardex(nombre)
+        pdf.seek(0)
 
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=f"kardex_{nombre}.pdf"
-    )
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name=f"kardex_{nombre}.pdf"
+        )
+
+    except Exception as e:
+        return f"ERROR KARDEX: {str(e)}"
 
 
 # =========================
@@ -213,15 +222,19 @@ def boleta(nombre):
     if not verificar_admin():
         return redirect("/")
 
-    pdf = generar_boleta(nombre)
-    pdf.seek(0)
+    try:
+        pdf = generar_boleta(nombre)
+        pdf.seek(0)
 
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=f"boleta_{nombre}.pdf"
-    )
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name=f"boleta_{nombre}.pdf"
+        )
+
+    except Exception as e:
+        return f"ERROR BOLETA: {str(e)}"
 
 
 # =========================
@@ -249,21 +262,26 @@ def generar_citatorio(id):
 
     try:
         citatorio = citatorios.find_one({"_id": ObjectId(id)})
-    except:
-        return redirect("/citatorios")
 
-    if not citatorio:
-        return redirect("/citatorios")
+        if not citatorio:
+            return "❌ Citatorio no encontrado"
 
-    pdf = generar_citatorio_pdf(citatorio)
-    pdf.seek(0)
+        pdf = generar_citatorio_pdf(citatorio)
 
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name="citatorio.pdf"
-    )
+        if not pdf:
+            return "❌ Error generando PDF"
+
+        pdf.seek(0)
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name="citatorio.pdf"
+        )
+
+    except Exception as e:
+        return f"🔥 ERROR CITATORIO: {str(e)}"
 
 
 # =========================
