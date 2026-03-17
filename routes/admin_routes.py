@@ -171,10 +171,11 @@ def aprobar_reporte(id):
     if not reporte:
         return redirect("/reportes")
 
-    pdf_buffer = generar_reporte_pdf(reporte)
+    pdf = generar_reporte_pdf(reporte)
+    pdf.seek(0)
 
     return send_file(
-        pdf_buffer,
+        pdf,
         mimetype="application/pdf",
         as_attachment=True,
         download_name="reporte.pdf"
@@ -191,10 +192,14 @@ def kardex(nombre):
     if not verificar_admin():
         return redirect("/")
 
+    pdf = generar_kardex(nombre)
+    pdf.seek(0)
+
     return send_file(
-        generar_kardex(nombre),
+        pdf,
         mimetype="application/pdf",
-        as_attachment=True
+        as_attachment=True,
+        download_name=f"kardex_{nombre}.pdf"
     )
 
 
@@ -208,10 +213,14 @@ def boleta(nombre):
     if not verificar_admin():
         return redirect("/")
 
+    pdf = generar_boleta(nombre)
+    pdf.seek(0)
+
     return send_file(
-        generar_boleta(nombre),
+        pdf,
         mimetype="application/pdf",
-        as_attachment=True
+        as_attachment=True,
+        download_name=f"boleta_{nombre}.pdf"
     )
 
 
@@ -246,10 +255,11 @@ def generar_citatorio(id):
     if not citatorio:
         return redirect("/citatorios")
 
-    pdf_buffer = generar_citatorio_pdf(citatorio)
+    pdf = generar_citatorio_pdf(citatorio)
+    pdf.seek(0)
 
     return send_file(
-        pdf_buffer,
+        pdf,
         mimetype="application/pdf",
         as_attachment=True,
         download_name="citatorio.pdf"
