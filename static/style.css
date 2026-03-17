@@ -140,3 +140,84 @@ border-bottom:1px solid #eee;
 tr:hover{
 background:#f8f8f8;
 }
+
+/* =========================
+NUEVO: FOTO ALUMNO
+========================= */
+
+.foto-alumno{
+width:40px;
+height:40px;
+border-radius:50%;
+object-fit:cover;
+}
+
+/* =========================
+NUEVO: SEMAFORO
+========================= */
+
+.semaforo{
+width:16px;
+height:16px;
+border-radius:50%;
+display:inline-block;
+margin-right:4px;
+}
+
+.verde{
+background:#2ecc71;
+}
+
+.amarillo{
+background:#f1c40f;
+}
+
+.rojo{
+background:#e74c3c;
+}
+
+.gris{
+background:#bdc3c7;
+}
+
+/* =========================
+NUEVO: BOTONES ASISTENCIA
+========================= */
+
+.btn-verde{
+background:#2ecc71;
+color:white;
+border:none;
+padding:5px 10px;
+border-radius:5px;
+cursor:pointer;
+}
+
+.btn-verde:hover{
+background:#27ae60;
+}
+
+.btn-amarillo{
+background:#f1c40f;
+border:none;
+padding:5px 10px;
+border-radius:5px;
+cursor:pointer;
+}
+
+.btn-amarillo:hover{
+background:#d4ac0d;
+}
+
+.btn-rojo{
+background:#e74c3c;
+color:white;
+border:none;
+padding:5px 10px;
+border-radius:5px;
+cursor:pointer;
+}
+
+.btn-rojo:hover{
+background:#c0392b;
+}

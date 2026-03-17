@@ -197,6 +197,80 @@
 
 </table>
 
+<h2>Semáforo semanal de asistencias</h2>
+
+<table>
+
+<tr>
+<th>Alumno</th>
+<th>Grupo</th>
+<th>Últimos registros</th>
+<th>Estado</th>
+</tr>
+
+{% for alumno in alumnos %}
+
+<tr>
+
+<td>{{ alumno.nombre }}</td>
+<td>{{ alumno.grupo }}</td>
+
+<td>
+
+{% if alumno.asistencias %}
+
+{% for a in alumno.asistencias[-5:] %}
+
+{% if a.estado == "asistencia" %}
+<span class="semaforo verde"></span>
+
+{% elif a.estado == "retardo" %}
+<span class="semaforo amarillo"></span>
+
+{% elif a.estado == "falta" %}
+<span class="semaforo rojo"></span>
+
+{% endif %}
+
+{% endfor %}
+
+{% else %}
+
+Sin registros
+
+{% endif %}
+
+</td>
+
+
+<td>
+
+{% set faltas = 0 %}
+
+{% if alumno.asistencias %}
+
+{% for a in alumno.asistencias[-5:] %}
+{% if a.estado == "falta" %}
+{% set faltas = faltas + 1 %}
+{% endif %}
+{% endfor %}
+
+{% endif %}
+
+{% if faltas >= 3 %}
+<span style="color:red; font-weight:bold;">⚠ Riesgo</span>
+{% else %}
+<span style="color:green;">Estable</span>
+{% endif %}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
 
 
 </div>
