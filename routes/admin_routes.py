@@ -274,3 +274,7 @@ def ver_configuracion():
         "configuracion.html",
         config=configuracion.find_one()
     )
+
+@admin_bp.route("/test_pdf")
+def test_pdf():
+    return "RUTA ACTIVA"
