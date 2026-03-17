@@ -36,17 +36,22 @@
 
 {% if r.estatus == "pendiente" %}
 
-<a href="/aprobar_reporte/{{ r._id }}">
+<!-- ✅ RUTA CORRECTA -->
+<a href="/admin/aprobar_reporte/{{ r._id }}">
 <button>Autorizar</button>
 </a>
 
 {% else %}
 
-<a href="{{ r.pdf }}" target="_blank">
-<button>Descargar PDF</button>
+<!-- ⚠️ ESTE YA NO FUNCIONA PORQUE YA NO GUARDAS PDF EN DB -->
+<!-- LO CAMBIAMOS PARA GENERARLO EN TIEMPO REAL -->
+
+<a href="/admin/aprobar_reporte/{{ r._id }}">
+<button>Ver PDF</button>
 </a>
 
 {% endif %}
+
 </td>
 
 </tr>

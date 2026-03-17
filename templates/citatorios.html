@@ -61,19 +61,11 @@
 
 <td>
 
-{% if c.pdf %}
+<!-- ✅ SIEMPRE GENERAR EN TIEMPO REAL -->
 
-<a href="/{{ c.pdf }}" target="_blank">
-<button>Descargar</button>
+<a href="/admin/generar_citatorio/{{ c._id }}">
+<button>Ver PDF</button>
 </a>
-
-{% else %}
-
-<a href="/generar_citatorio/{{ c._id }}">
-<button>Generar PDF</button>
-</a>
-
-{% endif %}
 
 </td>
 
