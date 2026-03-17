@@ -24,12 +24,13 @@ app.register_blueprint(maestro_bp)
 
 
 # =========================
-# PROTEGER RUTAS
+# PROTEGER RUTAS (FIX 🔥)
 # =========================
 
 @app.before_request
 def proteger_rutas():
 
+    # rutas públicas
     rutas_publicas = ["/", "/login"]
 
     # permitir archivos estáticos
@@ -38,6 +39,10 @@ def proteger_rutas():
 
     # permitir login
     if request.path in rutas_publicas:
+        return
+
+    # 🔥 permitir rutas internas de flask (muy importante en producción)
+    if request.endpoint is None:
         return
 
     # si no hay sesión → redirigir

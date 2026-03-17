@@ -9,7 +9,8 @@ from werkzeug.security import generate_password_hash
 from database.mongo import alumnos, grupos, materias, maestros, reportes, configuracion, horarios, citatorios
 from pdf.generador import generar_kardex, generar_boleta, generar_reporte_pdf, generar_citatorio_pdf
 
-admin_bp = Blueprint("admin", __name__)
+# 🔥 SOLUCIÓN CLAVE
+admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
 # =========================
@@ -24,7 +25,7 @@ def verificar_admin():
 # DASHBOARD
 # =========================
 
-@admin_bp.route("/admin")
+@admin_bp.route("/")
 def admin_dashboard():
 
     if not verificar_admin():
@@ -157,7 +158,7 @@ def ver_reportes():
     )
 
 
-@admin_bp.route("/aprobar_reporte/<id>")
+@admin_bp.route("/aprobar_reporte/<string:id>")
 def aprobar_reporte(id):
 
     if not verificar_admin():
@@ -166,7 +167,7 @@ def aprobar_reporte(id):
     reporte = reportes.find_one({"_id": ObjectId(id)})
 
     if not reporte:
-        return redirect("/reportes")
+        return redirect("/admin/reportes")
 
     ruta = generar_reporte_pdf(reporte)
 
@@ -226,25 +227,19 @@ def crear_citatorio():
     if not verificar_admin():
         return redirect("/")
 
-    alumno = request.form.get("alumno")
-    grupo = request.form.get("grupo")
-    motivo = request.form.get("motivo")
-    fecha = request.form.get("fecha")
-    hora = request.form.get("hora")
-
     citatorios.insert_one({
-        "alumno": alumno,
-        "grupo": grupo,
-        "motivo": motivo,
-        "fecha_cita": fecha,
-        "hora": hora,
+        "alumno": request.form.get("alumno"),
+        "grupo": request.form.get("grupo"),
+        "motivo": request.form.get("motivo"),
+        "fecha_cita": request.form.get("fecha"),
+        "hora": request.form.get("hora"),
         "estado": "pendiente"
     })
 
-    return redirect("/citatorios")
+    return redirect("/admin/citatorios")
 
 
-@admin_bp.route("/generar_citatorio/<id>")
+@admin_bp.route("/generar_citatorio/<string:id>")
 def generar_citatorio(id):
 
     if not verificar_admin():
@@ -253,7 +248,7 @@ def generar_citatorio(id):
     citatorio = citatorios.find_one({"_id": ObjectId(id)})
 
     if not citatorio:
-        return redirect("/citatorios")
+        return redirect("/admin/citatorios")
 
     ruta = generar_citatorio_pdf(citatorio)
 
@@ -274,6 +269,11 @@ def ver_configuracion():
         "configuracion.html",
         config=configuracion.find_one()
     )
+
+
+# =========================
+# TEST
+# =========================
 
 @admin_bp.route("/test_pdf")
 def test_pdf():

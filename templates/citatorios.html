@@ -6,7 +6,8 @@
 
 <h3>Generar citatorio</h3>
 
-<form action="/crear_citatorio" method="POST">
+<!-- 🔥 IMPORTANTE: ruta corregida -->
+<form action="/admin/crear_citatorio" method="POST">
 
 <select name="alumno">
 
@@ -57,14 +58,24 @@
 <td>{{ c.motivo }}</td>
 <td>{{ c.fecha_cita }}</td>
 <td>{{ c.hora }}</td>
-<td>{{ c.estado }}</td>
 
 <td>
 
-<!-- ✅ SIEMPRE GENERAR EN TIEMPO REAL -->
+{% if c.estado == "pendiente" %}
+<span style="color:orange; font-weight:bold;">Pendiente</span>
+{% else %}
+<span style="color:green; font-weight:bold;">Generado</span>
+{% endif %}
 
-<a href="/admin/generar_citatorio/{{ c._id }}">
-<button>Ver PDF</button>
+</td>
+
+<td>
+
+<!-- 🔥 SIEMPRE GENERA EN TIEMPO REAL -->
+<a href="/admin/generar_citatorio/{{ c._id }}" target="_blank">
+<button style="background:#3498db; color:white;">
+Ver PDF
+</button>
 </a>
 
 </td>

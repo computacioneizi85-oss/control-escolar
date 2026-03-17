@@ -30,24 +30,28 @@
 
 <td>{{ r.comentario }}</td>
 
-<td>{{ r.estatus }}</td>
+<td>
+
+{% if r.estatus == "pendiente" %}
+<span style="color:orange; font-weight:bold;">Pendiente</span>
+{% else %}
+<span style="color:green; font-weight:bold;">Aprobado</span>
+{% endif %}
+
+</td>
 
 <td>
 
 {% if r.estatus == "pendiente" %}
 
-<!-- ✅ RUTA CORRECTA -->
 <a href="/admin/aprobar_reporte/{{ r._id }}">
-<button>Autorizar</button>
+<button style="background:#f39c12; color:white;">Autorizar y generar PDF</button>
 </a>
 
 {% else %}
 
-<!-- ⚠️ ESTE YA NO FUNCIONA PORQUE YA NO GUARDAS PDF EN DB -->
-<!-- LO CAMBIAMOS PARA GENERARLO EN TIEMPO REAL -->
-
-<a href="/admin/aprobar_reporte/{{ r._id }}">
-<button>Ver PDF</button>
+<a href="/admin/aprobar_reporte/{{ r._id }}" target="_blank">
+<button style="background:#27ae60; color:white;">Ver PDF</button>
 </a>
 
 {% endif %}
