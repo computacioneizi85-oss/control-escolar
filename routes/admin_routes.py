@@ -58,41 +58,38 @@ def ver_alumnos():
 
 
 # =========================
-# CREAR ALUMNO
+# MAESTROS
 # =========================
 
-@admin_bp.route("/crear_alumno", methods=["POST"])
-def crear_alumno():
+@admin_bp.route("/maestros")
+def ver_maestros():
 
     if not verificar_admin():
         return redirect("/")
 
-    nombre = request.form.get("nombre")
-    grupo = request.form.get("grupo")
+    return render_template(
+        "maestros.html",
+        maestros=list(maestros.find()),
+        grupos=list(grupos.find())
+    )
 
-    foto = request.files.get("foto")
-    foto_ruta = ""
 
-    if foto and foto.filename != "":
-        nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
+# =========================
+# ASISTENCIAS
+# =========================
 
-        carpeta = "static/uploads/alumnos"
-        os.makedirs(carpeta, exist_ok=True)
+@admin_bp.route("/asistencias")
+def ver_asistencias():
 
-        ruta = os.path.join(carpeta, nombre_archivo)
-        foto.save(ruta)
+    if not verificar_admin():
+        return redirect("/")
 
-        foto_ruta = ruta.replace("\\", "/")
-
-    alumnos.insert_one({
-        "nombre": nombre,
-        "grupo": grupo,
-        "foto": foto_ruta,
-        "calificaciones": [],
-        "asistencias": []
-    })
-
-    return redirect("/alumnos")
+    return render_template(
+        "asistencias_admin.html",
+        alumnos=list(alumnos.find()),
+        grupos=list(grupos.find()),
+        maestros=list(maestros.find())
+    )
 
 
 # =========================
@@ -101,6 +98,10 @@ def crear_alumno():
 
 @admin_bp.route("/grupos")
 def ver_grupos():
+
+    if not verificar_admin():
+        return redirect("/")
+
     return render_template("grupos.html", grupos=list(grupos.find()))
 
 
@@ -110,6 +111,10 @@ def ver_grupos():
 
 @admin_bp.route("/materias")
 def ver_materias():
+
+    if not verificar_admin():
+        return redirect("/")
+
     return render_template(
         "materias.html",
         materias=list(materias.find()),
@@ -123,6 +128,10 @@ def ver_materias():
 
 @admin_bp.route("/horarios")
 def ver_horarios():
+
+    if not verificar_admin():
+        return redirect("/")
+
     return render_template(
         "horarios.html",
         horarios=list(horarios.find()),
@@ -133,25 +142,15 @@ def ver_horarios():
 
 
 # =========================
-# ASISTENCIAS
-# =========================
-
-@admin_bp.route("/asistencias")
-def ver_asistencias():
-    return render_template(
-        "asistencias_admin.html",
-        alumnos=list(alumnos.find()),
-        grupos=list(grupos.find()),
-        maestros=list(maestros.find())
-    )
-
-
-# =========================
 # REPORTES
 # =========================
 
 @admin_bp.route("/reportes")
 def ver_reportes():
+
+    if not verificar_admin():
+        return redirect("/")
+
     return render_template(
         "reportes_admin.html",
         reportes=list(reportes.find())
@@ -161,7 +160,13 @@ def ver_reportes():
 @admin_bp.route("/aprobar_reporte/<id>")
 def aprobar_reporte(id):
 
-    reporte = reportes.find_one({"_id": ObjectId(id)})
+    if not verificar_admin():
+        return redirect("/")
+
+    try:
+        reporte = reportes.find_one({"_id": ObjectId(id)})
+    except:
+        return redirect("/reportes")
 
     if not reporte:
         return redirect("/reportes")
@@ -182,7 +187,15 @@ def aprobar_reporte(id):
 
 @admin_bp.route("/kardex/<nombre>")
 def kardex(nombre):
-    return send_file(generar_kardex(nombre), mimetype="application/pdf", as_attachment=True)
+
+    if not verificar_admin():
+        return redirect("/")
+
+    return send_file(
+        generar_kardex(nombre),
+        mimetype="application/pdf",
+        as_attachment=True
+    )
 
 
 # =========================
@@ -191,7 +204,15 @@ def kardex(nombre):
 
 @admin_bp.route("/boleta/<nombre>")
 def boleta(nombre):
-    return send_file(generar_boleta(nombre), mimetype="application/pdf", as_attachment=True)
+
+    if not verificar_admin():
+        return redirect("/")
+
+    return send_file(
+        generar_boleta(nombre),
+        mimetype="application/pdf",
+        as_attachment=True
+    )
 
 
 # =========================
@@ -200,6 +221,10 @@ def boleta(nombre):
 
 @admin_bp.route("/citatorios")
 def ver_citatorios():
+
+    if not verificar_admin():
+        return redirect("/")
+
     return render_template(
         "citatorios.html",
         citatorios=list(citatorios.find()),
@@ -210,7 +235,13 @@ def ver_citatorios():
 @admin_bp.route("/generar_citatorio/<id>")
 def generar_citatorio(id):
 
-    citatorio = citatorios.find_one({"_id": ObjectId(id)})
+    if not verificar_admin():
+        return redirect("/")
+
+    try:
+        citatorio = citatorios.find_one({"_id": ObjectId(id)})
+    except:
+        return redirect("/citatorios")
 
     if not citatorio:
         return redirect("/citatorios")
@@ -231,6 +262,10 @@ def generar_citatorio(id):
 
 @admin_bp.route("/configuracion")
 def ver_configuracion():
+
+    if not verificar_admin():
+        return redirect("/")
+
     return render_template(
         "configuracion.html",
         config=configuracion.find_one()
