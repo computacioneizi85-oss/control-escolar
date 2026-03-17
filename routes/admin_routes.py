@@ -163,24 +163,14 @@ def aprobar_reporte(id):
     if not verificar_admin():
         return redirect("/")
 
-    try:
-        reporte = reportes.find_one({"_id": ObjectId(id)})
+    reporte = reportes.find_one({"_id": ObjectId(id)})
 
-        if not reporte:
-            return "❌ Reporte no encontrado"
+    if not reporte:
+        return redirect("/reportes")
 
-        pdf = generar_reporte_pdf(reporte)
-        pdf.seek(0)
+    ruta = generar_reporte_pdf(reporte)
 
-        return send_file(
-            pdf,
-            mimetype="application/pdf",
-            as_attachment=True,
-            download_name="reporte.pdf"
-        )
-
-    except Exception as e:
-        return f"🔥 ERROR REPORTE: {str(e)}"
+    return send_file(ruta, as_attachment=True)
 
 
 # =========================
@@ -193,10 +183,9 @@ def kardex(nombre):
     if not verificar_admin():
         return redirect("/")
 
-    pdf = generar_kardex(nombre)
-    pdf.seek(0)
+    ruta = generar_kardex(nombre)
 
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    return send_file(ruta, as_attachment=True)
 
 
 # =========================
@@ -209,10 +198,9 @@ def boleta(nombre):
     if not verificar_admin():
         return redirect("/")
 
-    pdf = generar_boleta(nombre)
-    pdf.seek(0)
+    ruta = generar_boleta(nombre)
 
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    return send_file(ruta, as_attachment=True)
 
 
 # =========================
@@ -232,7 +220,6 @@ def ver_citatorios():
     )
 
 
-# 🔥 ESTA ES LA RUTA QUE TE FALTABA
 @admin_bp.route("/crear_citatorio", methods=["POST"])
 def crear_citatorio():
 
@@ -263,24 +250,14 @@ def generar_citatorio(id):
     if not verificar_admin():
         return redirect("/")
 
-    try:
-        citatorio = citatorios.find_one({"_id": ObjectId(id)})
+    citatorio = citatorios.find_one({"_id": ObjectId(id)})
 
-        if not citatorio:
-            return "❌ Citatorio no encontrado"
+    if not citatorio:
+        return redirect("/citatorios")
 
-        pdf = generar_citatorio_pdf(citatorio)
-        pdf.seek(0)
+    ruta = generar_citatorio_pdf(citatorio)
 
-        return send_file(
-            pdf,
-            mimetype="application/pdf",
-            as_attachment=True,
-            download_name="citatorio.pdf"
-        )
-
-    except Exception as e:
-        return f"🔥 ERROR CITATORIO: {str(e)}"
+    return send_file(ruta, as_attachment=True)
 
 
 # =========================
