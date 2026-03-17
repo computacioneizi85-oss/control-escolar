@@ -5,12 +5,14 @@ from reportlab.lib.utils import ImageReader
 from io import BytesIO
 import base64
 import os
+from datetime import datetime
+import uuid
 
 from database.mongo import configuracion, materias
 
 
 # ==============================
-# CONFIGURACIÓN
+# CONFIG
 # ==============================
 
 def obtener_config():
@@ -34,7 +36,18 @@ def obtener_config():
 
 
 # ==============================
-# ESCUDO (BASE64 o RUTA)
+# UTILIDADES PRO
+# ==============================
+
+def generar_folio():
+    return str(uuid.uuid4())[:8].upper()
+
+def fecha_actual():
+    return datetime.now().strftime("%d/%m/%Y")
+
+
+# ==============================
+# ESCUDO
 # ==============================
 
 def dibujar_escudo(c, escudo):
@@ -43,16 +56,12 @@ def dibujar_escudo(c, escudo):
         return
 
     try:
-        # 🔥 BASE64
         if len(escudo) > 100:
             imagen_bytes = base64.b64decode(escudo)
             imagen_stream = BytesIO(imagen_bytes)
             logo = ImageReader(imagen_stream)
-
-        # 🔥 RUTA (por compatibilidad)
         elif os.path.exists(escudo):
             logo = ImageReader(escudo)
-
         else:
             return
 
@@ -63,10 +72,10 @@ def dibujar_escudo(c, escudo):
 
 
 # ==============================
-# ENCABEZADO PROFESIONAL
+# ENCABEZADO PRO
 # ==============================
 
-def encabezado(c, escuela, ciclo, direccion, escudo):
+def encabezado(c, escuela, ciclo, direccion, escudo, titulo):
 
     dibujar_escudo(c, escudo)
 
@@ -77,17 +86,38 @@ def encabezado(c, escuela, ciclo, direccion, escudo):
     c.drawCentredString(300, 755, f"Ciclo Escolar: {ciclo}")
     c.drawCentredString(300, 740, direccion)
 
+    # línea
     c.line(40, 730, 550, 730)
+
+    # título
+    c.setFont("Helvetica-Bold", 13)
+    c.drawCentredString(300, 705, titulo)
+
+    # folio y fecha
+    c.setFont("Helvetica", 9)
+    c.drawString(40, 715, f"Folio: {generar_folio()}")
+    c.drawRightString(550, 715, f"Fecha: {fecha_actual()}")
 
 
 # ==============================
-# CREAR PDF EN MEMORIA
+# PDF BASE
 # ==============================
 
 def crear_pdf():
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     return c, buffer
+
+
+# ==============================
+# FIRMA
+# ==============================
+
+def firma(c, director):
+
+    c.line(200, 140, 400, 140)
+    c.drawCentredString(300, 120, director)
+    c.drawCentredString(300, 105, "Director")
 
 
 # ==============================
@@ -99,10 +129,7 @@ def generar_kardex(nombre):
     escuela, ciclo, director, direccion, escudo = obtener_config()
     c, buffer = crear_pdf()
 
-    encabezado(c, escuela, ciclo, direccion, escudo)
-
-    c.setFont("Helvetica-Bold", 13)
-    c.drawCentredString(300, 700, "KARDEX ACADÉMICO")
+    encabezado(c, escuela, ciclo, direccion, escudo, "KARDEX ACADÉMICO")
 
     c.setFont("Helvetica", 11)
     c.drawString(50, 670, f"Alumno: {nombre}")
@@ -119,8 +146,7 @@ def generar_kardex(nombre):
         c.drawString(420, y, "—")
         y -= 25
 
-    c.line(50, 140, 250, 140)
-    c.drawString(50, 120, f"Director: {director}")
+    firma(c, director)
 
     c.save()
     buffer.seek(0)
@@ -137,10 +163,7 @@ def generar_boleta(nombre):
     escuela, ciclo, director, direccion, escudo = obtener_config()
     c, buffer = crear_pdf()
 
-    encabezado(c, escuela, ciclo, direccion, escudo)
-
-    c.setFont("Helvetica-Bold", 13)
-    c.drawCentredString(300, 700, "BOLETA DE CALIFICACIONES")
+    encabezado(c, escuela, ciclo, direccion, escudo, "BOLETA DE CALIFICACIONES")
 
     c.setFont("Helvetica", 11)
     c.drawString(50, 670, f"Alumno: {nombre}")
@@ -157,8 +180,7 @@ def generar_boleta(nombre):
         c.drawString(420, y, "—")
         y -= 25
 
-    c.line(50, 140, 250, 140)
-    c.drawString(50, 120, f"Director: {director}")
+    firma(c, director)
 
     c.save()
     buffer.seek(0)
@@ -167,7 +189,7 @@ def generar_boleta(nombre):
 
 
 # ==============================
-# REPORTE DISCIPLINARIO
+# REPORTE
 # ==============================
 
 def generar_reporte_pdf(reporte):
@@ -175,10 +197,7 @@ def generar_reporte_pdf(reporte):
     escuela, ciclo, director, direccion, escudo = obtener_config()
     c, buffer = crear_pdf()
 
-    encabezado(c, escuela, ciclo, direccion, escudo)
-
-    c.setFont("Helvetica-Bold", 13)
-    c.drawCentredString(300, 700, "REPORTE DISCIPLINARIO")
+    encabezado(c, escuela, ciclo, direccion, escudo, "REPORTE DISCIPLINARIO")
 
     c.setFont("Helvetica", 11)
 
@@ -190,8 +209,7 @@ def generar_reporte_pdf(reporte):
 
     c.drawString(50, 550, "Estado: Autorizado")
 
-    c.line(50, 140, 250, 140)
-    c.drawString(50, 120, f"Director: {director}")
+    firma(c, director)
 
     c.save()
     buffer.seek(0)
@@ -208,10 +226,7 @@ def generar_citatorio_pdf(citatorio):
     escuela, ciclo, director, direccion, escudo = obtener_config()
     c, buffer = crear_pdf()
 
-    encabezado(c, escuela, ciclo, direccion, escudo)
-
-    c.setFont("Helvetica-Bold", 13)
-    c.drawCentredString(300, 700, "CITATORIO A PADRES DE FAMILIA")
+    encabezado(c, escuela, ciclo, direccion, escudo, "CITATORIO A PADRES DE FAMILIA")
 
     c.setFont("Helvetica", 11)
 
@@ -226,8 +241,7 @@ def generar_citatorio_pdf(citatorio):
 
     c.drawString(50, 500, "Se solicita la presencia del padre, madre o tutor.")
 
-    c.line(50, 140, 250, 140)
-    c.drawString(50, 120, f"Dirección - {director}")
+    firma(c, director)
 
     c.save()
     buffer.seek(0)
