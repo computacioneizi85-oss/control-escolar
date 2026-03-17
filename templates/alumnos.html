@@ -51,11 +51,19 @@ Registrar alumno
 
 {% if alumno.foto %}
 
-<img src="{{ alumno.foto }}"
+{% if alumno.foto.startswith('data') or alumno.foto.startswith('/') %}
+    <!-- 🔥 compatibilidad con fotos viejas -->
+    {% set foto_src = alumno.foto %}
+{% else %}
+    <!-- 🔥 base64 nueva -->
+    {% set foto_src = "data:image/png;base64," + alumno.foto %}
+{% endif %}
+
+<img src="{{ foto_src }}"
      width="50"
      height="50"
      style="border-radius:50%; object-fit:cover; cursor:pointer;"
-     onclick="verFoto('{{ alumno.foto }}')">
+     onclick="verFoto('{{ foto_src }}')">
 
 {% else %}
 Sin foto

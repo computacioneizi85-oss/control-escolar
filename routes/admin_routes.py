@@ -1,9 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, session, send_file
 from bson.objectid import ObjectId
-import os
-import uuid
+import base64
 
-from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash
 
 from database.mongo import alumnos, grupos, materias, maestros, reportes, configuracion, horarios, citatorios
@@ -59,7 +57,7 @@ def ver_alumnos():
 
 
 # =========================
-# CREAR ALUMNO (CON FOTO)
+# CREAR ALUMNO (FOTO EN BASE64 🔥)
 # =========================
 
 @admin_bp.route("/crear_alumno", methods=["POST"])
@@ -72,34 +70,19 @@ def crear_alumno():
     grupo = request.form.get("grupo")
 
     foto = request.files.get("foto")
-    foto_ruta = ""
+    foto_base64 = ""
 
     if foto and foto.filename != "":
-        extensiones = ["jpg", "jpeg", "png"]
-
-        if "." in foto.filename:
-            ext = foto.filename.rsplit(".", 1)[1].lower()
-
-            if ext in extensiones:
-
-                nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
-
-                carpeta = "static/uploads/alumnos"
-
-                if not os.path.exists(carpeta):
-                    os.makedirs(carpeta)
-
-                ruta = os.path.join(carpeta, nombre_archivo)
-
-                foto.save(ruta)
-
-                # 🔥 RUTA CORRECTA PARA HTML
-                foto_ruta = "/" + ruta.replace("\\", "/")
+        try:
+            imagen_bytes = foto.read()
+            foto_base64 = base64.b64encode(imagen_bytes).decode("utf-8")
+        except:
+            foto_base64 = ""
 
     alumnos.insert_one({
         "nombre": nombre,
         "grupo": grupo,
-        "foto": foto_ruta,
+        "foto": foto_base64,
         "calificaciones": [],
         "asistencias": []
     })
@@ -108,7 +91,7 @@ def crear_alumno():
 
 
 # =========================
-# CAMBIAR FOTO
+# CAMBIAR FOTO (BASE64 🔥)
 # =========================
 
 @admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
@@ -120,31 +103,16 @@ def subir_foto_alumno(id):
     foto = request.files.get("foto")
 
     if foto and foto.filename != "":
+        try:
+            imagen_bytes = foto.read()
+            foto_base64 = base64.b64encode(imagen_bytes).decode("utf-8")
 
-        extensiones = ["jpg", "jpeg", "png"]
-
-        if "." in foto.filename:
-            ext = foto.filename.rsplit(".", 1)[1].lower()
-
-            if ext in extensiones:
-
-                nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
-
-                carpeta = "static/uploads/alumnos"
-
-                if not os.path.exists(carpeta):
-                    os.makedirs(carpeta)
-
-                ruta = os.path.join(carpeta, nombre_archivo)
-
-                foto.save(ruta)
-
-                foto_ruta = "/" + ruta.replace("\\", "/")
-
-                alumnos.update_one(
-                    {"_id": ObjectId(id)},
-                    {"$set": {"foto": foto_ruta}}
-                )
+            alumnos.update_one(
+                {"_id": ObjectId(id)},
+                {"$set": {"foto": foto_base64}}
+            )
+        except:
+            pass
 
     return redirect("/admin/alumnos")
 
@@ -263,7 +231,12 @@ def aprobar_reporte(id):
     pdf = generar_reporte_pdf(reporte)
     pdf.seek(0)
 
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    return send_file(
+        pdf,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name="reporte.pdf"
+    )
 
 
 # =========================
@@ -279,7 +252,12 @@ def kardex(nombre):
     pdf = generar_kardex(nombre)
     pdf.seek(0)
 
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    return send_file(
+        pdf,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=f"kardex_{nombre}.pdf"
+    )
 
 
 # =========================
@@ -295,7 +273,12 @@ def boleta(nombre):
     pdf = generar_boleta(nombre)
     pdf.seek(0)
 
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    return send_file(
+        pdf,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=f"boleta_{nombre}.pdf"
+    )
 
 
 # =========================
@@ -347,7 +330,12 @@ def generar_citatorio(id):
     pdf = generar_citatorio_pdf(citatorio)
     pdf.seek(0)
 
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    return send_file(
+        pdf,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name="citatorio.pdf"
+    )
 
 
 # =========================
