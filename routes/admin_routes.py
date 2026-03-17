@@ -59,6 +59,97 @@ def ver_alumnos():
 
 
 # =========================
+# CREAR ALUMNO (CON FOTO)
+# =========================
+
+@admin_bp.route("/crear_alumno", methods=["POST"])
+def crear_alumno():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    nombre = request.form.get("nombre")
+    grupo = request.form.get("grupo")
+
+    foto = request.files.get("foto")
+    foto_ruta = ""
+
+    if foto and foto.filename != "":
+        extensiones = ["jpg", "jpeg", "png"]
+
+        if "." in foto.filename:
+            ext = foto.filename.rsplit(".", 1)[1].lower()
+
+            if ext in extensiones:
+
+                nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
+
+                carpeta = "static/uploads/alumnos"
+
+                if not os.path.exists(carpeta):
+                    os.makedirs(carpeta)
+
+                ruta = os.path.join(carpeta, nombre_archivo)
+
+                foto.save(ruta)
+
+                # 🔥 RUTA CORRECTA PARA HTML
+                foto_ruta = "/" + ruta.replace("\\", "/")
+
+    alumnos.insert_one({
+        "nombre": nombre,
+        "grupo": grupo,
+        "foto": foto_ruta,
+        "calificaciones": [],
+        "asistencias": []
+    })
+
+    return redirect("/admin/alumnos")
+
+
+# =========================
+# CAMBIAR FOTO
+# =========================
+
+@admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
+def subir_foto_alumno(id):
+
+    if not verificar_admin():
+        return redirect("/")
+
+    foto = request.files.get("foto")
+
+    if foto and foto.filename != "":
+
+        extensiones = ["jpg", "jpeg", "png"]
+
+        if "." in foto.filename:
+            ext = foto.filename.rsplit(".", 1)[1].lower()
+
+            if ext in extensiones:
+
+                nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
+
+                carpeta = "static/uploads/alumnos"
+
+                if not os.path.exists(carpeta):
+                    os.makedirs(carpeta)
+
+                ruta = os.path.join(carpeta, nombre_archivo)
+
+                foto.save(ruta)
+
+                foto_ruta = "/" + ruta.replace("\\", "/")
+
+                alumnos.update_one(
+                    {"_id": ObjectId(id)},
+                    {"$set": {"foto": foto_ruta}}
+                )
+
+    return redirect("/admin/alumnos")
+
+
+# =========================
 # MAESTROS
 # =========================
 
@@ -172,12 +263,7 @@ def aprobar_reporte(id):
     pdf = generar_reporte_pdf(reporte)
     pdf.seek(0)
 
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name="reporte.pdf"
-    )
+    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
 
 
 # =========================
@@ -193,12 +279,7 @@ def kardex(nombre):
     pdf = generar_kardex(nombre)
     pdf.seek(0)
 
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=f"kardex_{nombre}.pdf"
-    )
+    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
 
 
 # =========================
@@ -214,12 +295,7 @@ def boleta(nombre):
     pdf = generar_boleta(nombre)
     pdf.seek(0)
 
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=f"boleta_{nombre}.pdf"
-    )
+    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
 
 
 # =========================
@@ -271,12 +347,7 @@ def generar_citatorio(id):
     pdf = generar_citatorio_pdf(citatorio)
     pdf.seek(0)
 
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name="citatorio.pdf"
-    )
+    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
 
 
 # =========================

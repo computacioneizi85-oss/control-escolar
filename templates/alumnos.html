@@ -4,23 +4,18 @@
 
 <h1>Gestión de alumnos</h1>
 
-
 <h2>Registrar alumno</h2>
 
-<form action="/crear_alumno" method="POST" enctype="multipart/form-data">
+<form action="/admin/crear_alumno" method="POST" enctype="multipart/form-data">
 
 <input type="text" name="nombre" placeholder="Nombre del alumno" required>
 
 <select name="grupo">
-
 {% for grupo in grupos %}
-
 <option value="{{ grupo.nombre }}">
 {{ grupo.nombre }}
 </option>
-
 {% endfor %}
-
 </select>
 
 <input type="file" name="foto">
@@ -32,59 +27,7 @@ Registrar alumno
 </form>
 
 
-<br>
-<br>
-
-
-<!-- =========================
-FILTROS
-========================= -->
-
-<h2>Filtros</h2>
-
-<form method="GET" action="/alumnos">
-
-<select name="grupo">
-
-<option value="">Filtrar por grupo</option>
-
-{% for grupo in grupos %}
-
-<option value="{{ grupo.nombre }}">
-{{ grupo.nombre }}
-</option>
-
-{% endfor %}
-
-</select>
-
-
-<select name="maestro">
-
-<option value="">Filtrar por maestro</option>
-
-{% for maestro in maestros %}
-
-<option value="{{ maestro.nombre }}">
-{{ maestro.nombre }}
-</option>
-
-{% endfor %}
-
-</select>
-
-<button type="submit">Filtrar</button>
-
-<a href="/alumnos">
-<button type="button">Limpiar</button>
-</a>
-
-</form>
-
-
-<br>
-<br>
-
+<br><br>
 
 <h2>Lista de alumnos</h2>
 
@@ -107,7 +50,13 @@ FILTROS
 <td>
 
 {% if alumno.foto %}
-<img src="/{{ alumno.foto }}" width="50" height="50" style="border-radius:50%; object-fit:cover;">
+
+<img src="{{ alumno.foto }}"
+     width="50"
+     height="50"
+     style="border-radius:50%; object-fit:cover; cursor:pointer;"
+     onclick="verFoto('{{ alumno.foto }}')">
+
 {% else %}
 Sin foto
 {% endif %}
@@ -115,24 +64,23 @@ Sin foto
 </td>
 
 <td>{{ alumno.nombre }}</td>
-
 <td>{{ alumno.grupo }}</td>
 
 <td>
-<a href="/kardex/{{ alumno.nombre }}">
+<a href="/admin/kardex/{{ alumno.nombre }}">
 <button>Kardex</button>
 </a>
 </td>
 
 <td>
-<a href="/boleta/{{ alumno.nombre }}">
+<a href="/admin/boleta/{{ alumno.nombre }}">
 <button>Boleta</button>
 </a>
 </td>
 
 <td>
 
-<form action="/subir_foto_alumno/{{ alumno._id }}" method="POST" enctype="multipart/form-data">
+<form action="/admin/subir_foto_alumno/{{ alumno._id }}" method="POST" enctype="multipart/form-data">
 
 <input type="file" name="foto" required>
 
@@ -153,5 +101,42 @@ Sin foto
 {% endfor %}
 
 </table>
+
+
+<!-- =========================
+MODAL FOTO GRANDE
+========================= -->
+
+<div id="modalFoto" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.8);
+justify-content:center;
+align-items:center;
+z-index:999;
+">
+
+<img id="fotoGrande"
+     style="max-width:80%; max-height:80%; border-radius:10px;">
+
+</div>
+
+
+<script>
+
+function verFoto(src){
+    document.getElementById("modalFoto").style.display = "flex"
+    document.getElementById("fotoGrande").src = src
+}
+
+document.getElementById("modalFoto").onclick = function(){
+    this.style.display = "none"
+}
+
+</script>
 
 {% endblock %}
