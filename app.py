@@ -1,4 +1,5 @@
 from flask import Flask, session, redirect, request
+import os
 
 # BLUEPRINTS
 from routes.auth_routes import auth_bp
@@ -7,8 +8,10 @@ from routes.maestro_routes import maestro_bp
 
 app = Flask(__name__)
 
-# clave para sesiones
-app.secret_key = "control_escolar_secret"
+# =========================
+# 🔐 CLAVE SEGURA
+# =========================
+app.secret_key = os.environ.get("SECRET_KEY", os.urandom(24))
 
 
 # =========================
@@ -29,12 +32,15 @@ def proteger_rutas():
 
     rutas_publicas = ["/", "/login"]
 
+    # permitir archivos estáticos
     if request.path.startswith("/static"):
         return
 
+    # permitir login
     if request.path in rutas_publicas:
         return
 
+    # si no hay sesión → redirigir
     if "usuario" not in session:
         return redirect("/")
 

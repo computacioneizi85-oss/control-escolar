@@ -2,7 +2,9 @@ from flask import Blueprint, render_template, request, redirect, session, send_f
 from bson.objectid import ObjectId
 import os
 import uuid
+
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash
 
 from database.mongo import alumnos, grupos, materias, maestros, reportes, configuracion, horarios, citatorios
 from pdf.generador import generar_kardex, generar_boleta, generar_reporte_pdf, generar_citatorio_pdf
@@ -15,14 +17,7 @@ admin_bp = Blueprint("admin", __name__)
 # =========================
 
 def verificar_admin():
-
-    if "rol" not in session:
-        return False
-
-    if session["rol"] != "admin":
-        return False
-
-    return True
+    return "rol" in session and session["rol"] == "admin"
 
 
 # =========================
@@ -63,7 +58,7 @@ def ver_alumnos():
 
 
 # =========================
-# CREAR ALUMNO (CON FOTO)
+# CREAR ALUMNO (CON FOTO SEGURA)
 # =========================
 
 @admin_bp.route("/crear_alumno", methods=["POST"])
@@ -75,24 +70,34 @@ def crear_alumno():
     nombre = request.form.get("nombre")
     grupo = request.form.get("grupo")
 
+    if not nombre or not grupo:
+        return redirect("/alumnos")
+
     foto = request.files.get("foto")
 
     foto_ruta = ""
 
     if foto and foto.filename != "":
 
-        nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
+        extensiones = ["jpg", "jpeg", "png"]
 
-        carpeta = "static/uploads/alumnos"
+        if "." in foto.filename:
+            ext = foto.filename.rsplit(".", 1)[1].lower()
 
-        if not os.path.exists(carpeta):
-            os.makedirs(carpeta)
+            if ext in extensiones:
 
-        ruta = os.path.join(carpeta, nombre_archivo)
+                nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
 
-        foto.save(ruta)
+                carpeta = "static/uploads/alumnos"
 
-        foto_ruta = ruta.replace("\\", "/")
+                if not os.path.exists(carpeta):
+                    os.makedirs(carpeta)
+
+                ruta = os.path.join(carpeta, nombre_archivo)
+
+                foto.save(ruta)
+
+                foto_ruta = ruta.replace("\\", "/")
 
     alumnos.insert_one({
         "nombre": nombre,
@@ -106,7 +111,7 @@ def crear_alumno():
 
 
 # =========================
-# CAMBIAR FOTO ALUMNO
+# CAMBIAR FOTO ALUMNO (SEGURA)
 # =========================
 
 @admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
@@ -119,23 +124,30 @@ def subir_foto_alumno(id):
 
     if foto and foto.filename != "":
 
-        nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
+        extensiones = ["jpg", "jpeg", "png"]
 
-        carpeta = "static/uploads/alumnos"
+        if "." in foto.filename:
+            ext = foto.filename.rsplit(".", 1)[1].lower()
 
-        if not os.path.exists(carpeta):
-            os.makedirs(carpeta)
+            if ext in extensiones:
 
-        ruta = os.path.join(carpeta, nombre_archivo)
+                nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
 
-        foto.save(ruta)
+                carpeta = "static/uploads/alumnos"
 
-        foto_ruta = ruta.replace("\\", "/")
+                if not os.path.exists(carpeta):
+                    os.makedirs(carpeta)
 
-        alumnos.update_one(
-            {"_id": ObjectId(id)},
-            {"$set": {"foto": foto_ruta}}
-        )
+                ruta = os.path.join(carpeta, nombre_archivo)
+
+                foto.save(ruta)
+
+                foto_ruta = ruta.replace("\\", "/")
+
+                alumnos.update_one(
+                    {"_id": ObjectId(id)},
+                    {"$set": {"foto": foto_ruta}}
+                )
 
     return redirect("/alumnos")
 
@@ -155,6 +167,36 @@ def ver_maestros():
         maestros=list(maestros.find()),
         grupos=list(grupos.find())
     )
+
+
+# =========================
+# CREAR MAESTRO (PASSWORD SEGURA 🔐)
+# =========================
+
+@admin_bp.route("/crear_maestro", methods=["POST"])
+def crear_maestro():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    nombre = request.form.get("nombre")
+    usuario = request.form.get("usuario")
+    password = request.form.get("password")
+
+    if not nombre or not usuario or not password:
+        return redirect("/maestros")
+
+    password_hash = generate_password_hash(password)
+
+    maestros.insert_one({
+        "nombre": nombre,
+        "usuario": usuario,
+        "password": password_hash,
+        "grupos": [],
+        "materias": []
+    })
+
+    return redirect("/maestros")
 
 
 # =========================
@@ -243,11 +285,7 @@ def aprobar_reporte(id):
         {"$set": {"estatus": "aprobado"}}
     )
 
-    return send_file(
-        pdf_buffer,
-        mimetype="application/pdf",
-        download_name="reporte.pdf"
-    )
+    return send_file(pdf_buffer, mimetype="application/pdf")
 
 
 # =========================
@@ -260,13 +298,7 @@ def kardex(nombre):
     if not verificar_admin():
         return redirect("/")
 
-    pdf_buffer = generar_kardex(nombre)
-
-    return send_file(
-        pdf_buffer,
-        mimetype="application/pdf",
-        download_name=f"kardex_{nombre}.pdf"
-    )
+    return send_file(generar_kardex(nombre), mimetype="application/pdf")
 
 
 # =========================
@@ -279,13 +311,7 @@ def boleta(nombre):
     if not verificar_admin():
         return redirect("/")
 
-    pdf_buffer = generar_boleta(nombre)
-
-    return send_file(
-        pdf_buffer,
-        mimetype="application/pdf",
-        download_name=f"boleta_{nombre}.pdf"
-    )
+    return send_file(generar_boleta(nombre), mimetype="application/pdf")
 
 
 # =========================
@@ -323,11 +349,7 @@ def generar_citatorio(id):
         {"$set": {"estado": "generado"}}
     )
 
-    return send_file(
-        pdf_buffer,
-        mimetype="application/pdf",
-        download_name="citatorio.pdf"
-    )
+    return send_file(pdf_buffer, mimetype="application/pdf")
 
 
 # =========================

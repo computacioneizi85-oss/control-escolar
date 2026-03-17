@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, session
+from flask import Blueprint, render_template, request, redirect, session, jsonify
 from database.mongo import alumnos, maestros, reportes, horarios, configuracion
 from datetime import datetime
 
@@ -10,14 +10,7 @@ maestro_bp = Blueprint("maestro", __name__)
 # =========================
 
 def verificar_maestro():
-
-    if "rol" not in session:
-        return False
-
-    if session["rol"] != "maestro":
-        return False
-
-    return True
+    return "rol" in session and session["rol"] == "maestro"
 
 
 # =========================
@@ -35,21 +28,16 @@ def panel_maestro():
     if not maestro:
         return redirect("/")
 
-    # grupos asignados al maestro
     grupos = maestro.get("grupos", [])
 
-    # buscar horarios del maestro
     lista_horarios = list(horarios.find({"maestro": maestro["nombre"]}))
 
-    # si el maestro tiene horarios usar esos grupos
     if lista_horarios:
-        grupos_horario = [h["grupo"] for h in lista_horarios]
+        grupos_horario = [h.get("grupo") for h in lista_horarios if h.get("grupo")]
         grupos = list(set(grupos + grupos_horario))
 
-    # buscar alumnos de esos grupos
     lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
 
-    # obtener configuracion de evaluaciones
     config = configuracion.find_one()
 
     return render_template(
@@ -73,17 +61,16 @@ def guardar_calificaciones():
 
     alumno = request.form.get("alumno")
 
-    cal1 = request.form.get("cal1")
-    cal2 = request.form.get("cal2")
-    cal3 = request.form.get("cal3")
+    if not alumno:
+        return redirect("/panel_maestro")
 
     alumnos.update_one(
         {"nombre": alumno},
         {
             "$set": {
-                "cal1": cal1,
-                "cal2": cal2,
-                "cal3": cal3
+                "cal1": request.form.get("cal1"),
+                "cal2": request.form.get("cal2"),
+                "cal3": request.form.get("cal3")
             }
         }
     )
@@ -92,7 +79,7 @@ def guardar_calificaciones():
 
 
 # =========================
-# REGISTRAR ASISTENCIA
+# REGISTRAR ASISTENCIA (RÁPIDA)
 # =========================
 
 @maestro_bp.route("/registrar_asistencia", methods=["POST"])
@@ -103,6 +90,9 @@ def registrar_asistencia():
 
     alumno = request.form.get("alumno")
     estado = request.form.get("estado")
+
+    if not alumno or not estado:
+        return redirect("/panel_maestro")
 
     alumnos.update_one(
         {"nombre": alumno},
@@ -132,20 +122,21 @@ def crear_reporte():
     alumno = request.form.get("alumno")
     comentario = request.form.get("comentario")
 
-    reportes.insert_one({
+    if not alumno or not comentario:
+        return redirect("/panel_maestro")
 
+    reportes.insert_one({
         "alumno": alumno,
         "maestro": session["usuario"],
         "comentario": comentario,
         "estatus": "pendiente"
-
     })
 
     return redirect("/panel_maestro")
 
 
 # =========================
-# DESCARGAR EVALUACION TRIMESTRAL
+# DESCARGAR EVALUACIONES
 # =========================
 
 @maestro_bp.route("/descargar_trimestre/<numero>")
@@ -166,8 +157,9 @@ def descargar_trimestre(numero):
 
     return f"Descarga de evaluación del trimestre {numero} habilitada"
 
+
 # =========================
-# GUARDAR ASISTENCIAS
+# GUARDAR ASISTENCIA CON FECHA
 # =========================
 
 @maestro_bp.route("/guardar_asistencia_fecha", methods=["POST"])
@@ -179,6 +171,9 @@ def guardar_asistencia_fecha():
     alumno = request.form.get("alumno")
     fecha = request.form.get("fecha")
     estado = request.form.get("estado")
+
+    if not alumno or not fecha or not estado:
+        return redirect("/panel_maestro")
 
     alumnos.update_one(
         {"nombre": alumno},
@@ -194,21 +189,29 @@ def guardar_asistencia_fecha():
 
     return redirect("/panel_maestro")
 
+
+# =========================
+# 🔥 ASISTENCIA AJAX (SEMAFORO)
+# =========================
+
 @maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])
 def guardar_asistencia_ajax():
 
-    if "rol" not in session:
-        return {"status":"error"}
+    if not verificar_maestro():
+        return jsonify({"status": "error", "msg": "No autorizado"})
 
     alumno = request.form.get("alumno")
     estado = request.form.get("estado")
     fecha = request.form.get("fecha")
 
+    if not alumno or not estado or not fecha:
+        return jsonify({"status": "error", "msg": "Datos incompletos"})
+
     alumnos.update_one(
         {"nombre": alumno},
         {
-            "$push":{
-                "asistencias":{
+            "$push": {
+                "asistencias": {
                     "fecha": fecha,
                     "estado": estado
                 }
@@ -216,4 +219,4 @@ def guardar_asistencia_ajax():
         }
     )
 
-    return {"status":"ok"}
+    return jsonify({"status": "ok"})
