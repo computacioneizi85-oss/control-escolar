@@ -170,10 +170,6 @@ def aprobar_reporte(id):
             return "❌ Reporte no encontrado"
 
         pdf = generar_reporte_pdf(reporte)
-
-        if not pdf:
-            return "❌ Error generando PDF"
-
         pdf.seek(0)
 
         return send_file(
@@ -197,19 +193,10 @@ def kardex(nombre):
     if not verificar_admin():
         return redirect("/")
 
-    try:
-        pdf = generar_kardex(nombre)
-        pdf.seek(0)
+    pdf = generar_kardex(nombre)
+    pdf.seek(0)
 
-        return send_file(
-            pdf,
-            mimetype="application/pdf",
-            as_attachment=True,
-            download_name=f"kardex_{nombre}.pdf"
-        )
-
-    except Exception as e:
-        return f"ERROR KARDEX: {str(e)}"
+    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
 
 
 # =========================
@@ -222,19 +209,10 @@ def boleta(nombre):
     if not verificar_admin():
         return redirect("/")
 
-    try:
-        pdf = generar_boleta(nombre)
-        pdf.seek(0)
+    pdf = generar_boleta(nombre)
+    pdf.seek(0)
 
-        return send_file(
-            pdf,
-            mimetype="application/pdf",
-            as_attachment=True,
-            download_name=f"boleta_{nombre}.pdf"
-        )
-
-    except Exception as e:
-        return f"ERROR BOLETA: {str(e)}"
+    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
 
 
 # =========================
@@ -254,6 +232,31 @@ def ver_citatorios():
     )
 
 
+# 🔥 ESTA ES LA RUTA QUE TE FALTABA
+@admin_bp.route("/crear_citatorio", methods=["POST"])
+def crear_citatorio():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    alumno = request.form.get("alumno")
+    grupo = request.form.get("grupo")
+    motivo = request.form.get("motivo")
+    fecha = request.form.get("fecha")
+    hora = request.form.get("hora")
+
+    citatorios.insert_one({
+        "alumno": alumno,
+        "grupo": grupo,
+        "motivo": motivo,
+        "fecha_cita": fecha,
+        "hora": hora,
+        "estado": "pendiente"
+    })
+
+    return redirect("/citatorios")
+
+
 @admin_bp.route("/generar_citatorio/<id>")
 def generar_citatorio(id):
 
@@ -267,10 +270,6 @@ def generar_citatorio(id):
             return "❌ Citatorio no encontrado"
 
         pdf = generar_citatorio_pdf(citatorio)
-
-        if not pdf:
-            return "❌ Error generando PDF"
-
         pdf.seek(0)
 
         return send_file(
