@@ -70,34 +70,19 @@ def crear_alumno():
     nombre = request.form.get("nombre")
     grupo = request.form.get("grupo")
 
-    if not nombre or not grupo:
-        return redirect("/alumnos")
-
     foto = request.files.get("foto")
-
     foto_ruta = ""
 
     if foto and foto.filename != "":
+        nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
 
-        extensiones = ["jpg", "jpeg", "png"]
+        carpeta = "static/uploads/alumnos"
+        os.makedirs(carpeta, exist_ok=True)
 
-        if "." in foto.filename:
-            ext = foto.filename.rsplit(".", 1)[1].lower()
+        ruta = os.path.join(carpeta, nombre_archivo)
+        foto.save(ruta)
 
-            if ext in extensiones:
-
-                nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
-
-                carpeta = "static/uploads/alumnos"
-
-                if not os.path.exists(carpeta):
-                    os.makedirs(carpeta)
-
-                ruta = os.path.join(carpeta, nombre_archivo)
-
-                foto.save(ruta)
-
-                foto_ruta = ruta.replace("\\", "/")
+        foto_ruta = ruta.replace("\\", "/")
 
     alumnos.insert_one({
         "nombre": nombre,
@@ -111,72 +96,54 @@ def crear_alumno():
 
 
 # =========================
-# CAMBIAR FOTO
+# GRUPOS
 # =========================
 
-@admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
-def subir_foto_alumno(id):
-
-    if not verificar_admin():
-        return redirect("/")
-
-    foto = request.files.get("foto")
-
-    if foto and foto.filename != "":
-
-        nombre_archivo = str(uuid.uuid4()) + "_" + secure_filename(foto.filename)
-
-        carpeta = "static/uploads/alumnos"
-
-        if not os.path.exists(carpeta):
-            os.makedirs(carpeta)
-
-        ruta = os.path.join(carpeta, nombre_archivo)
-
-        foto.save(ruta)
-
-        alumnos.update_one(
-            {"_id": ObjectId(id)},
-            {"$set": {"foto": ruta.replace("\\", "/")}}
-        )
-
-    return redirect("/alumnos")
+@admin_bp.route("/grupos")
+def ver_grupos():
+    return render_template("grupos.html", grupos=list(grupos.find()))
 
 
 # =========================
-# MAESTROS
+# MATERIAS
 # =========================
 
-@admin_bp.route("/maestros")
-def ver_maestros():
-
-    if not verificar_admin():
-        return redirect("/")
-
+@admin_bp.route("/materias")
+def ver_materias():
     return render_template(
-        "maestros.html",
-        maestros=list(maestros.find()),
+        "materias.html",
+        materias=list(materias.find()),
         grupos=list(grupos.find())
     )
 
 
-@admin_bp.route("/crear_maestro", methods=["POST"])
-def crear_maestro():
+# =========================
+# HORARIOS
+# =========================
 
-    if not verificar_admin():
-        return redirect("/")
+@admin_bp.route("/horarios")
+def ver_horarios():
+    return render_template(
+        "horarios.html",
+        horarios=list(horarios.find()),
+        grupos=list(grupos.find()),
+        materias=list(materias.find()),
+        maestros=list(maestros.find())
+    )
 
-    password_hash = generate_password_hash(request.form.get("password"))
 
-    maestros.insert_one({
-        "nombre": request.form.get("nombre"),
-        "usuario": request.form.get("usuario"),
-        "password": password_hash,
-        "grupos": [],
-        "materias": []
-    })
+# =========================
+# ASISTENCIAS
+# =========================
 
-    return redirect("/maestros")
+@admin_bp.route("/asistencias")
+def ver_asistencias():
+    return render_template(
+        "asistencias_admin.html",
+        alumnos=list(alumnos.find()),
+        grupos=list(grupos.find()),
+        maestros=list(maestros.find())
+    )
 
 
 # =========================
@@ -185,10 +152,6 @@ def crear_maestro():
 
 @admin_bp.route("/reportes")
 def ver_reportes():
-
-    if not verificar_admin():
-        return redirect("/")
-
     return render_template(
         "reportes_admin.html",
         reportes=list(reportes.find())
@@ -198,9 +161,6 @@ def ver_reportes():
 @admin_bp.route("/aprobar_reporte/<id>")
 def aprobar_reporte(id):
 
-    if not verificar_admin():
-        return redirect("/")
-
     reporte = reportes.find_one({"_id": ObjectId(id)})
 
     if not reporte:
@@ -208,16 +168,11 @@ def aprobar_reporte(id):
 
     pdf_buffer = generar_reporte_pdf(reporte)
 
-    reportes.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {"estatus": "aprobado"}}
-    )
-
     return send_file(
         pdf_buffer,
         mimetype="application/pdf",
         as_attachment=True,
-        download_name=f"reporte_{reporte.get('alumno','')}.pdf"
+        download_name="reporte.pdf"
     )
 
 
@@ -227,16 +182,7 @@ def aprobar_reporte(id):
 
 @admin_bp.route("/kardex/<nombre>")
 def kardex(nombre):
-
-    if not verificar_admin():
-        return redirect("/")
-
-    return send_file(
-        generar_kardex(nombre),
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=f"kardex_{nombre}.pdf"
-    )
+    return send_file(generar_kardex(nombre), mimetype="application/pdf", as_attachment=True)
 
 
 # =========================
@@ -245,16 +191,7 @@ def kardex(nombre):
 
 @admin_bp.route("/boleta/<nombre>")
 def boleta(nombre):
-
-    if not verificar_admin():
-        return redirect("/")
-
-    return send_file(
-        generar_boleta(nombre),
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=f"boleta_{nombre}.pdf"
-    )
+    return send_file(generar_boleta(nombre), mimetype="application/pdf", as_attachment=True)
 
 
 # =========================
@@ -263,10 +200,6 @@ def boleta(nombre):
 
 @admin_bp.route("/citatorios")
 def ver_citatorios():
-
-    if not verificar_admin():
-        return redirect("/")
-
     return render_template(
         "citatorios.html",
         citatorios=list(citatorios.find()),
@@ -277,9 +210,6 @@ def ver_citatorios():
 @admin_bp.route("/generar_citatorio/<id>")
 def generar_citatorio(id):
 
-    if not verificar_admin():
-        return redirect("/")
-
     citatorio = citatorios.find_one({"_id": ObjectId(id)})
 
     if not citatorio:
@@ -287,16 +217,11 @@ def generar_citatorio(id):
 
     pdf_buffer = generar_citatorio_pdf(citatorio)
 
-    citatorios.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {"estado": "generado"}}
-    )
-
     return send_file(
         pdf_buffer,
         mimetype="application/pdf",
         as_attachment=True,
-        download_name=f"citatorio_{citatorio.get('alumno','')}.pdf"
+        download_name="citatorio.pdf"
     )
 
 
@@ -306,10 +231,6 @@ def generar_citatorio(id):
 
 @admin_bp.route("/configuracion")
 def ver_configuracion():
-
-    if not verificar_admin():
-        return redirect("/")
-
     return render_template(
         "configuracion.html",
         config=configuracion.find_one()
