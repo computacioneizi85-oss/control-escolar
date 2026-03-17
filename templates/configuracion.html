@@ -15,12 +15,12 @@
 <h2>Control Escolar</h2>
 
 <a href="/admin">Dashboard</a>
-<a href="/alumnos">Alumnos</a>
-<a href="/maestros">Maestros</a>
-<a href="/grupos">Grupos</a>
-<a href="/materias">Materias</a>
-<a href="/reportes">Reportes</a>
-<a href="/configuracion">Configuración</a>
+<a href="/admin/alumnos">Alumnos</a>
+<a href="/admin/maestros">Maestros</a>
+<a href="/admin/grupos">Grupos</a>
+<a href="/admin/materias">Materias</a>
+<a href="/admin/reportes">Reportes</a>
+<a href="/admin/configuracion">Configuración</a>
 
 <a href="/logout">Cerrar sesión</a>
 
@@ -30,6 +30,10 @@
 <div class="content">
 
 <h1>Configuración de la escuela</h1>
+
+<!-- =========================
+DATOS GENERALES
+========================= -->
 
 <form action="/guardar_configuracion" method="POST">
 
@@ -45,14 +49,43 @@
 <label>Dirección</label>
 <input type="text" name="direccion" value="{{ config.direccion if config else '' }}">
 
-<label>Escudo de la escuela</label>
-<input type="file" name="escudo">
+<br><br>
+
+<button type="submit">Guardar datos</button>
+
+</form>
+
 
 <br><br>
 
-<button type="submit">Guardar</button>
+<!-- =========================
+ESCUDO (SEPARADO 🔥)
+========================= -->
+
+<h2>Escudo de la escuela</h2>
+
+<form action="/admin/subir_escudo" method="POST" enctype="multipart/form-data">
+
+<input type="file" name="escudo" required>
+
+<button type="submit">Subir escudo</button>
 
 </form>
+
+
+<br>
+
+<!-- MOSTRAR ESCUDO ACTUAL -->
+
+{% if config and config.escudo %}
+
+<h3>Escudo actual:</h3>
+
+<img src="data:image/png;base64,{{ config.escudo }}"
+     style="width:120px; border-radius:10px; margin-top:10px;">
+
+{% endif %}
+
 
 </div>
 

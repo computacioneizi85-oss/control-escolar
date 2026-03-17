@@ -57,7 +57,7 @@ def ver_alumnos():
 
 
 # =========================
-# CREAR ALUMNO (FOTO EN BASE64 🔥)
+# CREAR ALUMNO (FOTO BASE64)
 # =========================
 
 @admin_bp.route("/crear_alumno", methods=["POST"])
@@ -91,7 +91,7 @@ def crear_alumno():
 
 
 # =========================
-# CAMBIAR FOTO (BASE64 🔥)
+# CAMBIAR FOTO
 # =========================
 
 @admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
@@ -115,6 +115,35 @@ def subir_foto_alumno(id):
             pass
 
     return redirect("/admin/alumnos")
+
+
+# =========================
+# 🔥 NUEVO: SUBIR ESCUDO (BASE64)
+# =========================
+
+@admin_bp.route("/subir_escudo", methods=["POST"])
+def subir_escudo():
+
+    if not verificar_admin():
+        return redirect("/")
+
+    escudo = request.files.get("escudo")
+    escudo_base64 = ""
+
+    if escudo and escudo.filename != "":
+        try:
+            imagen_bytes = escudo.read()
+            escudo_base64 = base64.b64encode(imagen_bytes).decode("utf-8")
+        except:
+            escudo_base64 = ""
+
+    configuracion.update_one(
+        {},
+        {"$set": {"escudo": escudo_base64}},
+        upsert=True
+    )
+
+    return redirect("/admin/configuracion")
 
 
 # =========================

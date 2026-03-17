@@ -3,6 +3,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 
 from io import BytesIO
+import base64
 import os
 
 from database.mongo import configuracion, materias
@@ -33,26 +34,38 @@ def obtener_config():
 
 
 # ==============================
-# DIBUJAR ESCUDO
+# DIBUJAR ESCUDO (🔥 BASE64 + COMPATIBLE)
 # ==============================
 
 def dibujar_escudo(c, escudo):
 
-    if escudo and os.path.exists(escudo):
+    if not escudo:
+        return
 
-        try:
+    try:
+        # 🔥 SI ES BASE64
+        if len(escudo) > 100:
+            imagen_bytes = base64.b64decode(escudo)
+            imagen_stream = BytesIO(imagen_bytes)
+            logo = ImageReader(imagen_stream)
+
+        # 🔥 SI ES RUTA ANTIGUA
+        elif os.path.exists(escudo):
             logo = ImageReader(escudo)
 
-            c.drawImage(
-                logo,
-                40,
-                700,
-                width=80,
-                height=80
-            )
+        else:
+            return
 
-        except:
-            pass
+        c.drawImage(
+            logo,
+            40,
+            700,
+            width=80,
+            height=80
+        )
+
+    except:
+        pass
 
 
 # ==============================
