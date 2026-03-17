@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, session, jsonify
+from bson.objectid import ObjectId
 from database.mongo import alumnos, maestros, reportes, horarios, configuracion
 from datetime import datetime
 
@@ -50,7 +51,7 @@ def panel_maestro():
 
 
 # =========================
-# GUARDAR CALIFICACIONES
+# 🔥 GUARDAR CALIFICACIONES (DOBLE SISTEMA)
 # =========================
 
 @maestro_bp.route("/guardar_calificaciones", methods=["POST"])
@@ -59,27 +60,74 @@ def guardar_calificaciones():
     if not verificar_maestro():
         return redirect("/")
 
-    alumno = request.form.get("alumno")
+    alumno_nombre = request.form.get("alumno")
+
+    if not alumno_nombre:
+        return redirect("/panel_maestro")
+
+    cal1 = request.form.get("cal1")
+    cal2 = request.form.get("cal2")
+    cal3 = request.form.get("cal3")
+
+    # 🔥 NUEVO: materia dinámica
+    materia = request.form.get("materia")
+
+    alumno = alumnos.find_one({"nombre": alumno_nombre})
 
     if not alumno:
         return redirect("/panel_maestro")
 
+    # =========================
+    # SISTEMA ANTIGUO (NO SE ROMPE)
+    # =========================
+
     alumnos.update_one(
-        {"nombre": alumno},
+        {"nombre": alumno_nombre},
         {
             "$set": {
-                "cal1": request.form.get("cal1"),
-                "cal2": request.form.get("cal2"),
-                "cal3": request.form.get("cal3")
+                "cal1": cal1,
+                "cal2": cal2,
+                "cal3": cal3
             }
         }
     )
+
+    # =========================
+    # 🔥 SISTEMA NUEVO (PDF PRO)
+    # =========================
+
+    if materia and cal1:
+
+        try:
+            calificacion = float(cal1)
+        except:
+            calificacion = 0
+
+        calificaciones = alumno.get("calificaciones", [])
+
+        encontrada = False
+
+        for c in calificaciones:
+            if c["materia"] == materia:
+                c["calificacion"] = calificacion
+                encontrada = True
+
+        if not encontrada:
+            calificaciones.append({
+                "materia": materia,
+                "calificacion": calificacion
+            })
+
+        alumnos.update_one(
+            {"nombre": alumno_nombre},
+            {"$set": {"calificaciones": calificaciones}}
+        )
 
     return redirect("/panel_maestro")
 
 
 # =========================
-# REGISTRAR ASISTENCIA (RÁPIDA)
+# REGISTRAR ASISTENCIA
 # =========================
 
 @maestro_bp.route("/registrar_asistencia", methods=["POST"])
@@ -110,7 +158,7 @@ def registrar_asistencia():
 
 
 # =========================
-# CREAR REPORTE DISCIPLINARIO
+# CREAR REPORTE
 # =========================
 
 @maestro_bp.route("/crear_reporte", methods=["POST"])
@@ -136,7 +184,7 @@ def crear_reporte():
 
 
 # =========================
-# DESCARGAR EVALUACIONES
+# DESCARGAR TRIMESTRE
 # =========================
 
 @maestro_bp.route("/descargar_trimestre/<numero>")
@@ -159,7 +207,7 @@ def descargar_trimestre(numero):
 
 
 # =========================
-# GUARDAR ASISTENCIA CON FECHA
+# ASISTENCIA CON FECHA
 # =========================
 
 @maestro_bp.route("/guardar_asistencia_fecha", methods=["POST"])
@@ -191,7 +239,7 @@ def guardar_asistencia_fecha():
 
 
 # =========================
-# 🔥 ASISTENCIA AJAX (SEMAFORO)
+# 🔥 ASISTENCIA AJAX
 # =========================
 
 @maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])

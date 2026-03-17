@@ -53,8 +53,6 @@ border-radius:50%;
 object-fit:cover;
 }
 
-/* SEMAFORO */
-
 .semaforo{
 width:16px;
 height:16px;
@@ -62,23 +60,10 @@ border-radius:50%;
 display:inline-block;
 }
 
-.verde{
-background:#2ecc71;
-}
-
-.amarillo{
-background:#f1c40f;
-}
-
-.rojo{
-background:#e74c3c;
-}
-
-.gris{
-background:#bdc3c7;
-}
-
-/* BOTONES RAPIDOS */
+.verde{background:#2ecc71;}
+.amarillo{background:#f1c40f;}
+.rojo{background:#e74c3c;}
+.gris{background:#bdc3c7;}
 
 .btn-verde{
 background:#2ecc71;
@@ -109,37 +94,27 @@ border-radius:4px;
 </style>
 
 
-
 <div class="menu-toggle" onclick="toggleMenu()">☰ Panel del Maestro</div>
 
 <div class="panel-container">
 
 <!-- MENU -->
-
 <div class="menu-maestro" id="menuMaestro">
-
 <button onclick="mostrarSeccion('inicio')">Dashboard</button>
 <button onclick="mostrarSeccion('clases')">Mis clases</button>
 <button onclick="mostrarSeccion('evaluaciones')">Evaluaciones</button>
 <button onclick="mostrarSeccion('alumnos')">Lista alumnos</button>
 <button onclick="mostrarSeccion('asistencias')">Asistencias</button>
-
 </div>
-
 
 
 <div style="flex:1;">
 
-
-
 <!-- DASHBOARD -->
-
 <div id="inicio" class="seccion activa">
-
 <h2>Resumen</h2>
 
 <div class="cards">
-
 <div class="card">
 <h3>Alumnos</h3>
 <p>{{ alumnos|length }}</p>
@@ -149,23 +124,16 @@ border-radius:4px;
 <h3>Clases</h3>
 <p>{{ horarios|length }}</p>
 </div>
-
 </div>
-
 </div>
-
 
 
 <!-- HORARIOS -->
-
 <div id="clases" class="seccion">
-
 <h3>Mis clases</h3>
 
 {% if horarios %}
-
 <table>
-
 <tr>
 <th>Grupo</th>
 <th>Materia</th>
@@ -174,65 +142,44 @@ border-radius:4px;
 </tr>
 
 {% for horario in horarios %}
-
 <tr>
-
 <td>{{ horario.grupo }}</td>
 <td>{{ horario.materia }}</td>
 <td>{{ horario.dia }}</td>
 <td>{{ horario.hora }}</td>
-
 </tr>
-
 {% endfor %}
-
 </table>
-
 {% else %}
-
 <p>No tienes clases asignadas.</p>
-
 {% endif %}
-
 </div>
-
 
 
 <!-- EVALUACIONES -->
-
 <div id="evaluaciones" class="seccion">
-
 <h3>Evaluaciones disponibles</h3>
 
 {% if config %}
-
 {% if config.trimestre1 %}
-<a href="/descargar_trimestre/1"><button>Descargar Evaluación Trimestre 1</button></a>
+<a href="/descargar_trimestre/1"><button>Trimestre 1</button></a>
 {% endif %}
-
 {% if config.trimestre2 %}
-<a href="/descargar_trimestre/2"><button>Descargar Evaluación Trimestre 2</button></a>
+<a href="/descargar_trimestre/2"><button>Trimestre 2</button></a>
 {% endif %}
-
 {% if config.trimestre3 %}
-<a href="/descargar_trimestre/3"><button>Descargar Evaluación Trimestre 3</button></a>
+<a href="/descargar_trimestre/3"><button>Trimestre 3</button></a>
 {% endif %}
-
 {% else %}
-
 <p>No hay evaluaciones habilitadas.</p>
-
 {% endif %}
-
 </div>
 
 
-
 <!-- LISTA DE ALUMNOS -->
-
 <div id="alumnos" class="seccion">
 
-<h3>Lista de alumnos</h3>
+<h3>Captura de calificaciones</h3>
 
 <table>
 
@@ -240,6 +187,7 @@ border-radius:4px;
 <th>Foto</th>
 <th>Alumno</th>
 <th>Grupo</th>
+<th>Materia</th>
 <th>Calificaciones</th>
 <th>Reporte</th>
 </tr>
@@ -250,7 +198,7 @@ border-radius:4px;
 
 <td>
 {% if alumno.foto %}
-<img src="/{{ alumno.foto }}" class="foto-alumno">
+<img src="data:image/png;base64,{{ alumno.foto }}" class="foto-alumno">
 {% else %}
 —
 {% endif %}
@@ -261,7 +209,19 @@ border-radius:4px;
 
 <td>
 
-<form action="/guardar_calificaciones" method="POST">
+<select name="materia" form="form_{{ loop.index }}">
+<option>Matemáticas</option>
+<option>Español</option>
+<option>Ciencias</option>
+<option>Historia</option>
+<option>Inglés</option>
+</select>
+
+</td>
+
+<td>
+
+<form id="form_{{ loop.index }}" action="/guardar_calificaciones" method="POST">
 
 <input type="hidden" name="alumno" value="{{ alumno.nombre }}">
 
@@ -298,9 +258,7 @@ border-radius:4px;
 </div>
 
 
-
 <!-- ASISTENCIAS -->
-
 <div id="asistencias" class="seccion">
 
 <h3>Registro de asistencias</h3>
@@ -312,9 +270,9 @@ border-radius:4px;
 <th>Alumno</th>
 <th>Grupo</th>
 <th>Fecha</th>
-<th>Acciones rápidas</th>
+<th>Acciones</th>
 <th>Semáforo</th>
-<th>Guardar manual</th>
+<th>Manual</th>
 </tr>
 
 {% for alumno in alumnos %}
@@ -323,7 +281,7 @@ border-radius:4px;
 
 <td>
 {% if alumno.foto %}
-<img src="/{{ alumno.foto }}" class="foto-alumno">
+<img src="data:image/png;base64,{{ alumno.foto }}" class="foto-alumno">
 {% else %}
 —
 {% endif %}
@@ -345,9 +303,7 @@ border-radius:4px;
 </td>
 
 <td>
-
 <span id="semaforo_{{ loop.index }}" class="semaforo gris"></span>
-
 </td>
 
 <td>
@@ -359,11 +315,9 @@ border-radius:4px;
 <input type="date" name="fecha" required>
 
 <select name="estado">
-
 <option value="asistencia">Asistencia</option>
 <option value="retardo">Retardo</option>
 <option value="falta">Falta</option>
-
 </select>
 
 <button type="submit">Guardar</button>
@@ -380,39 +334,21 @@ border-radius:4px;
 
 </div>
 
-
-
 </div>
-
 </div>
-
 
 
 <script>
 
 function mostrarSeccion(id){
-
-document.querySelectorAll(".seccion").forEach(function(sec){
-sec.classList.remove("activa")
-})
-
+document.querySelectorAll(".seccion").forEach(sec=>sec.classList.remove("activa"))
 document.getElementById(id).classList.add("activa")
-
 }
 
 function toggleMenu(){
-
 let menu = document.getElementById("menuMaestro")
-
-if(menu.style.display === "none"){
-menu.style.display = "block"
-}else{
-menu.style.display = "none"
+menu.style.display = (menu.style.display === "none") ? "block" : "none"
 }
-
-}
-
-/* MARCAR ASISTENCIA RAPIDA */
 
 function marcar(alumno,estado,id){
 
@@ -425,28 +361,14 @@ return
 
 let semaforo = document.getElementById("semaforo_"+id)
 
-if(estado=="asistencia"){
-semaforo.className="semaforo verde"
-}
-
-if(estado=="retardo"){
-semaforo.className="semaforo amarillo"
-}
-
-if(estado=="falta"){
-semaforo.className="semaforo rojo"
-}
+if(estado=="asistencia"){semaforo.className="semaforo verde"}
+if(estado=="retardo"){semaforo.className="semaforo amarillo"}
+if(estado=="falta"){semaforo.className="semaforo rojo"}
 
 fetch("/guardar_asistencia_ajax",{
-
 method:"POST",
-
-headers:{
-"Content-Type":"application/x-www-form-urlencoded"
-},
-
+headers:{"Content-Type":"application/x-www-form-urlencoded"},
 body:"alumno="+alumno+"&estado="+estado+"&fecha="+fecha
-
 })
 
 }
