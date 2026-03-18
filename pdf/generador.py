@@ -47,7 +47,7 @@ def fecha_actual():
 
 
 # ==============================
-# ESCUDO
+# 🔥 ESCUDO SEGURO
 # ==============================
 
 def dibujar_escudo(c, escudo):
@@ -56,18 +56,27 @@ def dibujar_escudo(c, escudo):
         return
 
     try:
-        if len(escudo) > 100:
+        # BASE64
+        if isinstance(escudo, str) and len(escudo) > 100:
             imagen_bytes = base64.b64decode(escudo)
+
+            if not imagen_bytes:
+                return
+
             imagen_stream = BytesIO(imagen_bytes)
             logo = ImageReader(imagen_stream)
-        elif os.path.exists(escudo):
+
+        # RUTA
+        elif isinstance(escudo, str) and os.path.exists(escudo):
             logo = ImageReader(escudo)
+
         else:
             return
 
         c.drawImage(logo, 40, 730, width=60, height=60)
 
-    except:
+    except Exception as e:
+        print("Error escudo:", e)
         pass
 
 
@@ -118,7 +127,30 @@ def crear_pdf():
 
 
 # ==============================
-# 🔥 KARDEX PRO (MEJORADO)
+# 🔥 FOTO SEGURA
+# ==============================
+
+def dibujar_foto(c, foto_base64, x=450, y=630):
+
+    try:
+        if foto_base64 and len(foto_base64) > 100:
+            foto_bytes = base64.b64decode(foto_base64)
+
+            if not foto_bytes:
+                return
+
+            foto_stream = BytesIO(foto_bytes)
+            img = ImageReader(foto_stream)
+
+            c.drawImage(img, x, y, width=80, height=80)
+
+    except Exception as e:
+        print("Error foto:", e)
+        pass
+
+
+# ==============================
+# KARDEX
 # ==============================
 
 def generar_kardex(nombre):
@@ -128,22 +160,13 @@ def generar_kardex(nombre):
 
     encabezado(c, escuela, ciclo, direccion, escudo, "KARDEX ACADÉMICO")
 
-    alumno = alumnos.find_one({"nombre": nombre})
+    alumno = alumnos.find_one({"nombre": nombre}) or {}
 
     c.setFont("Helvetica", 11)
     c.drawString(50, 670, f"Alumno: {nombre}")
     c.drawString(50, 650, f"Grupo: {alumno.get('grupo','')}")
 
-    # FOTO DEL ALUMNO
-    try:
-        if alumno.get("foto"):
-            foto_bytes = base64.b64decode(alumno["foto"])
-            foto_stream = BytesIO(foto_bytes)
-            img = ImageReader(foto_stream)
-
-            c.drawImage(img, 450, 630, width=80, height=80)
-    except:
-        pass
+    dibujar_foto(c, alumno.get("foto"))
 
     c.line(50, 630, 550, 630)
 
@@ -166,7 +189,6 @@ def generar_kardex(nombre):
 
         y -= 25
 
-    # PROMEDIO
     promedio = round(suma / total, 2) if total > 0 else 0
 
     c.setFont("Helvetica-Bold", 12)
@@ -191,22 +213,13 @@ def generar_boleta(nombre):
 
     encabezado(c, escuela, ciclo, direccion, escudo, "BOLETA DE CALIFICACIONES")
 
-    alumno = alumnos.find_one({"nombre": nombre})
+    alumno = alumnos.find_one({"nombre": nombre}) or {}
 
     c.setFont("Helvetica", 11)
     c.drawString(50, 670, f"Alumno: {nombre}")
     c.drawString(50, 650, f"Grupo: {alumno.get('grupo','')}")
 
-    # FOTO
-    try:
-        if alumno.get("foto"):
-            foto_bytes = base64.b64decode(alumno["foto"])
-            foto_stream = BytesIO(foto_bytes)
-            img = ImageReader(foto_stream)
-
-            c.drawImage(img, 450, 630, width=80, height=80)
-    except:
-        pass
+    dibujar_foto(c, alumno.get("foto"))
 
     c.line(50, 630, 550, 630)
 
