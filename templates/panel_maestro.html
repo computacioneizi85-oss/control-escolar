@@ -2,6 +2,8 @@
 
 {% block content %}
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 
 .panel-container{
@@ -91,6 +93,14 @@ cursor:pointer;
 border-radius:4px;
 }
 
+.card-analytics{
+background:white;
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
+box-shadow:0px 4px 10px rgba(0,0,0,0.08);
+}
+
 </style>
 
 
@@ -101,6 +111,7 @@ border-radius:4px;
 <!-- MENU -->
 <div class="menu-maestro" id="menuMaestro">
 <button onclick="mostrarSeccion('inicio')">Dashboard</button>
+<button onclick="mostrarSeccion('analytics')">Analytics</button> <!-- 🔥 NUEVO -->
 <button onclick="mostrarSeccion('clases')">Mis clases</button>
 <button onclick="mostrarSeccion('evaluaciones')">Evaluaciones</button>
 <button onclick="mostrarSeccion('alumnos')">Lista alumnos</button>
@@ -110,7 +121,9 @@ border-radius:4px;
 
 <div style="flex:1;">
 
-<!-- DASHBOARD -->
+<!-- =========================
+DASHBOARD NORMAL
+========================= -->
 <div id="inicio" class="seccion activa">
 <h2>Resumen</h2>
 
@@ -125,6 +138,38 @@ border-radius:4px;
 <p>{{ horarios|length }}</p>
 </div>
 </div>
+</div>
+
+
+<!-- =========================
+🔥 ANALYTICS PRO
+========================= -->
+
+<div id="analytics" class="seccion">
+
+<h2>Analytics Académico</h2>
+
+<div class="card-analytics">
+Promedio del grupo: <strong>{{ promedio_grupo }}</strong>
+</div>
+
+<div class="card-analytics">
+Top alumno:
+<strong>
+{% if top_alumnos %}
+{{ top_alumnos[0].nombre }}
+{% else %}
+—
+{% endif %}
+</strong>
+</div>
+
+<div class="card-analytics">
+Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
+</div>
+
+<canvas id="graficaPromedios"></canvas>
+
 </div>
 
 
@@ -208,7 +253,6 @@ border-radius:4px;
 <td>{{ alumno.grupo }}</td>
 
 <td>
-
 <select name="materia" form="form_{{ loop.index }}">
 <option>Matemáticas</option>
 <option>Español</option>
@@ -216,7 +260,6 @@ border-radius:4px;
 <option>Historia</option>
 <option>Inglés</option>
 </select>
-
 </td>
 
 <td>
@@ -372,6 +415,32 @@ body:"alumno="+alumno+"&estado="+estado+"&fecha="+fecha
 })
 
 }
+
+
+// 🔥 GRAFICA
+
+const nombres = [
+{% for a in alumnos %}
+"{{ a.nombre }}",
+{% endfor %}
+]
+
+const promedios = [
+{% for a in alumnos %}
+{{ a.promedio }},
+{% endfor %}
+]
+
+new Chart(document.getElementById("graficaPromedios"), {
+type: "bar",
+data: {
+labels: nombres,
+datasets: [{
+label: "Promedio",
+data: promedios
+}]
+}
+})
 
 </script>
 

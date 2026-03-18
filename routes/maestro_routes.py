@@ -39,6 +39,54 @@ def panel_maestro():
 
     lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
 
+    # =========================
+    # 🔥 ANALYTICS PRO (SEGURO)
+    # =========================
+
+    promedios = []
+
+    for a in lista_alumnos:
+
+        calificaciones = a.get("calificaciones", [])
+
+        if calificaciones:
+            suma = sum([c.get("calificacion", 0) for c in calificaciones])
+            promedio = round(suma / len(calificaciones), 2)
+        else:
+            promedio = 0
+
+        a["promedio"] = promedio
+
+        if promedio >= 8:
+            a["estado"] = "excelente"
+        elif promedio >= 6:
+            a["estado"] = "riesgo"
+        else:
+            a["estado"] = "reprobado"
+
+        promedios.append({
+            "nombre": a["nombre"],
+            "promedio": promedio
+        })
+
+    # 🔥 PROMEDIO DEL GRUPO
+    if promedios:
+        promedio_grupo = round(
+            sum([p["promedio"] for p in promedios]) / len(promedios), 2
+        )
+    else:
+        promedio_grupo = 0
+
+    # 🔥 TOP 5
+    top_alumnos = sorted(
+        promedios,
+        key=lambda x: x["promedio"],
+        reverse=True
+    )[:5]
+
+    # 🔥 ALUMNOS EN RIESGO
+    riesgo = [a for a in lista_alumnos if a["estado"] != "excelente"]
+
     config = configuracion.find_one()
 
     return render_template(
@@ -46,7 +94,10 @@ def panel_maestro():
         alumnos=lista_alumnos,
         grupos=grupos,
         horarios=lista_horarios,
-        config=config
+        config=config,
+        promedio_grupo=promedio_grupo,
+        top_alumnos=top_alumnos,
+        riesgo=riesgo
     )
 
 
@@ -69,7 +120,6 @@ def guardar_calificaciones():
     cal2 = request.form.get("cal2")
     cal3 = request.form.get("cal3")
 
-    # 🔥 NUEVO: materia dinámica
     materia = request.form.get("materia")
 
     alumno = alumnos.find_one({"nombre": alumno_nombre})
@@ -77,10 +127,7 @@ def guardar_calificaciones():
     if not alumno:
         return redirect("/panel_maestro")
 
-    # =========================
-    # SISTEMA ANTIGUO (NO SE ROMPE)
-    # =========================
-
+    # SISTEMA ANTIGUO
     alumnos.update_one(
         {"nombre": alumno_nombre},
         {
@@ -92,10 +139,7 @@ def guardar_calificaciones():
         }
     )
 
-    # =========================
-    # 🔥 SISTEMA NUEVO (PDF PRO)
-    # =========================
-
+    # SISTEMA NUEVO
     if materia and cal1:
 
         try:
@@ -127,7 +171,7 @@ def guardar_calificaciones():
 
 
 # =========================
-# REGISTRAR ASISTENCIA
+# ASISTENCIA
 # =========================
 
 @maestro_bp.route("/registrar_asistencia", methods=["POST"])
@@ -158,7 +202,7 @@ def registrar_asistencia():
 
 
 # =========================
-# CREAR REPORTE
+# REPORTE
 # =========================
 
 @maestro_bp.route("/crear_reporte", methods=["POST"])
@@ -184,7 +228,7 @@ def crear_reporte():
 
 
 # =========================
-# DESCARGAR TRIMESTRE
+# TRIMESTRE
 # =========================
 
 @maestro_bp.route("/descargar_trimestre/<numero>")
@@ -239,7 +283,7 @@ def guardar_asistencia_fecha():
 
 
 # =========================
-# 🔥 ASISTENCIA AJAX
+# AJAX
 # =========================
 
 @maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])
