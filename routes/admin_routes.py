@@ -7,7 +7,6 @@ from werkzeug.security import generate_password_hash
 from database.mongo import alumnos, grupos, materias, maestros, reportes, configuracion, horarios, citatorios
 from pdf.generador import generar_kardex, generar_boleta, generar_reporte_pdf, generar_citatorio_pdf
 
-# 🔥 URL PREFIX
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
@@ -20,7 +19,7 @@ def verificar_admin():
 
 
 # =========================
-# DASHBOARD
+# DASHBOARD PRO
 # =========================
 
 @admin_bp.route("/")
@@ -29,12 +28,19 @@ def admin_dashboard():
     if not verificar_admin():
         return redirect("/")
 
+    lista_alumnos = list(alumnos.find())
+    lista_maestros = list(maestros.find())
+    lista_reportes = list(reportes.find())
+
     return render_template(
         "admin.html",
-        alumnos=list(alumnos.find()),
+        alumnos=lista_alumnos,
         grupos=list(grupos.find()),
-        maestros=list(maestros.find()),
-        reportes=list(reportes.find())
+        maestros=lista_maestros,
+        reportes=lista_reportes,
+        total_alumnos=len(lista_alumnos),
+        total_maestros=len(lista_maestros),
+        total_reportes=len(lista_reportes)
     )
 
 
@@ -57,7 +63,7 @@ def ver_alumnos():
 
 
 # =========================
-# CREAR ALUMNO (FOTO BASE64)
+# CREAR ALUMNO (BASE64 SEGURO)
 # =========================
 
 @admin_bp.route("/crear_alumno", methods=["POST"])
@@ -75,9 +81,10 @@ def crear_alumno():
     if foto and foto.filename != "":
         try:
             imagen_bytes = foto.read()
-            foto_base64 = base64.b64encode(imagen_bytes).decode("utf-8")
+            if len(imagen_bytes) > 0:
+                foto_base64 = base64.b64encode(imagen_bytes).decode("utf-8")
         except:
-            foto_base64 = ""
+            pass
 
     alumnos.insert_one({
         "nombre": nombre,
@@ -91,7 +98,7 @@ def crear_alumno():
 
 
 # =========================
-# CAMBIAR FOTO
+# CAMBIAR FOTO (NO BORRA SI FALLA)
 # =========================
 
 @admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
@@ -105,12 +112,13 @@ def subir_foto_alumno(id):
     if foto and foto.filename != "":
         try:
             imagen_bytes = foto.read()
-            foto_base64 = base64.b64encode(imagen_bytes).decode("utf-8")
+            if len(imagen_bytes) > 0:
+                foto_base64 = base64.b64encode(imagen_bytes).decode("utf-8")
 
-            alumnos.update_one(
-                {"_id": ObjectId(id)},
-                {"$set": {"foto": foto_base64}}
-            )
+                alumnos.update_one(
+                    {"_id": ObjectId(id)},
+                    {"$set": {"foto": foto_base64}}
+                )
         except:
             pass
 
@@ -118,7 +126,22 @@ def subir_foto_alumno(id):
 
 
 # =========================
-# 🔥 NUEVO: SUBIR ESCUDO (BASE64)
+# 🔥 ELIMINAR ALUMNO
+# =========================
+
+@admin_bp.route("/eliminar_alumno/<id>")
+def eliminar_alumno(id):
+
+    if not verificar_admin():
+        return redirect("/")
+
+    alumnos.delete_one({"_id": ObjectId(id)})
+
+    return redirect("/admin/alumnos")
+
+
+# =========================
+# 🔥 ESCUDO BASE64 SEGURO
 # =========================
 
 @admin_bp.route("/subir_escudo", methods=["POST"])
@@ -128,20 +151,21 @@ def subir_escudo():
         return redirect("/")
 
     escudo = request.files.get("escudo")
-    escudo_base64 = ""
 
     if escudo and escudo.filename != "":
         try:
             imagen_bytes = escudo.read()
-            escudo_base64 = base64.b64encode(imagen_bytes).decode("utf-8")
-        except:
-            escudo_base64 = ""
 
-    configuracion.update_one(
-        {},
-        {"$set": {"escudo": escudo_base64}},
-        upsert=True
-    )
+            if len(imagen_bytes) > 0:
+                escudo_base64 = base64.b64encode(imagen_bytes).decode("utf-8")
+
+                configuracion.update_one(
+                    {},
+                    {"$set": {"escudo": escudo_base64}},
+                    upsert=True
+                )
+        except:
+            pass
 
     return redirect("/admin/configuracion")
 
@@ -260,12 +284,7 @@ def aprobar_reporte(id):
     pdf = generar_reporte_pdf(reporte)
     pdf.seek(0)
 
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name="reporte.pdf"
-    )
+    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
 
 
 # =========================
@@ -281,12 +300,7 @@ def kardex(nombre):
     pdf = generar_kardex(nombre)
     pdf.seek(0)
 
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=f"kardex_{nombre}.pdf"
-    )
+    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
 
 
 # =========================
@@ -302,12 +316,7 @@ def boleta(nombre):
     pdf = generar_boleta(nombre)
     pdf.seek(0)
 
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=f"boleta_{nombre}.pdf"
-    )
+    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
 
 
 # =========================
@@ -359,12 +368,7 @@ def generar_citatorio(id):
     pdf = generar_citatorio_pdf(citatorio)
     pdf.seek(0)
 
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name="citatorio.pdf"
-    )
+    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
 
 
 # =========================

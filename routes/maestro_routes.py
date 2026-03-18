@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, session, jsonify
+from flask import Blueprint, render_template, request, redirect, session, jsonify, send_file
 from bson.objectid import ObjectId
 from database.mongo import alumnos, maestros, reportes, horarios, configuracion
 from datetime import datetime
+from openpyxl import Workbook
+from io import BytesIO
 
 maestro_bp = Blueprint("maestro", __name__)
 
@@ -40,7 +42,7 @@ def panel_maestro():
     lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
 
     # =========================
-    # 🔥 ANALYTICS PRO (SEGURO)
+    # 🔥 ANALYTICS PRO
     # =========================
 
     promedios = []
@@ -69,22 +71,10 @@ def panel_maestro():
             "promedio": promedio
         })
 
-    # 🔥 PROMEDIO DEL GRUPO
-    if promedios:
-        promedio_grupo = round(
-            sum([p["promedio"] for p in promedios]) / len(promedios), 2
-        )
-    else:
-        promedio_grupo = 0
+    promedio_grupo = round(sum([p["promedio"] for p in promedios]) / len(promedios), 2) if promedios else 0
 
-    # 🔥 TOP 5
-    top_alumnos = sorted(
-        promedios,
-        key=lambda x: x["promedio"],
-        reverse=True
-    )[:5]
+    top_alumnos = sorted(promedios, key=lambda x: x["promedio"], reverse=True)[:5]
 
-    # 🔥 ALUMNOS EN RIESGO
     riesgo = [a for a in lista_alumnos if a["estado"] != "excelente"]
 
     config = configuracion.find_one()
@@ -102,7 +92,7 @@ def panel_maestro():
 
 
 # =========================
-# 🔥 GUARDAR CALIFICACIONES (DOBLE SISTEMA)
+# 🔥 GUARDAR CALIFICACIONES (CON TRIMESTRE)
 # =========================
 
 @maestro_bp.route("/guardar_calificaciones", methods=["POST"])
@@ -121,6 +111,7 @@ def guardar_calificaciones():
     cal3 = request.form.get("cal3")
 
     materia = request.form.get("materia")
+    trimestre = request.form.get("trimestre", "1")  # 🔥 NUEVO
 
     alumno = alumnos.find_one({"nombre": alumno_nombre})
 
@@ -152,14 +143,15 @@ def guardar_calificaciones():
         encontrada = False
 
         for c in calificaciones:
-            if c["materia"] == materia:
+            if c["materia"] == materia and c.get("trimestre", "1") == trimestre:
                 c["calificacion"] = calificacion
                 encontrada = True
 
         if not encontrada:
             calificaciones.append({
                 "materia": materia,
-                "calificacion": calificacion
+                "calificacion": calificacion,
+                "trimestre": trimestre
             })
 
         alumnos.update_one(
@@ -168,6 +160,49 @@ def guardar_calificaciones():
         )
 
     return redirect("/panel_maestro")
+
+
+# =========================
+# 📊 EXPORTAR EXCEL (PRO)
+# =========================
+
+@maestro_bp.route("/exportar_excel")
+def exportar_excel():
+
+    if not verificar_maestro():
+        return redirect("/")
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Reporte"
+
+    ws.append(["Alumno", "Promedio", "Estado"])
+
+    lista = list(alumnos.find())
+
+    for a in lista:
+
+        calificaciones = a.get("calificaciones", [])
+
+        if calificaciones:
+            promedio = sum([c["calificacion"] for c in calificaciones]) / len(calificaciones)
+        else:
+            promedio = 0
+
+        estado = "Excelente" if promedio >= 8 else "Riesgo" if promedio >= 6 else "Reprobado"
+
+        ws.append([a["nombre"], round(promedio,2), estado])
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name="reporte.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 
 # =========================
