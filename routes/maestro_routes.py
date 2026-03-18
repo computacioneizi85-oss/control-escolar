@@ -4,7 +4,7 @@ from database.mongo import alumnos, maestros, reportes, horarios, configuracion
 from datetime import datetime
 from io import BytesIO
 
-# 🔒 IMPORT SEGURO (NO ROMPE RENDER)
+# 🔒 IMPORT SEGURO (BIEN HECHO)
 try:
     from openpyxl import Workbook
 except:
@@ -48,7 +48,7 @@ def panel_maestro():
     lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
 
     # =========================
-    # 🔥 ANALYTICS PRO
+    # ANALYTICS
     # =========================
 
     promedios = []
@@ -98,7 +98,7 @@ def panel_maestro():
 
 
 # =========================
-# 🔥 GUARDAR CALIFICACIONES
+# GUARDAR CALIFICACIONES
 # =========================
 
 @maestro_bp.route("/guardar_calificaciones", methods=["POST"])
@@ -167,7 +167,7 @@ def guardar_calificaciones():
 
 
 # =========================
-# 📊 EXPORTAR EXCEL (SEGURO)
+# EXPORTAR EXCEL (SEGURO)
 # =========================
 
 @maestro_bp.route("/exportar_excel")
@@ -176,9 +176,8 @@ def exportar_excel():
     if not verificar_maestro():
         return redirect("/")
 
-    # 🔒 SI NO EXISTE LA LIBRERÍA → NO CRASHEA
     if Workbook is None:
-        return "Excel no disponible (falta openpyxl en servidor)"
+        return "Excel no disponible"
 
     wb = Workbook()
     ws = wb.active
@@ -186,9 +185,7 @@ def exportar_excel():
 
     ws.append(["Alumno", "Promedio", "Estado"])
 
-    lista = list(alumnos.find())
-
-    for a in lista:
+    for a in list(alumnos.find()):
 
         calificaciones = a.get("calificaciones", [])
 
@@ -199,159 +196,61 @@ def exportar_excel():
 
         estado = "Excelente" if promedio >= 8 else "Riesgo" if promedio >= 6 else "Reprobado"
 
-        ws.append([a["nombre"], round(promedio,2), estado])
+        ws.append([a["nombre"], round(promedio, 2), estado])
 
     buffer = BytesIO()
     wb.save(buffer)
     buffer.seek(0)
 
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name="reporte.xlsx",
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+    return send_file(buffer, as_attachment=True, download_name="reporte.xlsx")
 
 
 # =========================
-# ASISTENCIA
+# ASISTENCIA / REPORTES / AJAX
 # =========================
 
 @maestro_bp.route("/registrar_asistencia", methods=["POST"])
 def registrar_asistencia():
-
     if not verificar_maestro():
         return redirect("/")
 
-    alumno = request.form.get("alumno")
-    estado = request.form.get("estado")
-
-    if not alumno or not estado:
-        return redirect("/panel_maestro")
-
     alumnos.update_one(
-        {"nombre": alumno},
-        {
-            "$push": {
-                "asistencias": {
-                    "fecha": datetime.now().strftime("%Y-%m-%d"),
-                    "estado": estado
-                }
-            }
-        }
+        {"nombre": request.form.get("alumno")},
+        {"$push": {"asistencias": {
+            "fecha": datetime.now().strftime("%Y-%m-%d"),
+            "estado": request.form.get("estado")
+        }}}
     )
 
     return redirect("/panel_maestro")
 
 
-# =========================
-# REPORTE
-# =========================
-
 @maestro_bp.route("/crear_reporte", methods=["POST"])
 def crear_reporte():
-
     if not verificar_maestro():
         return redirect("/")
 
-    alumno = request.form.get("alumno")
-    comentario = request.form.get("comentario")
-
-    if not alumno or not comentario:
-        return redirect("/panel_maestro")
-
     reportes.insert_one({
-        "alumno": alumno,
+        "alumno": request.form.get("alumno"),
         "maestro": session["usuario"],
-        "comentario": comentario,
+        "comentario": request.form.get("comentario"),
         "estatus": "pendiente"
     })
 
     return redirect("/panel_maestro")
 
 
-# =========================
-# TRIMESTRE
-# =========================
-
-@maestro_bp.route("/descargar_trimestre/<numero>")
-def descargar_trimestre(numero):
-
-    if not verificar_maestro():
-        return redirect("/")
-
-    config = configuracion.find_one()
-
-    if not config:
-        return "Evaluaciones no configuradas"
-
-    campo = f"trimestre{numero}"
-
-    if not config.get(campo, False):
-        return "Este trimestre no está habilitado por dirección"
-
-    return f"Descarga de evaluación del trimestre {numero} habilitada"
-
-
-# =========================
-# ASISTENCIA CON FECHA
-# =========================
-
-@maestro_bp.route("/guardar_asistencia_fecha", methods=["POST"])
-def guardar_asistencia_fecha():
-
-    if not verificar_maestro():
-        return redirect("/")
-
-    alumno = request.form.get("alumno")
-    fecha = request.form.get("fecha")
-    estado = request.form.get("estado")
-
-    if not alumno or not fecha or not estado:
-        return redirect("/panel_maestro")
-
-    alumnos.update_one(
-        {"nombre": alumno},
-        {
-            "$push": {
-                "asistencias": {
-                    "fecha": fecha,
-                    "estado": estado
-                }
-            }
-        }
-    )
-
-    return redirect("/panel_maestro")
-
-
-# =========================
-# AJAX
-# =========================
-
 @maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])
 def guardar_asistencia_ajax():
-
     if not verificar_maestro():
-        return jsonify({"status": "error", "msg": "No autorizado"})
-
-    alumno = request.form.get("alumno")
-    estado = request.form.get("estado")
-    fecha = request.form.get("fecha")
-
-    if not alumno or not estado or not fecha:
-        return jsonify({"status": "error", "msg": "Datos incompletos"})
+        return jsonify({"status": "error"})
 
     alumnos.update_one(
-        {"nombre": alumno},
-        {
-            "$push": {
-                "asistencias": {
-                    "fecha": fecha,
-                    "estado": estado
-                }
-            }
-        }
+        {"nombre": request.form.get("alumno")},
+        {"$push": {"asistencias": {
+            "fecha": request.form.get("fecha"),
+            "estado": request.form.get("estado")
+        }}}
     )
 
     return jsonify({"status": "ok"})
