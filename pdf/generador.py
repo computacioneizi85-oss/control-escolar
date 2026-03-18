@@ -17,22 +17,15 @@ from database.mongo import configuracion, materias, alumnos
 
 def obtener_config():
 
-    config = configuracion.find_one()
+    config = configuracion.find_one() or {}
 
-    if config:
-        escuela = config.get("escuela", "Nombre de la escuela")
-        ciclo = config.get("ciclo", "Ciclo escolar")
-        director = config.get("director", "Director")
-        direccion = config.get("direccion", "")
-        escudo = config.get("escudo", None)
-    else:
-        escuela = "Nombre de la escuela"
-        ciclo = "Ciclo escolar"
-        director = "Director"
-        direccion = ""
-        escudo = None
-
-    return escuela, ciclo, director, direccion, escudo
+    return (
+        config.get("escuela", "Nombre de la escuela"),
+        config.get("ciclo", "Ciclo escolar"),
+        config.get("director", "Director"),
+        config.get("direccion", ""),
+        config.get("escudo", None)
+    )
 
 
 # ==============================
@@ -47,7 +40,7 @@ def fecha_actual():
 
 
 # ==============================
-# 🔥 ESCUDO SEGURO
+# ESCUDO
 # ==============================
 
 def dibujar_escudo(c, escudo):
@@ -56,17 +49,12 @@ def dibujar_escudo(c, escudo):
         return
 
     try:
-        # BASE64
         if isinstance(escudo, str) and len(escudo) > 100:
             imagen_bytes = base64.b64decode(escudo)
-
             if not imagen_bytes:
                 return
+            logo = ImageReader(BytesIO(imagen_bytes))
 
-            imagen_stream = BytesIO(imagen_bytes)
-            logo = ImageReader(imagen_stream)
-
-        # RUTA
         elif isinstance(escudo, str) and os.path.exists(escudo):
             logo = ImageReader(escudo)
 
@@ -77,7 +65,6 @@ def dibujar_escudo(c, escudo):
 
     except Exception as e:
         print("Error escudo:", e)
-        pass
 
 
 # ==============================
@@ -117,7 +104,7 @@ def firma(c, director):
 
 
 # ==============================
-# CREAR PDF
+# PDF
 # ==============================
 
 def crear_pdf():
@@ -127,26 +114,17 @@ def crear_pdf():
 
 
 # ==============================
-# 🔥 FOTO SEGURA
+# FOTO
 # ==============================
 
-def dibujar_foto(c, foto_base64, x=450, y=630):
+def dibujar_foto(c, foto, x=450, y=630):
 
     try:
-        if foto_base64 and len(foto_base64) > 100:
-            foto_bytes = base64.b64decode(foto_base64)
-
-            if not foto_bytes:
-                return
-
-            foto_stream = BytesIO(foto_bytes)
-            img = ImageReader(foto_stream)
-
+        if foto and isinstance(foto, str) and len(foto) > 100:
+            img = ImageReader(BytesIO(base64.b64decode(foto)))
             c.drawImage(img, x, y, width=80, height=80)
-
     except Exception as e:
         print("Error foto:", e)
-        pass
 
 
 # ==============================
@@ -170,26 +148,25 @@ def generar_kardex(nombre):
 
     c.line(50, 630, 550, 630)
 
-    c.drawString(50, 610, "Materia")
-    c.drawString(300, 610, "Calificación")
-
     y = 590
     suma = 0
     total = 0
 
     for cal in alumno.get("calificaciones", []):
-        materia = cal.get("materia", "")
-        valor = cal.get("calificacion", 0)
+        try:
+            materia = cal.get("materia", "")
+            valor = float(cal.get("calificacion", 0))
 
-        c.drawString(50, y, materia)
-        c.drawString(320, y, str(valor))
+            c.drawString(50, y, str(materia))
+            c.drawString(320, y, str(valor))
 
-        suma += valor
-        total += 1
+            suma += valor
+            total += 1
+            y -= 25
+        except:
+            continue
 
-        y -= 25
-
-    promedio = round(suma / total, 2) if total > 0 else 0
+    promedio = round(suma / total, 2) if total else 0
 
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, y - 20, f"Promedio general: {promedio}")
@@ -223,9 +200,6 @@ def generar_boleta(nombre):
 
     c.line(50, 630, 550, 630)
 
-    c.drawString(50, 610, "Materia")
-    c.drawString(300, 610, "Calificación")
-
     y = 590
     suma = 0
     total = 0
@@ -234,20 +208,22 @@ def generar_boleta(nombre):
 
     if calificaciones:
         for cal in calificaciones:
-            materia = cal.get("materia", "")
-            valor = cal.get("calificacion", 0)
+            try:
+                materia = cal.get("materia", "")
+                valor = float(cal.get("calificacion", 0))
 
-            c.drawString(50, y, materia)
-            c.drawString(320, y, str(valor))
+                c.drawString(50, y, str(materia))
+                c.drawString(320, y, str(valor))
 
-            suma += valor
-            total += 1
-
-            y -= 25
+                suma += valor
+                total += 1
+                y -= 25
+            except:
+                continue
     else:
         c.drawString(50, y, "Sin calificaciones registradas")
 
-    promedio = round(suma / total, 2) if total > 0 else 0
+    promedio = round(suma / total, 2) if total else 0
 
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, y - 20, f"Promedio: {promedio}")
@@ -266,6 +242,8 @@ def generar_boleta(nombre):
 
 def generar_reporte_pdf(reporte):
 
+    reporte = reporte or {}
+
     escuela, ciclo, director, direccion, escudo = obtener_config()
     c, buffer = crear_pdf()
 
@@ -275,11 +253,7 @@ def generar_reporte_pdf(reporte):
 
     c.drawString(50, 660, f"Alumno: {reporte.get('alumno','')}")
     c.drawString(50, 640, f"Maestro: {reporte.get('maestro','')}")
-
-    c.drawString(50, 610, "Comentario:")
     c.drawString(50, 590, reporte.get("comentario",""))
-
-    c.drawString(50, 550, "Estado: Autorizado")
 
     firma(c, director)
 
@@ -295,6 +269,8 @@ def generar_reporte_pdf(reporte):
 
 def generar_citatorio_pdf(citatorio):
 
+    citatorio = citatorio or {}
+
     escuela, ciclo, director, direccion, escudo = obtener_config()
     c, buffer = crear_pdf()
 
@@ -304,14 +280,7 @@ def generar_citatorio_pdf(citatorio):
 
     c.drawString(50, 660, f"Alumno: {citatorio.get('alumno','')}")
     c.drawString(50, 640, f"Grupo: {citatorio.get('grupo','')}")
-
-    c.drawString(50, 610, "Motivo:")
     c.drawString(50, 590, citatorio.get("motivo",""))
-
-    c.drawString(50, 550, f"Fecha: {citatorio.get('fecha_cita','')}")
-    c.drawString(50, 530, f"Hora: {citatorio.get('hora','')}")
-
-    c.drawString(50, 500, "Se solicita la presencia del padre, madre o tutor.")
 
     firma(c, director)
 
