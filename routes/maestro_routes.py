@@ -4,13 +4,6 @@ from database.mongo import alumnos, maestros, reportes, horarios, configuracion
 from datetime import datetime
 from io import BytesIO
 
-# 🔒 IMPORT SEGURO (BIEN HECHO)
-try:
-    from openpyxl import Workbook
-except:
-    Workbook = None
-
-
 maestro_bp = Blueprint("maestro", __name__)
 
 
@@ -48,7 +41,7 @@ def panel_maestro():
     lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
 
     # =========================
-    # ANALYTICS
+    # ANALYTICS (SEGURO)
     # =========================
 
     promedios = []
@@ -58,8 +51,11 @@ def panel_maestro():
         calificaciones = a.get("calificaciones", [])
 
         if calificaciones:
-            suma = sum([c.get("calificacion", 0) for c in calificaciones])
-            promedio = round(suma / len(calificaciones), 2)
+            try:
+                suma = sum([float(c.get("calificacion", 0)) for c in calificaciones])
+                promedio = round(suma / len(calificaciones), 2)
+            except:
+                promedio = 0
         else:
             promedio = 0
 
@@ -73,15 +69,17 @@ def panel_maestro():
             a["estado"] = "reprobado"
 
         promedios.append({
-            "nombre": a["nombre"],
+            "nombre": a.get("nombre", ""),
             "promedio": promedio
         })
 
-    promedio_grupo = round(sum([p["promedio"] for p in promedios]) / len(promedios), 2) if promedios else 0
+    promedio_grupo = round(
+        sum([p["promedio"] for p in promedios]) / len(promedios), 2
+    ) if promedios else 0
 
     top_alumnos = sorted(promedios, key=lambda x: x["promedio"], reverse=True)[:5]
 
-    riesgo = [a for a in lista_alumnos if a["estado"] != "excelente"]
+    riesgo = [a for a in lista_alumnos if a.get("estado") != "excelente"]
 
     config = configuracion.find_one()
 
@@ -124,6 +122,7 @@ def guardar_calificaciones():
     if not alumno:
         return redirect("/panel_maestro")
 
+    # Sistema base (no se rompe)
     alumnos.update_one(
         {"nombre": alumno_nombre},
         {
@@ -135,6 +134,7 @@ def guardar_calificaciones():
         }
     )
 
+    # Sistema nuevo
     if materia and cal1:
 
         try:
@@ -147,7 +147,7 @@ def guardar_calificaciones():
         encontrada = False
 
         for c in calificaciones:
-            if c["materia"] == materia and c.get("trimestre", "1") == trimestre:
+            if c.get("materia") == materia and c.get("trimestre", "1") == trimestre:
                 c["calificacion"] = calificacion
                 encontrada = True
 
@@ -167,7 +167,7 @@ def guardar_calificaciones():
 
 
 # =========================
-# EXPORTAR EXCEL (SEGURO)
+# EXPORTAR EXCEL (ULTRA SEGURO)
 # =========================
 
 @maestro_bp.route("/exportar_excel")
@@ -176,8 +176,11 @@ def exportar_excel():
     if not verificar_maestro():
         return redirect("/")
 
-    if Workbook is None:
-        return "Excel no disponible"
+    # 🔥 IMPORT LOCAL (NO ROMPE EL SISTEMA)
+    try:
+        from openpyxl import Workbook
+    except:
+        return "Excel no disponible (falta openpyxl)"
 
     wb = Workbook()
     ws = wb.active
@@ -190,27 +193,36 @@ def exportar_excel():
         calificaciones = a.get("calificaciones", [])
 
         if calificaciones:
-            promedio = sum([c["calificacion"] for c in calificaciones]) / len(calificaciones)
+            try:
+                promedio = sum([float(c.get("calificacion", 0)) for c in calificaciones]) / len(calificaciones)
+            except:
+                promedio = 0
         else:
             promedio = 0
 
         estado = "Excelente" if promedio >= 8 else "Riesgo" if promedio >= 6 else "Reprobado"
 
-        ws.append([a["nombre"], round(promedio, 2), estado])
+        ws.append([a.get("nombre",""), round(promedio, 2), estado])
 
     buffer = BytesIO()
     wb.save(buffer)
     buffer.seek(0)
 
-    return send_file(buffer, as_attachment=True, download_name="reporte.xlsx")
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name="reporte.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 
 # =========================
-# ASISTENCIA / REPORTES / AJAX
+# ASISTENCIA
 # =========================
 
 @maestro_bp.route("/registrar_asistencia", methods=["POST"])
 def registrar_asistencia():
+
     if not verificar_maestro():
         return redirect("/")
 
@@ -225,8 +237,13 @@ def registrar_asistencia():
     return redirect("/panel_maestro")
 
 
+# =========================
+# REPORTE
+# =========================
+
 @maestro_bp.route("/crear_reporte", methods=["POST"])
 def crear_reporte():
+
     if not verificar_maestro():
         return redirect("/")
 
@@ -240,8 +257,13 @@ def crear_reporte():
     return redirect("/panel_maestro")
 
 
+# =========================
+# AJAX
+# =========================
+
 @maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])
 def guardar_asistencia_ajax():
+
     if not verificar_maestro():
         return jsonify({"status": "error"})
 
