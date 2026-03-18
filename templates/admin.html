@@ -70,6 +70,20 @@
 
 </div>
 
+<h2>Backup del sistema</h2>
+
+<a href="/admin/backup/descargar">
+<button>📥 Descargar Backup</button>
+</a>
+
+<br><br>
+
+<form action="/admin/backup/restaurar" method="POST" enctype="multipart/form-data">
+<input type="file" name="archivo" required>
+<button type="submit">♻ Restaurar sistema</button>
+</form>
+
+<br><br>
 
 
 <!-- ACCESOS RÁPIDOS -->

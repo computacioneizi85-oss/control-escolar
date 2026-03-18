@@ -5,6 +5,8 @@ import os
 from routes.auth_routes import auth_bp
 from routes.admin_routes import admin_bp
 from routes.maestro_routes import maestro_bp
+from routes.backup_routes import backup_bp
+app.register_blueprint(backup_bp)
 
 app = Flask(__name__)
 
@@ -56,3 +58,5 @@ def proteger_rutas():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
