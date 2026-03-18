@@ -2,8 +2,14 @@ from flask import Blueprint, render_template, request, redirect, session, jsonif
 from bson.objectid import ObjectId
 from database.mongo import alumnos, maestros, reportes, horarios, configuracion
 from datetime import datetime
-from openpyxl import Workbook
 from io import BytesIO
+
+# 🔒 IMPORT SEGURO (NO ROMPE RENDER)
+try:
+    from openpyxl import Workbook
+except:
+    Workbook = None
+
 
 maestro_bp = Blueprint("maestro", __name__)
 
@@ -92,7 +98,7 @@ def panel_maestro():
 
 
 # =========================
-# 🔥 GUARDAR CALIFICACIONES (CON TRIMESTRE)
+# 🔥 GUARDAR CALIFICACIONES
 # =========================
 
 @maestro_bp.route("/guardar_calificaciones", methods=["POST"])
@@ -111,14 +117,13 @@ def guardar_calificaciones():
     cal3 = request.form.get("cal3")
 
     materia = request.form.get("materia")
-    trimestre = request.form.get("trimestre", "1")  # 🔥 NUEVO
+    trimestre = request.form.get("trimestre", "1")
 
     alumno = alumnos.find_one({"nombre": alumno_nombre})
 
     if not alumno:
         return redirect("/panel_maestro")
 
-    # SISTEMA ANTIGUO
     alumnos.update_one(
         {"nombre": alumno_nombre},
         {
@@ -130,7 +135,6 @@ def guardar_calificaciones():
         }
     )
 
-    # SISTEMA NUEVO
     if materia and cal1:
 
         try:
@@ -163,7 +167,7 @@ def guardar_calificaciones():
 
 
 # =========================
-# 📊 EXPORTAR EXCEL (PRO)
+# 📊 EXPORTAR EXCEL (SEGURO)
 # =========================
 
 @maestro_bp.route("/exportar_excel")
@@ -171,6 +175,10 @@ def exportar_excel():
 
     if not verificar_maestro():
         return redirect("/")
+
+    # 🔒 SI NO EXISTE LA LIBRERÍA → NO CRASHEA
+    if Workbook is None:
+        return "Excel no disponible (falta openpyxl en servidor)"
 
     wb = Workbook()
     ws = wb.active
