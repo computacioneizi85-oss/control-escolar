@@ -17,7 +17,7 @@ def verificar_admin():
 
 
 # =========================
-# DASHBOARD (BLINDADO 🔥)
+# DASHBOARD
 # =========================
 
 @admin_bp.route("/")
@@ -51,17 +51,14 @@ def activar_trimestre():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    try:
-        configuracion.update_one(
-            {"tipo": "trimestre"},
-            {"$set": {
-                "trimestre": request.form.get("trimestre"),
-                "estado": request.form.get("estado")
-            }},
-            upsert=True
-        )
-    except Exception as e:
-        return f"Error configuración: {str(e)}"
+    configuracion.update_one(
+        {"tipo": "trimestre"},
+        {"$set": {
+            "trimestre": request.form.get("trimestre"),
+            "estado": request.form.get("estado")
+        }},
+        upsert=True
+    )
 
     return redirect(url_for("admin.admin_dashboard"))
 
@@ -76,20 +73,13 @@ def ver_alumnos():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    try:
-        return render_template(
-            "alumnos.html",
-            alumnos=list(alumnos.find()),
-            grupos=list(grupos.find()),
-            maestros=list(maestros.find())
-        )
-    except Exception as e:
-        return f"Error alumnos: {str(e)}"
+    return render_template(
+        "alumnos.html",
+        alumnos=list(alumnos.find()),
+        grupos=list(grupos.find()),
+        maestros=list(maestros.find())
+    )
 
-
-# =========================
-# CREAR ALUMNO
-# =========================
 
 @admin_bp.route("/crear_alumno", methods=["POST"])
 def crear_alumno():
@@ -97,23 +87,19 @@ def crear_alumno():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    try:
-        foto = request.files.get("foto")
-        foto_base64 = ""
+    foto = request.files.get("foto")
+    foto_base64 = ""
 
-        if foto and foto.filename != "":
-            foto_base64 = base64.b64encode(foto.read()).decode("utf-8")
+    if foto and foto.filename != "":
+        foto_base64 = base64.b64encode(foto.read()).decode("utf-8")
 
-        alumnos.insert_one({
-            "nombre": request.form.get("nombre"),
-            "grupo": request.form.get("grupo"),
-            "foto": foto_base64,
-            "calificaciones": [],
-            "asistencias": []
-        })
-
-    except Exception as e:
-        return f"Error crear alumno: {str(e)}"
+    alumnos.insert_one({
+        "nombre": request.form.get("nombre"),
+        "grupo": request.form.get("grupo"),
+        "foto": foto_base64,
+        "calificaciones": [],
+        "asistencias": []
+    })
 
     return redirect(url_for("admin.ver_alumnos"))
 
@@ -128,18 +114,10 @@ def kardex(nombre):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    try:
-        pdf = generar_kardex(nombre)
-        pdf.seek(0)
+    pdf = generar_kardex(nombre)
+    pdf.seek(0)
 
-        return send_file(
-            pdf,
-            mimetype="application/pdf",
-            as_attachment=True,
-            download_name=f"kardex_{nombre}.pdf"
-        )
-    except Exception as e:
-        return f"Error kardex: {str(e)}"
+    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
 
 
 # =========================
@@ -152,18 +130,10 @@ def boleta(nombre):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    try:
-        pdf = generar_boleta(nombre)
-        pdf.seek(0)
+    pdf = generar_boleta(nombre)
+    pdf.seek(0)
 
-        return send_file(
-            pdf,
-            mimetype="application/pdf",
-            as_attachment=True,
-            download_name=f"boleta_{nombre}.pdf"
-        )
-    except Exception as e:
-        return f"Error boleta: {str(e)}"
+    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
 
 
 # =========================
@@ -176,19 +146,15 @@ def aprobar_reporte(id):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    try:
-        reporte = reportes.find_one({"_id": ObjectId(id)})
+    reporte = reportes.find_one({"_id": ObjectId(id)})
 
-        if not reporte:
-            return "Reporte no encontrado"
+    if not reporte:
+        return "Reporte no encontrado"
 
-        pdf = generar_reporte_pdf(reporte)
-        pdf.seek(0)
+    pdf = generar_reporte_pdf(reporte)
+    pdf.seek(0)
 
-        return send_file(pdf, mimetype="application/pdf")
-
-    except Exception as e:
-        return f"Error reporte: {str(e)}"
+    return send_file(pdf, mimetype="application/pdf")
 
 
 # =========================
@@ -201,19 +167,15 @@ def generar_citatorio(id):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    try:
-        citatorio = citatorios.find_one({"_id": ObjectId(id)})
+    citatorio = citatorios.find_one({"_id": ObjectId(id)})
 
-        if not citatorio:
-            return "Citatorio no encontrado"
+    if not citatorio:
+        return "Citatorio no encontrado"
 
-        pdf = generar_citatorio_pdf(citatorio)
-        pdf.seek(0)
+    pdf = generar_citatorio_pdf(citatorio)
+    pdf.seek(0)
 
-        return send_file(pdf, mimetype="application/pdf")
-
-    except Exception as e:
-        return f"Error citatorio: {str(e)}"
+    return send_file(pdf, mimetype="application/pdf")
 
 
 # =========================
@@ -226,45 +188,76 @@ def crear_citatorio():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    try:
-        citatorios.insert_one({
-            "alumno": request.form.get("alumno"),
-            "grupo": request.form.get("grupo"),
-            "motivo": request.form.get("motivo"),
-            "fecha_cita": request.form.get("fecha"),
-            "hora": request.form.get("hora"),
-            "estado": "pendiente"
-        })
-    except Exception as e:
-        return f"Error crear citatorio: {str(e)}"
+    citatorios.insert_one({
+        "alumno": request.form.get("alumno"),
+        "grupo": request.form.get("grupo"),
+        "motivo": request.form.get("motivo"),
+        "fecha_cita": request.form.get("fecha"),
+        "hora": request.form.get("hora"),
+        "estado": "pendiente"
+    })
 
     return redirect(url_for("admin.ver_citatorios"))
 
 
 # =========================
-# SUBMENÚS (PROTEGIDOS 🔥)
+# SUBMENÚS COMPLETOS 🔥
 # =========================
 
 @admin_bp.route("/reportes")
 def ver_reportes():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
-
-    return render_template(
-        "reportes_admin.html",
-        reportes=list(reportes.find())
-    )
+    return render_template("reportes_admin.html", reportes=list(reportes.find()))
 
 
 @admin_bp.route("/citatorios")
 def ver_citatorios():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
-
-    return render_template(
-        "citatorios.html",
+    return render_template("citatorios.html",
         citatorios=list(citatorios.find()),
         alumnos=list(alumnos.find())
     )
+
+
+@admin_bp.route("/maestros")
+def ver_maestros():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+    return render_template("maestros.html", maestros=list(maestros.find()))
+
+
+@admin_bp.route("/grupos")
+def ver_grupos():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+    return render_template("grupos.html", grupos=list(grupos.find()))
+
+
+@admin_bp.route("/materias")
+def ver_materias():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+    return render_template("materias.html", materias=list(materias.find()))
+
+
+@admin_bp.route("/horarios")
+def ver_horarios():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+    return render_template("horarios.html", horarios=list(horarios.find()))
+
+
+@admin_bp.route("/asistencias")
+def ver_asistencias():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+    return render_template("asistencias_admin.html", alumnos=list(alumnos.find()))
+
+
+@admin_bp.route("/configuracion")
+def configuracion_admin():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+    return render_template("configuracion.html")
