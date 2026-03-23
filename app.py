@@ -1,4 +1,4 @@
-from flask import Flask, session, redirect, request
+from flask import Flask, session, redirect, request, url_for
 import os
 
 # =========================
@@ -25,10 +25,11 @@ from routes.backup_routes import backup_bp
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(maestro_bp)
-app.register_blueprint(backup_bp)  # ✅ YA EN EL LUGAR CORRECTO
+app.register_blueprint(backup_bp)
+
 
 # =========================
-# PROTEGER RUTAS
+# PROTEGER RUTAS (CORREGIDO 🔥)
 # =========================
 
 @app.before_request
@@ -40,17 +41,32 @@ def proteger_rutas():
     if request.path.startswith("/static"):
         return
 
-    # permitir login
+    # permitir rutas públicas
     if request.path in rutas_publicas:
         return
+
+    # 🔥 permitir rutas admin si hay sesión
+    if request.path.startswith("/admin"):
+        if "usuario" in session:
+            return
+        else:
+            return redirect(url_for("auth.login"))
+
+    # 🔥 permitir rutas maestro si hay sesión
+    if request.path.startswith("/panel_maestro"):
+        if "usuario" in session:
+            return
+        else:
+            return redirect(url_for("auth.login"))
 
     # 🔥 evitar errores internos de Flask
     if request.endpoint is None:
         return
 
-    # si no hay sesión → redirigir
+    # 🔥 protección general
     if "usuario" not in session:
-        return redirect("/")
+        return redirect(url_for("auth.login"))
+
 
 # =========================
 # EJECUTAR APP
