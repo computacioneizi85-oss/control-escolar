@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, session
+from flask import Blueprint, render_template, request, redirect, session, url_for
 from werkzeug.security import check_password_hash
 
 from database.mongo import usuarios, maestros
@@ -33,22 +33,20 @@ def procesar_login():
 
     if admin:
 
-        # 🔐 CASO NUEVO (HASH)
         if "password" in admin and admin["password"].startswith("pbkdf2"):
             if check_password_hash(admin["password"], password):
 
                 session["usuario"] = admin["usuario"]
                 session["rol"] = "admin"
 
-                return redirect("/admin")
+                return redirect(url_for("admin.admin_dashboard"))
 
-        # ⚠️ CASO ANTIGUO (PLANO)
         elif admin.get("password") == password:
 
             session["usuario"] = admin["usuario"]
             session["rol"] = "admin"
 
-            return redirect("/admin")
+            return redirect(url_for("admin.admin_dashboard"))
 
     # =========================
     # 2️⃣ MAESTRO
@@ -58,7 +56,6 @@ def procesar_login():
 
     if maestro:
 
-        # 🔐 CASO NUEVO (HASH)
         if "password" in maestro and maestro["password"].startswith("pbkdf2"):
             if check_password_hash(maestro["password"], password):
 
@@ -67,7 +64,6 @@ def procesar_login():
 
                 return redirect("/panel_maestro")
 
-        # ⚠️ CASO ANTIGUO
         elif maestro.get("password") == password:
 
             session["usuario"] = maestro["usuario"]
@@ -75,7 +71,7 @@ def procesar_login():
 
             return redirect("/panel_maestro")
 
-    return redirect("/")
+    return redirect(url_for("auth.login"))
 
 
 # =========================
@@ -84,6 +80,5 @@ def procesar_login():
 
 @auth_bp.route("/logout")
 def logout():
-
     session.clear()
-    return redirect("/")
+    return redirect(url_for("auth.login"))

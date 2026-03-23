@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, session, send_file
+from flask import Blueprint, render_template, request, redirect, session, send_file, url_for
 from bson.objectid import ObjectId
 import base64
 
@@ -10,23 +10,19 @@ from pdf.generador import generar_kardex, generar_boleta, generar_reporte_pdf, g
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-# =========================
-# VERIFICAR ADMIN
-# =========================
-
 def verificar_admin():
     return "rol" in session and session["rol"] == "admin"
 
 
 # =========================
-# DASHBOARD PRO
+# DASHBOARD
 # =========================
 
 @admin_bp.route("/")
 def admin_dashboard():
 
     if not verificar_admin():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
     lista_alumnos = list(alumnos.find())
     lista_maestros = list(maestros.find())
@@ -52,7 +48,7 @@ def admin_dashboard():
 def ver_alumnos():
 
     if not verificar_admin():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
     return render_template(
         "alumnos.html",
@@ -70,7 +66,7 @@ def ver_alumnos():
 def crear_alumno():
 
     if not verificar_admin():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
     nombre = request.form.get("nombre")
     grupo = request.form.get("grupo")
@@ -94,123 +90,46 @@ def crear_alumno():
         "asistencias": []
     })
 
-    return redirect("/admin/alumnos")
+    return redirect(url_for("admin.ver_alumnos"))
 
 
 # =========================
-# KARDEX (DEBUG)
+# KARDEX
 # =========================
 
 @admin_bp.route("/kardex/<nombre>")
 def kardex(nombre):
 
     if not verificar_admin():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
-    try:
-        pdf = generar_kardex(nombre)
-        pdf.seek(0)
+    pdf = generar_kardex(nombre)
+    pdf.seek(0)
 
-        return send_file(
-            pdf,
-            mimetype="application/pdf",
-            as_attachment=True,
-            download_name=f"kardex_{nombre}.pdf"
-        )
-
-    except Exception as e:
-        return f"ERROR REAL KARDEX: {str(e)}"
+    return send_file(
+        pdf,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=f"kardex_{nombre}.pdf"
+    )
 
 
 # =========================
-# BOLETA (DEBUG)
+# BOLETA
 # =========================
 
 @admin_bp.route("/boleta/<nombre>")
 def boleta(nombre):
 
     if not verificar_admin():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
-    try:
-        pdf = generar_boleta(nombre)
-        pdf.seek(0)
+    pdf = generar_boleta(nombre)
+    pdf.seek(0)
 
-        return send_file(
-            pdf,
-            mimetype="application/pdf",
-            as_attachment=True,
-            download_name=f"boleta_{nombre}.pdf"
-        )
-
-    except Exception as e:
-        return f"ERROR REAL BOLETA: {str(e)}"
-
-
-# =========================
-# REPORTE (DEBUG)
-# =========================
-
-@admin_bp.route("/aprobar_reporte/<string:id>")
-def aprobar_reporte(id):
-
-    if not verificar_admin():
-        return redirect("/")
-
-    try:
-        reporte = reportes.find_one({"_id": ObjectId(id)})
-
-        if not reporte:
-            return "Reporte no encontrado"
-
-        pdf = generar_reporte_pdf(reporte)
-        pdf.seek(0)
-
-        return send_file(
-            pdf,
-            mimetype="application/pdf",
-            as_attachment=True,
-            download_name="reporte.pdf"
-        )
-
-    except Exception as e:
-        return f"ERROR REAL REPORTE: {str(e)}"
-
-
-# =========================
-# CITATORIO (DEBUG)
-# =========================
-
-@admin_bp.route("/generar_citatorio/<string:id>")
-def generar_citatorio(id):
-
-    if not verificar_admin():
-        return redirect("/")
-
-    try:
-        citatorio = citatorios.find_one({"_id": ObjectId(id)})
-
-        if not citatorio:
-            return "Citatorio no encontrado"
-
-        pdf = generar_citatorio_pdf(citatorio)
-        pdf.seek(0)
-
-        return send_file(
-            pdf,
-            mimetype="application/pdf",
-            as_attachment=True,
-            download_name="citatorio.pdf"
-        )
-
-    except Exception as e:
-        return f"ERROR REAL CITATORIO: {str(e)}"
-
-
-# =========================
-# TEST
-# =========================
-
-@admin_bp.route("/test_pdf")
-def test_pdf():
-    return "RUTA ACTIVA"
+    return send_file(
+        pdf,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=f"boleta_{nombre}.pdf"
+    )

@@ -48,42 +48,41 @@ background:#3e6aa1;
 
 <body>
 
-
 <!-- SIDEBAR -->
 
 <div class="sidebar">
 
 <h2>Control Escolar</h2>
 
-<a href="/admin">Dashboard</a>
-<a href="/admin/alumnos">Alumnos</a>
-<a href="/admin/maestros">Maestros</a>
-<a href="/admin/grupos">Grupos</a>
-<a href="/admin/materias">Materias</a>
-<a href="/admin/horarios">Horarios</a>
-<a href="/admin/asistencias">Asistencias</a>
+<a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a>
+<a href="{{ url_for('admin.ver_alumnos') }}">Alumnos</a>
+<a href="#">Maestros</a>
+<a href="#">Grupos</a>
+<a href="#">Materias</a>
+<a href="#">Horarios</a>
+<a href="#">Asistencias</a>
 
-<!-- 🔥 SUBMENU REPORTES -->
+<!-- SUBMENU REPORTES -->
 <button class="submenu-btn" onclick="toggleSubmenu('menuReportes')">
 📄 Reportes ▼
 </button>
 
 <div id="menuReportes" class="submenu">
-<a href="/admin/reportes">Ver reportes</a>
+<a href="#">Ver reportes</a>
 </div>
 
-<!-- 🔥 SUBMENU CITATORIOS -->
+<!-- SUBMENU CITATORIOS -->
 <button class="submenu-btn" onclick="toggleSubmenu('menuCitatorios')">
 📢 Citatorios ▼
 </button>
 
 <div id="menuCitatorios" class="submenu">
-<a href="/admin/citatorios">Ver citatorios</a>
+<a href="#">Ver citatorios</a>
 </div>
 
-<a href="/admin/configuracion">Configuración</a>
+<a href="#">Configuración</a>
 
-<a href="/logout">Cerrar sesión</a>
+<a href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
 
 </div>
 
@@ -147,28 +146,28 @@ background:#3e6aa1;
 
 <div class="card">
 <h3>Registrar alumno</h3>
-<a href="/admin/alumnos">
+<a href="{{ url_for('admin.ver_alumnos') }}">
 <button class="btn">Ir</button>
 </a>
 </div>
 
 <div class="card">
 <h3>Registrar maestro</h3>
-<a href="/admin/maestros">
+<a href="#">
 <button class="btn">Ir</button>
 </a>
 </div>
 
 <div class="card">
 <h3>Crear grupo</h3>
-<a href="/admin/grupos">
+<a href="#">
 <button class="btn">Ir</button>
 </a>
 </div>
 
 <div class="card">
 <h3>Crear materia</h3>
-<a href="/admin/materias">
+<a href="#">
 <button class="btn">Ir</button>
 </a>
 </div>
@@ -180,7 +179,11 @@ background:#3e6aa1;
 
 <h2>Control de evaluaciones</h2>
 
-<form action="/activar_trimestre" method="POST">
+<!-- ⚠️ esta ruta no existe aún -->
+<!-- puedes activarla cuando tengas backend -->
+<!-- <form action="{{ url_for('admin.activar_trimestre') }}" method="POST"> -->
+
+<form action="#" method="POST">
 
 <label>Trimestre:</label>
 
@@ -229,11 +232,11 @@ background:#3e6aa1;
 
 <td>
 
-<a href="/admin/kardex/{{ alumno.nombre }}">
+<a href="{{ url_for('admin.kardex', nombre=alumno.nombre) }}">
 <button class="btn">Kardex</button>
 </a>
 
-<a href="/admin/boleta/{{ alumno.nombre }}">
+<a href="{{ url_for('admin.boleta', nombre=alumno.nombre) }}">
 <button class="btn">Boleta</button>
 </a>
 
@@ -325,8 +328,6 @@ Sin registros
 </div>
 
 
-<!-- 🔥 SCRIPT SUBMENÚ -->
-
 <script>
 function toggleSubmenu(id){
     let menu = document.getElementById(id)
@@ -338,7 +339,6 @@ function toggleSubmenu(id){
     }
 }
 </script>
-
 
 </body>
 </html>
