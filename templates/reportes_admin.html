@@ -4,7 +4,7 @@
 
 <h2>Reportes Disciplinarios</h2>
 
-<a href="/admin">
+<a href="{{ url_for('admin.admin_dashboard') }}">
 <button>Volver</button>
 </a>
 
@@ -25,33 +25,33 @@
 <tr>
 
 <td>{{ r.alumno }}</td>
-
 <td>{{ r.maestro }}</td>
-
 <td>{{ r.comentario }}</td>
 
 <td>
-
 {% if r.estatus == "pendiente" %}
 <span style="color:orange; font-weight:bold;">Pendiente</span>
 {% else %}
 <span style="color:green; font-weight:bold;">Aprobado</span>
 {% endif %}
-
 </td>
 
 <td>
 
 {% if r.estatus == "pendiente" %}
 
-<a href="/admin/aprobar_reporte/{{ r._id }}">
-<button style="background:#f39c12; color:white;">Autorizar y generar PDF</button>
+<a href="{{ url_for('admin.aprobar_reporte', id=r._id|string) }}">
+<button style="background:#f39c12; color:white;">
+Autorizar y generar PDF
+</button>
 </a>
 
 {% else %}
 
-<a href="/admin/aprobar_reporte/{{ r._id }}" target="_blank">
-<button style="background:#27ae60; color:white;">Ver PDF</button>
+<a href="{{ url_for('admin.aprobar_reporte', id=r._id|string) }}" target="_blank">
+<button style="background:#27ae60; color:white;">
+Ver PDF
+</button>
 </a>
 
 {% endif %}

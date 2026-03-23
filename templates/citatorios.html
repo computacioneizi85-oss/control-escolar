@@ -6,27 +6,19 @@
 
 <h3>Generar citatorio</h3>
 
-<!-- 🔥 IMPORTANTE: ruta corregida -->
-<form action="/admin/crear_citatorio" method="POST">
+<form action="{{ url_for('admin.crear_citatorio') }}" method="POST">
 
 <select name="alumno">
-
 {% for alumno in alumnos %}
-
 <option value="{{ alumno.nombre }}">
 {{ alumno.nombre }} - {{ alumno.grupo }}
 </option>
-
 {% endfor %}
-
 </select>
 
 <input type="text" name="grupo" placeholder="Grupo" required>
-
 <input type="text" name="motivo" placeholder="Motivo del citatorio" required>
-
 <input type="date" name="fecha" required>
-
 <input type="time" name="hora" required>
 
 <button type="submit">Guardar citatorio</button>
@@ -60,19 +52,16 @@
 <td>{{ c.hora }}</td>
 
 <td>
-
 {% if c.estado == "pendiente" %}
 <span style="color:orange; font-weight:bold;">Pendiente</span>
 {% else %}
 <span style="color:green; font-weight:bold;">Generado</span>
 {% endif %}
-
 </td>
 
 <td>
 
-<!-- 🔥 SIEMPRE GENERA EN TIEMPO REAL -->
-<a href="/admin/generar_citatorio/{{ c._id }}" target="_blank">
+<a href="{{ url_for('admin.generar_citatorio', id=c._id|string) }}" target="_blank">
 <button style="background:#3498db; color:white;">
 Ver PDF
 </button>

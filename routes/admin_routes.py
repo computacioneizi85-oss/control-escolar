@@ -8,6 +8,10 @@ from pdf.generador import generar_kardex, generar_boleta, generar_reporte_pdf, g
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
+# =========================
+# VERIFICAR ADMIN
+# =========================
+
 def verificar_admin():
     return "rol" in session and session["rol"] == "admin"
 
@@ -128,7 +132,7 @@ def boleta(nombre):
 
 
 # =========================
-# 🔥 PDF REPORTES
+# 🔥 PDF REPORTES (CORREGIDO)
 # =========================
 
 @admin_bp.route("/aprobar_reporte/<string:id>")
@@ -137,7 +141,10 @@ def aprobar_reporte(id):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    reporte = reportes.find_one({"_id": ObjectId(id)})
+    try:
+        reporte = reportes.find_one({"_id": ObjectId(id)})
+    except:
+        return "ID inválido"
 
     if not reporte:
         return "Reporte no encontrado"
@@ -145,11 +152,15 @@ def aprobar_reporte(id):
     pdf = generar_reporte_pdf(reporte)
     pdf.seek(0)
 
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    return send_file(
+        pdf,
+        mimetype="application/pdf",
+        as_attachment=False
+    )
 
 
 # =========================
-# 🔥 PDF CITATORIOS
+# 🔥 PDF CITATORIOS (CORREGIDO)
 # =========================
 
 @admin_bp.route("/generar_citatorio/<string:id>")
@@ -158,7 +169,10 @@ def generar_citatorio(id):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    citatorio = citatorios.find_one({"_id": ObjectId(id)})
+    try:
+        citatorio = citatorios.find_one({"_id": ObjectId(id)})
+    except:
+        return "ID inválido"
 
     if not citatorio:
         return "Citatorio no encontrado"
@@ -166,11 +180,15 @@ def generar_citatorio(id):
     pdf = generar_citatorio_pdf(citatorio)
     pdf.seek(0)
 
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    return send_file(
+        pdf,
+        mimetype="application/pdf",
+        as_attachment=False
+    )
 
 
 # =========================
-# 🔥 CREAR CITATORIO
+# CREAR CITATORIO
 # =========================
 
 @admin_bp.route("/crear_citatorio", methods=["POST"])
@@ -197,9 +215,16 @@ def crear_citatorio():
 
 @admin_bp.route("/reportes")
 def ver_reportes():
-    return render_template("reportes_admin.html", reportes=list(reportes.find()))
+    return render_template(
+        "reportes_admin.html",
+        reportes=list(reportes.find())
+    )
 
 
 @admin_bp.route("/citatorios")
 def ver_citatorios():
-    return render_template("citatorios.html", citatorios=list(citatorios.find()), alumnos=list(alumnos.find()))
+    return render_template(
+        "citatorios.html",
+        citatorios=list(citatorios.find()),
+        alumnos=list(alumnos.find())
+    )
