@@ -43,23 +43,32 @@ margin-bottom: 5px;
 <a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a>
 <a href="{{ url_for('admin.ver_alumnos') }}">Alumnos</a>
 
-<a href="#">Maestros</a>
-<a href="#">Grupos</a>
-<a href="#">Materias</a>
-<a href="#">Horarios</a>
-<a href="#">Asistencias</a>
+<a href="{{ url_for('admin.ver_maestros') }}">Maestros</a>
+<a href="{{ url_for('admin.ver_grupos') }}">Grupos</a>
+<a href="{{ url_for('admin.ver_materias') }}">Materias</a>
+<a href="{{ url_for('admin.ver_horarios') }}">Horarios</a>
+<a href="{{ url_for('admin.ver_asistencias') }}">Asistencias</a>
 
-<button class="submenu-btn" onclick="toggleSubmenu('menuReportes')">📄 Reportes ▼</button>
+<!-- REPORTES -->
+<button class="submenu-btn" onclick="toggleSubmenu('menuReportes')">
+📄 Reportes ▼
+</button>
+
 <div id="menuReportes" class="submenu">
-<a href="#">Ver reportes</a>
+<a href="{{ url_for('admin.ver_reportes') }}">Ver reportes</a>
 </div>
 
-<button class="submenu-btn" onclick="toggleSubmenu('menuCitatorios')">📢 Citatorios ▼</button>
+<!-- CITATORIOS -->
+<button class="submenu-btn" onclick="toggleSubmenu('menuCitatorios')">
+📢 Citatorios ▼
+</button>
+
 <div id="menuCitatorios" class="submenu">
-<a href="#">Ver citatorios</a>
+<a href="{{ url_for('admin.ver_citatorios') }}">Ver citatorios</a>
 </div>
 
-<a href="#">Configuración</a>
+<a href="{{ url_for('admin.configuracion_admin') }}">Configuración</a>
+
 <a href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
 
 </div>
@@ -79,7 +88,9 @@ margin-bottom: 5px;
 
 <h2>Backup del sistema</h2>
 
-<a href="/admin/backup/descargar"><button>📥 Descargar Backup</button></a>
+<a href="/admin/backup/descargar">
+<button>📥 Descargar Backup</button>
+</a>
 
 <form action="/admin/backup/restaurar" method="POST" enctype="multipart/form-data">
 <input type="file" name="archivo" required>
@@ -110,7 +121,11 @@ margin-bottom: 5px;
 <h2>Alumnos registrados</h2>
 
 <table>
-<tr><th>Alumno</th><th>Grupo</th><th>PDF</th></tr>
+<tr>
+<th>Alumno</th>
+<th>Grupo</th>
+<th>PDF</th>
+</tr>
 
 {% for alumno in alumnos %}
 <tr>
