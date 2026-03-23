@@ -15,29 +15,36 @@ def verificar_admin():
 
 
 # =========================
-# DASHBOARD
+# DASHBOARD (CON DEBUG 🔥)
 # =========================
 
 @admin_bp.route("/")
 def admin_dashboard():
 
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
+    try:
+        if not verificar_admin():
+            return redirect(url_for("auth.login"))
 
-    lista_alumnos = list(alumnos.find())
-    lista_maestros = list(maestros.find())
-    lista_reportes = list(reportes.find())
+        # 🔍 DEBUG: ver si Mongo responde
+        lista_alumnos = list(alumnos.find())
+        lista_maestros = list(maestros.find())
+        lista_reportes = list(reportes.find())
+        lista_grupos = list(grupos.find())
 
-    return render_template(
-        "admin.html",
-        alumnos=lista_alumnos,
-        grupos=list(grupos.find()),
-        maestros=lista_maestros,
-        reportes=lista_reportes,
-        total_alumnos=len(lista_alumnos),
-        total_maestros=len(lista_maestros),
-        total_reportes=len(lista_reportes)
-    )
+        return render_template(
+            "admin.html",
+            alumnos=lista_alumnos,
+            grupos=lista_grupos,
+            maestros=lista_maestros,
+            reportes=lista_reportes,
+            total_alumnos=len(lista_alumnos),
+            total_maestros=len(lista_maestros),
+            total_reportes=len(lista_reportes)
+        )
+
+    except Exception as e:
+        # 🔥 AQUÍ VERÁS EL ERROR REAL
+        return f"<h1>ERROR DASHBOARD:</h1><pre>{str(e)}</pre>"
 
 
 # =========================
@@ -47,15 +54,19 @@ def admin_dashboard():
 @admin_bp.route("/alumnos")
 def ver_alumnos():
 
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
+    try:
+        if not verificar_admin():
+            return redirect(url_for("auth.login"))
 
-    return render_template(
-        "alumnos.html",
-        alumnos=list(alumnos.find()),
-        grupos=list(grupos.find()),
-        maestros=list(maestros.find())
-    )
+        return render_template(
+            "alumnos.html",
+            alumnos=list(alumnos.find()),
+            grupos=list(grupos.find()),
+            maestros=list(maestros.find())
+        )
+
+    except Exception as e:
+        return f"<h1>ERROR ALUMNOS:</h1><pre>{str(e)}</pre>"
 
 
 # =========================
@@ -65,32 +76,36 @@ def ver_alumnos():
 @admin_bp.route("/crear_alumno", methods=["POST"])
 def crear_alumno():
 
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
+    try:
+        if not verificar_admin():
+            return redirect(url_for("auth.login"))
 
-    nombre = request.form.get("nombre")
-    grupo = request.form.get("grupo")
+        nombre = request.form.get("nombre")
+        grupo = request.form.get("grupo")
 
-    foto = request.files.get("foto")
-    foto_base64 = ""
+        foto = request.files.get("foto")
+        foto_base64 = ""
 
-    if foto and foto.filename != "":
-        try:
-            imagen_bytes = foto.read()
-            if len(imagen_bytes) > 0:
-                foto_base64 = base64.b64encode(imagen_bytes).decode("utf-8")
-        except:
-            pass
+        if foto and foto.filename != "":
+            try:
+                imagen_bytes = foto.read()
+                if len(imagen_bytes) > 0:
+                    foto_base64 = base64.b64encode(imagen_bytes).decode("utf-8")
+            except:
+                pass
 
-    alumnos.insert_one({
-        "nombre": nombre,
-        "grupo": grupo,
-        "foto": foto_base64,
-        "calificaciones": [],
-        "asistencias": []
-    })
+        alumnos.insert_one({
+            "nombre": nombre,
+            "grupo": grupo,
+            "foto": foto_base64,
+            "calificaciones": [],
+            "asistencias": []
+        })
 
-    return redirect(url_for("admin.ver_alumnos"))
+        return redirect(url_for("admin.ver_alumnos"))
+
+    except Exception as e:
+        return f"<h1>ERROR CREAR ALUMNO:</h1><pre>{str(e)}</pre>"
 
 
 # =========================
@@ -100,18 +115,22 @@ def crear_alumno():
 @admin_bp.route("/kardex/<nombre>")
 def kardex(nombre):
 
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
+    try:
+        if not verificar_admin():
+            return redirect(url_for("auth.login"))
 
-    pdf = generar_kardex(nombre)
-    pdf.seek(0)
+        pdf = generar_kardex(nombre)
+        pdf.seek(0)
 
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=f"kardex_{nombre}.pdf"
-    )
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name=f"kardex_{nombre}.pdf"
+        )
+
+    except Exception as e:
+        return f"<h1>ERROR KARDEX:</h1><pre>{str(e)}</pre>"
 
 
 # =========================
@@ -121,15 +140,19 @@ def kardex(nombre):
 @admin_bp.route("/boleta/<nombre>")
 def boleta(nombre):
 
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
+    try:
+        if not verificar_admin():
+            return redirect(url_for("auth.login"))
 
-    pdf = generar_boleta(nombre)
-    pdf.seek(0)
+        pdf = generar_boleta(nombre)
+        pdf.seek(0)
 
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=f"boleta_{nombre}.pdf"
-    )
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name=f"boleta_{nombre}.pdf"
+        )
+
+    except Exception as e:
+        return f"<h1>ERROR BOLETA:</h1><pre>{str(e)}</pre>"
