@@ -105,7 +105,7 @@ def crear_alumno():
 
 
 # =========================
-# KARDEX
+# 🔥 PDF KARDEX
 # =========================
 
 @admin_bp.route("/kardex/<nombre>")
@@ -114,14 +114,16 @@ def kardex(nombre):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    pdf = generar_kardex(nombre)
-    pdf.seek(0)
-
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    try:
+        pdf = generar_kardex(nombre)
+        pdf.seek(0)
+        return send_file(pdf, mimetype="application/pdf")
+    except Exception as e:
+        return f"Error kardex: {str(e)}"
 
 
 # =========================
-# BOLETA
+# 🔥 PDF BOLETA
 # =========================
 
 @admin_bp.route("/boleta/<nombre>")
@@ -130,14 +132,16 @@ def boleta(nombre):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    pdf = generar_boleta(nombre)
-    pdf.seek(0)
-
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    try:
+        pdf = generar_boleta(nombre)
+        pdf.seek(0)
+        return send_file(pdf, mimetype="application/pdf")
+    except Exception as e:
+        return f"Error boleta: {str(e)}"
 
 
 # =========================
-# PDF REPORTES
+# 🔥 PDF REPORTE
 # =========================
 
 @admin_bp.route("/aprobar_reporte/<string:id>")
@@ -146,19 +150,23 @@ def aprobar_reporte(id):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    reporte = reportes.find_one({"_id": ObjectId(id)})
+    try:
+        reporte = reportes.find_one({"_id": ObjectId(id)})
 
-    if not reporte:
-        return "Reporte no encontrado"
+        if not reporte:
+            return "Reporte no encontrado"
 
-    pdf = generar_reporte_pdf(reporte)
-    pdf.seek(0)
+        pdf = generar_reporte_pdf(reporte)
+        pdf.seek(0)
 
-    return send_file(pdf, mimetype="application/pdf")
+        return send_file(pdf, mimetype="application/pdf")
+
+    except Exception as e:
+        return f"Error reporte: {str(e)}"
 
 
 # =========================
-# PDF CITATORIOS
+# 🔥 PDF CITATORIO
 # =========================
 
 @admin_bp.route("/generar_citatorio/<string:id>")
@@ -167,15 +175,19 @@ def generar_citatorio(id):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    citatorio = citatorios.find_one({"_id": ObjectId(id)})
+    try:
+        citatorio = citatorios.find_one({"_id": ObjectId(id)})
 
-    if not citatorio:
-        return "Citatorio no encontrado"
+        if not citatorio:
+            return "Citatorio no encontrado"
 
-    pdf = generar_citatorio_pdf(citatorio)
-    pdf.seek(0)
+        pdf = generar_citatorio_pdf(citatorio)
+        pdf.seek(0)
 
-    return send_file(pdf, mimetype="application/pdf")
+        return send_file(pdf, mimetype="application/pdf")
+
+    except Exception as e:
+        return f"Error citatorio: {str(e)}"
 
 
 # =========================
@@ -201,7 +213,7 @@ def crear_citatorio():
 
 
 # =========================
-# SUBMENÚS COMPLETOS 🔥
+# SUBMENÚS
 # =========================
 
 @admin_bp.route("/reportes")
