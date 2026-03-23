@@ -43,12 +43,12 @@ margin-bottom: 5px;
 <a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a>
 <a href="{{ url_for('admin.ver_alumnos') }}">Alumnos</a>
 
-<!-- ⚠️ DESACTIVADOS PARA NO ROMPER -->
-<a href="#">Maestros</a>
-<a href="#">Grupos</a>
-<a href="#">Materias</a>
-<a href="#">Horarios</a>
-<a href="#">Asistencias</a>
+<!-- 🔥 AHORA SÍ FUNCIONAN -->
+<a href="{{ url_for('admin.ver_maestros') }}">Maestros</a>
+<a href="{{ url_for('admin.ver_grupos') }}">Grupos</a>
+<a href="{{ url_for('admin.ver_materias') }}">Materias</a>
+<a href="{{ url_for('admin.ver_horarios') }}">Horarios</a>
+<a href="{{ url_for('admin.ver_asistencias') }}">Asistencias</a>
 
 <!-- REPORTES -->
 <button class="submenu-btn" onclick="toggleSubmenu('menuReportes')">
@@ -68,8 +68,8 @@ margin-bottom: 5px;
 <a href="{{ url_for('admin.ver_citatorios') }}">Ver citatorios</a>
 </div>
 
-<!-- ⚠️ DESACTIVADO -->
-<a href="#">Configuración</a>
+<!-- 🔥 CONFIGURACIÓN ACTIVA -->
+<a href="{{ url_for('admin.configuracion_admin') }}">Configuración</a>
 
 <a href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
 
