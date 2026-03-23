@@ -7,6 +7,42 @@
 
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
+<style>
+
+/* SUBMENÚ */
+.submenu {
+display: none;
+margin-left: 10px;
+}
+
+.submenu a {
+display: block;
+padding: 8px;
+font-size: 14px;
+background: #2f4f75;
+margin-bottom: 5px;
+border-radius: 5px;
+color: white;
+text-decoration: none;
+}
+
+.submenu-btn {
+width: 100%;
+padding: 10px;
+background: #243b5a;
+color: white;
+border: none;
+cursor: pointer;
+text-align: left;
+margin-bottom: 5px;
+}
+
+.submenu-btn:hover{
+background:#3e6aa1;
+}
+
+</style>
+
 </head>
 
 
@@ -26,9 +62,26 @@
 <a href="/admin/materias">Materias</a>
 <a href="/admin/horarios">Horarios</a>
 <a href="/admin/asistencias">Asistencias</a>
-<a href="/admin/reportes">Reportes</a>
+
+<!-- 🔥 SUBMENU REPORTES -->
+<button class="submenu-btn" onclick="toggleSubmenu('menuReportes')">
+📄 Reportes ▼
+</button>
+
+<div id="menuReportes" class="submenu">
+<a href="/admin/reportes">Ver reportes</a>
+</div>
+
+<!-- 🔥 SUBMENU CITATORIOS -->
+<button class="submenu-btn" onclick="toggleSubmenu('menuCitatorios')">
+📢 Citatorios ▼
+</button>
+
+<div id="menuCitatorios" class="submenu">
+<a href="/admin/citatorios">Ver citatorios</a>
+</div>
+
 <a href="/admin/configuracion">Configuración</a>
-<a href="/admin/citatorios">Citatorios</a>
 
 <a href="/logout">Cerrar sesión</a>
 
@@ -41,7 +94,6 @@
 <div class="content">
 
 <h1>Dashboard</h1>
-
 
 
 <!-- TARJETAS -->
@@ -69,6 +121,7 @@
 </div>
 
 </div>
+
 
 <h2>Backup del sistema</h2>
 
@@ -123,7 +176,6 @@
 </div>
 
 
-
 <!-- CONTROL DE TRIMESTRES -->
 
 <h2>Control de evaluaciones</h2>
@@ -133,32 +185,23 @@
 <label>Trimestre:</label>
 
 <select name="trimestre">
-
 <option value="1">Trimestre 1</option>
 <option value="2">Trimestre 2</option>
 <option value="3">Trimestre 3</option>
-
 </select>
-
 
 <label>Estado:</label>
 
 <select name="estado">
-
 <option value="true">Habilitar</option>
 <option value="false">Deshabilitar</option>
-
 </select>
 
 <button type="submit" class="btn">Guardar</button>
 
 </form>
 
-
-
-<br>
-<br>
-
+<br><br>
 
 
 <!-- TABLA -->
@@ -168,17 +211,12 @@
 <table>
 
 <thead>
-
 <tr>
-
 <th>Alumno</th>
 <th>Grupo</th>
 <th>PDF</th>
-
 </tr>
-
 </thead>
-
 
 <tbody>
 
@@ -187,7 +225,6 @@
 <tr>
 
 <td>{{ alumno.nombre }}</td>
-
 <td>{{ alumno.grupo }}</td>
 
 <td>
@@ -209,7 +246,6 @@
 </tbody>
 
 </table>
-
 
 
 <h2>Semáforo semanal de asistencias</h2>
@@ -286,9 +322,22 @@ Sin registros
 
 </table>
 
-
-
 </div>
+
+
+<!-- 🔥 SCRIPT SUBMENÚ -->
+
+<script>
+function toggleSubmenu(id){
+    let menu = document.getElementById(id)
+
+    if(menu.style.display === "block"){
+        menu.style.display = "none"
+    } else {
+        menu.style.display = "block"
+    }
+}
+</script>
 
 
 </body>
