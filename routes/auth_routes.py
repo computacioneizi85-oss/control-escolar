@@ -39,6 +39,7 @@ def procesar_login():
                 session["usuario"] = admin["usuario"]
                 session["rol"] = "admin"
 
+                # 🔥 CORRECCIÓN CLAVE
                 return redirect(url_for("admin.admin_dashboard"))
 
         elif admin.get("password") == password:
@@ -46,6 +47,7 @@ def procesar_login():
             session["usuario"] = admin["usuario"]
             session["rol"] = "admin"
 
+            # 🔥 CORRECCIÓN CLAVE
             return redirect(url_for("admin.admin_dashboard"))
 
     # =========================
@@ -62,6 +64,7 @@ def procesar_login():
                 session["usuario"] = maestro["usuario"]
                 session["rol"] = "maestro"
 
+                # 🔥 CORRECCIÓN (usa url_for si tienes blueprint)
                 return redirect("/panel_maestro")
 
         elif maestro.get("password") == password:
