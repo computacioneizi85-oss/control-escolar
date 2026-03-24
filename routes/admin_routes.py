@@ -17,12 +17,11 @@ def verificar_admin():
 
 
 # =========================
-# DASHBOARD 🔥 CORREGIDO
+# DASHBOARD
 # =========================
 
 @admin_bp.route("/")
 def admin_dashboard():
-
     try:
         if not verificar_admin():
             return redirect(url_for("auth.login"))
@@ -241,21 +240,14 @@ def reset_grupo():
 
         for alumno in lista:
 
-            calificaciones = alumno.get("calificaciones", [])
-
             nuevas = [
-                c for c in calificaciones
+                c for c in alumno.get("calificaciones", [])
                 if c.get("trimestre") != trimestre
             ]
 
             alumnos.update_one(
                 {"_id": alumno["_id"]},
-                {
-                    "$set": {
-                        "calificaciones": nuevas,
-                        "enviado": False
-                    }
-                }
+                {"$set": {"calificaciones": nuevas, "enviado": False}}
             )
 
         return redirect(url_for("admin.ver_evaluaciones"))
@@ -265,100 +257,9 @@ def reset_grupo():
 
 
 # =========================
-# MAESTROS
+# MENÚS (SIN DUPLICADOS 🔥)
 # =========================
 
-@admin_bp.route("/maestros")
-def ver_maestros():
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    return render_template(
-        "maestros.html",
-        maestros=list(maestros.find())
-    )
-
-
-# =========================
-# GRUPOS
-# =========================
-
-@admin_bp.route("/grupos")
-def ver_grupos():
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    return render_template(
-        "grupos.html",
-        grupos=list(grupos.find())
-    )
-
-
-# =========================
-# MATERIAS
-# =========================
-
-@admin_bp.route("/materias")
-def ver_materias():
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    return render_template(
-        "materias.html",
-        materias=list(materias.find())
-    )
-
-
-# =========================
-# HORARIOS
-# =========================
-
-@admin_bp.route("/horarios")
-def ver_horarios():
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    return render_template(
-        "horarios.html",
-        horarios=list(horarios.find())
-    )
-
-
-# =========================
-# ASISTENCIAS
-# =========================
-
-@admin_bp.route("/asistencias")
-def ver_asistencias():
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    return render_template(
-        "asistencias_admin.html",
-        alumnos=list(alumnos.find())
-    )
-
-
-# =========================
-# CONFIGURACIÓN
-# =========================
-
-@admin_bp.route("/configuracion")
-def configuracion_admin():
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    return render_template("configuracion.html")
-
-# =========================
-# MAESTROS
-# =========================
 @admin_bp.route("/maestros")
 def ver_maestros():
     if not verificar_admin():
@@ -366,9 +267,6 @@ def ver_maestros():
     return render_template("maestros.html", maestros=list(maestros.find()))
 
 
-# =========================
-# GRUPOS
-# =========================
 @admin_bp.route("/grupos")
 def ver_grupos():
     if not verificar_admin():
@@ -376,9 +274,6 @@ def ver_grupos():
     return render_template("grupos.html", grupos=list(grupos.find()))
 
 
-# =========================
-# MATERIAS
-# =========================
 @admin_bp.route("/materias")
 def ver_materias():
     if not verificar_admin():
@@ -386,9 +281,6 @@ def ver_materias():
     return render_template("materias.html", materias=list(materias.find()))
 
 
-# =========================
-# HORARIOS
-# =========================
 @admin_bp.route("/horarios")
 def ver_horarios():
     if not verificar_admin():
@@ -396,9 +288,6 @@ def ver_horarios():
     return render_template("horarios.html", horarios=list(horarios.find()))
 
 
-# =========================
-# ASISTENCIAS
-# =========================
 @admin_bp.route("/asistencias")
 def ver_asistencias():
     if not verificar_admin():
@@ -406,9 +295,6 @@ def ver_asistencias():
     return render_template("asistencias_admin.html", alumnos=list(alumnos.find()))
 
 
-# =========================
-# REPORTES 🔥 (ESTA FALTABA)
-# =========================
 @admin_bp.route("/reportes")
 def ver_reportes():
     if not verificar_admin():
@@ -416,9 +302,6 @@ def ver_reportes():
     return render_template("reportes_admin.html", reportes=list(reportes.find()))
 
 
-# =========================
-# CITATORIOS
-# =========================
 @admin_bp.route("/citatorios")
 def ver_citatorios():
     if not verificar_admin():
@@ -426,9 +309,6 @@ def ver_citatorios():
     return render_template("citatorios.html", citatorios=list(citatorios.find()))
 
 
-# =========================
-# CONFIGURACIÓN
-# =========================
 @admin_bp.route("/configuracion")
 def configuracion_admin():
     if not verificar_admin():
