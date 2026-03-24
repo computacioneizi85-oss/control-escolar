@@ -154,3 +154,36 @@ def guardar_calificaciones_ajax():
         "status": "ok",
         "calificacion": cal1
     })
+
+# =========================
+# RESET POR ALUMNO
+# =========================
+
+@maestro_bp.route("/reset_alumno", methods=["POST"])
+def reset_alumno():
+
+    if not verificar_maestro():
+        return jsonify({"status": "error"})
+
+    nombre = request.form.get("alumno")
+    trimestre = request.form.get("trimestre")
+
+    alumno = alumnos.find_one({"nombre": nombre})
+
+    nuevas = []
+
+    for c in alumno.get("calificaciones", []):
+        if c.get("trimestre") != trimestre:
+            nuevas.append(c)
+
+    alumnos.update_one(
+        {"_id": alumno["_id"]},
+        {
+            "$set": {
+                "calificaciones": nuevas,
+                "enviado": False
+            }
+        }
+    )
+
+    return jsonify({"status": "ok"})

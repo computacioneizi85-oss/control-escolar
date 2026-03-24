@@ -26,6 +26,34 @@
 
 </div>
 
+<!-- 🔥 RESET GENERAL -->
+<h3>💣 Reset por grupo</h3>
+
+<form method="POST" action="/admin/reset_grupo">
+
+<select name="grupo" required>
+<option value="">Seleccionar grupo</option>
+
+{% set grupos = [] %}
+{% for d in datos %}
+{% if d.grupo not in grupos %}
+{% set _ = grupos.append(d.grupo) %}
+<option value="{{ d.grupo }}">{{ d.grupo }}</option>
+{% endif %}
+{% endfor %}
+
+</select>
+
+<input type="hidden" name="trimestre" value="{{ config.trimestre }}">
+
+<button style="background:red;color:white;"
+onclick="return confirm('⚠ Esto borrará TODAS las calificaciones del grupo')">
+💣 Reset grupo
+</button>
+
+</form>
+
+<br><br>
 
 <!-- FILTRO -->
 <h4>Filtrar por grupo</h4>
@@ -44,7 +72,6 @@
 </select>
 
 <br><br>
-
 
 <!-- TABLA -->
 <table border="1" style="width:100%; background:white;">
@@ -99,7 +126,6 @@ color:
 
 </table>
 
-
 <!-- RESUMEN -->
 <br><br>
 
@@ -113,22 +139,20 @@ color:
 {% set reprobados = datos | selectattr("calificacion", "lt", 6) | list %}
 <p>Reprobados: <strong>{{ reprobados|length }}</strong></p>
 
-
-<!-- ALERTA GENERAL -->
+<!-- 🔥 ALERTA INTELIGENTE -->
 <br>
 
-{% if datos %}
-{% if datos[0].enviado %}
+{% set pendientes = datos | selectattr("enviado", "equalto", False) | list %}
+
+{% if pendientes|length == 0 %}
 <p style="color:green; font-weight:bold;">
-✔ Todas las evaluaciones fueron enviadas por los maestros
+✔ Todas las evaluaciones fueron enviadas
 </p>
 {% else %}
 <p style="color:orange; font-weight:bold;">
-⚠ Hay evaluaciones pendientes por enviar
+⚠ Hay {{ pendientes|length }} evaluaciones pendientes
 </p>
 {% endif %}
-{% endif %}
-
 
 <!-- SCRIPT FILTRO -->
 <script>

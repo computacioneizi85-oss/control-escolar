@@ -11,6 +11,7 @@
 .seccion.activa{display:block;}
 .guardado-ok{background:#d4edda;}
 .editando{background:#fff3cd;}
+.btn-reset{background:red;color:white;font-size:11px;margin-top:5px;}
 </style>
 
 <div class="panel-container">
@@ -109,7 +110,17 @@ background:
 {% for alumno in alumnos %}
 <tr>
 
-<td><strong>{{ alumno.nombre }}</strong></td>
+<td>
+<strong>{{ alumno.nombre }}</strong>
+
+<br>
+
+<button class="btn-reset"
+onclick="resetAlumno('{{ alumno.nombre }}')">
+🔄 Reset
+</button>
+
+</td>
 
 {% for h in horarios %}
 <td>
@@ -134,7 +145,6 @@ readonly>
 <br>
 
 <button onclick="editarCal('{{ alumno.nombre }}','{{ h.materia }}')">✏️</button>
-
 <button onclick="guardarAjax('{{ alumno.nombre }}','{{ h.materia }}')">💾</button>
 
 {% else %}
@@ -238,6 +248,23 @@ alert("Trimestre cerrado")
 }
 
 })
+
+}
+
+function resetAlumno(alumno){
+
+if(!confirm("⚠ ¿Borrar calificaciones de este alumno?")){
+return
+}
+
+fetch("/reset_alumno",{
+method:"POST",
+headers:{"Content-Type":"application/x-www-form-urlencoded"},
+body:
+"alumno="+alumno+
+"&trimestre={{ config.trimestre }}"
+})
+.then(()=>location.reload())
 
 }
 

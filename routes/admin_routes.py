@@ -316,3 +316,38 @@ def configuracion_admin():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
     return render_template("configuracion.html")
+
+# =========================
+# RESET GENERAL (ADMIN)
+# =========================
+
+@admin_bp.route("/reset_grupo", methods=["POST"])
+def reset_grupo():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    grupo = request.form.get("grupo")
+    trimestre = request.form.get("trimestre")
+
+    lista = list(alumnos.find({"grupo": grupo}))
+
+    for alumno in lista:
+
+        nuevas = []
+
+        for c in alumno.get("calificaciones", []):
+            if c.get("trimestre") != trimestre:
+                nuevas.append(c)
+
+        alumnos.update_one(
+            {"_id": alumno["_id"]},
+            {
+                "$set": {
+                    "calificaciones": nuevas,
+                    "enviado": False
+                }
+            }
+        )
+
+    return redirect(url_for("admin.evaluaciones_admin"))
