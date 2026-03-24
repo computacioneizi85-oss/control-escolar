@@ -57,6 +57,9 @@ def activar_trimestre():
         upsert=True
     )
 
+    # 🔥 RESET DE ENVÍO
+    alumnos.update_many({}, {"$set": {"enviado": False}})
+
     return redirect(url_for("admin.admin_dashboard"))
 
 
@@ -81,16 +84,22 @@ def ver_evaluaciones():
                 "grupo": a.get("grupo"),
                 "materia": c.get("materia"),
                 "calificacion": c.get("calificacion"),
-                "trimestre": c.get("trimestre")
+                "trimestre": c.get("trimestre"),
+                "enviado": a.get("enviado", False)
             })
 
     config = configuracion.find_one({"tipo": "trimestre"}) or {}
 
-    return render_template("evaluaciones_admin.html",
+    return render_template(
+        "evaluaciones_admin.html",
         datos=datos,
         config=config
     )
 
+
+# =========================
+# CERRAR TRIMESTRE
+# =========================
 
 @admin_bp.route("/cerrar_trimestre")
 def cerrar_trimestre():
@@ -141,7 +150,8 @@ def crear_alumno():
         "grupo": request.form.get("grupo"),
         "foto": foto_base64,
         "calificaciones": [],
-        "asistencias": []
+        "asistencias": [],
+        "enviado": False   # 🔥 IMPORTANTE
     })
 
     return redirect(url_for("admin.ver_alumnos"))

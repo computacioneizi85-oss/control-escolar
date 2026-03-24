@@ -31,11 +31,11 @@ def panel_maestro():
     grupos = maestro.get("grupos", [])
 
     lista_horarios = list(horarios.find({
-    "$or": [
-        {"maestro": maestro.get("nombre")},
-        {"maestro": maestro.get("usuario")}
-    ]
-}))
+        "$or": [
+            {"maestro": maestro.get("nombre")},
+            {"maestro": maestro.get("usuario")}
+        ]
+    }))
 
     if lista_horarios:
         grupos_horario = [h.get("grupo") for h in lista_horarios if h.get("grupo")]
@@ -43,11 +43,10 @@ def panel_maestro():
 
     lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
 
-    # 🔥 CONFIGURACIÓN CORRECTA
     config = configuracion.find_one({"tipo": "trimestre"}) or {}
 
     # =========================
-    # ANALYTICS (NO SE TOCA)
+    # ANALYTICS
     # =========================
 
     promedios = []
@@ -100,7 +99,7 @@ def panel_maestro():
 
 
 # =========================
-# 🔥 GUARDAR CALIFICACIONES (ESTABLE)
+# GUARDAR CALIFICACIONES
 # =========================
 
 @maestro_bp.route("/guardar_calificaciones", methods=["POST"])
@@ -117,9 +116,9 @@ def guardar_calificaciones():
     if not alumno_nombre or not materia or not cal1:
         return redirect("/panel_maestro")
 
-    # 🔒 VALIDAR SI EL TRIMESTRE ESTÁ ABIERTO
     config = configuracion.find_one({"tipo": "trimestre"}) or {}
 
+    # 🔒 TRIMESTRE CERRADO
     if config.get("estado") != "true":
         return "Evaluaciones cerradas"
 
@@ -132,6 +131,10 @@ def guardar_calificaciones():
 
     if not alumno:
         return redirect("/panel_maestro")
+
+    # 🔒 BLOQUEAR SI YA SE ENVIÓ
+    if alumno.get("enviado") == True:
+        return "Calificaciones ya enviadas"
 
     calificaciones = alumno.get("calificaciones", [])
 
@@ -217,3 +220,25 @@ def guardar_asistencia_ajax():
     )
 
     return jsonify({"status": "ok"})
+
+
+# =========================
+# ENVIAR CALIFICACIONES
+# =========================
+
+@maestro_bp.route("/enviar_calificaciones")
+def enviar_calificaciones():
+
+    if not verificar_maestro():
+        return redirect("/")
+
+    maestro = maestros.find_one({"usuario": session["usuario"]})
+
+    grupos = maestro.get("grupos", [])
+
+    alumnos.update_many(
+        {"grupo": {"$in": grupos}},
+        {"$set": {"enviado": True}}
+    )
+
+    return redirect("/panel_maestro")
