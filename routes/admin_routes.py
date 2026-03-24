@@ -262,3 +262,96 @@ def reset_grupo():
 
     except Exception as e:
         return f"<h1>ERROR RESET:</h1><pre>{str(e)}</pre>"
+
+
+# =========================
+# MAESTROS
+# =========================
+
+@admin_bp.route("/maestros")
+def ver_maestros():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template(
+        "maestros.html",
+        maestros=list(maestros.find())
+    )
+
+
+# =========================
+# GRUPOS
+# =========================
+
+@admin_bp.route("/grupos")
+def ver_grupos():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template(
+        "grupos.html",
+        grupos=list(grupos.find())
+    )
+
+
+# =========================
+# MATERIAS
+# =========================
+
+@admin_bp.route("/materias")
+def ver_materias():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template(
+        "materias.html",
+        materias=list(materias.find())
+    )
+
+
+# =========================
+# HORARIOS
+# =========================
+
+@admin_bp.route("/horarios")
+def ver_horarios():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template(
+        "horarios.html",
+        horarios=list(horarios.find())
+    )
+
+
+# =========================
+# ASISTENCIAS
+# =========================
+
+@admin_bp.route("/asistencias")
+def ver_asistencias():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template(
+        "asistencias_admin.html",
+        alumnos=list(alumnos.find())
+    )
+
+
+# =========================
+# CONFIGURACIÓN
+# =========================
+
+@admin_bp.route("/configuracion")
+def configuracion_admin():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template("configuracion.html")
