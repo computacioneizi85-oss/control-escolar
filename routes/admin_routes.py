@@ -17,25 +17,34 @@ def verificar_admin():
 
 
 # =========================
-# DASHBOARD
+# DASHBOARD 🔥 CORREGIDO
 # =========================
 
 @admin_bp.route("/")
 def admin_dashboard():
 
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
+    try:
+        if not verificar_admin():
+            return redirect(url_for("auth.login"))
 
-    return render_template(
-        "admin.html",
-        alumnos=list(alumnos.find()),
-        grupos=list(grupos.find()),
-        maestros=list(maestros.find()),
-        reportes=list(reportes.find()),
-        total_alumnos=alumnos.count_documents({}),
-        total_maestros=maestros.count_documents({}),
-        total_reportes=reportes.count_documents({})
-    )
+        lista_alumnos = list(alumnos.find())
+        lista_maestros = list(maestros.find())
+        lista_reportes = list(reportes.find())
+        lista_grupos = list(grupos.find())
+
+        return render_template(
+            "admin.html",
+            alumnos=lista_alumnos,
+            grupos=lista_grupos,
+            maestros=lista_maestros,
+            reportes=lista_reportes,
+            total_alumnos=len(lista_alumnos),
+            total_maestros=len(lista_maestros),
+            total_reportes=len(lista_reportes)
+        )
+
+    except Exception as e:
+        return f"<h1>ERROR DASHBOARD:</h1><pre>{str(e)}</pre>"
 
 
 # =========================
@@ -212,7 +221,7 @@ def generar_citatorio(id):
 
 
 # =========================
-# RESET GRUPO 🔥 (CORREGIDO)
+# RESET GRUPO
 # =========================
 
 @admin_bp.route("/reset_grupo", methods=["POST"])
@@ -249,7 +258,6 @@ def reset_grupo():
                 }
             )
 
-        # 🔥 ESTA ES LA CLAVE DEL FIX
         return redirect(url_for("admin.ver_evaluaciones"))
 
     except Exception as e:
