@@ -57,14 +57,14 @@ def activar_trimestre():
         upsert=True
     )
 
-    # 🔥 RESET DE ENVÍO
+    # 🔥 RESETEA ENVÍO DE CALIFICACIONES
     alumnos.update_many({}, {"$set": {"enviado": False}})
 
     return redirect(url_for("admin.admin_dashboard"))
 
 
 # =========================
-# 🔥 DASHBOARD EVALUACIONES
+# 🔥 DASHBOARD DE EVALUACIONES
 # =========================
 
 @admin_bp.route("/evaluaciones")
@@ -79,6 +79,7 @@ def ver_evaluaciones():
 
     for a in lista:
         for c in a.get("calificaciones", []):
+
             datos.append({
                 "alumno": a.get("nombre"),
                 "grupo": a.get("grupo"),
@@ -151,7 +152,7 @@ def crear_alumno():
         "foto": foto_base64,
         "calificaciones": [],
         "asistencias": [],
-        "enviado": False   # 🔥 IMPORTANTE
+        "enviado": False  # 🔥 CLAVE DEL FLUJO
     })
 
     return redirect(url_for("admin.ver_alumnos"))
@@ -268,7 +269,8 @@ def ver_reportes():
 def ver_citatorios():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
-    return render_template("citatorios.html",
+    return render_template(
+        "citatorios.html",
         citatorios=list(citatorios.find()),
         alumnos=list(alumnos.find())
     )

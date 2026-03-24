@@ -55,15 +55,20 @@
 <th>Materia</th>
 <th>Calificación</th>
 <th>Trimestre</th>
+<th>Estado</th>
 </tr>
 
 <tbody>
 
 {% for d in datos %}
 <tr>
+
 <td>{{ d.alumno }}</td>
+
 <td>{{ d.grupo }}</td>
+
 <td>{{ d.materia }}</td>
+
 <td>
 <span style="
 font-weight:bold;
@@ -76,7 +81,17 @@ color:
 {{ d.calificacion }}
 </span>
 </td>
+
 <td>{{ d.trimestre }}</td>
+
+<td>
+{% if d.enviado %}
+<span style="color:green; font-weight:bold;">✔ Enviado</span>
+{% else %}
+<span style="color:red; font-weight:bold;">Pendiente</span>
+{% endif %}
+</td>
+
 </tr>
 {% endfor %}
 
@@ -97,6 +112,22 @@ color:
 
 {% set reprobados = datos | selectattr("calificacion", "lt", 6) | list %}
 <p>Reprobados: <strong>{{ reprobados|length }}</strong></p>
+
+
+<!-- ALERTA GENERAL -->
+<br>
+
+{% if datos %}
+{% if datos[0].enviado %}
+<p style="color:green; font-weight:bold;">
+✔ Todas las evaluaciones fueron enviadas por los maestros
+</p>
+{% else %}
+<p style="color:orange; font-weight:bold;">
+⚠ Hay evaluaciones pendientes por enviar
+</p>
+{% endif %}
+{% endif %}
 
 
 <!-- SCRIPT FILTRO -->
