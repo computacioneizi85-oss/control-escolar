@@ -111,7 +111,7 @@ box-shadow:0px 4px 10px rgba(0,0,0,0.08);
 <!-- MENU -->
 <div class="menu-maestro" id="menuMaestro">
 <button onclick="mostrarSeccion('inicio')">Dashboard</button>
-<button onclick="mostrarSeccion('analytics')">Analytics</button> <!-- 🔥 NUEVO -->
+<button onclick="mostrarSeccion('analytics')">Analytics</button>
 <button onclick="mostrarSeccion('clases')">Mis clases</button>
 <button onclick="mostrarSeccion('evaluaciones')">Evaluaciones</button>
 <button onclick="mostrarSeccion('alumnos')">Lista alumnos</button>
@@ -121,9 +121,7 @@ box-shadow:0px 4px 10px rgba(0,0,0,0.08);
 
 <div style="flex:1;">
 
-<!-- =========================
-DASHBOARD NORMAL
-========================= -->
+<!-- DASHBOARD -->
 <div id="inicio" class="seccion activa">
 <h2>Resumen</h2>
 
@@ -141,10 +139,7 @@ DASHBOARD NORMAL
 </div>
 
 
-<!-- =========================
-🔥 ANALYTICS PRO
-========================= -->
-
+<!-- ANALYTICS -->
 <div id="analytics" class="seccion">
 
 <h2>Analytics Académico</h2>
@@ -173,7 +168,7 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 </div>
 
 
-<!-- HORARIOS -->
+<!-- CLASES -->
 <div id="clases" class="seccion">
 <h3>Mis clases</h3>
 
@@ -201,27 +196,20 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 </div>
 
 
-<!-- EVALUACIONES -->
+<!-- 🔥 EVALUACIONES CORREGIDO -->
 <div id="evaluaciones" class="seccion">
-<h3>Evaluaciones disponibles</h3>
+<h3>Evaluaciones</h3>
 
-{% if config %}
-{% if config.trimestre1 %}
-<a href="/descargar_trimestre/1"><button>Trimestre 1</button></a>
-{% endif %}
-{% if config.trimestre2 %}
-<a href="/descargar_trimestre/2"><button>Trimestre 2</button></a>
-{% endif %}
-{% if config.trimestre3 %}
-<a href="/descargar_trimestre/3"><button>Trimestre 3</button></a>
-{% endif %}
+{% if config and config.estado == "true" %}
+<p><strong>Trimestre activo: {{ config.trimestre }}</strong></p>
 {% else %}
-<p>No hay evaluaciones habilitadas.</p>
+<p>No hay evaluaciones habilitadas</p>
 {% endif %}
+
 </div>
 
 
-<!-- LISTA DE ALUMNOS -->
+<!-- 🔥 CAPTURA DE CALIFICACIONES FUNCIONAL -->
 <div id="alumnos" class="seccion">
 
 <h3>Captura de calificaciones</h3>
@@ -233,7 +221,8 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 <th>Alumno</th>
 <th>Grupo</th>
 <th>Materia</th>
-<th>Calificaciones</th>
+<th>Calificación</th>
+<th>Guardar</th>
 <th>Reporte</th>
 </tr>
 
@@ -253,41 +242,35 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 <td>{{ alumno.grupo }}</td>
 
 <td>
-<select name="materia" form="form_{{ loop.index }}">
-<option>Matemáticas</option>
-<option>Español</option>
-<option>Ciencias</option>
-<option>Historia</option>
-<option>Inglés</option>
+<form action="/guardar_calificaciones" method="POST">
+
+<input type="hidden" name="alumno" value="{{ alumno.nombre }}">
+<input type="hidden" name="trimestre" value="{{ config.trimestre }}">
+
+<select name="materia" required>
+<option value="Matemáticas">Matemáticas</option>
+<option value="Español">Español</option>
+<option value="Ciencias">Ciencias</option>
+<option value="Historia">Historia</option>
+<option value="Inglés">Inglés</option>
 </select>
 </td>
 
 <td>
+<input type="number" name="cal1" min="0" max="10" required>
+</td>
 
-<form id="form_{{ loop.index }}" action="/guardar_calificaciones" method="POST">
-
-<input type="hidden" name="alumno" value="{{ alumno.nombre }}">
-
-<input type="number" name="cal1" placeholder="C1" min="0" max="10" required>
-<input type="number" name="cal2" placeholder="C2" min="0" max="10" required>
-<input type="number" name="cal3" placeholder="C3" min="0" max="10" required>
-
+<td>
 <button type="submit">Guardar</button>
-
 </form>
-
 </td>
 
 <td>
 
 <form action="/crear_reporte" method="POST">
-
 <input type="hidden" name="alumno" value="{{ alumno.nombre }}">
-
 <input type="text" name="comentario" placeholder="Comentario" required>
-
 <button type="submit">Enviar</button>
-
 </form>
 
 </td>
@@ -315,7 +298,6 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 <th>Fecha</th>
 <th>Acciones</th>
 <th>Semáforo</th>
-<th>Manual</th>
 </tr>
 
 {% for alumno in alumnos %}
@@ -338,35 +320,13 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 </td>
 
 <td>
-
 <button class="btn-verde" onclick="marcar('{{ alumno.nombre }}','asistencia','{{ loop.index }}')">✔</button>
 <button class="btn-amarillo" onclick="marcar('{{ alumno.nombre }}','retardo','{{ loop.index }}')">⏰</button>
 <button class="btn-rojo" onclick="marcar('{{ alumno.nombre }}','falta','{{ loop.index }}')">✖</button>
-
 </td>
 
 <td>
 <span id="semaforo_{{ loop.index }}" class="semaforo gris"></span>
-</td>
-
-<td>
-
-<form action="/guardar_asistencia_fecha" method="POST">
-
-<input type="hidden" name="alumno" value="{{ alumno.nombre }}">
-
-<input type="date" name="fecha" required>
-
-<select name="estado">
-<option value="asistencia">Asistencia</option>
-<option value="retardo">Retardo</option>
-<option value="falta">Falta</option>
-</select>
-
-<button type="submit">Guardar</button>
-
-</form>
-
 </td>
 
 </tr>
@@ -417,7 +377,7 @@ body:"alumno="+alumno+"&estado="+estado+"&fecha="+fecha
 }
 
 
-// 🔥 GRAFICA
+// GRAFICA
 
 const nombres = [
 {% for a in alumnos %}

@@ -40,8 +40,11 @@ def panel_maestro():
 
     lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
 
+    # 🔥 CONFIGURACIÓN CORRECTA
+    config = configuracion.find_one({"tipo": "trimestre"}) or {}
+
     # =========================
-    # ANALYTICS (SEGURO)
+    # ANALYTICS
     # =========================
 
     promedios = []
@@ -81,8 +84,6 @@ def panel_maestro():
 
     riesgo = [a for a in lista_alumnos if a.get("estado") != "excelente"]
 
-    config = configuracion.find_one()
-
     return render_template(
         "panel_maestro.html",
         alumnos=lista_alumnos,
@@ -96,7 +97,7 @@ def panel_maestro():
 
 
 # =========================
-# GUARDAR CALIFICACIONES
+# 🔥 GUARDAR CALIFICACIONES (CORREGIDO)
 # =========================
 
 @maestro_bp.route("/guardar_calificaciones", methods=["POST"])
@@ -106,114 +107,50 @@ def guardar_calificaciones():
         return redirect("/")
 
     alumno_nombre = request.form.get("alumno")
+    materia = request.form.get("materia")
+    trimestre = request.form.get("trimestre")
+    cal1 = request.form.get("cal1")
 
-    if not alumno_nombre:
+    if not alumno_nombre or not materia or not cal1:
         return redirect("/panel_maestro")
 
-    cal1 = request.form.get("cal1")
-    cal2 = request.form.get("cal2")
-    cal3 = request.form.get("cal3")
+    # 🔥 VALIDAR TRIMESTRE ACTIVO
+    config = configuracion.find_one({"tipo": "trimestre"}) or {}
+    if config.get("estado") != "true":
+        return "Evaluaciones cerradas"
 
-    materia = request.form.get("materia")
-    trimestre = request.form.get("trimestre", "1")
+    try:
+        calificacion = float(cal1)
+    except:
+        calificacion = 0
 
     alumno = alumnos.find_one({"nombre": alumno_nombre})
 
     if not alumno:
         return redirect("/panel_maestro")
 
-    # Sistema base (no se rompe)
+    calificaciones = alumno.get("calificaciones", [])
+
+    encontrada = False
+
+    for c in calificaciones:
+        if c.get("materia") == materia and c.get("trimestre") == trimestre:
+            c["calificacion"] = calificacion
+            encontrada = True
+
+    if not encontrada:
+        calificaciones.append({
+            "materia": materia,
+            "calificacion": calificacion,
+            "trimestre": trimestre
+        })
+
     alumnos.update_one(
         {"nombre": alumno_nombre},
-        {
-            "$set": {
-                "cal1": cal1,
-                "cal2": cal2,
-                "cal3": cal3
-            }
-        }
+        {"$set": {"calificaciones": calificaciones}}
     )
-
-    # Sistema nuevo
-    if materia and cal1:
-
-        try:
-            calificacion = float(cal1)
-        except:
-            calificacion = 0
-
-        calificaciones = alumno.get("calificaciones", [])
-
-        encontrada = False
-
-        for c in calificaciones:
-            if c.get("materia") == materia and c.get("trimestre", "1") == trimestre:
-                c["calificacion"] = calificacion
-                encontrada = True
-
-        if not encontrada:
-            calificaciones.append({
-                "materia": materia,
-                "calificacion": calificacion,
-                "trimestre": trimestre
-            })
-
-        alumnos.update_one(
-            {"nombre": alumno_nombre},
-            {"$set": {"calificaciones": calificaciones}}
-        )
 
     return redirect("/panel_maestro")
-
-
-# =========================
-# EXPORTAR EXCEL (ULTRA SEGURO)
-# =========================
-
-@maestro_bp.route("/exportar_excel")
-def exportar_excel():
-
-    if not verificar_maestro():
-        return redirect("/")
-
-    # 🔥 IMPORT LOCAL (NO ROMPE EL SISTEMA)
-    try:
-        from openpyxl import Workbook
-    except:
-        return "Excel no disponible (falta openpyxl)"
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Reporte"
-
-    ws.append(["Alumno", "Promedio", "Estado"])
-
-    for a in list(alumnos.find()):
-
-        calificaciones = a.get("calificaciones", [])
-
-        if calificaciones:
-            try:
-                promedio = sum([float(c.get("calificacion", 0)) for c in calificaciones]) / len(calificaciones)
-            except:
-                promedio = 0
-        else:
-            promedio = 0
-
-        estado = "Excelente" if promedio >= 8 else "Riesgo" if promedio >= 6 else "Reprobado"
-
-        ws.append([a.get("nombre",""), round(promedio, 2), estado])
-
-    buffer = BytesIO()
-    wb.save(buffer)
-    buffer.seek(0)
-
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name="reporte.xlsx",
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
 
 
 # =========================
@@ -258,7 +195,7 @@ def crear_reporte():
 
 
 # =========================
-# AJAX
+# AJAX ASISTENCIA
 # =========================
 
 @maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])
