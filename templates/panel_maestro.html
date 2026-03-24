@@ -7,11 +7,23 @@
 .menu-maestro{width:220px;background:#243b5a;padding:20px;border-radius:8px;color:white;}
 .menu-maestro button{width:100%;padding:10px;margin-bottom:10px;border:none;background:#2f4f75;color:white;cursor:pointer;border-radius:5px;}
 .menu-maestro button:hover{background:#3e6aa1;}
+
 .seccion{display:none;}
 .seccion.activa{display:block;}
+
+.input-cal{
+width:60px;
+padding:5px;
+border-radius:5px;
+border:1px solid #ccc;
+text-align:center;
+}
+
 .guardado-ok{background:#d4edda;}
 .editando{background:#fff3cd;}
-.btn-reset{background:red;color:white;font-size:11px;margin-top:5px;}
+
+.btn-save{background:#27ae60;color:white;border:none;padding:4px 8px;border-radius:5px;}
+.btn-reset{background:red;color:white;font-size:11px;margin-top:5px;border:none;padding:3px 6px;border-radius:4px;}
 </style>
 
 <div class="panel-container">
@@ -66,6 +78,14 @@
 
 <br><br>
 
+<!-- 🔥 MATERIAS SIN DUPLICAR -->
+{% set materias = [] %}
+{% for h in horarios %}
+{% if h.materia not in materias %}
+{% set _ = materias.append(h.materia) %}
+{% endif %}
+{% endfor %}
+
 <!-- 🔥 VISTA PREVIA -->
 <div style="background:#f4f6f9;padding:10px;border-radius:6px;margin-bottom:10px;">
 <h4>Vista previa</h4>
@@ -100,60 +120,47 @@ background:
 
 <tr>
 <th>Alumno</th>
-
-{% for h in horarios %}
-<th>{{ h.materia }}</th>
+{% for m in materias %}
+<th>{{ m }}</th>
 {% endfor %}
-
 </tr>
 
 {% for alumno in alumnos %}
 <tr>
 
 <td>
-<strong>{{ alumno.nombre }}</strong>
-
-<br>
+<strong>{{ alumno.nombre }}</strong><br>
 
 <button class="btn-reset"
 onclick="resetAlumno('{{ alumno.nombre }}')">
 🔄 Reset
 </button>
-
 </td>
 
-{% for h in horarios %}
+{% for m in materias %}
 <td>
 
 {% set cal = None %}
 {% for c in alumno.calificaciones %}
-{% if c.materia == h.materia and c.trimestre == config.trimestre %}
+{% if c.materia == m and c.trimestre == config.trimestre %}
 {% set cal = c.calificacion %}
 {% endif %}
 {% endfor %}
 
-{% if not alumno.enviado %}
-
-<input type="number"
-id="cal_{{ alumno.nombre }}_{{ h.materia }}"
+<input class="input-cal {% if cal %}guardado-ok{% endif %}"
+type="number"
+id="cal_{{ alumno.nombre }}_{{ m }}"
 value="{{ cal if cal else '' }}"
 min="0" max="10"
-style="width:60px;"
-{% if cal %}class="guardado-ok"{% endif %}
-readonly>
+onfocus="this.classList.add('editando')"
+onblur="this.classList.remove('editando')">
 
-<br>
+<br><br>
 
-<button onclick="editarCal('{{ alumno.nombre }}','{{ h.materia }}')">✏️</button>
-<button onclick="guardarAjax('{{ alumno.nombre }}','{{ h.materia }}')">💾</button>
-
-{% else %}
-
-<span style="color:green;font-weight:bold;">
-{{ cal if cal else '-' }} 🔒
-</span>
-
-{% endif %}
+<button class="btn-save"
+onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}')">
+💾
+</button>
 
 </td>
 {% endfor %}
@@ -208,13 +215,6 @@ document.querySelectorAll(".seccion").forEach(s=>s.classList.remove("activa"))
 document.getElementById(id).classList.add("activa")
 }
 
-function editarCal(alumno, materia){
-let input = document.getElementById("cal_"+alumno+"_"+materia)
-input.removeAttribute("readonly")
-input.classList.add("editando")
-input.focus()
-}
-
 function guardarAjax(alumno, materia){
 
 let input = document.getElementById("cal_"+alumno+"_"+materia)
@@ -229,14 +229,11 @@ body:
 "&trimestre={{ config.trimestre }}"+
 "&cal1="+cal
 })
-
 .then(res=>res.json())
 .then(data=>{
 
 if(data.status==="ok"){
-input.classList.remove("editando")
 input.classList.add("guardado-ok")
-input.setAttribute("readonly", true)
 }
 
 if(data.status==="bloqueado"){

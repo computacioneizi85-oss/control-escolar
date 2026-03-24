@@ -8,10 +8,6 @@ from pdf.generador import generar_kardex, generar_boleta, generar_reporte_pdf, g
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-# =========================
-# VERIFICAR ADMIN
-# =========================
-
 def verificar_admin():
     return "rol" in session and session["rol"] == "admin"
 
@@ -19,7 +15,6 @@ def verificar_admin():
 # =========================
 # DASHBOARD
 # =========================
-
 @admin_bp.route("/")
 def admin_dashboard():
     try:
@@ -49,7 +44,6 @@ def admin_dashboard():
 # =========================
 # ACTIVAR TRIMESTRE
 # =========================
-
 @admin_bp.route("/activar_trimestre", methods=["POST"])
 def activar_trimestre():
 
@@ -59,7 +53,7 @@ def activar_trimestre():
     configuracion.update_one(
         {"tipo": "trimestre"},
         {"$set": {
-            "trimestre": request.form.get("trimestre"),
+            "trimestre": str(request.form.get("trimestre")),
             "estado": request.form.get("estado")
         }},
         upsert=True
@@ -73,40 +67,33 @@ def activar_trimestre():
 # =========================
 # EVALUACIONES
 # =========================
-
 @admin_bp.route("/evaluaciones")
 def ver_evaluaciones():
 
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    lista = list(alumnos.find())
     datos = []
 
-    for a in lista:
+    for a in alumnos.find():
         for c in a.get("calificaciones", []):
             datos.append({
                 "alumno": a.get("nombre"),
                 "grupo": a.get("grupo"),
                 "materia": c.get("materia"),
                 "calificacion": c.get("calificacion"),
-                "trimestre": c.get("trimestre"),
+                "trimestre": str(c.get("trimestre")),  # 🔥 normalizado
                 "enviado": a.get("enviado", False)
             })
 
     config = configuracion.find_one({"tipo": "trimestre"}) or {}
 
-    return render_template(
-        "evaluaciones_admin.html",
-        datos=datos,
-        config=config
-    )
+    return render_template("evaluaciones_admin.html", datos=datos, config=config)
 
 
 # =========================
 # CERRAR TRIMESTRE
 # =========================
-
 @admin_bp.route("/cerrar_trimestre")
 def cerrar_trimestre():
 
@@ -124,7 +111,6 @@ def cerrar_trimestre():
 # =========================
 # ALUMNOS
 # =========================
-
 @admin_bp.route("/alumnos")
 def ver_alumnos():
 
@@ -166,7 +152,6 @@ def crear_alumno():
 # =========================
 # PDFS
 # =========================
-
 @admin_bp.route("/kardex/<nombre>")
 def kardex(nombre):
 
@@ -220,9 +205,8 @@ def generar_citatorio(id):
 
 
 # =========================
-# RESET GRUPO
+# RESET GRUPO 🔥 FIX REAL
 # =========================
-
 @admin_bp.route("/reset_grupo", methods=["POST"])
 def reset_grupo():
 
@@ -231,18 +215,13 @@ def reset_grupo():
             return redirect(url_for("auth.login"))
 
         grupo = request.form.get("grupo")
-        trimestre = request.form.get("trimestre")
+        trimestre = str(request.form.get("trimestre"))
 
-        if not grupo or not trimestre:
-            return "Error: datos incompletos"
-
-        lista = list(alumnos.find({"grupo": grupo}))
-
-        for alumno in lista:
+        for alumno in alumnos.find({"grupo": grupo}):
 
             nuevas = [
                 c for c in alumno.get("calificaciones", [])
-                if c.get("trimestre") != trimestre
+                if str(c.get("trimestre")) != trimestre
             ]
 
             alumnos.update_one(
@@ -257,60 +236,43 @@ def reset_grupo():
 
 
 # =========================
-# MENÚS (SIN DUPLICADOS 🔥)
+# MENÚS
 # =========================
-
 @admin_bp.route("/maestros")
 def ver_maestros():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
     return render_template("maestros.html", maestros=list(maestros.find()))
 
 
 @admin_bp.route("/grupos")
 def ver_grupos():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
     return render_template("grupos.html", grupos=list(grupos.find()))
 
 
 @admin_bp.route("/materias")
 def ver_materias():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
     return render_template("materias.html", materias=list(materias.find()))
 
 
 @admin_bp.route("/horarios")
 def ver_horarios():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
     return render_template("horarios.html", horarios=list(horarios.find()))
 
 
 @admin_bp.route("/asistencias")
 def ver_asistencias():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
     return render_template("asistencias_admin.html", alumnos=list(alumnos.find()))
 
 
 @admin_bp.route("/reportes")
 def ver_reportes():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
     return render_template("reportes_admin.html", reportes=list(reportes.find()))
 
 
 @admin_bp.route("/citatorios")
 def ver_citatorios():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
     return render_template("citatorios.html", citatorios=list(citatorios.find()))
 
 
 @admin_bp.route("/configuracion")
 def configuracion_admin():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
     return render_template("configuracion.html")

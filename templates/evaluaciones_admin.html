@@ -2,10 +2,37 @@
 
 {% block content %}
 
+<style>
+.badge-aprobado{color:green;font-weight:bold;}
+.badge-medio{color:orange;font-weight:bold;}
+.badge-reprobado{color:red;font-weight:bold;}
+
+.card{
+background:white;
+padding:15px;
+border-radius:8px;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
+margin-bottom:20px;
+}
+
+.btn-reset{
+background:red;
+color:white;
+border:none;
+padding:6px 10px;
+border-radius:5px;
+cursor:pointer;
+}
+
+.btn-reset:hover{
+background:#c0392b;
+}
+</style>
+
 <h2>📊 Control de Evaluaciones</h2>
 
-<!-- ESTADO DEL TRIMESTRE -->
-<div style="margin-bottom:20px;">
+<!-- ESTADO -->
+<div class="card">
 
 {% if config.estado == "true" %}
 <span style="color:green; font-weight:bold;">
@@ -26,7 +53,19 @@
 
 </div>
 
-<!-- 🔥 RESET GENERAL -->
+
+<!-- 🔥 GENERAR LISTA DE GRUPOS -->
+{% set grupos = [] %}
+{% for d in datos %}
+{% if d.grupo not in grupos %}
+{% set _ = grupos.append(d.grupo) %}
+{% endif %}
+{% endfor %}
+
+
+<!-- 🔥 RESET -->
+<div class="card">
+
 <h3>💣 Reset por grupo</h3>
 
 <form method="POST" action="/admin/reset_grupo">
@@ -34,47 +73,45 @@
 <select name="grupo" required>
 <option value="">Seleccionar grupo</option>
 
-{% set grupos = [] %}
-{% for d in datos %}
-{% if d.grupo not in grupos %}
-{% set _ = grupos.append(d.grupo) %}
-<option value="{{ d.grupo }}">{{ d.grupo }}</option>
-{% endif %}
+{% for g in grupos %}
+<option value="{{ g }}">{{ g }}</option>
 {% endfor %}
 
 </select>
 
 <input type="hidden" name="trimestre" value="{{ config.trimestre }}">
 
-<button style="background:red;color:white;"
+<button class="btn-reset"
 onclick="return confirm('⚠ Esto borrará TODAS las calificaciones del grupo')">
 💣 Reset grupo
 </button>
 
 </form>
 
-<br><br>
+</div>
+
 
 <!-- FILTRO -->
+<div class="card">
+
 <h4>Filtrar por grupo</h4>
 
 <select onchange="filtrarGrupo(this.value)">
 <option value="todos">Todos</option>
 
-{% set grupos = [] %}
-{% for d in datos %}
-{% if d.grupo not in grupos %}
-{% set _ = grupos.append(d.grupo) %}
-<option value="{{ d.grupo }}">{{ d.grupo }}</option>
-{% endif %}
+{% for g in grupos %}
+<option value="{{ g }}">{{ g }}</option>
 {% endfor %}
 
 </select>
 
-<br><br>
+</div>
+
 
 <!-- TABLA -->
-<table border="1" style="width:100%; background:white;">
+<div class="card">
+
+<table border="1" style="width:100%;">
 
 <tr style="background:#2c3e50; color:white;">
 <th>Alumno</th>
@@ -91,20 +128,16 @@ onclick="return confirm('⚠ Esto borrará TODAS las calificaciones del grupo')"
 <tr>
 
 <td>{{ d.alumno }}</td>
-
 <td>{{ d.grupo }}</td>
-
 <td>{{ d.materia }}</td>
 
 <td>
-<span style="
-font-weight:bold;
-color:
-{% if d.calificacion >= 8 %}green
-{% elif d.calificacion >= 6 %}orange
-{% else %}red
+<span class="
+{% if d.calificacion >= 8 %}badge-aprobado
+{% elif d.calificacion >= 6 %}badge-medio
+{% else %}badge-reprobado
 {% endif %}
-;">
+">
 {{ d.calificacion }}
 </span>
 </td>
@@ -126,8 +159,11 @@ color:
 
 </table>
 
+</div>
+
+
 <!-- RESUMEN -->
-<br><br>
+<div class="card">
 
 <h3>📈 Resumen</h3>
 
@@ -139,8 +175,11 @@ color:
 {% set reprobados = datos | selectattr("calificacion", "lt", 6) | list %}
 <p>Reprobados: <strong>{{ reprobados|length }}</strong></p>
 
-<!-- 🔥 ALERTA INTELIGENTE -->
-<br>
+</div>
+
+
+<!-- ALERTA -->
+<div class="card">
 
 {% set pendientes = datos | selectattr("enviado", "equalto", False) | list %}
 
@@ -154,7 +193,10 @@ color:
 </p>
 {% endif %}
 
-<!-- SCRIPT FILTRO -->
+</div>
+
+
+<!-- SCRIPT -->
 <script>
 
 function filtrarGrupo(grupo){
