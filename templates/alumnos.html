@@ -4,6 +4,10 @@
 
 <h1>Gestión de alumnos</h1>
 
+<!-- =========================
+REGISTRO
+========================= -->
+
 <h2>Registrar alumno</h2>
 
 <form action="/admin/crear_alumno" method="POST" enctype="multipart/form-data">
@@ -29,6 +33,32 @@ Registrar alumno
 
 <br><br>
 
+<!-- =========================
+FILTRO 🔥
+========================= -->
+
+<h2>Filtrar por grupo</h2>
+
+<select onchange="filtrarGrupo(this.value)">
+<option value="todos">Todos</option>
+
+{% set lista_grupos = [] %}
+{% for alumno in alumnos %}
+{% if alumno.grupo not in lista_grupos %}
+{% set _ = lista_grupos.append(alumno.grupo) %}
+<option value="{{ alumno.grupo }}">{{ alumno.grupo }}</option>
+{% endif %}
+{% endfor %}
+
+</select>
+
+
+<br><br>
+
+<!-- =========================
+LISTA
+========================= -->
+
 <h2>Lista de alumnos</h2>
 
 <table>
@@ -37,6 +67,7 @@ Registrar alumno
 <th>Foto</th>
 <th>Alumno</th>
 <th>Grupo</th>
+<th>Editar grupo</th>
 <th>Kardex</th>
 <th>Boleta</th>
 <th>Cambiar foto</th>
@@ -52,11 +83,9 @@ Registrar alumno
 {% if alumno.foto %}
 
 {% if alumno.foto.startswith('data') or alumno.foto.startswith('/') %}
-    <!-- 🔥 compatibilidad con fotos viejas -->
-    {% set foto_src = alumno.foto %}
+{% set foto_src = alumno.foto %}
 {% else %}
-    <!-- 🔥 base64 nueva -->
-    {% set foto_src = "data:image/png;base64," + alumno.foto %}
+{% set foto_src = "data:image/png;base64," + alumno.foto %}
 {% endif %}
 
 <img src="{{ foto_src }}"
@@ -72,7 +101,28 @@ Sin foto
 </td>
 
 <td>{{ alumno.nombre }}</td>
+
 <td>{{ alumno.grupo }}</td>
+
+<!-- 🔥 EDITAR GRUPO -->
+<td>
+
+<form action="/admin/editar_grupo" method="POST" style="display:flex;gap:5px;">
+
+<input type="hidden" name="id" value="{{ alumno._id }}">
+
+<input type="text"
+       name="grupo"
+       value="{{ alumno.grupo }}"
+       style="width:60px;">
+
+<button style="background:#3498db;color:white;">
+💾
+</button>
+
+</form>
+
+</td>
 
 <td>
 <a href="/admin/kardex/{{ alumno.nombre }}">
@@ -134,6 +184,10 @@ z-index:999;
 </div>
 
 
+<!-- =========================
+SCRIPTS
+========================= -->
+
 <script>
 
 function verFoto(src){
@@ -143,6 +197,24 @@ function verFoto(src){
 
 document.getElementById("modalFoto").onclick = function(){
     this.style.display = "none"
+}
+
+
+function filtrarGrupo(grupo){
+
+document.querySelectorAll("table tr").forEach((row, index)=>{
+
+if(index === 0) return // encabezado
+
+if(grupo === "todos"){
+row.style.display = ""
+}else{
+let g = row.children[2].innerText
+row.style.display = (g === grupo) ? "" : "none"
+}
+
+})
+
 }
 
 </script>

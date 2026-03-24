@@ -287,3 +287,19 @@ def configuracion_admin():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
     return render_template("configuracion.html")
+
+@admin_bp.route("/editar_grupo", methods=["POST"])
+def editar_grupo():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    id_alumno = request.form.get("id")
+    nuevo_grupo = request.form.get("grupo")
+
+    alumnos.update_one(
+        {"_id": ObjectId(id_alumno)},
+        {"$set": {"grupo": nuevo_grupo}}
+    )
+
+    return redirect(url_for("admin.ver_alumnos"))
