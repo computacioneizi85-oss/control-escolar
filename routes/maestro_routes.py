@@ -107,3 +107,50 @@ def enviar_calificaciones():
     )
 
     return redirect("/panel_maestro")
+
+@maestro_bp.route("/guardar_calificaciones_ajax", methods=["POST"])
+def guardar_calificaciones_ajax():
+
+    if not verificar_maestro():
+        return jsonify({"status": "error"})
+
+    alumno_nombre = request.form.get("alumno")
+    materia = request.form.get("materia")
+    trimestre = request.form.get("trimestre")
+    cal1 = request.form.get("cal1")
+
+    config = configuracion.find_one({"tipo": "trimestre"}) or {}
+
+    if config.get("estado") != "true":
+        return jsonify({"status": "cerrado"})
+
+    alumno = alumnos.find_one({"nombre": alumno_nombre})
+
+    if alumno.get("enviado"):
+        return jsonify({"status": "bloqueado"})
+
+    calificaciones = alumno.get("calificaciones", [])
+
+    encontrada = False
+
+    for c in calificaciones:
+        if c.get("materia") == materia and c.get("trimestre") == trimestre:
+            c["calificacion"] = float(cal1)
+            encontrada = True
+
+    if not encontrada:
+        calificaciones.append({
+            "materia": materia,
+            "calificacion": float(cal1),
+            "trimestre": trimestre
+        })
+
+    alumnos.update_one(
+        {"nombre": alumno_nombre},
+        {"$set": {"calificaciones": calificaciones}}
+    )
+
+    return jsonify({
+        "status": "ok",
+        "calificacion": cal1
+    })

@@ -11,6 +11,7 @@
 .menu-maestro button:hover{background:#3e6aa1;}
 .seccion{display:none;}
 .seccion.activa{display:block;}
+.guardado-ok{background:#d4edda;}
 </style>
 
 <div class="panel-container">
@@ -47,7 +48,7 @@
 
 </div>
 
-<!-- 🔥 EVALUACIONES COMPLETAS -->
+<!-- 🔥 EVALUACIONES -->
 <div id="evaluaciones" class="seccion">
 
 <h3>Evaluaciones</h3>
@@ -66,6 +67,24 @@
 {% endif %}
 
 <br><br>
+
+<!-- 🔥 VISTA PREVIA -->
+<div style="background:#f4f6f9;padding:10px;border-radius:6px;margin-bottom:10px;">
+<h4>Vista previa</h4>
+
+{% for alumno in alumnos %}
+<strong>{{ alumno.nombre }}</strong><br>
+
+{% for c in alumno.calificaciones %}
+{% if c.trimestre == config.trimestre %}
+{{ c.materia }}: {{ c.calificacion }} |
+{% endif %}
+{% endfor %}
+
+<br><br>
+{% endfor %}
+
+</div>
 
 {% if config.estado == "true" %}
 
@@ -110,22 +129,9 @@ min="0" max="10">
 
 {% if not alumno.enviado %}
 
-<form action="/guardar_calificaciones" method="POST">
-
-<input type="hidden" name="alumno" value="{{ alumno.nombre }}">
-<input type="hidden" name="materia" value="{{ h.materia }}">
-<input type="hidden" name="trimestre" value="{{ config.trimestre }}">
-
-<input type="hidden"
-name="cal1"
-id="hidden_{{ alumno.nombre }}_{{ h.materia }}">
-
-<button type="submit"
-onclick="guardarCal('{{ alumno.nombre }}','{{ h.materia }}')">
+<button onclick="guardarAjax('{{ alumno.nombre }}','{{ h.materia }}')">
 💾 Guardar
 </button>
-
-</form>
 
 {% else %}
 ✔ Enviado
@@ -185,9 +191,38 @@ document.querySelectorAll(".seccion").forEach(s=>s.classList.remove("activa"))
 document.getElementById(id).classList.add("activa")
 }
 
-function guardarCal(alumno, materia){
-let val = document.getElementById("cal_"+alumno+"_"+materia).value
-document.getElementById("hidden_"+alumno+"_"+materia).value = val
+function guardarAjax(alumno, materia){
+
+let input = document.getElementById("cal_"+alumno+"_"+materia)
+let cal = input.value
+
+fetch("/guardar_calificaciones_ajax",{
+method:"POST",
+headers:{"Content-Type":"application/x-www-form-urlencoded"},
+body:
+"alumno="+alumno+
+"&materia="+materia+
+"&trimestre={{ config.trimestre }}"+
+"&cal1="+cal
+})
+
+.then(res=>res.json())
+.then(data=>{
+
+if(data.status==="ok"){
+input.classList.add("guardado-ok")
+}
+
+if(data.status==="bloqueado"){
+alert("Ya fueron enviadas")
+}
+
+if(data.status==="cerrado"){
+alert("Trimestre cerrado")
+}
+
+})
+
 }
 
 function marcar(alumno,estado,id){
