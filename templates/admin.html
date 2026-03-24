@@ -9,6 +9,7 @@
 
 <style>
 .submenu { display: none; margin-left: 10px; }
+
 .submenu a {
 display: block;
 padding: 8px;
@@ -19,6 +20,7 @@ border-radius: 5px;
 color: white;
 text-decoration: none;
 }
+
 .submenu-btn {
 width: 100%;
 padding: 10px;
@@ -29,7 +31,25 @@ cursor: pointer;
 text-align: left;
 margin-bottom: 5px;
 }
+
 .submenu-btn:hover{ background:#3e6aa1; }
+
+/* 🔥 mejoras visuales */
+.card small{
+color:#777;
+}
+
+button{
+cursor:pointer;
+border-radius:5px;
+border:none;
+padding:6px 10px;
+}
+
+button:hover{
+opacity:0.9;
+}
+
 </style>
 
 </head>
@@ -43,7 +63,7 @@ margin-bottom: 5px;
 <a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a>
 <a href="{{ url_for('admin.ver_alumnos') }}">Alumnos</a>
 
-<!-- 🔥 AHORA SÍ FUNCIONAN -->
+<!-- MENÚ PRINCIPAL -->
 <a href="{{ url_for('admin.ver_maestros') }}">Maestros</a>
 <a href="{{ url_for('admin.ver_grupos') }}">Grupos</a>
 <a href="{{ url_for('admin.ver_materias') }}">Materias</a>
@@ -69,7 +89,7 @@ margin-bottom: 5px;
 <a href="{{ url_for('admin.ver_citatorios') }}">Ver citatorios</a>
 </div>
 
-<!-- 🔥 CONFIGURACIÓN ACTIVA -->
+<!-- CONFIG -->
 <a href="{{ url_for('admin.configuracion_admin') }}">Configuración</a>
 
 <a href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
@@ -82,22 +102,43 @@ margin-bottom: 5px;
 <h1>Dashboard</h1>
 
 <div class="cards dashboard-cards">
-<div class="card small-card"><h4>Alumnos</h4><p>{{ alumnos|length if alumnos else 0 }}</p></div>
-<div class="card small-card"><h4>Grupos</h4><p>{{ grupos|length if grupos else 0 }}</p></div>
-<div class="card small-card"><h4>Maestros</h4><p>{{ maestros|length if maestros else 0 }}</p></div>
-<div class="card small-card"><h4>Reportes</h4><p>{{ reportes|length if reportes else 0 }}</p></div>
+
+<div class="card small-card">
+<h4>Alumnos</h4>
+<p>{{ alumnos|length if alumnos else 0 }}</p>
+<small>Total registrados</small>
+</div>
+
+<div class="card small-card">
+<h4>Grupos</h4>
+<p>{{ grupos|length if grupos else 0 }}</p>
+<small>Activos</small>
+</div>
+
+<div class="card small-card">
+<h4>Maestros</h4>
+<p>{{ maestros|length if maestros else 0 }}</p>
+<small>Registrados</small>
+</div>
+
+<div class="card small-card">
+<h4>Reportes</h4>
+<p>{{ reportes|length if reportes else 0 }}</p>
+<small>Generados</small>
+</div>
+
 </div>
 
 
 <h2>Backup del sistema</h2>
 
 <a href="/admin/backup/descargar">
-<button>📥 Descargar Backup</button>
+<button style="background:#3498db;color:white;">📥 Descargar Backup</button>
 </a>
 
 <form action="/admin/backup/restaurar" method="POST" enctype="multipart/form-data">
 <input type="file" name="archivo" required>
-<button type="submit">♻ Restaurar sistema</button>
+<button type="submit" style="background:#27ae60;color:white;">♻ Restaurar sistema</button>
 </form>
 
 
@@ -116,7 +157,7 @@ margin-bottom: 5px;
 <option value="false">Deshabilitar</option>
 </select>
 
-<button type="submit">Guardar</button>
+<button type="submit" style="background:#2ecc71;color:white;">Guardar</button>
 
 </form>
 
@@ -132,25 +173,29 @@ margin-bottom: 5px;
 
 {% for alumno in alumnos or [] %}
 <tr>
-<td>{{ alumno.nombre if alumno.nombre else '' }}</td>
-<td>{{ alumno.grupo if alumno.grupo else '' }}</td>
+
+<td>{{ alumno.nombre or '' }}</td>
+<td>{{ alumno.grupo or '' }}</td>
+
 <td>
 
 <a href="{{ url_for('admin.kardex', nombre=alumno.nombre) }}">
-<button>Kardex</button>
+<button style="background:#8e44ad;color:white;">Kardex</button>
 </a>
 
 <a href="{{ url_for('admin.boleta', nombre=alumno.nombre) }}">
-<button>Boleta</button>
+<button style="background:#16a085;color:white;">Boleta</button>
 </a>
 
 </td>
+
 </tr>
 {% endfor %}
 
 </table>
 
 </div>
+
 
 <script>
 function toggleSubmenu(id){
