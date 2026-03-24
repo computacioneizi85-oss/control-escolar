@@ -5,67 +5,21 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-
-.panel-container{
-display:flex;
-gap:20px;
-}
-
-.menu-maestro{
-width:220px;
-background:#243b5a;
-padding:20px;
-border-radius:8px;
-color:white;
-}
-
-.menu-maestro button{
-width:100%;
-padding:10px;
-margin-bottom:10px;
-border:none;
-background:#2f4f75;
-color:white;
-cursor:pointer;
-border-radius:5px;
-}
-
-.menu-maestro button:hover{
-background:#3e6aa1;
-}
-
-.seccion{ display:none; }
-.seccion.activa{ display:block; }
-
-.menu-toggle{
-font-size:24px;
-cursor:pointer;
-margin-bottom:15px;
-}
-
-.foto-alumno{
-width:40px;
-height:40px;
-border-radius:50%;
-object-fit:cover;
-}
-
-.card-analytics{
-background:white;
-padding:15px;
-border-radius:10px;
-margin-bottom:15px;
-box-shadow:0px 4px 10px rgba(0,0,0,0.08);
-}
-
+.panel-container{display:flex;gap:20px;}
+.menu-maestro{width:220px;background:#243b5a;padding:20px;border-radius:8px;color:white;}
+.menu-maestro button{width:100%;padding:10px;margin-bottom:10px;border:none;background:#2f4f75;color:white;cursor:pointer;border-radius:5px;}
+.menu-maestro button:hover{background:#3e6aa1;}
+.seccion{display:none;}
+.seccion.activa{display:block;}
+.menu-toggle{font-size:24px;cursor:pointer;margin-bottom:15px;}
+.foto-alumno{width:40px;height:40px;border-radius:50%;object-fit:cover;}
+.card-analytics{background:white;padding:15px;border-radius:10px;margin-bottom:15px;box-shadow:0px 4px 10px rgba(0,0,0,0.08);}
 </style>
-
 
 <div class="menu-toggle" onclick="toggleMenu()">☰ Panel del Maestro</div>
 
 <div class="panel-container">
 
-<!-- MENU -->
 <div class="menu-maestro" id="menuMaestro">
 <button onclick="mostrarSeccion('inicio')">Dashboard</button>
 <button onclick="mostrarSeccion('analytics')">Analytics</button>
@@ -75,55 +29,23 @@ box-shadow:0px 4px 10px rgba(0,0,0,0.08);
 <button onclick="mostrarSeccion('asistencias')">Asistencias</button>
 </div>
 
-
 <div style="flex:1;">
 
 <!-- DASHBOARD -->
 <div id="inicio" class="seccion activa">
 <h2>Resumen</h2>
-
-<div class="cards">
-<div class="card">
-<h3>Alumnos</h3>
-<p>{{ alumnos|length }}</p>
+<p>Alumnos: {{ alumnos|length }}</p>
+<p>Clases: {{ horarios|length }}</p>
 </div>
-
-<div class="card">
-<h3>Clases</h3>
-<p>{{ horarios|length }}</p>
-</div>
-</div>
-</div>
-
 
 <!-- ANALYTICS -->
 <div id="analytics" class="seccion">
-
-<h2>Analytics Académico</h2>
-
-<div class="card-analytics">
-Promedio del grupo: <strong>{{ promedio_grupo }}</strong>
-</div>
-
-<div class="card-analytics">
-Top alumno:
-<strong>
-{% if top_alumnos %}
-{{ top_alumnos[0].nombre }}
-{% else %}
-—
-{% endif %}
-</strong>
-</div>
-
-<div class="card-analytics">
-Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
-</div>
-
+<h2>Analytics</h2>
+<p>Promedio grupo: {{ promedio_grupo }}</p>
+<p>Top alumno: {{ top_alumnos[0].nombre if top_alumnos else '—' }}</p>
+<p>Riesgo: {{ riesgo|length }}</p>
 <canvas id="graficaPromedios"></canvas>
-
 </div>
-
 
 <!-- CLASES -->
 <div id="clases" class="seccion">
@@ -132,7 +54,6 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 {% if horarios %}
 <table>
 <tr><th>Grupo</th><th>Materia</th><th>Día</th><th>Hora</th></tr>
-
 {% for h in horarios %}
 <tr>
 <td>{{ h.grupo }}</td>
@@ -141,41 +62,57 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 <td>{{ h.hora }}</td>
 </tr>
 {% endfor %}
-
 </table>
 {% else %}
-<p>No tienes clases asignadas.</p>
+<p>No tienes clases asignadas</p>
 {% endif %}
-</div>
 
+</div>
 
 <!-- EVALUACIONES -->
 <div id="evaluaciones" class="seccion">
 <h3>Evaluaciones</h3>
 
-{% if config and config.estado == "true" %}
-<p><strong>Trimestre activo: {{ config.trimestre }}</strong></p>
+{% if config.estado == "true" %}
+<p>Trimestre activo: {{ config.trimestre }}</p>
+
+<table>
+<tr><th>Alumno</th><th>Calificaciones</th></tr>
+
+{% for alumno in alumnos %}
+<tr>
+<td>{{ alumno.nombre }}</td>
+<td>
+
+{% for c in alumno.calificaciones %}
+{% if c.trimestre == config.trimestre %}
+{{ c.materia }}: {{ c.calificacion }} <br>
+{% endif %}
+{% endfor %}
+
+</td>
+</tr>
+{% endfor %}
+
+</table>
+
 {% else %}
 <p style="color:red;">Evaluaciones cerradas</p>
 {% endif %}
 
 </div>
 
-
-<!-- 🔥 CALIFICACIONES -->
+<!-- CALIFICACIONES -->
 <div id="alumnos" class="seccion">
 
-<h3>Captura y visualización</h3>
+<h3>Captura</h3>
 
-<!-- FILTRO -->
 <select onchange="filtrarGrupo(this.value)">
 <option value="todos">Todos</option>
 {% for g in grupos %}
 <option value="{{ g }}">{{ g }}</option>
 {% endfor %}
 </select>
-
-<br><br>
 
 <table>
 <tr>
@@ -199,11 +136,9 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 <input type="hidden" name="trimestre" value="{{ config.trimestre }}">
 
 <select name="materia">
-<option>Matemáticas</option>
-<option>Español</option>
-<option>Ciencias</option>
-<option>Historia</option>
-<option>Inglés</option>
+{% for h in horarios %}
+<option value="{{ h.materia }}">{{ h.materia }}</option>
+{% endfor %}
 </select>
 </td>
 
@@ -216,7 +151,7 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 {% endif %}
 {% endfor %}
 
-<input type="number" name="cal1" value="{{ cal if cal else '' }}" min="0" max="10">
+<input type="number" name="cal1" value="{{ cal if cal else '' }}">
 
 </td>
 
@@ -232,19 +167,13 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 
 </div>
 
-
 <!-- ASISTENCIAS -->
 <div id="asistencias" class="seccion">
 
 <h3>Asistencias</h3>
 
 <table>
-
-<tr>
-<th>Alumno</th>
-<th>Fecha</th>
-<th>Acción</th>
-</tr>
+<tr><th>Alumno</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr>
 
 {% for alumno in alumnos %}
 <tr>
@@ -253,6 +182,14 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 
 <td>
 <input type="date" id="fecha_{{ loop.index }}">
+</td>
+
+<td>
+{% if alumno.asistencias %}
+{{ alumno.asistencias[-1].estado }}
+{% else %}
+Sin registro
+{% endif %}
 </td>
 
 <td>
@@ -271,33 +208,29 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 </div>
 </div>
 
-
 <script>
 
 function mostrarSeccion(id){
-document.querySelectorAll(".seccion").forEach(sec=>sec.classList.remove("activa"))
+document.querySelectorAll(".seccion").forEach(s=>s.classList.remove("activa"))
 document.getElementById(id).classList.add("activa")
 }
 
 function toggleMenu(){
-let menu=document.getElementById("menuMaestro")
-menu.style.display = menu.style.display==="none" ? "block" : "none"
+let m=document.getElementById("menuMaestro")
+m.style.display = m.style.display==="none" ? "block":"none"
 }
 
-function filtrarGrupo(grupo){
-document.querySelectorAll("tbody tr").forEach(row=>{
-    if(grupo==="todos"){
-        row.style.display=""
-    }else{
-        row.style.display = row.children[1].innerText===grupo ? "" : "none"
-    }
+function filtrarGrupo(g){
+document.querySelectorAll("tbody tr").forEach(r=>{
+if(g==="todos"){r.style.display=""}
+else{r.style.display = r.children[1].innerText===g ? "" : "none"}
 })
 }
 
 function marcar(alumno,estado,id){
 
 let fecha=document.getElementById("fecha_"+id).value
-if(!fecha){ alert("Selecciona fecha"); return }
+if(!fecha){alert("Selecciona fecha");return}
 
 fetch("/guardar_asistencia_ajax",{
 method:"POST",

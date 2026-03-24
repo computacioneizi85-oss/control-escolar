@@ -30,7 +30,12 @@ def panel_maestro():
 
     grupos = maestro.get("grupos", [])
 
-    lista_horarios = list(horarios.find({"maestro": maestro["nombre"]}))
+    lista_horarios = list(horarios.find({
+    "$or": [
+        {"maestro": maestro.get("nombre")},
+        {"maestro": maestro.get("usuario")}
+    ]
+}))
 
     if lista_horarios:
         grupos_horario = [h.get("grupo") for h in lista_horarios if h.get("grupo")]
