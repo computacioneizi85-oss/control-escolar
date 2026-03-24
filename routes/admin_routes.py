@@ -57,14 +57,13 @@ def activar_trimestre():
         upsert=True
     )
 
-    # 🔥 RESETEA ENVÍO DE CALIFICACIONES
     alumnos.update_many({}, {"$set": {"enviado": False}})
 
     return redirect(url_for("admin.admin_dashboard"))
 
 
 # =========================
-# 🔥 DASHBOARD DE EVALUACIONES
+# EVALUACIONES
 # =========================
 
 @admin_bp.route("/evaluaciones")
@@ -74,12 +73,10 @@ def ver_evaluaciones():
         return redirect(url_for("auth.login"))
 
     lista = list(alumnos.find())
-
     datos = []
 
     for a in lista:
         for c in a.get("calificaciones", []):
-
             datos.append({
                 "alumno": a.get("nombre"),
                 "grupo": a.get("grupo"),
@@ -152,14 +149,14 @@ def crear_alumno():
         "foto": foto_base64,
         "calificaciones": [],
         "asistencias": [],
-        "enviado": False  # 🔥 CLAVE DEL FLUJO
+        "enviado": False
     })
 
     return redirect(url_for("admin.ver_alumnos"))
 
 
 # =========================
-# PDF KARDEX
+# PDFS
 # =========================
 
 @admin_bp.route("/kardex/<nombre>")
@@ -170,13 +167,8 @@ def kardex(nombre):
 
     pdf = generar_kardex(nombre)
     pdf.seek(0)
-
     return send_file(pdf, mimetype="application/pdf")
 
-
-# =========================
-# PDF BOLETA
-# =========================
 
 @admin_bp.route("/boleta/<nombre>")
 def boleta(nombre):
@@ -186,13 +178,8 @@ def boleta(nombre):
 
     pdf = generar_boleta(nombre)
     pdf.seek(0)
-
     return send_file(pdf, mimetype="application/pdf")
 
-
-# =========================
-# PDF REPORTE
-# =========================
 
 @admin_bp.route("/aprobar_reporte/<string:id>")
 def aprobar_reporte(id):
@@ -201,19 +188,13 @@ def aprobar_reporte(id):
         return redirect(url_for("auth.login"))
 
     reporte = reportes.find_one({"_id": ObjectId(id)})
-
     if not reporte:
         return "Reporte no encontrado"
 
     pdf = generar_reporte_pdf(reporte)
     pdf.seek(0)
-
     return send_file(pdf, mimetype="application/pdf")
 
-
-# =========================
-# PDF CITATORIO
-# =========================
 
 @admin_bp.route("/generar_citatorio/<string:id>")
 def generar_citatorio(id):
@@ -222,132 +203,54 @@ def generar_citatorio(id):
         return redirect(url_for("auth.login"))
 
     citatorio = citatorios.find_one({"_id": ObjectId(id)})
-
     if not citatorio:
         return "Citatorio no encontrado"
 
     pdf = generar_citatorio_pdf(citatorio)
     pdf.seek(0)
-
     return send_file(pdf, mimetype="application/pdf")
 
 
 # =========================
-# CREAR CITATORIO
-# =========================
-
-@admin_bp.route("/crear_citatorio", methods=["POST"])
-def crear_citatorio():
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    citatorios.insert_one({
-        "alumno": request.form.get("alumno"),
-        "grupo": request.form.get("grupo"),
-        "motivo": request.form.get("motivo"),
-        "fecha_cita": request.form.get("fecha"),
-        "hora": request.form.get("hora"),
-        "estado": "pendiente"
-    })
-
-    return redirect(url_for("admin.ver_citatorios"))
-
-
-# =========================
-# SUBMENÚS
-# =========================
-
-@admin_bp.route("/reportes")
-def ver_reportes():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-    return render_template("reportes_admin.html", reportes=list(reportes.find()))
-
-
-@admin_bp.route("/citatorios")
-def ver_citatorios():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-    return render_template(
-        "citatorios.html",
-        citatorios=list(citatorios.find()),
-        alumnos=list(alumnos.find())
-    )
-
-
-@admin_bp.route("/maestros")
-def ver_maestros():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-    return render_template("maestros.html", maestros=list(maestros.find()))
-
-
-@admin_bp.route("/grupos")
-def ver_grupos():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-    return render_template("grupos.html", grupos=list(grupos.find()))
-
-
-@admin_bp.route("/materias")
-def ver_materias():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-    return render_template("materias.html", materias=list(materias.find()))
-
-
-@admin_bp.route("/horarios")
-def ver_horarios():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-    return render_template("horarios.html", horarios=list(horarios.find()))
-
-
-@admin_bp.route("/asistencias")
-def ver_asistencias():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-    return render_template("asistencias_admin.html", alumnos=list(alumnos.find()))
-
-
-@admin_bp.route("/configuracion")
-def configuracion_admin():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-    return render_template("configuracion.html")
-
-# =========================
-# RESET GENERAL (ADMIN)
+# RESET GRUPO 🔥 (CORREGIDO)
 # =========================
 
 @admin_bp.route("/reset_grupo", methods=["POST"])
 def reset_grupo():
 
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
+    try:
+        if not verificar_admin():
+            return redirect(url_for("auth.login"))
 
-    grupo = request.form.get("grupo")
-    trimestre = request.form.get("trimestre")
+        grupo = request.form.get("grupo")
+        trimestre = request.form.get("trimestre")
 
-    lista = list(alumnos.find({"grupo": grupo}))
+        if not grupo or not trimestre:
+            return "Error: datos incompletos"
 
-    for alumno in lista:
+        lista = list(alumnos.find({"grupo": grupo}))
 
-        nuevas = []
+        for alumno in lista:
 
-        for c in alumno.get("calificaciones", []):
-            if c.get("trimestre") != trimestre:
-                nuevas.append(c)
+            calificaciones = alumno.get("calificaciones", [])
 
-        alumnos.update_one(
-            {"_id": alumno["_id"]},
-            {
-                "$set": {
-                    "calificaciones": nuevas,
-                    "enviado": False
+            nuevas = [
+                c for c in calificaciones
+                if c.get("trimestre") != trimestre
+            ]
+
+            alumnos.update_one(
+                {"_id": alumno["_id"]},
+                {
+                    "$set": {
+                        "calificaciones": nuevas,
+                        "enviado": False
+                    }
                 }
-            }
-        )
+            )
 
-    return redirect(url_for("admin.evaluaciones_admin"))
+        # 🔥 ESTA ES LA CLAVE DEL FIX
+        return redirect(url_for("admin.ver_evaluaciones"))
+
+    except Exception as e:
+        return f"<h1>ERROR RESET:</h1><pre>{str(e)}</pre>"
