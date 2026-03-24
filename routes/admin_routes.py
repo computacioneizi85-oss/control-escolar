@@ -26,19 +26,16 @@ def admin_dashboard():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    try:
-        return render_template(
-            "admin.html",
-            alumnos=list(alumnos.find()),
-            grupos=list(grupos.find()),
-            maestros=list(maestros.find()),
-            reportes=list(reportes.find()),
-            total_alumnos=alumnos.count_documents({}),
-            total_maestros=maestros.count_documents({}),
-            total_reportes=reportes.count_documents({})
-        )
-    except Exception as e:
-        return f"<h1>ERROR DASHBOARD</h1><pre>{str(e)}</pre>"
+    return render_template(
+        "admin.html",
+        alumnos=list(alumnos.find()),
+        grupos=list(grupos.find()),
+        maestros=list(maestros.find()),
+        reportes=list(reportes.find()),
+        total_alumnos=alumnos.count_documents({}),
+        total_maestros=maestros.count_documents({}),
+        total_reportes=reportes.count_documents({})
+    )
 
 
 # =========================
@@ -61,6 +58,52 @@ def activar_trimestre():
     )
 
     return redirect(url_for("admin.admin_dashboard"))
+
+
+# =========================
+# 🔥 DASHBOARD EVALUACIONES
+# =========================
+
+@admin_bp.route("/evaluaciones")
+def ver_evaluaciones():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    lista = list(alumnos.find())
+
+    datos = []
+
+    for a in lista:
+        for c in a.get("calificaciones", []):
+            datos.append({
+                "alumno": a.get("nombre"),
+                "grupo": a.get("grupo"),
+                "materia": c.get("materia"),
+                "calificacion": c.get("calificacion"),
+                "trimestre": c.get("trimestre")
+            })
+
+    config = configuracion.find_one({"tipo": "trimestre"}) or {}
+
+    return render_template("evaluaciones_admin.html",
+        datos=datos,
+        config=config
+    )
+
+
+@admin_bp.route("/cerrar_trimestre")
+def cerrar_trimestre():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    configuracion.update_one(
+        {"tipo": "trimestre"},
+        {"$set": {"estado": "false"}}
+    )
+
+    return redirect(url_for("admin.ver_evaluaciones"))
 
 
 # =========================
@@ -105,7 +148,7 @@ def crear_alumno():
 
 
 # =========================
-# 🔥 PDF KARDEX
+# PDF KARDEX
 # =========================
 
 @admin_bp.route("/kardex/<nombre>")
@@ -114,16 +157,14 @@ def kardex(nombre):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    try:
-        pdf = generar_kardex(nombre)
-        pdf.seek(0)
-        return send_file(pdf, mimetype="application/pdf")
-    except Exception as e:
-        return f"Error kardex: {str(e)}"
+    pdf = generar_kardex(nombre)
+    pdf.seek(0)
+
+    return send_file(pdf, mimetype="application/pdf")
 
 
 # =========================
-# 🔥 PDF BOLETA
+# PDF BOLETA
 # =========================
 
 @admin_bp.route("/boleta/<nombre>")
@@ -132,16 +173,14 @@ def boleta(nombre):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    try:
-        pdf = generar_boleta(nombre)
-        pdf.seek(0)
-        return send_file(pdf, mimetype="application/pdf")
-    except Exception as e:
-        return f"Error boleta: {str(e)}"
+    pdf = generar_boleta(nombre)
+    pdf.seek(0)
+
+    return send_file(pdf, mimetype="application/pdf")
 
 
 # =========================
-# 🔥 PDF REPORTE
+# PDF REPORTE
 # =========================
 
 @admin_bp.route("/aprobar_reporte/<string:id>")
@@ -150,23 +189,19 @@ def aprobar_reporte(id):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    try:
-        reporte = reportes.find_one({"_id": ObjectId(id)})
+    reporte = reportes.find_one({"_id": ObjectId(id)})
 
-        if not reporte:
-            return "Reporte no encontrado"
+    if not reporte:
+        return "Reporte no encontrado"
 
-        pdf = generar_reporte_pdf(reporte)
-        pdf.seek(0)
+    pdf = generar_reporte_pdf(reporte)
+    pdf.seek(0)
 
-        return send_file(pdf, mimetype="application/pdf")
-
-    except Exception as e:
-        return f"Error reporte: {str(e)}"
+    return send_file(pdf, mimetype="application/pdf")
 
 
 # =========================
-# 🔥 PDF CITATORIO
+# PDF CITATORIO
 # =========================
 
 @admin_bp.route("/generar_citatorio/<string:id>")
@@ -175,19 +210,15 @@ def generar_citatorio(id):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    try:
-        citatorio = citatorios.find_one({"_id": ObjectId(id)})
+    citatorio = citatorios.find_one({"_id": ObjectId(id)})
 
-        if not citatorio:
-            return "Citatorio no encontrado"
+    if not citatorio:
+        return "Citatorio no encontrado"
 
-        pdf = generar_citatorio_pdf(citatorio)
-        pdf.seek(0)
+    pdf = generar_citatorio_pdf(citatorio)
+    pdf.seek(0)
 
-        return send_file(pdf, mimetype="application/pdf")
-
-    except Exception as e:
-        return f"Error citatorio: {str(e)}"
+    return send_file(pdf, mimetype="application/pdf")
 
 
 # =========================

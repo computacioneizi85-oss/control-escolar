@@ -34,13 +34,8 @@ border-radius:5px;
 background:#3e6aa1;
 }
 
-.seccion{
-display:none;
-}
-
-.seccion.activa{
-display:block;
-}
+.seccion{ display:none; }
+.seccion.activa{ display:block; }
 
 .menu-toggle{
 font-size:24px;
@@ -53,44 +48,6 @@ width:40px;
 height:40px;
 border-radius:50%;
 object-fit:cover;
-}
-
-.semaforo{
-width:16px;
-height:16px;
-border-radius:50%;
-display:inline-block;
-}
-
-.verde{background:#2ecc71;}
-.amarillo{background:#f1c40f;}
-.rojo{background:#e74c3c;}
-.gris{background:#bdc3c7;}
-
-.btn-verde{
-background:#2ecc71;
-color:white;
-border:none;
-padding:5px 8px;
-cursor:pointer;
-border-radius:4px;
-}
-
-.btn-amarillo{
-background:#f1c40f;
-border:none;
-padding:5px 8px;
-cursor:pointer;
-border-radius:4px;
-}
-
-.btn-rojo{
-background:#e74c3c;
-color:white;
-border:none;
-padding:5px 8px;
-cursor:pointer;
-border-radius:4px;
 }
 
 .card-analytics{
@@ -114,7 +71,7 @@ box-shadow:0px 4px 10px rgba(0,0,0,0.08);
 <button onclick="mostrarSeccion('analytics')">Analytics</button>
 <button onclick="mostrarSeccion('clases')">Mis clases</button>
 <button onclick="mostrarSeccion('evaluaciones')">Evaluaciones</button>
-<button onclick="mostrarSeccion('alumnos')">Lista alumnos</button>
+<button onclick="mostrarSeccion('alumnos')">Calificaciones</button>
 <button onclick="mostrarSeccion('asistencias')">Asistencias</button>
 </div>
 
@@ -174,21 +131,17 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 
 {% if horarios %}
 <table>
-<tr>
-<th>Grupo</th>
-<th>Materia</th>
-<th>Día</th>
-<th>Hora</th>
-</tr>
+<tr><th>Grupo</th><th>Materia</th><th>Día</th><th>Hora</th></tr>
 
-{% for horario in horarios %}
+{% for h in horarios %}
 <tr>
-<td>{{ horario.grupo }}</td>
-<td>{{ horario.materia }}</td>
-<td>{{ horario.dia }}</td>
-<td>{{ horario.hora }}</td>
+<td>{{ h.grupo }}</td>
+<td>{{ h.materia }}</td>
+<td>{{ h.dia }}</td>
+<td>{{ h.hora }}</td>
 </tr>
 {% endfor %}
+
 </table>
 {% else %}
 <p>No tienes clases asignadas.</p>
@@ -196,47 +149,45 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 </div>
 
 
-<!-- 🔥 EVALUACIONES CORREGIDO -->
+<!-- EVALUACIONES -->
 <div id="evaluaciones" class="seccion">
 <h3>Evaluaciones</h3>
 
 {% if config and config.estado == "true" %}
 <p><strong>Trimestre activo: {{ config.trimestre }}</strong></p>
 {% else %}
-<p>No hay evaluaciones habilitadas</p>
+<p style="color:red;">Evaluaciones cerradas</p>
 {% endif %}
 
 </div>
 
 
-<!-- 🔥 CAPTURA DE CALIFICACIONES FUNCIONAL -->
+<!-- 🔥 CALIFICACIONES -->
 <div id="alumnos" class="seccion">
 
-<h3>Captura de calificaciones</h3>
+<h3>Captura y visualización</h3>
+
+<!-- FILTRO -->
+<select onchange="filtrarGrupo(this.value)">
+<option value="todos">Todos</option>
+{% for g in grupos %}
+<option value="{{ g }}">{{ g }}</option>
+{% endfor %}
+</select>
+
+<br><br>
 
 <table>
-
 <tr>
-<th>Foto</th>
 <th>Alumno</th>
 <th>Grupo</th>
 <th>Materia</th>
 <th>Calificación</th>
 <th>Guardar</th>
-<th>Reporte</th>
 </tr>
 
 {% for alumno in alumnos %}
-
 <tr>
-
-<td>
-{% if alumno.foto %}
-<img src="data:image/png;base64,{{ alumno.foto }}" class="foto-alumno">
-{% else %}
-—
-{% endif %}
-</td>
 
 <td>{{ alumno.nombre }}</td>
 <td>{{ alumno.grupo }}</td>
@@ -247,17 +198,26 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 <input type="hidden" name="alumno" value="{{ alumno.nombre }}">
 <input type="hidden" name="trimestre" value="{{ config.trimestre }}">
 
-<select name="materia" required>
-<option value="Matemáticas">Matemáticas</option>
-<option value="Español">Español</option>
-<option value="Ciencias">Ciencias</option>
-<option value="Historia">Historia</option>
-<option value="Inglés">Inglés</option>
+<select name="materia">
+<option>Matemáticas</option>
+<option>Español</option>
+<option>Ciencias</option>
+<option>Historia</option>
+<option>Inglés</option>
 </select>
 </td>
 
 <td>
-<input type="number" name="cal1" min="0" max="10" required>
+
+{% set cal = None %}
+{% for c in alumno.calificaciones %}
+{% if c.trimestre == config.trimestre %}
+{% set cal = c.calificacion %}
+{% endif %}
+{% endfor %}
+
+<input type="number" name="cal1" value="{{ cal if cal else '' }}" min="0" max="10">
+
 </td>
 
 <td>
@@ -265,18 +225,7 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 </form>
 </td>
 
-<td>
-
-<form action="/crear_reporte" method="POST">
-<input type="hidden" name="alumno" value="{{ alumno.nombre }}">
-<input type="text" name="comentario" placeholder="Comentario" required>
-<button type="submit">Enviar</button>
-</form>
-
-</td>
-
 </tr>
-
 {% endfor %}
 
 </table>
@@ -287,50 +236,32 @@ Alumnos en riesgo: <strong>{{ riesgo|length }}</strong>
 <!-- ASISTENCIAS -->
 <div id="asistencias" class="seccion">
 
-<h3>Registro de asistencias</h3>
+<h3>Asistencias</h3>
 
 <table>
 
 <tr>
-<th>Foto</th>
 <th>Alumno</th>
-<th>Grupo</th>
 <th>Fecha</th>
-<th>Acciones</th>
-<th>Semáforo</th>
+<th>Acción</th>
 </tr>
 
 {% for alumno in alumnos %}
-
 <tr>
 
-<td>
-{% if alumno.foto %}
-<img src="data:image/png;base64,{{ alumno.foto }}" class="foto-alumno">
-{% else %}
-—
-{% endif %}
-</td>
-
 <td>{{ alumno.nombre }}</td>
-<td>{{ alumno.grupo }}</td>
 
 <td>
 <input type="date" id="fecha_{{ loop.index }}">
 </td>
 
 <td>
-<button class="btn-verde" onclick="marcar('{{ alumno.nombre }}','asistencia','{{ loop.index }}')">✔</button>
-<button class="btn-amarillo" onclick="marcar('{{ alumno.nombre }}','retardo','{{ loop.index }}')">⏰</button>
-<button class="btn-rojo" onclick="marcar('{{ alumno.nombre }}','falta','{{ loop.index }}')">✖</button>
-</td>
-
-<td>
-<span id="semaforo_{{ loop.index }}" class="semaforo gris"></span>
+<button onclick="marcar('{{ alumno.nombre }}','asistencia','{{ loop.index }}')">✔</button>
+<button onclick="marcar('{{ alumno.nombre }}','retardo','{{ loop.index }}')">⏰</button>
+<button onclick="marcar('{{ alumno.nombre }}','falta','{{ loop.index }}')">✖</button>
 </td>
 
 </tr>
-
 {% endfor %}
 
 </table>
@@ -349,24 +280,24 @@ document.getElementById(id).classList.add("activa")
 }
 
 function toggleMenu(){
-let menu = document.getElementById("menuMaestro")
-menu.style.display = (menu.style.display === "none") ? "block" : "none"
+let menu=document.getElementById("menuMaestro")
+menu.style.display = menu.style.display==="none" ? "block" : "none"
+}
+
+function filtrarGrupo(grupo){
+document.querySelectorAll("tbody tr").forEach(row=>{
+    if(grupo==="todos"){
+        row.style.display=""
+    }else{
+        row.style.display = row.children[1].innerText===grupo ? "" : "none"
+    }
+})
 }
 
 function marcar(alumno,estado,id){
 
-let fecha = document.getElementById("fecha_"+id).value
-
-if(!fecha){
-alert("Selecciona fecha")
-return
-}
-
-let semaforo = document.getElementById("semaforo_"+id)
-
-if(estado=="asistencia"){semaforo.className="semaforo verde"}
-if(estado=="retardo"){semaforo.className="semaforo amarillo"}
-if(estado=="falta"){semaforo.className="semaforo rojo"}
+let fecha=document.getElementById("fecha_"+id).value
+if(!fecha){ alert("Selecciona fecha"); return }
 
 fetch("/guardar_asistencia_ajax",{
 method:"POST",
@@ -376,30 +307,12 @@ body:"alumno="+alumno+"&estado="+estado+"&fecha="+fecha
 
 }
 
+const nombres=[{% for a in alumnos %}"{{ a.nombre }}",{% endfor %}]
+const promedios=[{% for a in alumnos %}{{ a.promedio }},{% endfor %}]
 
-// GRAFICA
-
-const nombres = [
-{% for a in alumnos %}
-"{{ a.nombre }}",
-{% endfor %}
-]
-
-const promedios = [
-{% for a in alumnos %}
-{{ a.promedio }},
-{% endfor %}
-]
-
-new Chart(document.getElementById("graficaPromedios"), {
-type: "bar",
-data: {
-labels: nombres,
-datasets: [{
-label: "Promedio",
-data: promedios
-}]
-}
+new Chart(document.getElementById("graficaPromedios"),{
+type:"bar",
+data:{labels:nombres,datasets:[{label:"Promedio",data:promedios}]}
 })
 
 </script>

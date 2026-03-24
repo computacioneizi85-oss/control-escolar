@@ -1,8 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, session, jsonify, send_file
-from bson.objectid import ObjectId
+from flask import Blueprint, render_template, request, redirect, session, jsonify
 from database.mongo import alumnos, maestros, reportes, horarios, configuracion
 from datetime import datetime
-from io import BytesIO
 
 maestro_bp = Blueprint("maestro", __name__)
 
@@ -44,7 +42,7 @@ def panel_maestro():
     config = configuracion.find_one({"tipo": "trimestre"}) or {}
 
     # =========================
-    # ANALYTICS
+    # ANALYTICS (NO SE TOCA)
     # =========================
 
     promedios = []
@@ -97,7 +95,7 @@ def panel_maestro():
 
 
 # =========================
-# 🔥 GUARDAR CALIFICACIONES (CORREGIDO)
+# 🔥 GUARDAR CALIFICACIONES (ESTABLE)
 # =========================
 
 @maestro_bp.route("/guardar_calificaciones", methods=["POST"])
@@ -114,8 +112,9 @@ def guardar_calificaciones():
     if not alumno_nombre or not materia or not cal1:
         return redirect("/panel_maestro")
 
-    # 🔥 VALIDAR TRIMESTRE ACTIVO
+    # 🔒 VALIDAR SI EL TRIMESTRE ESTÁ ABIERTO
     config = configuracion.find_one({"tipo": "trimestre"}) or {}
+
     if config.get("estado") != "true":
         return "Evaluaciones cerradas"
 

@@ -1,0 +1,122 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>📊 Control de Evaluaciones</h2>
+
+<!-- ESTADO DEL TRIMESTRE -->
+<div style="margin-bottom:20px;">
+
+{% if config.estado == "true" %}
+<span style="color:green; font-weight:bold;">
+🟢 Trimestre {{ config.trimestre }} ACTIVO
+</span>
+
+<a href="{{ url_for('admin.cerrar_trimestre') }}">
+<button style="background:red;color:white;margin-left:20px;">
+🔒 Cerrar trimestre
+</button>
+</a>
+
+{% else %}
+<span style="color:red; font-weight:bold;">
+🔴 Trimestre CERRADO
+</span>
+{% endif %}
+
+</div>
+
+
+<!-- FILTRO -->
+<h4>Filtrar por grupo</h4>
+
+<select onchange="filtrarGrupo(this.value)">
+<option value="todos">Todos</option>
+
+{% set grupos = [] %}
+{% for d in datos %}
+{% if d.grupo not in grupos %}
+{% set _ = grupos.append(d.grupo) %}
+<option value="{{ d.grupo }}">{{ d.grupo }}</option>
+{% endif %}
+{% endfor %}
+
+</select>
+
+<br><br>
+
+
+<!-- TABLA -->
+<table border="1" style="width:100%; background:white;">
+
+<tr style="background:#2c3e50; color:white;">
+<th>Alumno</th>
+<th>Grupo</th>
+<th>Materia</th>
+<th>Calificación</th>
+<th>Trimestre</th>
+</tr>
+
+<tbody>
+
+{% for d in datos %}
+<tr>
+<td>{{ d.alumno }}</td>
+<td>{{ d.grupo }}</td>
+<td>{{ d.materia }}</td>
+<td>
+<span style="
+font-weight:bold;
+color:
+{% if d.calificacion >= 8 %}green
+{% elif d.calificacion >= 6 %}orange
+{% else %}red
+{% endif %}
+;">
+{{ d.calificacion }}
+</span>
+</td>
+<td>{{ d.trimestre }}</td>
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
+
+
+<!-- RESUMEN -->
+<br><br>
+
+<h3>📈 Resumen</h3>
+
+<p>Total registros: <strong>{{ datos|length }}</strong></p>
+
+{% set aprobados = datos | selectattr("calificacion", "ge", 6) | list %}
+<p>Aprobados: <strong>{{ aprobados|length }}</strong></p>
+
+{% set reprobados = datos | selectattr("calificacion", "lt", 6) | list %}
+<p>Reprobados: <strong>{{ reprobados|length }}</strong></p>
+
+
+<!-- SCRIPT FILTRO -->
+<script>
+
+function filtrarGrupo(grupo){
+
+document.querySelectorAll("tbody tr").forEach(row=>{
+
+if(grupo === "todos"){
+row.style.display = ""
+}else{
+let g = row.children[1].innerText
+row.style.display = (g === grupo) ? "" : "none"
+}
+
+})
+
+}
+
+</script>
+
+{% endblock %}
