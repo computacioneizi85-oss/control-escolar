@@ -2,8 +2,6 @@
 
 {% block content %}
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
 .panel-container{display:flex;gap:20px;}
 .menu-maestro{width:220px;background:#243b5a;padding:20px;border-radius:8px;color:white;}
@@ -12,6 +10,7 @@
 .seccion{display:none;}
 .seccion.activa{display:block;}
 .guardado-ok{background:#d4edda;}
+.editando{background:#fff3cd;}
 </style>
 
 <div class="panel-container">
@@ -45,7 +44,6 @@
 </tr>
 {% endfor %}
 </table>
-
 </div>
 
 <!-- 🔥 EVALUACIONES -->
@@ -53,7 +51,6 @@
 
 <h3>Evaluaciones</h3>
 
-<!-- ESTADO -->
 {% if alumnos and alumnos[0].enviado %}
 <p style="color:green;">✔ Calificaciones enviadas</p>
 {% else %}
@@ -73,17 +70,27 @@
 <h4>Vista previa</h4>
 
 {% for alumno in alumnos %}
+<div style="margin-bottom:10px;">
 <strong>{{ alumno.nombre }}</strong><br>
 
 {% for c in alumno.calificaciones %}
 {% if c.trimestre == config.trimestre %}
-{{ c.materia }}: {{ c.calificacion }} |
+<span style="
+padding:4px 8px;
+border-radius:5px;
+background:
+{% if c.calificacion >= 8 %}#d4edda
+{% elif c.calificacion >= 6 %}#fff3cd
+{% else %}#f8d7da
+{% endif %}
+">
+{{ c.materia }}: {{ c.calificacion }}
+</span>
 {% endif %}
 {% endfor %}
 
-<br><br>
+</div>
 {% endfor %}
-
 </div>
 
 {% if config.estado == "true" %}
@@ -92,19 +99,19 @@
 
 <tr>
 <th>Alumno</th>
-<th>Materia</th>
-<th>Calificación</th>
-<th>Acción</th>
+
+{% for h in horarios %}
+<th>{{ h.materia }}</th>
+{% endfor %}
+
 </tr>
 
 {% for alumno in alumnos %}
-{% for h in horarios %}
-
 <tr>
 
-<td>{{ alumno.nombre }}</td>
-<td>{{ h.materia }}</td>
+<td><strong>{{ alumno.nombre }}</strong></td>
 
+{% for h in horarios %}
 <td>
 
 {% set cal = None %}
@@ -115,33 +122,33 @@
 {% endfor %}
 
 {% if not alumno.enviado %}
+
 <input type="number"
 id="cal_{{ alumno.nombre }}_{{ h.materia }}"
 value="{{ cal if cal else '' }}"
-min="0" max="10">
+min="0" max="10"
+style="width:60px;"
+{% if cal %}class="guardado-ok"{% endif %}
+readonly>
+
+<br>
+
+<button onclick="editarCal('{{ alumno.nombre }}','{{ h.materia }}')">✏️</button>
+
+<button onclick="guardarAjax('{{ alumno.nombre }}','{{ h.materia }}')">💾</button>
+
 {% else %}
+
+<span style="color:green;font-weight:bold;">
 {{ cal if cal else '-' }} 🔒
+</span>
+
 {% endif %}
 
 </td>
-
-<td>
-
-{% if not alumno.enviado %}
-
-<button onclick="guardarAjax('{{ alumno.nombre }}','{{ h.materia }}')">
-💾 Guardar
-</button>
-
-{% else %}
-✔ Enviado
-{% endif %}
-
-</td>
+{% endfor %}
 
 </tr>
-
-{% endfor %}
 {% endfor %}
 
 </table>
@@ -191,6 +198,13 @@ document.querySelectorAll(".seccion").forEach(s=>s.classList.remove("activa"))
 document.getElementById(id).classList.add("activa")
 }
 
+function editarCal(alumno, materia){
+let input = document.getElementById("cal_"+alumno+"_"+materia)
+input.removeAttribute("readonly")
+input.classList.add("editando")
+input.focus()
+}
+
 function guardarAjax(alumno, materia){
 
 let input = document.getElementById("cal_"+alumno+"_"+materia)
@@ -210,7 +224,9 @@ body:
 .then(data=>{
 
 if(data.status==="ok"){
+input.classList.remove("editando")
 input.classList.add("guardado-ok")
+input.setAttribute("readonly", true)
 }
 
 if(data.status==="bloqueado"){
