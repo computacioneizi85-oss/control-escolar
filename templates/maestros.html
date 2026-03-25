@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<h1>Gestión de maestros</h1>
+<h1>👨‍🏫 Gestión de maestros</h1>
 
 <!-- =========================
 REGISTRO
@@ -10,29 +10,24 @@ REGISTRO
 
 <h2>Registrar maestro</h2>
 
-<form action="/crear_maestro" method="POST">
+<form action="/crear_maestro" method="POST" class="form-inline">
 
-<input type="text" name="nombre" placeholder="Nombre del maestro" required>
-
+<input type="text" name="nombre" placeholder="Nombre" required>
 <input type="text" name="usuario" placeholder="Usuario" required>
-
 <input type="text" name="password" placeholder="Contraseña" required>
 
-<button type="submit">Registrar maestro</button>
+<button type="submit">Registrar</button>
 
 </form>
 
 
-<br><br>
-
-
 <!-- =========================
-ASIGNAR GRUPO (SE CONSERVA)
+ASIGNAR GRUPO
 ========================= -->
 
-<h2>Asignar grupo a maestro</h2>
+<h2>Asignar grupo</h2>
 
-<form action="/asignar_grupo_maestro" method="POST">
+<form action="/asignar_grupo_maestro" method="POST" class="form-inline">
 
 <select name="maestro">
 {% for maestro in maestros %}
@@ -46,44 +41,34 @@ ASIGNAR GRUPO (SE CONSERVA)
 {% endfor %}
 </select>
 
-<button type="submit">Asignar grupo</button>
+<button type="submit">Asignar</button>
 
 </form>
-
-
-<br><br>
 
 
 <!-- =========================
 ASIGNAR MATERIAS
 ========================= -->
 
-<h2>Asignar materias a maestro</h2>
+<h2>Asignar materias</h2>
 
-<form action="/admin/asignar_materias" method="POST">
+<form action="/admin/asignar_materias" method="POST" class="form-inline">
 
-<select name="maestro_id" required>
+<select name="maestro_id">
 {% for maestro in maestros %}
 <option value="{{ maestro._id }}">{{ maestro.nombre }}</option>
 {% endfor %}
 </select>
 
-<br><br>
-
-<select name="materias" multiple size="5" style="width:200px;">
+<select name="materias" multiple>
 {% for materia in materias %}
 <option value="{{ materia.nombre }}">{{ materia.nombre }}</option>
 {% endfor %}
 </select>
 
-<br><br>
-
-<button type="submit">Asignar materias</button>
+<button type="submit">Asignar</button>
 
 </form>
-
-
-<br><br>
 
 
 <!-- =========================
@@ -92,7 +77,7 @@ LISTA
 
 <h2>Lista de maestros</h2>
 
-<table border="1" style="width:100%;">
+<table>
 
 <tr>
 <th>Nombre</th>
@@ -107,7 +92,6 @@ LISTA
 <tr>
 
 <td>{{ maestro.nombre }}</td>
-
 <td>{{ maestro.usuario }}</td>
 
 
@@ -119,10 +103,12 @@ GRUPOS
 
 {% if maestro.grupos %}
 {% for grupo in maestro.grupos %}
-<span>{{ grupo }}</span><br>
+<span style="background:#ecf0f1; padding:4px 8px; border-radius:6px; margin:2px; display:inline-block;">
+{{ grupo }}
+</span>
 {% endfor %}
 {% else %}
-Sin grupos
+<span style="color:#999;">Sin grupos</span>
 {% endif %}
 
 </td>
@@ -138,42 +124,40 @@ MATERIAS
 
 {% for mat in maestro.materias %}
 
-<div style="margin-bottom:5px;">
-
+<span style="background:#d6eaf8; padding:4px 8px; border-radius:6px; margin:2px; display:inline-block;">
 {{ mat }}
+</span>
 
 <form action="/admin/quitar_materia" method="POST" style="display:inline;">
 
 <input type="hidden" name="maestro_id" value="{{ maestro._id }}">
 <input type="hidden" name="materia" value="{{ mat }}">
 
-<button style="background:red;color:white;">❌</button>
+<button class="danger" style="padding:2px 6px; font-size:12px;">✕</button>
 
 </form>
-
-</div>
 
 {% endfor %}
 
 {% else %}
-Sin materias
+<span style="color:#999;">Sin materias</span>
 {% endif %}
 
 </td>
 
 
 <!-- =========================
-🔥 EDITAR (NUEVO)
+EDITAR
 ========================= -->
 
 <td>
 
-<!-- 🔥 EDITAR GRUPOS -->
-<form action="/admin/editar_grupos_maestro" method="POST">
+<!-- EDITAR GRUPOS -->
+<form action="/admin/editar_grupos_maestro" method="POST" class="form-inline">
 
 <input type="hidden" name="maestro_id" value="{{ maestro._id }}">
 
-<select name="grupos" multiple size="3">
+<select name="grupos" multiple>
 
 {% for grupo in grupos %}
 <option value="{{ grupo.nombre }}"
@@ -184,18 +168,17 @@ Sin materias
 
 </select>
 
-<button type="submit">💾</button>
+<button type="submit">Guardar</button>
 
 </form>
 
-<br>
 
-<!-- 🔥 EDITAR MATERIAS -->
-<form action="/admin/editar_materias_maestro" method="POST">
+<!-- EDITAR MATERIAS -->
+<form action="/admin/editar_materias_maestro" method="POST" class="form-inline">
 
 <input type="hidden" name="maestro_id" value="{{ maestro._id }}">
 
-<select name="materias" multiple size="3">
+<select name="materias" multiple>
 
 {% for materia in materias %}
 <option value="{{ materia.nombre }}"
@@ -206,7 +189,7 @@ Sin materias
 
 </select>
 
-<button type="submit">💾</button>
+<button type="submit">Guardar</button>
 
 </form>
 
