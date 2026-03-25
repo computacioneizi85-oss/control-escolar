@@ -17,6 +17,7 @@ body{
 background:linear-gradient(135deg,#eef2f7,#dfe9f3);
 display:flex;
 min-height:100vh;
+font-size:16px; /* 🔥 MÁS GRANDE */
 }
 
 /* =========================
@@ -37,9 +38,8 @@ box-shadow:4px 0 15px rgba(0,0,0,0.15);
 
 .sidebar h2{
 text-align:center;
-margin-bottom:25px;
+margin-bottom:20px;
 font-size:20px;
-letter-spacing:1px;
 font-weight:600;
 }
 
@@ -77,7 +77,7 @@ animation:fadeIn 0.3s ease;
 
 .submenu a{
 background:#34495e;
-font-size:13px;
+font-size:14px;
 margin-bottom:4px;
 border-radius:6px;
 padding:8px;
@@ -105,7 +105,7 @@ CONTENIDO
 
 .content{
 margin-left:240px;
-padding:25px;
+padding:20px; /* 🔥 MÁS COMPACTO */
 width:calc(100% - 240px);
 max-width:1200px;
 }
@@ -115,32 +115,33 @@ TITULOS
 ========================= */
 
 h1{
-margin-bottom:15px;
+margin-bottom:10px;
 font-weight:700;
 color:#2c3e50;
+font-size:26px; /* 🔥 */
 }
 
 h2{
-margin-top:15px;
-margin-bottom:8px;
+margin-top:10px;
+margin-bottom:6px;
 color:#34495e;
-font-size:18px;
+font-size:20px; /* 🔥 */
 }
 
 /* =========================
-FORM INLINE 🔥
+FORM INLINE
 ========================= */
 
 .form-inline{
 display:flex;
 align-items:center;
-gap:10px;
+gap:8px;
 flex-wrap:wrap;
-margin-bottom:15px;
+margin-bottom:10px;
 }
 
 form{
-margin-bottom:15px;
+margin-bottom:10px;
 }
 
 /* =========================
@@ -148,11 +149,12 @@ INPUTS
 ========================= */
 
 input{
-padding:8px 10px;
+padding:9px 12px;
 border-radius:8px;
 border:1px solid #ccc;
 outline:none;
 transition:0.2s;
+font-size:15px;
 }
 
 input:focus{
@@ -165,11 +167,11 @@ SELECT
 ========================= */
 
 select{
-padding:7px;
+padding:9px;
 border-radius:8px;
 border:1px solid #ccc;
 background:white;
-font-size:14px;
+font-size:15px;
 outline:none;
 transition:0.2s;
 cursor:pointer;
@@ -192,11 +194,11 @@ button, .btn{
 background:linear-gradient(135deg,#3498db,#2980b9);
 border:none;
 color:white;
-padding:7px 12px;
+padding:8px 14px;
 border-radius:8px;
 cursor:pointer;
 transition:all 0.25s ease;
-font-size:13px;
+font-size:14px;
 }
 
 button:hover{
@@ -230,14 +232,14 @@ background:#2c3e50;
 color:white;
 padding:10px;
 text-align:left;
-font-size:14px;
+font-size:15px;
 }
 
 td{
 padding:8px;
 border-bottom:1px solid #eee;
 vertical-align:middle;
-font-size:13px;
+font-size:14px;
 }
 
 tr:hover{
@@ -245,15 +247,15 @@ background:#f4f8fb;
 }
 
 /* =========================
-ETIQUETAS (GRUPOS / MATERIAS) 🔥
+ETIQUETAS
 ========================= */
 
 .tag{
 display:inline-block;
 background:#ecf0f1;
-padding:3px 6px;
+padding:5px 8px;
 border-radius:6px;
-font-size:12px;
+font-size:13px;
 margin:2px;
 }
 
