@@ -182,21 +182,17 @@ def reset_grupo():
             return redirect(url_for("auth.login"))
 
         grupo = request.form.get("grupo")
-        trimestre = str(request.form.get("trimestre"))
 
-        for alumno in alumnos.find({"grupo": grupo}):
-
-            nuevas = []
-
-            for c in alumno.get("calificaciones", []):
-                if str(c.get("trimestre")) == trimestre or c.get("trimestre") is None:
-                    continue
-                nuevas.append(c)
-
-            alumnos.update_one(
-                {"_id": alumno["_id"]},
-                {"$set": {"calificaciones": nuevas, "enviado": False}}
-            )
+        # 🔥 BORRAR TODAS LAS CALIFICACIONES DEL GRUPO (SIN EXCEPCIONES)
+        alumnos.update_many(
+            {"grupo": grupo},
+            {
+                "$set": {
+                    "calificaciones": [],
+                    "enviado": False
+                }
+            }
+        )
 
         return redirect(url_for("admin.ver_evaluaciones"))
 
