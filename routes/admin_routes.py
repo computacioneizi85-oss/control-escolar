@@ -8,6 +8,7 @@ from pdf.generador import generar_kardex, generar_boleta, generar_reporte_pdf, g
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
+# ================= VERIFICAR ADMIN =================
 def verificar_admin():
     return "rol" in session and session["rol"] == "admin"
 
@@ -31,24 +32,16 @@ def admin_dashboard():
         return f"<h1>ERROR DASHBOARD:</h1><pre>{str(e)}</pre>"
 
 
-# ================= 🔥 CREAR MAESTRO (FIX) =================
+# ================= CREAR MAESTRO =================
 @admin_bp.route("/crear_maestro", methods=["POST"])
 def crear_maestro():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    nombre = request.form.get("nombre")
-    usuario = request.form.get("usuario")
-    password = request.form.get("password")
-
-    if not nombre or not usuario or not password:
-        return "Datos incompletos"
-
     maestros.insert_one({
-        "nombre": nombre,
-        "usuario": usuario,
-        "password": password,
+        "nombre": request.form.get("nombre"),
+        "usuario": request.form.get("usuario"),
+        "password": request.form.get("password"),
         "grupos": [],
         "materias": []
     })
@@ -56,23 +49,16 @@ def crear_maestro():
     return redirect(url_for("admin.ver_maestros"))
 
 
-# ================= 🔥 ASIGNAR GRUPO (FIX) =================
+# ================= ASIGNAR GRUPO =================
 @admin_bp.route("/asignar_grupo_maestro", methods=["POST"])
 def asignar_grupo_maestro():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
     maestro_id = request.form.get("maestro")
     grupo = request.form.get("grupo")
 
-    if not maestro_id or not grupo:
-        return "Datos incompletos"
-
     maestro = maestros.find_one({"_id": ObjectId(maestro_id)})
-
-    if not maestro:
-        return "Maestro no encontrado"
 
     grupos_actuales = maestro.get("grupos", [])
 
@@ -90,7 +76,6 @@ def asignar_grupo_maestro():
 # ================= TRIMESTRE =================
 @admin_bp.route("/activar_trimestre", methods=["POST"])
 def activar_trimestre():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -110,7 +95,6 @@ def activar_trimestre():
 
 @admin_bp.route("/cerrar_trimestre")
 def cerrar_trimestre():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -125,7 +109,6 @@ def cerrar_trimestre():
 # ================= EVALUACIONES =================
 @admin_bp.route("/evaluaciones")
 def ver_evaluaciones():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -150,7 +133,6 @@ def ver_evaluaciones():
 # ================= RESET GRUPO =================
 @admin_bp.route("/reset_grupo", methods=["POST"])
 def reset_grupo():
-
     try:
         if not verificar_admin():
             return redirect(url_for("auth.login"))
@@ -183,7 +165,6 @@ def reset_grupo():
 # ================= ALUMNOS =================
 @admin_bp.route("/alumnos")
 def ver_alumnos():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -195,34 +176,9 @@ def ver_alumnos():
     )
 
 
-@admin_bp.route("/crear_alumno", methods=["POST"])
-def crear_alumno():
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    foto = request.files.get("foto")
-    foto_base64 = ""
-
-    if foto and foto.filename != "":
-        foto_base64 = base64.b64encode(foto.read()).decode("utf-8")
-
-    alumnos.insert_one({
-        "nombre": request.form.get("nombre"),
-        "grupo": request.form.get("grupo"),
-        "foto": foto_base64,
-        "calificaciones": [],
-        "asistencias": [],
-        "enviado": False
-    })
-
-    return redirect(url_for("admin.ver_alumnos"))
-
-
-# ================= MENÚS =================
+# ================= MAESTROS =================
 @admin_bp.route("/maestros")
 def ver_maestros():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -234,8 +190,55 @@ def ver_maestros():
     )
 
 
+# ================= GRUPOS 🔥 (ESTA FALTABA) =================
+@admin_bp.route("/grupos")
+def ver_grupos():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template("grupos.html", grupos=list(grupos.find()))
+
+
+# ================= MATERIAS =================
 @admin_bp.route("/materias")
 def ver_materias():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
+
     return render_template("materias.html", materias=list(materias.find()))
+
+
+# ================= HORARIOS =================
+@admin_bp.route("/horarios")
+def ver_horarios():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template("horarios.html", horarios=list(horarios.find()))
+
+
+# ================= ASISTENCIAS =================
+@admin_bp.route("/asistencias")
+def ver_asistencias():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template("asistencias_admin.html", alumnos=list(alumnos.find()))
+
+
+# ================= REPORTES =================
+@admin_bp.route("/reportes")
+def ver_reportes():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template("reportes_admin.html", reportes=list(reportes.find()))
+
+
+# ================= CITATORIOS 🔥 FIX =================
+@admin_bp.route("/citatorios")
+def ver_citatorios():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template("citatorios.html", citatorios=list(citatorios.find()))
