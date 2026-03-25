@@ -79,7 +79,6 @@ text-align:center;
 
 <br><br>
 
-<!-- 🔥 materias limpias desde backend -->
 {% set lista_materias = materias if materias else [] %}
 
 <!-- 🔥 VISTA PREVIA -->
@@ -87,8 +86,8 @@ text-align:center;
 <h4>Vista previa</h4>
 
 {% for alumno in alumnos %}
-<div style="margin-bottom:10px;">
-<strong>{{ alumno.nombre }}</strong><br>
+<div>
+<strong>{{ alumno.nombre }}</strong> →
 
 {% for m in lista_materias %}
 {% set cal = None %}
@@ -98,16 +97,7 @@ text-align:center;
 {% endif %}
 {% endfor %}
 
-<span style="
-padding:4px 8px;
-border-radius:5px;
-background:
-{% if cal is not none and cal >= 8 %}#d4edda
-{% elif cal is not none and cal >= 6 %}#fff3cd
-{% elif cal is not none %}#f8d7da
-{% else %}#ecf0f1
-{% endif %}
-">
+<span>
 {{ m }}: {{ cal if cal is not none else "-" }}
 </span>
 
@@ -116,7 +106,8 @@ background:
 {% endfor %}
 </div>
 
-{% if config.estado == "true" %}
+<!-- 🔥 FIX CRÍTICO -->
+{% if config.estado|string == "true" %}
 
 <table border="1">
 
@@ -132,11 +123,7 @@ background:
 
 <td>
 <strong>{{ alumno.nombre }}</strong><br>
-
-<button class="btn-reset"
-onclick="resetAlumno('{{ alumno.nombre }}')">
-🔄 Reset
-</button>
+<button class="btn-reset" onclick="resetAlumno('{{ alumno.nombre }}')">🔄 Reset</button>
 </td>
 
 {% for m in lista_materias %}
@@ -149,7 +136,7 @@ onclick="resetAlumno('{{ alumno.nombre }}')">
 {% endif %}
 {% endfor %}
 
-<input class="input-cal {% if cal is not none %}guardado-ok{% endif %}"
+<input class="input-cal"
 type="number"
 id="cal_{{ alumno.nombre }}_{{ m }}"
 value="{{ cal if cal is not none else '' }}"
@@ -158,15 +145,8 @@ min="0" max="10"
 
 <br><br>
 
-<button class="btn-edit"
-onclick="habilitar('{{ alumno.nombre }}','{{ m }}')">
-✏️
-</button>
-
-<button class="btn-save"
-onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}')">
-💾
-</button>
+<button class="btn-edit" onclick="habilitar('{{ alumno.nombre }}','{{ m }}')">✏️</button>
+<button class="btn-save" onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}')">💾</button>
 
 </td>
 {% endfor %}
@@ -192,18 +172,12 @@ onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}')">
 
 {% for alumno in alumnos %}
 <tr>
-
 <td>{{ alumno.nombre }}</td>
-
-<td>
-<input type="date" id="fecha_{{ loop.index }}">
-</td>
-
+<td><input type="date" id="fecha_{{ loop.index }}"></td>
 <td>
 <button onclick="marcar('{{ alumno.nombre }}','asistencia','{{ loop.index }}')">✔</button>
 <button onclick="marcar('{{ alumno.nombre }}','falta','{{ loop.index }}')">✖</button>
 </td>
-
 </tr>
 {% endfor %}
 
@@ -235,11 +209,12 @@ let cal = input.value
 fetch("/guardar_calificaciones_ajax",{
 method:"POST",
 headers:{"Content-Type":"application/x-www-form-urlencoded"},
-body:
-"alumno="+alumno+
-"&materia="+materia+
-"&trimestre={{ config.trimestre }}"+
-"&cal1="+cal
+body: new URLSearchParams({
+alumno: alumno,
+materia: materia,
+trimestre: "{{ config.trimestre }}",
+cal1: cal
+})
 })
 .then(res=>res.json())
 .then(data=>{
@@ -263,16 +238,15 @@ alert("Trimestre cerrado")
 
 function resetAlumno(alumno){
 
-if(!confirm("⚠ ¿Borrar calificaciones de este alumno?")){
-return
-}
+if(!confirm("⚠ ¿Borrar calificaciones?")) return
 
 fetch("/reset_alumno",{
 method:"POST",
 headers:{"Content-Type":"application/x-www-form-urlencoded"},
-body:
-"alumno="+alumno+
-"&trimestre={{ config.trimestre }}"
+body: new URLSearchParams({
+alumno: alumno,
+trimestre: "{{ config.trimestre }}"
+})
 })
 .then(()=>location.reload())
 
@@ -285,7 +259,11 @@ let fecha=document.getElementById("fecha_"+id).value
 fetch("/guardar_asistencia_ajax",{
 method:"POST",
 headers:{"Content-Type":"application/x-www-form-urlencoded"},
-body:"alumno="+alumno+"&estado="+estado+"&fecha="+fecha
+body: new URLSearchParams({
+alumno: alumno,
+estado: estado,
+fecha: fecha
+})
 })
 
 }
