@@ -108,6 +108,7 @@ def reset_grupo():
 
             for c in alumno.get("calificaciones", []):
 
+                # 🔥 limpia también datos viejos corruptos
                 if str(c.get("trimestre")) == trimestre or c.get("trimestre") is None:
                     continue
 
@@ -225,9 +226,16 @@ def generar_citatorio(id):
 # ================= MENÚS =================
 @admin_bp.route("/maestros")
 def ver_maestros():
+
     if not verificar_admin():
         return redirect(url_for("auth.login"))
-    return render_template("maestros.html", maestros=list(maestros.find()))
+
+    return render_template(
+        "maestros.html",
+        maestros=list(maestros.find()),
+        grupos=list(grupos.find()),      # 🔥 NECESARIO
+        materias=list(materias.find())   # 🔥 NECESARIO
+    )
 
 
 @admin_bp.route("/grupos")
@@ -265,7 +273,7 @@ def ver_reportes():
     return render_template("reportes_admin.html", reportes=list(reportes.find()))
 
 
-# 🔥 CITATORIOS CORREGIDO
+# ================= CITATORIOS =================
 @admin_bp.route("/citatorios")
 def ver_citatorios():
 
@@ -273,9 +281,10 @@ def ver_citatorios():
         if not verificar_admin():
             return redirect(url_for("auth.login"))
 
-        lista = list(citatorios.find())
-
-        return render_template("citatorios.html", citatorios=lista)
+        return render_template(
+            "citatorios.html",
+            citatorios=list(citatorios.find())
+        )
 
     except Exception as e:
         return f"<h1>ERROR CITATORIOS:</h1><pre>{str(e)}</pre>"
@@ -288,18 +297,46 @@ def configuracion_admin():
         return redirect(url_for("auth.login"))
     return render_template("configuracion.html")
 
+
+# ================= EDITAR GRUPO ALUMNO =================
 @admin_bp.route("/editar_grupo", methods=["POST"])
 def editar_grupo():
 
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    id_alumno = request.form.get("id")
-    nuevo_grupo = request.form.get("grupo")
-
     alumnos.update_one(
-        {"_id": ObjectId(id_alumno)},
-        {"$set": {"grupo": nuevo_grupo}}
+        {"_id": ObjectId(request.form.get("id"))},
+        {"$set": {"grupo": request.form.get("grupo")}}
     )
 
     return redirect(url_for("admin.ver_alumnos"))
+
+
+# ================= MATERIAS MAESTRO =================
+@admin_bp.route("/asignar_materias", methods=["POST"])
+def asignar_materias():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    maestros.update_one(
+        {"_id": ObjectId(request.form.get("maestro_id"))},
+        {"$set": {"materias": request.form.getlist("materias")}}
+    )
+
+    return redirect(url_for("admin.ver_maestros"))
+
+
+@admin_bp.route("/quitar_materia", methods=["POST"])
+def quitar_materia():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    maestros.update_one(
+        {"_id": ObjectId(request.form.get("maestro_id"))},
+        {"$pull": {"materias": request.form.get("materia")}}
+    )
+
+    return redirect(url_for("admin.ver_maestros"))
