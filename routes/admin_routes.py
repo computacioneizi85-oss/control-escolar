@@ -81,6 +81,42 @@ def asignar_grupo_maestro():
     return redirect(url_for("admin.ver_maestros"))
 
 
+# ================= EDITAR GRUPOS =================
+@admin_bp.route("/editar_grupos_maestro", methods=["POST"])
+def editar_grupos_maestro():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    maestro_id = request.form.get("maestro_id")
+    grupos_sel = request.form.getlist("grupos")
+
+    maestros.update_one(
+        {"_id": ObjectId(maestro_id)},
+        {"$set": {"grupos": grupos_sel}}
+    )
+
+    return redirect(url_for("admin.ver_maestros"))
+
+
+# ================= EDITAR MATERIAS =================
+@admin_bp.route("/editar_materias_maestro", methods=["POST"])
+def editar_materias_maestro():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    maestro_id = request.form.get("maestro_id")
+    materias_sel = request.form.getlist("materias")
+
+    maestros.update_one(
+        {"_id": ObjectId(maestro_id)},
+        {"$set": {"materias": materias_sel}}
+    )
+
+    return redirect(url_for("admin.ver_maestros"))
+
+
 # ================= TRIMESTRE =================
 @admin_bp.route("/activar_trimestre", methods=["POST"])
 def activar_trimestre():
@@ -250,7 +286,7 @@ def ver_citatorios():
     return render_template(
         "citatorios.html",
         citatorios=list(citatorios.find()),
-        alumnos=list(alumnos.find())  # 🔥 FIX
+        alumnos=list(alumnos.find())
     )
 
 
