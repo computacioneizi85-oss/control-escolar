@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 
 # =========================
-# 🔐 CLAVE FIJA (CRÍTICO)
+# 🔐 CLAVE SEGURA (MEJORADA)
 # =========================
 app.secret_key = os.environ.get("SECRET_KEY", "control_escolar_2026_seguro")
 
@@ -31,18 +31,18 @@ app.register_blueprint(backup_bp)
 
 
 # =========================
-# 🔐 PROTECCIÓN DE RUTAS (ESTABLE)
+# 🔐 PROTECCIÓN TOTAL DE RUTAS
 # =========================
 @app.before_request
 def proteger_rutas():
 
     rutas_publicas = ["/", "/login"]
 
-    # permitir archivos estáticos
+    # ✅ permitir archivos estáticos
     if request.path.startswith("/static"):
         return
 
-    # permitir login
+    # ✅ permitir login
     if request.path in rutas_publicas:
         return
 
@@ -50,12 +50,38 @@ def proteger_rutas():
     if request.endpoint is None:
         return
 
-    # 🔥 si no hay sesión → login
+    # 🔥 si no hay sesión → bloquear
     if "usuario" not in session:
         return redirect(url_for("auth.login"))
 
-    # todo lo demás permitido
+    # 🔥 validar rol (CLAVE)
+    rol = session.get("rol")
+
+    # =========================
+    # 🔴 ADMIN
+    # =========================
+    if request.path.startswith("/admin"):
+        if rol != "admin":
+            return redirect(url_for("auth.login"))
+
+    # =========================
+    # 🔵 MAESTRO
+    # =========================
+    if request.path.startswith("/panel_maestro"):
+        if rol != "maestro":
+            return redirect(url_for("auth.login"))
+
+    # todo correcto → continuar
     return
+
+
+# =========================
+# 🔒 EVITAR CACHE (SEGURIDAD)
+# =========================
+@app.after_request
+def no_cache(response):
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 # =========================
