@@ -1,4 +1,5 @@
 from flask import Flask, session, redirect, request, url_for
+from datetime import timedelta
 import os
 
 # =========================
@@ -7,9 +8,14 @@ import os
 app = Flask(__name__)
 
 # =========================
-# 🔐 CLAVE SEGURA (MEJORADA)
+# 🔐 CLAVE SEGURA
 # =========================
 app.secret_key = os.environ.get("SECRET_KEY", "control_escolar_2026_seguro")
+
+# =========================
+# 🔒 TIEMPO DE SESIÓN (30 MIN)
+# =========================
+app.permanent_session_lifetime = timedelta(minutes=30)
 
 
 # =========================
@@ -46,32 +52,35 @@ def proteger_rutas():
     if request.path in rutas_publicas:
         return
 
-    # evitar errores internos de Flask
+    # evitar errores internos
     if request.endpoint is None:
         return
 
-    # 🔥 si no hay sesión → bloquear
+    # 🔥 si no hay sesión → bloquear acceso
     if "usuario" not in session:
         return redirect(url_for("auth.login"))
 
-    # 🔥 validar rol (CLAVE)
+    # 🔒 activar sesión permanente (con expiración)
+    session.permanent = True
+
     rol = session.get("rol")
 
     # =========================
-    # 🔴 ADMIN
+    # 🔴 PROTEGER ADMIN
     # =========================
     if request.path.startswith("/admin"):
         if rol != "admin":
+            session.clear()
             return redirect(url_for("auth.login"))
 
     # =========================
-    # 🔵 MAESTRO
+    # 🔵 PROTEGER MAESTRO
     # =========================
     if request.path.startswith("/panel_maestro"):
         if rol != "maestro":
+            session.clear()
             return redirect(url_for("auth.login"))
 
-    # todo correcto → continuar
     return
 
 
@@ -81,6 +90,8 @@ def proteger_rutas():
 @app.after_request
 def no_cache(response):
     response.headers["Cache-Control"] = "no-store"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
     return response
 
 
