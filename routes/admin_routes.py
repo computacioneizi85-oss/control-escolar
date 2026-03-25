@@ -32,19 +32,17 @@ def admin_dashboard():
         return f"<h1>ERROR DASHBOARD:</h1><pre>{str(e)}</pre>"
 
 
-# ================= CONFIGURACIÓN 🔥 FIX FINAL =================
+# ================= CONFIGURACIÓN =================
 @admin_bp.route("/configuracion")
 def configuracion_admin():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
-
     return render_template("configuracion.html")
 
 
 # ================= CREAR MAESTRO =================
 @admin_bp.route("/crear_maestro", methods=["POST"])
 def crear_maestro():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -62,7 +60,6 @@ def crear_maestro():
 # ================= ASIGNAR GRUPO =================
 @admin_bp.route("/asignar_grupo_maestro", methods=["POST"])
 def asignar_grupo_maestro():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -87,7 +84,6 @@ def asignar_grupo_maestro():
 # ================= TRIMESTRE =================
 @admin_bp.route("/activar_trimestre", methods=["POST"])
 def activar_trimestre():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -107,7 +103,6 @@ def activar_trimestre():
 
 @admin_bp.route("/cerrar_trimestre")
 def cerrar_trimestre():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -122,7 +117,6 @@ def cerrar_trimestre():
 # ================= EVALUACIONES =================
 @admin_bp.route("/evaluaciones")
 def ver_evaluaciones():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -147,7 +141,6 @@ def ver_evaluaciones():
 # ================= RESET GRUPO =================
 @admin_bp.route("/reset_grupo", methods=["POST"])
 def reset_grupo():
-
     try:
         if not verificar_admin():
             return redirect(url_for("auth.login"))
@@ -160,11 +153,8 @@ def reset_grupo():
             nuevas = []
 
             for c in alumno.get("calificaciones", []):
-
-                # 🔥 elimina todas las del trimestre (incluye viejas sin trimestre)
                 if str(c.get("trimestre")) == trimestre or c.get("trimestre") is None:
                     continue
-
                 nuevas.append(c)
 
             alumnos.update_one(
@@ -181,7 +171,6 @@ def reset_grupo():
 # ================= ALUMNOS =================
 @admin_bp.route("/alumnos")
 def ver_alumnos():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -196,7 +185,6 @@ def ver_alumnos():
 # ================= MAESTROS =================
 @admin_bp.route("/maestros")
 def ver_maestros():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -211,7 +199,6 @@ def ver_maestros():
 # ================= GRUPOS =================
 @admin_bp.route("/grupos")
 def ver_grupos():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -221,7 +208,6 @@ def ver_grupos():
 # ================= MATERIAS =================
 @admin_bp.route("/materias")
 def ver_materias():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -231,7 +217,6 @@ def ver_materias():
 # ================= HORARIOS =================
 @admin_bp.route("/horarios")
 def ver_horarios():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -241,7 +226,6 @@ def ver_horarios():
 # ================= ASISTENCIAS =================
 @admin_bp.route("/asistencias")
 def ver_asistencias():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -251,7 +235,6 @@ def ver_asistencias():
 # ================= REPORTES =================
 @admin_bp.route("/reportes")
 def ver_reportes():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -261,7 +244,6 @@ def ver_reportes():
 # ================= CITATORIOS =================
 @admin_bp.route("/citatorios")
 def ver_citatorios():
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -271,7 +253,6 @@ def ver_citatorios():
 # ================= PDFS =================
 @admin_bp.route("/kardex/<nombre>")
 def kardex(nombre):
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -282,7 +263,6 @@ def kardex(nombre):
 
 @admin_bp.route("/boleta/<nombre>")
 def boleta(nombre):
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -291,13 +271,13 @@ def boleta(nombre):
     return send_file(pdf, mimetype="application/pdf")
 
 
+# 🔥 FIX AQUÍ
 @admin_bp.route("/aprobar_reporte/<string:id>")
 def aprobar_reporte(id):
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    reporte = reportes.find_one({"_id": ObjectId(id))
+    reporte = reportes.find_one({"_id": ObjectId(id)})
 
     if not reporte:
         return "Reporte no encontrado"
@@ -309,7 +289,6 @@ def aprobar_reporte(id):
 
 @admin_bp.route("/generar_citatorio/<string:id>")
 def generar_citatorio(id):
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
