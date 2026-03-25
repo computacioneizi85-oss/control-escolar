@@ -17,11 +17,6 @@ padding:5px;
 border-radius:5px;
 border:1px solid #ccc;
 text-align:center;
-background:#ecf0f1;
-}
-
-.input-cal:disabled{
-background:#d5d8dc;
 }
 
 .guardado-ok{background:#d4edda;}
@@ -53,6 +48,7 @@ background:#d5d8dc;
 <!-- CLASES -->
 <div id="clases" class="seccion">
 <h3>Mis clases</h3>
+
 <table>
 <tr><th>Grupo</th><th>Materia</th></tr>
 {% for h in horarios %}
@@ -83,10 +79,10 @@ background:#d5d8dc;
 
 <br><br>
 
-<!-- 🔥 MATERIAS LIMPIAS -->
-{% set materias = materias if materias else [] %}
+<!-- 🔥 materias limpias desde backend -->
+{% set lista_materias = materias if materias else [] %}
 
-<!-- 🔥 VISTA PREVIA MEJORADA -->
+<!-- 🔥 VISTA PREVIA -->
 <div style="background:#f4f6f9;padding:10px;border-radius:6px;margin-bottom:10px;">
 <h4>Vista previa</h4>
 
@@ -94,7 +90,7 @@ background:#d5d8dc;
 <div style="margin-bottom:10px;">
 <strong>{{ alumno.nombre }}</strong><br>
 
-{% for m in materias %}
+{% for m in lista_materias %}
 {% set cal = None %}
 {% for c in alumno.calificaciones %}
 {% if c.materia == m and c.trimestre == config.trimestre %}
@@ -126,7 +122,7 @@ background:
 
 <tr>
 <th>Alumno</th>
-{% for m in materias %}
+{% for m in lista_materias %}
 <th>{{ m }}</th>
 {% endfor %}
 </tr>
@@ -143,7 +139,7 @@ onclick="resetAlumno('{{ alumno.nombre }}')">
 </button>
 </td>
 
-{% for m in materias %}
+{% for m in lista_materias %}
 <td>
 
 {% set cal = None %}
@@ -153,17 +149,17 @@ onclick="resetAlumno('{{ alumno.nombre }}')">
 {% endif %}
 {% endfor %}
 
-<input class="input-cal {% if cal %}guardado-ok{% endif %}"
+<input class="input-cal {% if cal is not none %}guardado-ok{% endif %}"
 type="number"
 id="cal_{{ alumno.nombre }}_{{ m }}"
-value="{{ cal if cal else '' }}"
+value="{{ cal if cal is not none else '' }}"
 min="0" max="10"
-disabled>
+{% if alumno.enviado %}disabled{% endif %}>
 
 <br><br>
 
 <button class="btn-edit"
-onclick="habilitarEdicion('{{ alumno.nombre }}','{{ m }}')">
+onclick="habilitar('{{ alumno.nombre }}','{{ m }}')">
 ✏️
 </button>
 
@@ -188,6 +184,7 @@ onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}')">
 
 <!-- ASISTENCIAS -->
 <div id="asistencias" class="seccion">
+
 <h3>Asistencias</h3>
 
 <table>
@@ -195,6 +192,7 @@ onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}')">
 
 {% for alumno in alumnos %}
 <tr>
+
 <td>{{ alumno.nombre }}</td>
 
 <td>
@@ -223,7 +221,7 @@ document.querySelectorAll(".seccion").forEach(s=>s.classList.remove("activa"))
 document.getElementById(id).classList.add("activa")
 }
 
-function habilitarEdicion(alumno, materia){
+function habilitar(alumno, materia){
 let input = document.getElementById("cal_"+alumno+"_"+materia)
 input.disabled = false
 input.classList.add("editando")
@@ -253,7 +251,7 @@ input.disabled = true
 }
 
 if(data.status==="bloqueado"){
-alert("Ya fueron enviadas")
+alert("Ya enviadas")
 }
 
 if(data.status==="cerrado"){

@@ -10,7 +10,7 @@ def verificar_maestro():
 
 
 # =========================
-# PANEL MAESTRO 🔥 CORREGIDO
+# PANEL MAESTRO
 # =========================
 @maestro_bp.route("/panel_maestro")
 def panel_maestro():
@@ -23,18 +23,14 @@ def panel_maestro():
     if not maestro:
         return redirect("/")
 
-    # 🔥 materias asignadas
     materias_maestro = maestro.get("materias", [])
 
-    # 🔥 horarios SOLO de sus materias
     lista_horarios = list(horarios.find({
         "materia": {"$in": materias_maestro}
     }))
 
-    # 🔥 grupos derivados de horarios
     grupos = list(set([h.get("grupo") for h in lista_horarios if h.get("grupo")]))
 
-    # 🔥 alumnos SOLO de sus grupos
     lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
 
     config = configuracion.find_one({"tipo": "trimestre"}) or {}
@@ -44,19 +40,19 @@ def panel_maestro():
         alumnos=lista_alumnos,
         grupos=grupos,
         horarios=lista_horarios,
-        materias=materias_maestro,  # 🔥 CLAVE
+        materias=materias_maestro,
         config=config
     )
 
 
 # =========================
-# GUARDAR CALIFICACIONES 🔒
+# GUARDAR CALIFICACIONES
 # =========================
-@maestro_bp.route("/guardar_calificaciones", methods=["POST"])
-def guardar_calificaciones():
+@maestro_bp.route("/guardar_calificaciones_ajax", methods=["POST"])
+def guardar_calificaciones_ajax():
 
     if not verificar_maestro():
-        return redirect("/")
+        return jsonify({"status": "error"})
 
     maestro = maestros.find_one({"usuario": session["usuario"]})
     materias_maestro = maestro.get("materias", [])
@@ -66,20 +62,26 @@ def guardar_calificaciones():
     trimestre = request.form.get("trimestre")
     cal1 = request.form.get("cal1")
 
+    if not alumno_nombre or not materia or not trimestre:
+        return jsonify({"status": "error"})
+
     config = configuracion.find_one({"tipo": "trimestre"}) or {}
 
     # 🔒 trimestre cerrado
     if config.get("estado") != "true":
-        return "Evaluaciones cerradas"
+        return jsonify({"status": "cerrado"})
 
-    # 🔒 bloqueo por materia
+    # 🔒 materia no permitida
     if materia not in materias_maestro:
-        return "❌ No puedes modificar esta materia"
+        return jsonify({"status": "prohibido"})
 
     alumno = alumnos.find_one({"nombre": alumno_nombre})
 
+    if not alumno:
+        return jsonify({"status": "error"})
+
     if alumno.get("enviado"):
-        return "Ya enviadas"
+        return jsonify({"status": "bloqueado"})
 
     calificaciones = alumno.get("calificaciones", [])
 
@@ -98,11 +100,11 @@ def guardar_calificaciones():
         })
 
     alumnos.update_one(
-        {"nombre": alumno_nombre},
+        {"_id": alumno["_id"]},
         {"$set": {"calificaciones": calificaciones}}
     )
 
-    return redirect("/panel_maestro")
+    return jsonify({"status": "ok"})
 
 
 # =========================
@@ -126,65 +128,7 @@ def enviar_calificaciones():
 
 
 # =========================
-# AJAX 🔥 PROTEGIDO
-# =========================
-@maestro_bp.route("/guardar_calificaciones_ajax", methods=["POST"])
-def guardar_calificaciones_ajax():
-
-    if not verificar_maestro():
-        return jsonify({"status": "error"})
-
-    maestro = maestros.find_one({"usuario": session["usuario"]})
-    materias_maestro = maestro.get("materias", [])
-
-    alumno_nombre = request.form.get("alumno")
-    materia = request.form.get("materia")
-    trimestre = request.form.get("trimestre")
-    cal1 = request.form.get("cal1")
-
-    config = configuracion.find_one({"tipo": "trimestre"}) or {}
-
-    if config.get("estado") != "true":
-        return jsonify({"status": "cerrado"})
-
-    # 🔒 bloqueo por materia
-    if materia not in materias_maestro:
-        return jsonify({"status": "prohibido"})
-
-    alumno = alumnos.find_one({"nombre": alumno_nombre})
-
-    if alumno.get("enviado"):
-        return jsonify({"status": "bloqueado"})
-
-    calificaciones = alumno.get("calificaciones", [])
-
-    encontrada = False
-
-    for c in calificaciones:
-        if c.get("materia") == materia and str(c.get("trimestre")) == str(trimestre):
-            c["calificacion"] = float(cal1)
-            encontrada = True
-
-    if not encontrada:
-        calificaciones.append({
-            "materia": materia,
-            "calificacion": float(cal1),
-            "trimestre": str(trimestre)
-        })
-
-    alumnos.update_one(
-        {"nombre": alumno_nombre},
-        {"$set": {"calificaciones": calificaciones}}
-    )
-
-    return jsonify({
-        "status": "ok",
-        "calificacion": cal1
-    })
-
-
-# =========================
-# RESET POR ALUMNO 🔥 MEJORADO
+# RESET POR ALUMNO
 # =========================
 @maestro_bp.route("/reset_alumno", methods=["POST"])
 def reset_alumno():
@@ -197,11 +141,13 @@ def reset_alumno():
 
     alumno = alumnos.find_one({"nombre": nombre})
 
-    nuevas = []
+    if not alumno:
+        return jsonify({"status": "error"})
 
-    for c in alumno.get("calificaciones", []):
-        if str(c.get("trimestre")) != trimestre:
-            nuevas.append(c)
+    nuevas = [
+        c for c in alumno.get("calificaciones", [])
+        if str(c.get("trimestre")) != trimestre
+    ]
 
     alumnos.update_one(
         {"_id": alumno["_id"]},
@@ -209,6 +155,42 @@ def reset_alumno():
             "$set": {
                 "calificaciones": nuevas,
                 "enviado": False
+            }
+        }
+    )
+
+    return jsonify({"status": "ok"})
+
+
+# =========================
+# 🔥 ASISTENCIAS (LA QUE TE FALTABA)
+# =========================
+@maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])
+def guardar_asistencia_ajax():
+
+    if not verificar_maestro():
+        return jsonify({"status": "error"})
+
+    alumno_nombre = request.form.get("alumno")
+    estado = request.form.get("estado")
+    fecha = request.form.get("fecha")
+
+    if not alumno_nombre or not fecha:
+        return jsonify({"status": "error"})
+
+    alumno = alumnos.find_one({"nombre": alumno_nombre})
+
+    if not alumno:
+        return jsonify({"status": "error"})
+
+    alumnos.update_one(
+        {"_id": alumno["_id"]},
+        {
+            "$push": {
+                "asistencias": {
+                    "fecha": fecha,
+                    "estado": estado
+                }
             }
         }
     )
