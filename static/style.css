@@ -1,4 +1,6 @@
-/* RESET */
+/* =========================
+RESET
+========================= */
 
 *{
 margin:0;
@@ -7,7 +9,9 @@ box-sizing:border-box;
 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* BODY */
+/* =========================
+BODY
+========================= */
 
 body{
 background:linear-gradient(135deg,#eef2f7,#dfe9f3);
@@ -15,7 +19,9 @@ display:flex;
 min-height:100vh;
 }
 
-/* SIDEBAR */
+/* =========================
+SIDEBAR PRO 🔥
+========================= */
 
 .sidebar{
 width:240px;
@@ -26,36 +32,50 @@ left:0;
 top:0;
 height:100vh;
 padding-top:20px;
-box-shadow:4px 0 15px rgba(0,0,0,0.1);
+box-shadow:4px 0 15px rgba(0,0,0,0.15);
 }
 
 .sidebar h2{
 text-align:center;
-margin-bottom:20px;
+margin-bottom:25px;
 font-size:20px;
 letter-spacing:1px;
+font-weight:600;
 }
 
+/* LINKS */
+
 .sidebar a{
-display:block;
-padding:14px 20px;
-color:white;
+display:flex;
+align-items:center;
+gap:10px;
+padding:12px 18px;
+margin:5px 10px;
+color:#ecf0f1;
 text-decoration:none;
-transition:all 0.3s ease;
-border-left:4px solid transparent;
+border-radius:8px;
+transition:all 0.25s ease;
 }
 
 .sidebar a:hover{
-background:#34495e;
-border-left:4px solid #3498db;
-padding-left:25px;
+background:#3498db;
+transform:translateX(5px);
 }
 
-/* 🔥 SUBMENÚ */
+/* ACTIVO */
+
+.sidebar a.active{
+background:#2980b9;
+font-weight:bold;
+}
+
+/* =========================
+SUBMENÚ
+========================= */
 
 .submenu{
 display:none;
-margin-left:10px;
+margin-left:15px;
 animation:fadeIn 0.3s ease;
 }
 
@@ -64,25 +84,28 @@ background:#34495e;
 font-size:14px;
 margin-bottom:5px;
 border-radius:6px;
-padding:10px;
+padding:8px 10px;
 }
 
 .submenu-btn{
 width:100%;
-padding:14px 20px;
+padding:12px 18px;
 background:none;
 border:none;
 color:white;
 text-align:left;
 cursor:pointer;
-transition:all 0.3s ease;
+border-radius:8px;
+transition:0.25s;
 }
 
 .submenu-btn:hover{
-background:#34495e;
+background:#3498db;
 }
 
-/* CONTENIDO PRINCIPAL */
+/* =========================
+CONTENIDO
+========================= */
 
 .content{
 margin-left:240px;
@@ -91,7 +114,9 @@ width:calc(100% - 240px);
 max-width:1200px;
 }
 
-/* TITULOS */
+/* =========================
+TITULOS
+========================= */
 
 h1{
 margin-bottom:20px;
@@ -105,7 +130,9 @@ margin-bottom:10px;
 color:#34495e;
 }
 
-/* TARJETAS */
+/* =========================
+CARDS
+========================= */
 
 .cards{
 display:grid;
@@ -135,38 +162,88 @@ margin-top:5px;
 color:#2c3e50;
 }
 
-/* BOTONES */
+/* =========================
+BOTONES PRO
+========================= */
 
-.btn{
+button, .btn{
 background:linear-gradient(135deg,#3498db,#2980b9);
 border:none;
 color:white;
 padding:8px 14px;
 border-radius:8px;
 cursor:pointer;
-transition:all 0.3s ease;
+transition:all 0.25s ease;
+font-size:14px;
 }
 
-.btn:hover{
-transform:scale(1.05);
+button:hover, .btn:hover{
+transform:translateY(-1px);
 box-shadow:0 5px 10px rgba(0,0,0,0.15);
 }
 
-/* FORM */
+/* BOTÓN PELIGRO */
+
+button.danger{
+background:#e74c3c;
+}
+
+button.danger:hover{
+background:#c0392b;
+}
+
+/* =========================
+FORMULARIOS 🔥 (MEJORADO)
+========================= */
 
 form{
 margin-top:10px;
 margin-bottom:20px;
 }
 
-select, input{
-padding:6px;
-margin-right:10px;
-border-radius:6px;
+/* INPUTS */
+
+input{
+padding:8px 10px;
+border-radius:8px;
 border:1px solid #ccc;
+outline:none;
+transition:0.2s;
 }
 
-/* TABLA */
+input:focus{
+border-color:#3498db;
+box-shadow:0 0 5px rgba(52,152,219,0.4);
+}
+
+/* SELECT */
+
+select{
+padding:8px;
+border-radius:8px;
+border:1px solid #ccc;
+background:white;
+font-size:14px;
+outline:none;
+transition:0.2s;
+cursor:pointer;
+}
+
+select:focus{
+border-color:#3498db;
+box-shadow:0 0 5px rgba(52,152,219,0.4);
+}
+
+/* 🔥 SELECT MULTIPLE (FIX VISUAL) */
+
+select[multiple]{
+min-height:90px;
+padding:5px;
+}
+
+/* =========================
+TABLAS
+========================= */
 
 table{
 width:100%;
@@ -187,13 +264,16 @@ text-align:left;
 td{
 padding:12px;
 border-bottom:1px solid #eee;
+vertical-align:top;
 }
 
 tr:hover{
 background:#f4f8fb;
 }
 
-/* FOTO ALUMNO */
+/* =========================
+FOTO ALUMNO
+========================= */
 
 .foto-alumno{
 width:40px;
@@ -203,7 +283,9 @@ object-fit:cover;
 box-shadow:0 2px 6px rgba(0,0,0,0.2);
 }
 
-/* SEMAFORO */
+/* =========================
+SEMAFORO
+========================= */
 
 .semaforo{
 width:16px;
@@ -213,32 +295,17 @@ display:inline-block;
 margin-right:4px;
 }
 
-.verde{
-background:#2ecc71;
-}
+.verde{ background:#2ecc71; }
+.amarillo{ background:#f1c40f; }
+.rojo{ background:#e74c3c; }
+.gris{ background:#bdc3c7; }
 
-.amarillo{
-background:#f1c40f;
-}
-
-.rojo{
-background:#e74c3c;
-}
-
-.gris{
-background:#bdc3c7;
-}
-
-/* BOTONES ASISTENCIA */
+/* =========================
+BOTONES ASISTENCIA
+========================= */
 
 .btn-verde{
 background:#2ecc71;
-color:white;
-border:none;
-padding:5px 10px;
-border-radius:6px;
-cursor:pointer;
-transition:0.3s;
 }
 
 .btn-verde:hover{
@@ -247,10 +314,6 @@ background:#27ae60;
 
 .btn-amarillo{
 background:#f1c40f;
-border:none;
-padding:5px 10px;
-border-radius:6px;
-cursor:pointer;
 }
 
 .btn-amarillo:hover{
@@ -259,18 +322,15 @@ background:#d4ac0d;
 
 .btn-rojo{
 background:#e74c3c;
-color:white;
-border:none;
-padding:5px 10px;
-border-radius:6px;
-cursor:pointer;
 }
 
 .btn-rojo:hover{
 background:#c0392b;
 }
 
-/* ANIMACIONES */
+/* =========================
+ANIMACIONES
+========================= */
 
 @keyframes fadeIn{
 from{
