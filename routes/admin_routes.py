@@ -247,7 +247,29 @@ def ver_citatorios():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    return render_template("citatorios.html", citatorios=list(citatorios.find()))
+    return render_template(
+        "citatorios.html",
+        citatorios=list(citatorios.find()),
+        alumnos=list(alumnos.find())  # 🔥 FIX
+    )
+
+
+# ================= CREAR CITATORIO =================
+@admin_bp.route("/crear_citatorio", methods=["POST"])
+def crear_citatorio():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    citatorios.insert_one({
+        "alumno": request.form.get("alumno"),
+        "grupo": request.form.get("grupo"),
+        "motivo": request.form.get("motivo"),
+        "fecha": request.form.get("fecha"),
+        "hora": request.form.get("hora"),
+        "estado": "pendiente"
+    })
+
+    return redirect(url_for("admin.ver_citatorios"))
 
 
 # ================= PDFS =================
@@ -271,7 +293,6 @@ def boleta(nombre):
     return send_file(pdf, mimetype="application/pdf")
 
 
-# 🔥 FIX AQUÍ
 @admin_bp.route("/aprobar_reporte/<string:id>")
 def aprobar_reporte(id):
     if not verificar_admin():
