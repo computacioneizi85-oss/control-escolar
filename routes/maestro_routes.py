@@ -223,3 +223,44 @@ def guardar_asistencia_ajax():
     )
 
     return jsonify({"status": "ok"})
+
+
+# =========================
+# GUARDAR REPORTE
+# =========================
+@maestro_bp.route("/guardar_reporte_maestro", methods=["POST"])
+def guardar_reporte_maestro():
+
+    if "usuario" not in session:
+        return redirect("/")
+
+    from database.mongo import reportes
+
+    reportes.insert_one({
+        "alumno": request.form.get("alumno"),
+        "grupo": request.form.get("grupo"),
+        "descripcion": request.form.get("descripcion"),
+        "maestro": session["usuario"],
+        "estado": "pendiente"
+    })
+
+    return redirect("/panel_maestro")
+
+
+# =========================
+# ENVIAR REPORTES A DIRECCIÓN
+# =========================
+@maestro_bp.route("/enviar_reportes_maestro", methods=["POST"])
+def enviar_reportes_maestro():
+
+    if "usuario" not in session:
+        return redirect("/")
+
+    from database.mongo import reportes
+
+    reportes.update_many(
+        {"maestro": session["usuario"]},
+        {"$set": {"estado": "enviado"}}
+    )
+
+    return redirect("/panel_maestro")

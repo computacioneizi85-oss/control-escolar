@@ -2,13 +2,15 @@
 
 {% block content %}
 
-<h2>Reportes Disciplinarios</h2>
+<h2>📄 Reportes Disciplinarios</h2>
 
 <a href="{{ url_for('admin.admin_dashboard') }}">
-<button>Volver</button>
+<button class="btn">⬅ Volver</button>
 </a>
 
 <br><br>
+
+{% if reportes and reportes|length > 0 %}
 
 <table>
 
@@ -24,33 +26,42 @@
 
 <tr>
 
-<td>{{ r.alumno }}</td>
-<td>{{ r.maestro }}</td>
-<td>{{ r.comentario }}</td>
+<td>{{ r.alumno if r.alumno else '-' }}</td>
 
+<td>{{ r.maestro if r.maestro else '-' }}</td>
+
+<!-- 🔥 COMPATIBLE CON AMBOS CAMPOS -->
 <td>
-{% if r.estatus == "pendiente" %}
-<span style="color:orange; font-weight:bold;">Pendiente</span>
-{% else %}
-<span style="color:green; font-weight:bold;">Aprobado</span>
-{% endif %}
+{{ r.comentario if r.comentario else r.descripcion if r.descripcion else '-' }}
 </td>
 
 <td>
 
-{% if r.estatus == "pendiente" %}
+{% set estado = r.estatus if r.estatus else r.estado %}
+
+{% if estado == "pendiente" %}
+<span style="color:orange; font-weight:bold;">🟡 Pendiente</span>
+{% else %}
+<span style="color:green; font-weight:bold;">🟢 Aprobado</span>
+{% endif %}
+
+</td>
+
+<td>
+
+{% if estado == "pendiente" %}
 
 <a href="{{ url_for('admin.aprobar_reporte', id=r._id|string) }}">
-<button style="background:#f39c12; color:white;">
-Autorizar y generar PDF
+<button style="background:#f39c12; color:white; border:none; padding:6px 10px; border-radius:6px;">
+✔ Autorizar y generar PDF
 </button>
 </a>
 
 {% else %}
 
 <a href="{{ url_for('admin.aprobar_reporte', id=r._id|string) }}" target="_blank">
-<button style="background:#27ae60; color:white;">
-Ver PDF
+<button style="background:#27ae60; color:white; border:none; padding:6px 10px; border-radius:6px;">
+📄 Ver PDF
 </button>
 </a>
 
@@ -63,5 +74,11 @@ Ver PDF
 {% endfor %}
 
 </table>
+
+{% else %}
+
+<p style="color:#7f8c8d;">No hay reportes registrados.</p>
+
+{% endif %}
 
 {% endblock %}

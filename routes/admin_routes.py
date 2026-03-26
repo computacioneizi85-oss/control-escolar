@@ -200,6 +200,23 @@ def reset_grupo():
         return f"<h1>ERROR RESET:</h1><pre>{str(e)}</pre>"
 
 
+@admin_bp.route("/aprobar_reporte/<id>")
+def aprobar_reporte(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    reporte = reportes.find_one({"_id": ObjectId(id)})
+
+    if not reporte:
+        return "Reporte no encontrado"
+
+    pdf = generar_reporte_pdf(reporte)
+    pdf.seek(0)
+
+    return send_file(pdf, mimetype="application/pdf")
+
+
 # ================= ALUMNOS =================
 @admin_bp.route("/alumnos")
 def ver_alumnos():
