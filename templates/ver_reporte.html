@@ -2,41 +2,61 @@
 
 {% block content %}
 
-<h2>Vista previa del reporte</h2>
+<h2>👁 Vista previa del reporte</h2>
 
 <div style="
 background:white;
 padding:30px;
-border-radius:10px;
-box-shadow:0 5px 15px rgba(0,0,0,0.1);
-max-width:800px;
+border-radius:12px;
+box-shadow:0 6px 18px rgba(0,0,0,0.1);
+max-width:850px;
+margin:auto;
+line-height:1.6;
 ">
 
-<h2 style="text-align:center;">REPORTE DISCIPLINARIO</h2>
+<h2 style="text-align:center; margin-bottom:10px;">
+📄 REPORTE DISCIPLINARIO
+</h2>
 
+<hr>
+
+<!-- 🔹 DATOS -->
+<div style="margin-top:15px;">
 <p><b>Alumno:</b> {{ reporte.alumno }}</p>
 <p><b>Grupo:</b> {{ reporte.grupo }}</p>
+<p><b>Maestro:</b> {{ reporte.maestro }}</p>
 <p><b>Fecha:</b> {{ reporte.fecha }}</p>
+</div>
 
 <br>
 
-<p><b>Descripción:</b></p>
-<p>{{ reporte.comentario }}</p>
+<!-- 🔹 DESCRIPCIÓN -->
+<p><b>Descripción del incidente:</b></p>
+
+<div style="
+background:#f8f9fb;
+padding:15px;
+border-radius:8px;
+border-left:4px solid #3498db;
+">
+{{ reporte.comentario if reporte.comentario else reporte.descripcion }}
+</div>
 
 <br><br><br>
 
-<div style="display:flex; justify-content:space-between;">
+<!-- 🔹 FIRMAS -->
+<div style="display:flex; justify-content:space-between; gap:20px;">
 
-<div style="text-align:center;">
+<div style="text-align:center; flex:1;">
 <br><br>
 _________________________<br>
 Alumno
 </div>
 
-<div style="text-align:center;">
+<div style="text-align:center; flex:1;">
 <br><br>
 _________________________<br>
-Padre/Tutor
+Padre o tutor
 </div>
 
 </div>
@@ -44,27 +64,66 @@ Padre/Tutor
 <br><br>
 
 <div style="text-align:center;">
+
+<!-- 🔥 FIRMA DINÁMICA -->
+{% if reporte.firma_direccion %}
+<img src="{{ reporte.firma_direccion }}" style="height:60px;"><br>
+{% else %}
 <img src="/static/firmas/director.png" style="height:60px;"><br>
+{% endif %}
+
 _________________________<br>
 Dirección
+
 </div>
 
 </div>
 
 <br><br>
 
-<!-- BOTONES -->
+<!-- 🔹 BOTONES -->
+
+<div style="display:flex; gap:15px;">
 
 <a href="{{ url_for('admin.aprobar_reporte', id=reporte._id|string) }}">
-<button style="background:green;color:white;padding:10px;">
-✅ Autorizar y generar PDF
+<button style="
+background:#27ae60;
+color:white;
+padding:10px 15px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+">
+✅ Aprobar y generar PDF
 </button>
 </a>
 
 <a href="{{ url_for('admin.regresar_reporte', id=reporte._id|string) }}">
-<button style="background:red;color:white;padding:10px;">
-❌ Regresar para corrección
+<button style="
+background:#e74c3c;
+color:white;
+padding:10px 15px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+">
+↩ Regresar a corrección
 </button>
 </a>
+
+<a href="{{ url_for('admin.ver_reportes') }}">
+<button style="
+background:#95a5a6;
+color:white;
+padding:10px 15px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+">
+⬅ Volver
+</button>
+</a>
+
+</div>
 
 {% endblock %}

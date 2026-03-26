@@ -30,17 +30,20 @@
 
 <td>{{ r.maestro if r.maestro else '-' }}</td>
 
-<!-- 🔥 COMPATIBLE CON AMBOS CAMPOS -->
 <td>
 {{ r.comentario if r.comentario else r.descripcion if r.descripcion else '-' }}
 </td>
 
 <td>
 
-{% set estado = r.estatus if r.estatus else r.estado %}
+{% set estado = r.estado if r.estado else "pendiente" %}
 
 {% if estado == "pendiente" %}
 <span style="color:orange; font-weight:bold;">🟡 Pendiente</span>
+
+{% elif estado == "correccion" %}
+<span style="color:red; font-weight:bold;">✏ En corrección</span>
+
 {% else %}
 <span style="color:green; font-weight:bold;">🟢 Aprobado</span>
 {% endif %}
@@ -49,16 +52,18 @@
 
 <td>
 
-{% if estado == "pendiente" %}
+<!-- 🔥 SI ESTÁ PENDIENTE O EN CORRECCIÓN -->
+{% if estado == "pendiente" or estado == "correccion" %}
 
-<a href="{{ url_for('admin.aprobar_reporte', id=r._id|string) }}">
-<button style="background:#f39c12; color:white; border:none; padding:6px 10px; border-radius:6px;">
-✔ Autorizar y generar PDF
+<a href="{{ url_for('admin.ver_reporte', id=r._id|string) }}">
+<button style="background:#3498db; color:white; border:none; padding:6px 10px; border-radius:6px;">
+👁 Vista previa
 </button>
 </a>
 
 {% else %}
 
+<!-- 🔥 YA APROBADO -->
 <a href="{{ url_for('admin.aprobar_reporte', id=r._id|string) }}" target="_blank">
 <button style="background:#27ae60; color:white; border:none; padding:6px 10px; border-radius:6px;">
 📄 Ver PDF
