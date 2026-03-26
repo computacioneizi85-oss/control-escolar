@@ -358,3 +358,25 @@ def boleta(nombre):
     pdf = generar_boleta(nombre)
     pdf.seek(0)
     return send_file(pdf, mimetype="application/pdf")
+
+
+@admin_bp.route("/ver_reporte/<id>")
+def ver_reporte(id):
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    reporte = reportes.find_one({"_id": ObjectId(id)})
+
+    return render_template("ver_reporte.html", reporte=reporte)
+
+@admin_bp.route("/regresar_reporte/<id>")
+def regresar_reporte(id):
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    reportes.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"estado": "correccion"}}
+    )
+
+    return redirect(url_for("admin.ver_reportes"))

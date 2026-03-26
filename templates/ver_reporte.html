@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>Vista previa del reporte</h2>
+
+<div style="
+background:white;
+padding:30px;
+border-radius:10px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+max-width:800px;
+">
+
+<h2 style="text-align:center;">REPORTE DISCIPLINARIO</h2>
+
+<p><b>Alumno:</b> {{ reporte.alumno }}</p>
+<p><b>Grupo:</b> {{ reporte.grupo }}</p>
+<p><b>Fecha:</b> {{ reporte.fecha }}</p>
+
+<br>
+
+<p><b>Descripción:</b></p>
+<p>{{ reporte.comentario }}</p>
+
+<br><br><br>
+
+<div style="display:flex; justify-content:space-between;">
+
+<div style="text-align:center;">
+<br><br>
+_________________________<br>
+Alumno
+</div>
+
+<div style="text-align:center;">
+<br><br>
+_________________________<br>
+Padre/Tutor
+</div>
+
+</div>
+
+<br><br>
+
+<div style="text-align:center;">
+<img src="/static/firmas/director.png" style="height:60px;"><br>
+_________________________<br>
+Dirección
+</div>
+
+</div>
+
+<br><br>
+
+<!-- BOTONES -->
+
+<a href="{{ url_for('admin.aprobar_reporte', id=reporte._id|string) }}">
+<button style="background:green;color:white;padding:10px;">
+✅ Autorizar y generar PDF
+</button>
+</a>
+
+<a href="{{ url_for('admin.regresar_reporte', id=reporte._id|string) }}">
+<button style="background:red;color:white;padding:10px;">
+❌ Regresar para corrección
+</button>
+</a>
+
+{% endblock %}
