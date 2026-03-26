@@ -237,7 +237,7 @@ def generar_boleta(nombre):
 
 
 # ==============================
-# REPORTE
+# 🔥 REPORTE PROFESIONAL
 # ==============================
 
 def generar_reporte_pdf(reporte):
@@ -251,11 +251,44 @@ def generar_reporte_pdf(reporte):
 
     c.setFont("Helvetica", 11)
 
+    # DATOS
     c.drawString(50, 660, f"Alumno: {reporte.get('alumno','')}")
-    c.drawString(50, 640, f"Maestro: {reporte.get('maestro','')}")
-    c.drawString(50, 590, reporte.get("comentario",""))
+    c.drawString(50, 640, f"Grupo: {reporte.get('grupo','')}")
+    c.drawString(50, 620, f"Maestro: {reporte.get('maestro','')}")
+    c.drawString(50, 600, f"Fecha: {reporte.get('fecha','')}")
 
-    firma(c, director)
+    # DESCRIPCIÓN
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(50, 570, "Descripción del incidente:")
+
+    c.setFont("Helvetica", 10)
+
+    texto = reporte.get("comentario") or reporte.get("descripcion") or ""
+
+    y = 550
+    for linea in texto.split("\n"):
+        c.drawString(50, y, linea[:90])
+        y -= 15
+
+    # FIRMAS
+    c.line(60, 200, 200, 200)
+    c.drawString(80, 185, "Firma del alumno")
+
+    c.line(250, 200, 390, 200)
+    c.drawString(260, 185, "Padre o tutor")
+
+    # FIRMA DIRECCIÓN
+    firma_path = reporte.get("firma_direccion")
+
+    try:
+        if firma_path and os.path.exists("." + firma_path):
+            img = ImageReader("." + firma_path)
+            c.drawImage(img, 430, 190, width=100, height=40)
+    except:
+        pass
+
+    c.line(420, 200, 550, 200)
+    c.drawString(460, 185, "Dirección")
 
     c.save()
     buffer.seek(0)

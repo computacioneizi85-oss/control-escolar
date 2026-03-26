@@ -35,7 +35,7 @@ def configuracion_admin():
     return render_template("configuracion.html")
 
 
-# ================= CREAR MAESTRO =================
+# ================= MAESTROS =================
 @admin_bp.route("/crear_maestro", methods=["POST"])
 def crear_maestro():
     if not verificar_admin():
@@ -52,7 +52,6 @@ def crear_maestro():
     return redirect(url_for("admin.ver_maestros"))
 
 
-# ================= ASIGNAR GRUPO =================
 @admin_bp.route("/asignar_grupo_maestro", methods=["POST"])
 def asignar_grupo_maestro():
     if not verificar_admin():
@@ -75,7 +74,6 @@ def asignar_grupo_maestro():
     return redirect(url_for("admin.ver_maestros"))
 
 
-# ================= EDITAR GRUPOS =================
 @admin_bp.route("/editar_grupos_maestro", methods=["POST"])
 def editar_grupos_maestro():
     if not verificar_admin():
@@ -92,7 +90,6 @@ def editar_grupos_maestro():
     return redirect(url_for("admin.ver_maestros"))
 
 
-# ================= EDITAR MATERIAS =================
 @admin_bp.route("/editar_materias_maestro", methods=["POST"])
 def editar_materias_maestro():
     if not verificar_admin():
@@ -166,7 +163,7 @@ def ver_evaluaciones():
     return render_template("evaluaciones_admin.html", datos=datos, config=config)
 
 
-# ================= RESET GRUPO =================
+# ================= RESET =================
 @admin_bp.route("/reset_grupo", methods=["POST"])
 def reset_grupo():
     if not verificar_admin():
@@ -191,6 +188,31 @@ def ver_reportes():
     return render_template("reportes_admin.html", reportes=list(reportes.find()))
 
 
+# 🔥 VISTA PREVIA
+@admin_bp.route("/ver_reporte/<id>")
+def ver_reporte(id):
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    reporte = reportes.find_one({"_id": ObjectId(id)})
+    return render_template("ver_reporte.html", reporte=reporte)
+
+
+# 🔥 REGRESAR A CORRECCIÓN
+@admin_bp.route("/regresar_reporte/<id>")
+def regresar_reporte(id):
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    reportes.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"estado": "correccion"}}
+    )
+
+    return redirect(url_for("admin.ver_reportes"))
+
+
+# 🔥 APROBAR Y GENERAR PDF
 @admin_bp.route("/aprobar_reporte/<string:id>")
 def aprobar_reporte(id):
 
@@ -203,7 +225,6 @@ def aprobar_reporte(id):
         if not reporte:
             return "Reporte no encontrado"
 
-        # 🔥 FIRMA DIGITAL
         firma_path = "/static/firmas/director.png"
 
         reportes.update_one(
@@ -358,25 +379,3 @@ def boleta(nombre):
     pdf = generar_boleta(nombre)
     pdf.seek(0)
     return send_file(pdf, mimetype="application/pdf")
-
-
-@admin_bp.route("/ver_reporte/<id>")
-def ver_reporte(id):
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    reporte = reportes.find_one({"_id": ObjectId(id)})
-
-    return render_template("ver_reporte.html", reporte=reporte)
-
-@admin_bp.route("/regresar_reporte/<id>")
-def regresar_reporte(id):
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    reportes.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {"estado": "correccion"}}
-    )
-
-    return redirect(url_for("admin.ver_reportes"))
