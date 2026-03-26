@@ -203,6 +203,8 @@ def ver_reportes_maestro():
 # =========================
 # 🔥 CREAR REPORTE (NUEVO)
 # =========================
+from datetime import datetime
+
 @maestro_bp.route("/crear_reporte", methods=["POST"])
 def crear_reporte():
 
@@ -214,7 +216,9 @@ def crear_reporte():
         "grupo": request.form.get("grupo"),
         "comentario": request.form.get("comentario"),
         "maestro": session.get("usuario"),
-        "estado": "pendiente"
+        "fecha": datetime.now().strftime("%Y-%m-%d"),
+        "estado": "pendiente",
+        "firma_direccion": None
     })
 
     return redirect(url_for("maestro.ver_reportes_maestro"))

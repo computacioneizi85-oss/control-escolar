@@ -193,24 +193,36 @@ def ver_reportes():
 
 @admin_bp.route("/aprobar_reporte/<string:id>")
 def aprobar_reporte(id):
+
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    reporte = reportes.find_one({"_id": ObjectId(id)})
+    try:
+        reporte = reportes.find_one({"_id": ObjectId(id)})
 
-    if not reporte:
-        return "Reporte no encontrado"
+        if not reporte:
+            return "Reporte no encontrado"
 
-    # 🔥 actualizar estado
-    reportes.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {"estado": "aprobado"}}
-    )
+        # 🔥 FIRMA DIGITAL
+        firma_path = "/static/firmas/director.png"
 
-    pdf = generar_reporte_pdf(reporte)
-    pdf.seek(0)
+        reportes.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": {
+                "estado": "aprobado",
+                "firma_direccion": firma_path
+            }}
+        )
 
-    return send_file(pdf, mimetype="application/pdf")
+        reporte["firma_direccion"] = firma_path
+
+        pdf = generar_reporte_pdf(reporte)
+        pdf.seek(0)
+
+        return send_file(pdf, mimetype="application/pdf")
+
+    except Exception as e:
+        return f"<h1>Error al generar PDF</h1><pre>{str(e)}</pre>"
 
 
 # ================= CITATORIOS =================
@@ -248,15 +260,19 @@ def generar_citatorio(id):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    citatorio = citatorios.find_one({"_id": ObjectId(id)})
+    try:
+        citatorio = citatorios.find_one({"_id": ObjectId(id)})
 
-    if not citatorio:
-        return "Citatorio no encontrado"
+        if not citatorio:
+            return "Citatorio no encontrado"
 
-    pdf = generar_citatorio_pdf(citatorio)
-    pdf.seek(0)
+        pdf = generar_citatorio_pdf(citatorio)
+        pdf.seek(0)
 
-    return send_file(pdf, mimetype="application/pdf")
+        return send_file(pdf, mimetype="application/pdf")
+
+    except Exception as e:
+        return f"<h1>Error PDF Citatorio</h1><pre>{str(e)}</pre>"
 
 
 # ================= ALUMNOS =================
