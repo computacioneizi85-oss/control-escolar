@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, request, redirect, session, jsonify
-from database.mongo import alumnos, maestros, horarios, configuracion
+from flask import Blueprint, render_template, request, redirect, session, jsonify, url_for
+from database.mongo import alumnos, maestros, horarios, configuracion, reportes
 
 maestro_bp = Blueprint("maestro", __name__)
 
@@ -22,34 +22,27 @@ def panel_maestro():
     if not maestro:
         return redirect("/")
 
-    # 🔥 asegurar listas
     materias_maestro = maestro.get("materias", []) or []
     grupos_maestro = maestro.get("grupos", []) or []
 
-    # 🔥 buscar horarios por materias
     lista_horarios = list(horarios.find({
         "materia": {"$in": materias_maestro}
     }))
 
-    # 🔥 obtener grupos desde horarios
     grupos = list(set([
         h.get("grupo") for h in lista_horarios if h.get("grupo")
     ]))
 
-    # 🔥 fallback SI NO HAY HORARIOS
     if not grupos:
         grupos = grupos_maestro
 
-    # 🔥 SI AUN NO HAY GRUPOS → evitar pantalla vacía
     if not grupos:
         grupos = list(set([a.get("grupo") for a in alumnos.find()]))
 
-    # 🔥 obtener alumnos
     lista_alumnos = list(alumnos.find({
         "grupo": {"$in": grupos}
     }))
 
-    # 🔥 configuración segura
     config = configuracion.find_one({"tipo": "trimestre"}) or {
         "estado": "false",
         "trimestre": "1"
@@ -82,13 +75,10 @@ def guardar_calificaciones_ajax():
     trimestre = str(request.form.get("trimestre"))
     cal1 = request.form.get("cal1")
 
-    # 🔥 validación básica
     if not alumno_nombre or not materia or not trimestre or cal1 is None:
         return jsonify({"status": "error"})
 
     config = configuracion.find_one({"tipo": "trimestre"}) or {}
-
-    # 🔥 aceptar boolean o string
     estado = str(config.get("estado")).lower()
 
     if estado != "true":
@@ -111,7 +101,6 @@ def guardar_calificaciones_ajax():
         return jsonify({"status": "error"})
 
     calificaciones = alumno.get("calificaciones", [])
-
     encontrada = False
 
     for c in calificaciones:
@@ -155,41 +144,6 @@ def enviar_calificaciones():
 
 
 # =========================
-# RESET POR ALUMNO
-# =========================
-@maestro_bp.route("/reset_alumno", methods=["POST"])
-def reset_alumno():
-
-    if not verificar_maestro():
-        return jsonify({"status": "error"})
-
-    nombre = request.form.get("alumno")
-    trimestre = str(request.form.get("trimestre"))
-
-    alumno = alumnos.find_one({"nombre": nombre})
-
-    if not alumno:
-        return jsonify({"status": "error"})
-
-    nuevas = [
-        c for c in alumno.get("calificaciones", [])
-        if str(c.get("trimestre")) != trimestre
-    ]
-
-    alumnos.update_one(
-        {"_id": alumno["_id"]},
-        {
-            "$set": {
-                "calificaciones": nuevas,
-                "enviado": False
-            }
-        }
-    )
-
-    return jsonify({"status": "ok"})
-
-
-# =========================
 # ASISTENCIAS
 # =========================
 @maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])
@@ -201,9 +155,6 @@ def guardar_asistencia_ajax():
     alumno_nombre = request.form.get("alumno")
     estado = request.form.get("estado")
     fecha = request.form.get("fecha")
-
-    if not alumno_nombre or not fecha:
-        return jsonify({"status": "error"})
 
     alumno = alumnos.find_one({"nombre": alumno_nombre})
 
@@ -226,41 +177,61 @@ def guardar_asistencia_ajax():
 
 
 # =========================
-# GUARDAR REPORTE
+# 🔥 VER REPORTES (NUEVO)
 # =========================
-@maestro_bp.route("/guardar_reporte_maestro", methods=["POST"])
-def guardar_reporte_maestro():
+@maestro_bp.route("/reportes")
+def ver_reportes_maestro():
 
-    if "usuario" not in session:
+    if not verificar_maestro():
         return redirect("/")
 
-    from database.mongo import reportes
+    maestro = maestros.find_one({"usuario": session.get("usuario")})
+
+    lista_reportes = list(reportes.find({
+        "maestro": session.get("usuario")
+    }))
+
+    lista_alumnos = list(alumnos.find())
+
+    return render_template(
+        "reportes_maestro.html",
+        reportes=lista_reportes,
+        alumnos=lista_alumnos
+    )
+
+
+# =========================
+# 🔥 CREAR REPORTE (NUEVO)
+# =========================
+@maestro_bp.route("/crear_reporte", methods=["POST"])
+def crear_reporte():
+
+    if not verificar_maestro():
+        return redirect("/")
 
     reportes.insert_one({
         "alumno": request.form.get("alumno"),
         "grupo": request.form.get("grupo"),
-        "descripcion": request.form.get("descripcion"),
-        "maestro": session["usuario"],
+        "comentario": request.form.get("comentario"),
+        "maestro": session.get("usuario"),
         "estado": "pendiente"
     })
 
-    return redirect("/panel_maestro")
+    return redirect(url_for("maestro.ver_reportes_maestro"))
 
 
 # =========================
-# ENVIAR REPORTES A DIRECCIÓN
+# 🔥 ENVIAR A DIRECCIÓN
 # =========================
 @maestro_bp.route("/enviar_reportes_maestro", methods=["POST"])
 def enviar_reportes_maestro():
 
-    if "usuario" not in session:
+    if not verificar_maestro():
         return redirect("/")
 
-    from database.mongo import reportes
-
     reportes.update_many(
-        {"maestro": session["usuario"]},
+        {"maestro": session.get("usuario")},
         {"$set": {"estado": "enviado"}}
     )
 
-    return redirect("/panel_maestro")
+    return redirect(url_for("maestro.ver_reportes_maestro"))

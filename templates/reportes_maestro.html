@@ -1,57 +1,106 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Reportes</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="container py-4">
+{% extends "layout.html" %}
 
-<h2>Crear reporte disciplinario</h2>
+{% block content %}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<div class="container py-4">
+
+<h2 class="mb-4">⚠️ Reportes disciplinarios</h2>
+
+<!-- =========================
+CREAR REPORTE
+========================= -->
+
+<div class="card shadow-sm mb-4">
+<div class="card-body">
+
+<h5 class="mb-3">Crear reporte</h5>
 
 <form method="POST" action="/crear_reporte">
 
 <select name="alumno" class="form-control mb-2" required>
 <option value="">Seleccionar alumno</option>
 {% for a in alumnos %}
-<option value="{{ a._id }}">{{ a.nombre }} ({{a.grupo}})</option>
+<option value="{{ a.nombre }}">
+{{ a.nombre }} ({{ a.grupo }})
+</option>
 {% endfor %}
 </select>
 
+<input type="text" name="grupo" class="form-control mb-2" placeholder="Grupo" required>
+
 <input type="date" name="fecha" class="form-control mb-2" required>
 
-<textarea name="razon" class="form-control mb-2" placeholder="Razón del reporte" required></textarea>
+<textarea name="comentario" class="form-control mb-2" placeholder="Descripción del incidente" required></textarea>
 
-<textarea name="consecuencia" class="form-control mb-2" placeholder="Consecuencia aplicada" required></textarea>
+<button class="btn btn-danger w-100">
+📤 Guardar reporte
+</button>
 
-<button class="btn btn-danger w-100">Enviar reporte</button>
 </form>
 
-<hr>
+</div>
+</div>
 
-<h3>Mis reportes enviados</h3>
+<!-- =========================
+ENVIAR A DIRECCIÓN
+========================= -->
 
-<table class="table table-bordered">
-<tr>
+<form method="POST" action="/enviar_reportes_maestro" class="mb-4">
+<button class="btn btn-warning w-100">
+📨 Enviar todos los reportes a dirección
+</button>
+</form>
+
+<!-- =========================
+LISTA DE REPORTES
+========================= -->
+
+<div class="card shadow-sm">
+<div class="card-body">
+
+<h5 class="mb-3">Mis reportes enviados</h5>
+
+<table class="table table-hover table-bordered">
+
+<tr class="table-dark">
 <th>Alumno</th>
-<th>Fecha</th>
+<th>Grupo</th>
+<th>Comentario</th>
 <th>Estado</th>
 </tr>
 
 {% for r in reportes %}
 <tr>
-<td>{{r.alumno}}</td>
-<td>{{r.fecha}}</td>
+
+<td>{{ r.alumno }}</td>
+<td>{{ r.grupo }}</td>
+<td>{{ r.comentario }}</td>
+
 <td>
 {% if r.estado == "pendiente" %}
-<span class="badge bg-warning">Pendiente</span>
+<span class="badge bg-warning text-dark">Pendiente</span>
+
+{% elif r.estado == "enviado" %}
+<span class="badge bg-info">Enviado a dirección</span>
+
+{% elif r.estado == "aprobado" %}
+<span class="badge bg-success">Aprobado</span>
+
 {% else %}
-<span class="badge bg-success">Aprobado por dirección</span>
+<span class="badge bg-secondary">Desconocido</span>
 {% endif %}
 </td>
+
 </tr>
 {% endfor %}
 
 </table>
 
-</body>
-</html>
+</div>
+</div>
+
+</div>
+
+{% endblock %}

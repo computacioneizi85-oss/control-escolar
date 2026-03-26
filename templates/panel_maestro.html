@@ -4,17 +4,41 @@
 
 <style>
 .panel-container{display:flex;gap:20px;}
-.menu-maestro{width:220px;background:#243b5a;padding:20px;border-radius:8px;color:white;}
-.menu-maestro button{width:100%;padding:10px;margin-bottom:10px;border:none;background:#2f4f75;color:white;cursor:pointer;border-radius:5px;}
-.menu-maestro button:hover{background:#3e6aa1;}
+
+.menu-maestro{
+width:220px;
+background:#243b5a;
+padding:20px;
+border-radius:10px;
+color:white;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+.menu-maestro button{
+width:100%;
+padding:12px;
+margin-bottom:10px;
+border:none;
+background:#2f4f75;
+color:white;
+cursor:pointer;
+border-radius:6px;
+font-size:14px;
+transition:0.3s;
+}
+
+.menu-maestro button:hover{
+background:#3e6aa1;
+transform:scale(1.03);
+}
 
 .seccion{display:none;}
 .seccion.activa{display:block;}
 
 .input-cal{
-width:60px;
-padding:5px;
-border-radius:5px;
+width:70px;
+padding:6px;
+border-radius:6px;
 border:1px solid #ccc;
 text-align:center;
 }
@@ -22,18 +46,28 @@ text-align:center;
 .guardado-ok{background:#d4edda;}
 .editando{background:#fff3cd;}
 
-.btn-save{background:#27ae60;color:white;border:none;padding:4px 8px;border-radius:5px;}
-.btn-edit{background:#3498db;color:white;border:none;padding:4px 8px;border-radius:5px;}
-.btn-reset{background:red;color:white;font-size:11px;margin-top:5px;border:none;padding:3px 6px;border-radius:4px;}
+.btn-save{background:#27ae60;color:white;border:none;padding:5px 10px;border-radius:6px;}
+.btn-edit{background:#3498db;color:white;border:none;padding:5px 10px;border-radius:6px;}
+.btn-reset{background:#e74c3c;color:white;font-size:11px;margin-top:5px;border:none;padding:4px 8px;border-radius:4px;}
+
+textarea{
+width:100%;
+height:100px;
+padding:10px;
+border-radius:8px;
+border:1px solid #ccc;
+}
 </style>
 
 <div class="panel-container">
 
+<!-- MENÚ -->
 <div class="menu-maestro">
-<button onclick="mostrarSeccion('inicio')">Dashboard</button>
-<button onclick="mostrarSeccion('clases')">Mis clases</button>
-<button onclick="mostrarSeccion('evaluaciones')">Evaluaciones</button>
-<button onclick="mostrarSeccion('asistencias')">Asistencias</button>
+<button onclick="mostrarSeccion('inicio')">🏠 Dashboard</button>
+<button onclick="mostrarSeccion('clases')">📚 Mis clases</button>
+<button onclick="mostrarSeccion('evaluaciones')">📝 Evaluaciones</button>
+<button onclick="mostrarSeccion('asistencias')">📅 Asistencias</button>
+<button onclick="mostrarSeccion('reportes')">⚠️ Reportes</button>
 </div>
 
 <div style="flex:1;">
@@ -81,7 +115,6 @@ text-align:center;
 
 {% set lista_materias = materias if materias else [] %}
 
-<!-- 🔥 VISTA PREVIA -->
 <div style="background:#f4f6f9;padding:10px;border-radius:6px;margin-bottom:10px;">
 <h4>Vista previa</h4>
 
@@ -97,20 +130,15 @@ text-align:center;
 {% endif %}
 {% endfor %}
 
-<span>
-{{ m }}: {{ cal if cal is not none else "-" }}
-</span>
-
+<span>{{ m }}: {{ cal if cal is not none else "-" }}</span>
 {% endfor %}
 </div>
 {% endfor %}
 </div>
 
-<!-- 🔥 FIX CRÍTICO -->
 {% if config.estado|string == "true" %}
 
-<table border="1">
-
+<table>
 <tr>
 <th>Alumno</th>
 {% for m in lista_materias %}
@@ -153,7 +181,6 @@ min="0" max="10"
 
 </tr>
 {% endfor %}
-
 </table>
 
 {% else %}
@@ -164,7 +191,6 @@ min="0" max="10"
 
 <!-- ASISTENCIAS -->
 <div id="asistencias" class="seccion">
-
 <h3>Asistencias</h3>
 
 <table>
@@ -182,6 +208,42 @@ min="0" max="10"
 {% endfor %}
 
 </table>
+</div>
+
+<!-- 🔥 REPORTES NUEVO -->
+<div id="reportes" class="seccion">
+
+<h3>Reportes disciplinarios</h3>
+
+<form action="/crear_reporte" method="POST">
+
+<select name="alumno" required>
+{% for alumno in alumnos %}
+<option value="{{ alumno.nombre }}">
+{{ alumno.nombre }} - {{ alumno.grupo }}
+</option>
+{% endfor %}
+</select>
+
+<input type="text" name="grupo" placeholder="Grupo" required>
+
+<br><br>
+
+<textarea name="comentario" placeholder="Describe el reporte..." required></textarea>
+
+<br><br>
+
+<button class="btn-save">📤 Enviar reporte</button>
+
+</form>
+
+<br><br>
+
+<form action="/enviar_reportes_maestro" method="POST">
+<button style="background:#e67e22;color:white;padding:8px 15px;border:none;border-radius:6px;">
+📨 Enviar todos a dirección
+</button>
+</form>
 
 </div>
 
