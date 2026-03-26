@@ -46,7 +46,7 @@ text-align:center;
 .guardado-ok{background:#d4edda;}
 .editando{background:#fff3cd;}
 
-.btn-save{background:#27ae60;color:white;border:none;padding:5px 10px;border-radius:6px;}
+.btn-save{background:#27ae60;color:white;border:none;padding:6px 12px;border-radius:6px;}
 .btn-edit{background:#3498db;color:white;border:none;padding:5px 10px;border-radius:6px;}
 .btn-reset{background:#e74c3c;color:white;font-size:11px;margin-top:5px;border:none;padding:4px 8px;border-radius:4px;}
 
@@ -56,6 +56,15 @@ height:100px;
 padding:10px;
 border-radius:8px;
 border:1px solid #ccc;
+}
+
+.preview{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+margin-top:20px;
+max-width:700px;
 }
 </style>
 
@@ -96,7 +105,6 @@ border:1px solid #ccc;
 
 <!-- EVALUACIONES -->
 <div id="evaluaciones" class="seccion">
-
 <h3>Evaluaciones</h3>
 
 {% if alumnos and alumnos[0].enviado %}
@@ -105,9 +113,7 @@ border:1px solid #ccc;
 <p style="color:orange;">Pendientes</p>
 
 <a href="/enviar_calificaciones">
-<button style="background:green;color:white;">
-📤 Enviar a dirección
-</button>
+<button style="background:green;color:white;">📤 Enviar a dirección</button>
 </a>
 {% endif %}
 
@@ -129,7 +135,6 @@ border:1px solid #ccc;
 {% set cal = c.calificacion %}
 {% endif %}
 {% endfor %}
-
 <span>{{ m }}: {{ cal if cal is not none else "-" }}</span>
 {% endfor %}
 </div>
@@ -178,7 +183,6 @@ min="0" max="10"
 
 </td>
 {% endfor %}
-
 </tr>
 {% endfor %}
 </table>
@@ -186,7 +190,6 @@ min="0" max="10"
 {% else %}
 <p style="color:red;">Evaluaciones cerradas</p>
 {% endif %}
-
 </div>
 
 <!-- ASISTENCIAS -->
@@ -210,26 +213,29 @@ min="0" max="10"
 </table>
 </div>
 
-<!-- 🔥 REPORTES NUEVO -->
+<!-- 🔥 REPORTES MEJORADO -->
 <div id="reportes" class="seccion">
 
 <h3>Reportes disciplinarios</h3>
 
 <form action="/crear_reporte" method="POST">
 
-<select name="alumno" required>
+<select id="alumno" name="alumno" onchange="preview()" required>
+<option value="">Seleccionar alumno</option>
 {% for alumno in alumnos %}
-<option value="{{ alumno.nombre }}">
+<option value="{{ alumno.nombre }} - {{ alumno.grupo }}">
 {{ alumno.nombre }} - {{ alumno.grupo }}
 </option>
 {% endfor %}
 </select>
 
-<input type="text" name="grupo" placeholder="Grupo" required>
+<input type="text" id="grupo" name="grupo" placeholder="Grupo" onkeyup="preview()" required>
+
+<input type="date" id="fecha" name="fecha" onchange="preview()" required>
 
 <br><br>
 
-<textarea name="comentario" placeholder="Describe el reporte..." required></textarea>
+<textarea id="comentario" name="comentario" placeholder="Describe el reporte..." onkeyup="preview()" required></textarea>
 
 <br><br>
 
@@ -237,13 +243,42 @@ min="0" max="10"
 
 </form>
 
-<br><br>
+<br>
 
 <form action="/enviar_reportes_maestro" method="POST">
 <button style="background:#e67e22;color:white;padding:8px 15px;border:none;border-radius:6px;">
 📨 Enviar todos a dirección
 </button>
 </form>
+
+<!-- 🔥 VISTA PREVIA -->
+<div class="preview">
+
+<h3 style="text-align:center;">REPORTE DISCIPLINARIO</h3>
+
+<p><b>Alumno:</b> <span id="p_alumno">---</span></p>
+<p><b>Grupo:</b> <span id="p_grupo">---</span></p>
+<p><b>Fecha:</b> <span id="p_fecha">---</span></p>
+
+<br>
+
+<p><b>Descripción:</b></p>
+<p id="p_comentario">---</p>
+
+<br><br>
+
+<div style="display:flex;justify-content:space-between;">
+<div>____________________<br>Alumno</div>
+<div>____________________<br>Padre/Tutor</div>
+</div>
+
+<br><br>
+
+<div style="text-align:center;">
+____________________<br>Dirección
+</div>
+
+</div>
 
 </div>
 
@@ -257,6 +292,13 @@ document.querySelectorAll(".seccion").forEach(s=>s.classList.remove("activa"))
 document.getElementById(id).classList.add("activa")
 }
 
+function preview(){
+document.getElementById("p_alumno").innerText = document.getElementById("alumno").value || "---"
+document.getElementById("p_grupo").innerText = document.getElementById("grupo").value || "---"
+document.getElementById("p_fecha").innerText = document.getElementById("fecha").value || "---"
+document.getElementById("p_comentario").innerText = document.getElementById("comentario").value || "---"
+}
+
 function habilitar(alumno, materia){
 let input = document.getElementById("cal_"+alumno+"_"+materia)
 input.disabled = false
@@ -264,7 +306,6 @@ input.classList.add("editando")
 }
 
 function guardarAjax(alumno, materia){
-
 let input = document.getElementById("cal_"+alumno+"_"+materia)
 let cal = input.value
 
@@ -280,26 +321,15 @@ cal1: cal
 })
 .then(res=>res.json())
 .then(data=>{
-
 if(data.status==="ok"){
 input.classList.remove("editando")
 input.classList.add("guardado-ok")
 input.disabled = true
 }
-
-if(data.status==="bloqueado"){
-alert("Ya enviadas")
-}
-
-if(data.status==="cerrado"){
-alert("Trimestre cerrado")
-}
-
 })
 }
 
 function resetAlumno(alumno){
-
 if(!confirm("⚠ ¿Borrar calificaciones?")) return
 
 fetch("/reset_alumno",{
@@ -311,11 +341,9 @@ trimestre: "{{ config.trimestre }}"
 })
 })
 .then(()=>location.reload())
-
 }
 
 function marcar(alumno,estado,id){
-
 let fecha=document.getElementById("fecha_"+id).value
 
 fetch("/guardar_asistencia_ajax",{
@@ -327,7 +355,6 @@ estado: estado,
 fecha: fecha
 })
 })
-
 }
 
 </script>
