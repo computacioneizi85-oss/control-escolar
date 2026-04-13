@@ -8,9 +8,9 @@ import os
 app = Flask(__name__)
 
 # =========================
-# 🔐 CLAVE SEGURA
+# 🔐 CLAVE SEGURA (IMPORTANTE)
 # =========================
-app.secret_key = os.environ.get("SECRET_KEY", "control_escolar_2026_seguro")
+app.secret_key = os.environ.get("SECRET_KEY") or "control_escolar_2026_seguro_fijo"
 
 # =========================
 # 🔒 TIEMPO DE SESIÓN (30 MIN)
@@ -25,8 +25,6 @@ from routes.auth_routes import auth_bp
 from routes.admin_routes import admin_bp
 from routes.maestro_routes import maestro_bp
 from routes.backup_routes import backup_bp
-
-# 🔥 NUEVOS (NO ROMPEN NADA)
 from routes.alumno_routes import alumno_bp
 from routes.padre_routes import padre_bp
 
@@ -38,8 +36,6 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(maestro_bp)
 app.register_blueprint(backup_bp)
-
-# 🔥 NUEVOS
 app.register_blueprint(alumno_bp)
 app.register_blueprint(padre_bp)
 
@@ -64,11 +60,11 @@ def proteger_rutas():
     if request.endpoint is None:
         return
 
-    # 🔥 si no hay sesión → bloquear acceso
+    # 🔥 SI NO HAY SESIÓN
     if "usuario" not in session:
         return redirect(url_for("auth.login"))
 
-    # 🔒 activar sesión permanente
+    # 🔒 mantener sesión activa
     session.permanent = True
 
     rol = session.get("rol")
@@ -78,7 +74,6 @@ def proteger_rutas():
     # =========================
     if request.path.startswith("/admin"):
         if rol != "admin":
-            session.clear()
             return redirect(url_for("auth.login"))
 
     # =========================
@@ -86,7 +81,6 @@ def proteger_rutas():
     # =========================
     if request.path.startswith("/panel_maestro"):
         if rol != "maestro":
-            session.clear()
             return redirect(url_for("auth.login"))
 
     # =========================
@@ -94,7 +88,6 @@ def proteger_rutas():
     # =========================
     if request.path.startswith("/panel_alumno"):
         if rol != "alumno":
-            session.clear()
             return redirect(url_for("auth.login"))
 
     # =========================
@@ -102,14 +95,13 @@ def proteger_rutas():
     # =========================
     if request.path.startswith("/panel_padre"):
         if rol != "padre":
-            session.clear()
             return redirect(url_for("auth.login"))
 
     return
 
 
 # =========================
-# 🔒 EVITAR CACHE (SEGURIDAD)
+# 🔒 EVITAR CACHE
 # =========================
 @app.after_request
 def no_cache(response):

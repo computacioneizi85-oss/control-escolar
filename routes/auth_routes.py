@@ -15,6 +15,22 @@ def login():
 
 
 # =========================
+# FUNCIÓN UNIVERSAL DE VALIDACIÓN
+# =========================
+def validar_password(password_db, password_input):
+
+    if not password_db:
+        return False
+
+    # 🔐 Detecta hash moderno (pbkdf2 o scrypt)
+    if password_db.startswith("pbkdf2") or password_db.startswith("scrypt"):
+        return check_password_hash(password_db, password_input)
+
+    # 🔓 compatibilidad antigua
+    return password_db == password_input
+
+
+# =========================
 # PROCESAR LOGIN
 # =========================
 @auth_bp.route("/login", methods=["POST"])
@@ -23,7 +39,7 @@ def procesar_login():
     usuario = request.form.get("usuario")
     password = request.form.get("password")
 
-    # 🔐 LIMPIAR SESIÓN
+    # 🔐 limpiar sesión
     session.clear()
 
     # =========================
@@ -31,110 +47,55 @@ def procesar_login():
     # =========================
     admin = usuarios.find_one({"usuario": usuario})
 
-    if admin:
+    if admin and validar_password(admin.get("password"), password):
 
-        password_db = admin.get("password", "")
+        session["usuario"] = admin["usuario"]
+        session["rol"] = "admin"
 
-        if password_db.startswith("pbkdf2"):
-            if check_password_hash(password_db, password):
-
-                session["usuario"] = admin["usuario"]
-                session["rol"] = "admin"
-
-                return redirect(url_for("admin.admin_dashboard"))
-
-        elif password_db == password:
-
-            session["usuario"] = admin["usuario"]
-            session["rol"] = "admin"
-
-            return redirect(url_for("admin.admin_dashboard"))
+        return redirect(url_for("admin.admin_dashboard"))
 
     # =========================
     # 2️⃣ MAESTRO
     # =========================
     maestro = maestros.find_one({"usuario": usuario})
 
-    if maestro:
+    if maestro and validar_password(maestro.get("password"), password):
 
-        password_db = maestro.get("password", "")
+        session["usuario"] = maestro["usuario"]
+        session["rol"] = "maestro"
 
-        if password_db.startswith("pbkdf2"):
-            if check_password_hash(password_db, password):
-
-                session["usuario"] = maestro["usuario"]
-                session["rol"] = "maestro"
-
-                return redirect(url_for("maestro.panel_maestro"))
-
-        elif password_db == password:
-
-            session["usuario"] = maestro["usuario"]
-            session["rol"] = "maestro"
-
-            return redirect(url_for("maestro.panel_maestro"))
+        return redirect(url_for("maestro.panel_maestro"))
 
     # =========================
-    # 3️⃣ ALUMNO (YA REAL)
+    # 3️⃣ ALUMNO
     # =========================
     alumno = alumnos.find_one({"usuario": usuario})
 
-    if alumno:
+    if alumno and validar_password(alumno.get("password"), password):
 
-        password_db = alumno.get("password", "")
+        session["usuario"] = alumno["usuario"]
+        session["rol"] = "alumno"
+        session["alumno"] = alumno["nombre"]
 
-        # 🔐 CON HASH
-        if password_db.startswith("pbkdf2"):
-            if check_password_hash(password_db, password):
-
-                session["usuario"] = alumno["usuario"]
-                session["rol"] = "alumno"
-                session["alumno"] = alumno["nombre"]
-
-                return redirect(url_for("alumno.panel_alumno"))
-
-        # 🔓 COMPATIBILIDAD (si aún no tiene hash)
-        elif password_db == password:
-
-            session["usuario"] = alumno["usuario"]
-            session["rol"] = "alumno"
-            session["alumno"] = alumno["nombre"]
-
-            return redirect(url_for("alumno.panel_alumno"))
+        return redirect(url_for("alumno.panel_alumno"))
 
     # =========================
-    # 4️⃣ PADRE (YA REAL)
+    # 4️⃣ PADRE
     # =========================
     padre = padres.find_one({"usuario": usuario})
 
-    if padre:
+    if padre and validar_password(padre.get("password"), password):
 
-        password_db = padre.get("password", "")
+        session["usuario"] = padre["usuario"]
+        session["rol"] = "padre"
+        session["alumno"] = padre["alumno"]
 
-        # 🔐 CON HASH
-        if password_db.startswith("pbkdf2"):
-            if check_password_hash(password_db, password):
-
-                session["usuario"] = padre["usuario"]
-                session["rol"] = "padre"
-                session["alumno"] = padre["alumno"]
-
-                return redirect(url_for("padre.panel_padre"))
-
-        # 🔓 COMPATIBILIDAD
-        elif password_db == password:
-
-            session["usuario"] = padre["usuario"]
-            session["rol"] = "padre"
-            session["alumno"] = padre["alumno"]
-
-            return redirect(url_for("padre.panel_padre"))
+        return redirect(url_for("padre.panel_padre"))
 
     # =========================
-    # ⚠️ COMPATIBILIDAD ANTIGUA (NO BORRAR)
+    # ⚠️ COMPATIBILIDAD ANTIGUA
     # =========================
 
-    # Alumno por nombre (viejo sistema)
     alumno = alumnos.find_one({"nombre": usuario})
 
     if alumno:
@@ -145,7 +106,6 @@ def procesar_login():
 
         return redirect(url_for("alumno.panel_alumno"))
 
-    # Padre formato antiguo
     if usuario.startswith("padre_"):
 
         nombre_alumno = usuario.replace("padre_", "")
