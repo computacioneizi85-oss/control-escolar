@@ -26,6 +26,10 @@ from routes.admin_routes import admin_bp
 from routes.maestro_routes import maestro_bp
 from routes.backup_routes import backup_bp
 
+# 🔥 NUEVOS (NO ROMPEN NADA)
+from routes.alumno_routes import alumno_bp
+from routes.padre_routes import padre_bp
+
 
 # =========================
 # REGISTRAR BLUEPRINTS
@@ -34,6 +38,10 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(maestro_bp)
 app.register_blueprint(backup_bp)
+
+# 🔥 NUEVOS
+app.register_blueprint(alumno_bp)
+app.register_blueprint(padre_bp)
 
 
 # =========================
@@ -60,13 +68,13 @@ def proteger_rutas():
     if "usuario" not in session:
         return redirect(url_for("auth.login"))
 
-    # 🔒 activar sesión permanente (con expiración)
+    # 🔒 activar sesión permanente
     session.permanent = True
 
     rol = session.get("rol")
 
     # =========================
-    # 🔴 PROTEGER ADMIN
+    # 🔴 ADMIN
     # =========================
     if request.path.startswith("/admin"):
         if rol != "admin":
@@ -74,10 +82,26 @@ def proteger_rutas():
             return redirect(url_for("auth.login"))
 
     # =========================
-    # 🔵 PROTEGER MAESTRO
+    # 🔵 MAESTRO
     # =========================
     if request.path.startswith("/panel_maestro"):
         if rol != "maestro":
+            session.clear()
+            return redirect(url_for("auth.login"))
+
+    # =========================
+    # 🟢 ALUMNO
+    # =========================
+    if request.path.startswith("/panel_alumno"):
+        if rol != "alumno":
+            session.clear()
+            return redirect(url_for("auth.login"))
+
+    # =========================
+    # 🟣 PADRE
+    # =========================
+    if request.path.startswith("/panel_padre"):
+        if rol != "padre":
             session.clear()
             return redirect(url_for("auth.login"))
 

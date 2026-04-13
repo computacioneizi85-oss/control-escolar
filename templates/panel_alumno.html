@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>Mis Calificaciones</h2>
+
+<table>
+<tr>
+<th>Materia</th>
+<th>Cal1</th>
+<th>Cal2</th>
+<th>Cal3</th>
+</tr>
+
+{% for c in alumno.calificaciones %}
+<tr>
+<td>{{ c.materia }}</td>
+<td>{{ c.cal1 }}</td>
+<td>{{ c.cal2 }}</td>
+<td>{{ c.cal3 }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+{% endblock %}

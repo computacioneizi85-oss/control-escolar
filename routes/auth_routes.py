@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, session, url_for
 from werkzeug.security import check_password_hash
 
-from database.mongo import usuarios, maestros
+from database.mongo import usuarios, maestros, alumnos
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -23,7 +23,7 @@ def procesar_login():
     usuario = request.form.get("usuario")
     password = request.form.get("password")
 
-    # 🔐 LIMPIAR SESIÓN ANTES (IMPORTANTE)
+    # 🔐 LIMPIAR SESIÓN
     session.clear()
 
     # =========================
@@ -35,7 +35,6 @@ def procesar_login():
 
         password_db = admin.get("password", "")
 
-        # 🔐 PASSWORD ENCRIPTADO
         if password_db.startswith("pbkdf2"):
             if check_password_hash(password_db, password):
 
@@ -44,7 +43,6 @@ def procesar_login():
 
                 return redirect(url_for("admin.admin_dashboard"))
 
-        # 🔓 PASSWORD NORMAL (compatibilidad)
         elif password_db == password:
 
             session["usuario"] = admin["usuario"]
@@ -61,23 +59,51 @@ def procesar_login():
 
         password_db = maestro.get("password", "")
 
-        # 🔐 PASSWORD ENCRIPTADO
         if password_db.startswith("pbkdf2"):
             if check_password_hash(password_db, password):
 
                 session["usuario"] = maestro["usuario"]
                 session["rol"] = "maestro"
 
-                # 🔥 usar endpoint correcto si tienes blueprint
                 return redirect(url_for("maestro.panel_maestro"))
 
-        # 🔓 PASSWORD NORMAL
         elif password_db == password:
 
             session["usuario"] = maestro["usuario"]
             session["rol"] = "maestro"
 
             return redirect(url_for("maestro.panel_maestro"))
+
+    # =========================
+    # 3️⃣ ALUMNO (NUEVO)
+    # =========================
+    alumno = alumnos.find_one({"nombre": usuario})
+
+    if alumno:
+
+        # 🔓 simple (sin password por ahora)
+        session["usuario"] = alumno["nombre"]
+        session["rol"] = "alumno"
+
+        return redirect(url_for("alumno.panel_alumno"))
+
+    # =========================
+    # 4️⃣ PADRE (NUEVO)
+    # =========================
+    # FORMATO: padre_Nombre Alumno
+    if usuario.startswith("padre_"):
+
+        nombre_alumno = usuario.replace("padre_", "")
+
+        alumno = alumnos.find_one({"nombre": nombre_alumno})
+
+        if alumno:
+
+            session["usuario"] = usuario
+            session["rol"] = "padre"
+            session["alumno"] = nombre_alumno  # 🔥 clave importante
+
+            return redirect(url_for("padre.panel_padre"))
 
     # =========================
     # ❌ LOGIN FALLIDO
