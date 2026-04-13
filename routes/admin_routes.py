@@ -33,13 +33,28 @@ def admin_dashboard():
     lista_reportes = list(reportes.find())
     lista_citatorios = list(citatorios.find())
 
+    # 🔥 NUEVO (para evitar error 500)
+    alumnos_riesgo = [
+        a for a in lista_alumnos
+        if not a.get("calificaciones")
+    ]
+
+    ultimos_reportes = lista_reportes[-5:] if lista_reportes else []
+
+    total_asistencias = sum(len(a.get("asistencias", [])) for a in lista_alumnos)
+    total_faltas = 0
+
     return render_template(
         "admin.html",
-        alumnos=lista_alumnos,
-        grupos=lista_grupos,
-        maestros=lista_maestros,
-        reportes=lista_reportes,
-        citatorios=lista_citatorios
+        alumnos=lista_alumnos or [],
+        grupos=lista_grupos or [],
+        maestros=lista_maestros or [],
+        reportes=lista_reportes or [],
+        citatorios=lista_citatorios or [],
+        alumnos_riesgo=alumnos_riesgo,
+        ultimos_reportes=ultimos_reportes,
+        total_asistencias=total_asistencias,
+        total_faltas=total_faltas
     )
 
 
@@ -87,7 +102,7 @@ def crear_alumno():
         "asistencias": []
     })
 
-    # 🔥 Crear padre automático
+    # 🔥 crear padre automático
     padres.insert_one({
         "nombre": f"Padre de {nombre}",
         "usuario": f"padre_{usuario}",
@@ -133,12 +148,9 @@ def asignar_grupo_maestro():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    maestro_id = request.form.get("maestro")
-    grupo = request.form.get("grupo")
-
     maestros.update_one(
-        {"_id": ObjectId(maestro_id)},
-        {"$addToSet": {"grupos": grupo}}
+        {"_id": ObjectId(request.form.get("maestro"))},
+        {"$addToSet": {"grupos": request.form.get("grupo")}}
     )
 
     return redirect(url_for("admin.ver_maestros"))
@@ -264,7 +276,7 @@ def crear_citatorio():
         "alumno": request.form.get("alumno"),
         "grupo": request.form.get("grupo"),
         "motivo": request.form.get("motivo"),
-        "fecha": request.form.get("fecha"),
+        "fecha_cita": request.form.get("fecha"),  # 🔥 CORREGIDO
         "hora": request.form.get("hora"),
         "estado": "pendiente"
     })
@@ -290,8 +302,7 @@ def kardex(nombre):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    ruta_pdf = generar_kardex(nombre)
-    return send_file(ruta_pdf, as_attachment=True)
+    return send_file(generar_kardex(nombre), as_attachment=True)
 
 
 @admin_bp.route("/boleta/<nombre>")
@@ -299,5 +310,4 @@ def boleta(nombre):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    ruta_pdf = generar_boleta(nombre)
-    return send_file(ruta_pdf, as_attachment=True)
+    return send_file(generar_boleta(nombre), as_attachment=True)
