@@ -206,3 +206,71 @@ menu.style.display = menu.style.display === "block" ? "none" : "block"
 
 </body>
 </html>
+
+<h2>Alumnos en riesgo académico</h2>
+
+<table>
+<tr>
+<th>Alumno</th>
+<th>Grupo</th>
+</tr>
+
+{% for a in alumnos_riesgo %}
+<tr>
+<td>{{ a.nombre }}</td>
+<td>{{ a.grupo }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<h2>Asistencia general</h2>
+
+<div class="dashboard">
+
+<div class="card">
+<h3>Asistencias</h3>
+<p>{{ total_asistencias }}</p>
+</div>
+
+<div class="card">
+<h3>Faltas / Retardos</h3>
+<p>{{ total_faltas }}</p>
+</div>
+
+</div>
+
+<h2>Próximos citatorios</h2>
+
+<table>
+<tr>
+<th>Alumno</th>
+<th>Fecha</th>
+<th>Hora</th>
+</tr>
+
+{% for c in citatorios %}
+<tr>
+<td>{{ c.alumno }}</td>
+<td>{{ c.fecha }}</td>
+<td>{{ c.hora }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<h2>Últimos reportes</h2>
+
+<table>
+<tr>
+<th>Alumno</th>
+<th>Comentario</th>
+<th>Estado</th>
+</tr>
+
+{% for r in ultimos_reportes %}
+<tr>
+<td>{{ r.alumno }}</td>
+<td>{{ r.comentario }}</td>
+<td>{{ r.estado }}</td>
+</tr>
+{% endfor %}
+</table>

@@ -13,17 +13,97 @@ def verificar_admin():
 
 
 # ================= DASHBOARD =================
+# ================= DASHBOARD =================
 @admin_bp.route("/")
 def admin_dashboard():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
+    lista_alumnos = list(alumnos.find())
+    lista_grupos = list(grupos.find())
+    lista_maestros = list(maestros.find())
+    lista_reportes = list(reportes.find())
+    lista_citatorios = list(citatorios.find())
+
+    # ===== TOTALES =====
+    total_alumnos = len(lista_alumnos)
+    total_grupos = len(lista_grupos)
+    total_maestros = len(lista_maestros)
+    total_reportes = len(lista_reportes)
+
+    # ===== ALUMNOS POR GRUPO =====
+    alumnos_por_grupo = {}
+    for a in lista_alumnos:
+        grupo = a.get("grupo", "Sin grupo")
+        alumnos_por_grupo[grupo] = alumnos_por_grupo.get(grupo, 0) + 1
+
+    # ===== REPORTES =====
+    reportes_estado = {"pendiente": 0, "aprobado": 0}
+
+    for r in lista_reportes:
+        estado = r.get("estado", "pendiente")
+        reportes_estado[estado] = reportes_estado.get(estado, 0) + 1
+
+    # ===== ALUMNOS EN RIESGO =====
+    alumnos_riesgo = []
+
+    for a in lista_alumnos:
+        try:
+            calificaciones = a.get("calificaciones", [])
+
+            if calificaciones:
+                promedio = sum([float(c.get("calificacion", 0)) for c in calificaciones]) / len(calificaciones)
+
+                if promedio < 6:
+                    alumnos_riesgo.append({
+                        "nombre": a.get("nombre"),
+                        "grupo": a.get("grupo")
+                    })
+        except:
+            pass
+
+    # ===== ASISTENCIAS =====
+    total_asistencias = 0
+    total_faltas = 0
+
+    for a in lista_alumnos:
+        for asist in a.get("asistencias", []):
+            if asist.get("estado") == "asistencia":
+                total_asistencias += 1
+            else:
+                total_faltas += 1
+
+    # ===== CITATORIOS PROXIMOS =====
+    citatorios_ordenados = sorted(lista_citatorios, key=lambda x: x.get("fecha", ""))
+
+    citatorios_proximos = citatorios_ordenados[:5]
+
+    # ===== ULTIMOS REPORTES =====
+    ultimos_reportes = lista_reportes[-5:]
+
     return render_template(
         "admin.html",
-        alumnos=list(alumnos.find()),
-        grupos=list(grupos.find()),
-        maestros=list(maestros.find()),
-        reportes=list(reportes.find())
+
+        alumnos=lista_alumnos,
+        grupos=lista_grupos,
+        maestros=lista_maestros,
+        reportes=lista_reportes,
+
+        # NUEVAS VARIABLES
+        total_alumnos=total_alumnos,
+        total_grupos=total_grupos,
+        total_maestros=total_maestros,
+        total_reportes=total_reportes,
+
+        alumnos_por_grupo=alumnos_por_grupo,
+        reportes_estado=reportes_estado,
+
+        alumnos_riesgo=alumnos_riesgo,
+        total_asistencias=total_asistencias,
+        total_faltas=total_faltas,
+
+        citatorios=citatorios_proximos,
+        ultimos_reportes=ultimos_reportes
     )
 
 
