@@ -22,7 +22,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 <h2>Control Escolar</h2>
 
 
-{% if session["rol"] == "admin" %}
+{% if session.get("rol") == "admin" %}
 
 <a href="/admin">
 <i class="fa-solid fa-chart-line"></i> Dashboard
@@ -55,7 +55,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 {% endif %}
 
 
-{% if session["rol"] == "maestro" %}
+{% if session.get("rol") == "maestro" %}
 
 <a href="/panel_maestro">
 <i class="fa-solid fa-chalkboard-user"></i> Panel Maestro

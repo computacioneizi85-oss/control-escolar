@@ -178,7 +178,7 @@ padding:15px;
 {% for c in citatorios %}
 <tr>
 <td>{{ c.alumno }}</td>
-<td>{{ c.fecha }}</td>
+<td>{{ c.fecha_cita }}</td>
 <td>{{ c.hora }}</td>
 </tr>
 {% endfor %}
@@ -194,7 +194,7 @@ padding:15px;
 <tr>
 <td>{{ r.alumno }}</td>
 <td>{{ r.comentario }}</td>
-<td>{{ r.estado }}</td>
+<td>{{ r.estatus }}</td>
 </tr>
 {% endfor %}
 </table>
