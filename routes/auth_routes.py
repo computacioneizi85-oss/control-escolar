@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, session, url_for
 from werkzeug.security import check_password_hash
 
-from database.mongo import usuarios, maestros, alumnos
+from database.mongo import usuarios, maestros, alumnos, padres
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -75,22 +75,77 @@ def procesar_login():
             return redirect(url_for("maestro.panel_maestro"))
 
     # =========================
-    # 3️⃣ ALUMNO (NUEVO)
+    # 3️⃣ ALUMNO (YA REAL)
     # =========================
+    alumno = alumnos.find_one({"usuario": usuario})
+
+    if alumno:
+
+        password_db = alumno.get("password", "")
+
+        # 🔐 CON HASH
+        if password_db.startswith("pbkdf2"):
+            if check_password_hash(password_db, password):
+
+                session["usuario"] = alumno["usuario"]
+                session["rol"] = "alumno"
+                session["alumno"] = alumno["nombre"]
+
+                return redirect(url_for("alumno.panel_alumno"))
+
+        # 🔓 COMPATIBILIDAD (si aún no tiene hash)
+        elif password_db == password:
+
+            session["usuario"] = alumno["usuario"]
+            session["rol"] = "alumno"
+            session["alumno"] = alumno["nombre"]
+
+            return redirect(url_for("alumno.panel_alumno"))
+
+    # =========================
+    # 4️⃣ PADRE (YA REAL)
+    # =========================
+    padre = padres.find_one({"usuario": usuario})
+
+    if padre:
+
+        password_db = padre.get("password", "")
+
+        # 🔐 CON HASH
+        if password_db.startswith("pbkdf2"):
+            if check_password_hash(password_db, password):
+
+                session["usuario"] = padre["usuario"]
+                session["rol"] = "padre"
+                session["alumno"] = padre["alumno"]
+
+                return redirect(url_for("padre.panel_padre"))
+
+        # 🔓 COMPATIBILIDAD
+        elif password_db == password:
+
+            session["usuario"] = padre["usuario"]
+            session["rol"] = "padre"
+            session["alumno"] = padre["alumno"]
+
+            return redirect(url_for("padre.panel_padre"))
+
+    # =========================
+    # ⚠️ COMPATIBILIDAD ANTIGUA (NO BORRAR)
+    # =========================
+
+    # Alumno por nombre (viejo sistema)
     alumno = alumnos.find_one({"nombre": usuario})
 
     if alumno:
 
-        # 🔓 simple (sin password por ahora)
         session["usuario"] = alumno["nombre"]
         session["rol"] = "alumno"
+        session["alumno"] = alumno["nombre"]
 
         return redirect(url_for("alumno.panel_alumno"))
 
-    # =========================
-    # 4️⃣ PADRE (NUEVO)
-    # =========================
-    # FORMATO: padre_Nombre Alumno
+    # Padre formato antiguo
     if usuario.startswith("padre_"):
 
         nombre_alumno = usuario.replace("padre_", "")
@@ -101,7 +156,7 @@ def procesar_login():
 
             session["usuario"] = usuario
             session["rol"] = "padre"
-            session["alumno"] = nombre_alumno  # 🔥 clave importante
+            session["alumno"] = nombre_alumno
 
             return redirect(url_for("padre.panel_padre"))
 
