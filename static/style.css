@@ -17,7 +17,7 @@ body{
 background:linear-gradient(135deg,#eef2f7,#dfe9f3);
 display:flex;
 min-height:100vh;
-font-size:16px; /* 🔥 MÁS GRANDE */
+font-size:16px;
 }
 
 /* =========================
@@ -105,9 +105,9 @@ CONTENIDO
 
 .content{
 margin-left:240px;
-padding:20px; /* 🔥 MÁS COMPACTO */
+padding:20px;
 width:calc(100% - 240px);
-max-width:1200px;
+max-width:1400px; /* 🔥 más ancho útil */
 }
 
 /* =========================
@@ -118,14 +118,67 @@ h1{
 margin-bottom:10px;
 font-weight:700;
 color:#2c3e50;
-font-size:26px; /* 🔥 */
+font-size:26px;
 }
 
 h2{
-margin-top:10px;
-margin-bottom:6px;
+margin-top:15px;
+margin-bottom:8px;
 color:#34495e;
-font-size:20px; /* 🔥 */
+font-size:20px;
+}
+
+/* =========================
+GRID DASHBOARD (🔥 CLAVE)
+========================= */
+
+.dashboard-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+gap:20px;
+margin-top:20px;
+}
+
+.dashboard-block{
+padding:15px;
+}
+
+/* =========================
+CARDS
+========================= */
+
+.card{
+background:white;
+padding:15px;
+border-radius:12px;
+box-shadow:0 5px 15px rgba(0,0,0,0.08);
+transition:0.2s;
+}
+
+.card:hover{
+transform:translateY(-3px);
+}
+
+.card h3{
+font-size:16px;
+margin-bottom:8px;
+}
+
+.card h4{
+font-size:14px;
+margin-bottom:5px;
+color:#555;
+}
+
+.card p{
+font-size:22px;
+font-weight:bold;
+color:#2c3e50;
+}
+
+.card small{
+color:#777;
+font-size:12px;
 }
 
 /* =========================
@@ -225,6 +278,7 @@ background:white;
 border-radius:12px;
 overflow:hidden;
 box-shadow:0 5px 15px rgba(0,0,0,0.08);
+margin-top:10px;
 }
 
 th{
@@ -232,14 +286,14 @@ background:#2c3e50;
 color:white;
 padding:10px;
 text-align:left;
-font-size:15px;
+font-size:14px;
 }
 
 td{
 padding:8px;
 border-bottom:1px solid #eee;
 vertical-align:middle;
-font-size:14px;
+font-size:13px;
 }
 
 tr:hover{
@@ -255,7 +309,7 @@ display:inline-block;
 background:#ecf0f1;
 padding:5px 8px;
 border-radius:6px;
-font-size:13px;
+font-size:12px;
 margin:2px;
 }
 
@@ -295,8 +349,8 @@ SEMAFORO
 ========================= */
 
 .semaforo{
-width:14px;
-height:14px;
+width:12px;
+height:12px;
 border-radius:50%;
 display:inline-block;
 margin-right:4px;
