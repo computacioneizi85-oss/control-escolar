@@ -439,6 +439,64 @@ def ver_asistencias():
 
     return render_template("asistencias_admin.html", alumnos=list(alumnos.find()))
 
+# ================= CREAR ALUMNO (AUTO USUARIO Y PADRE) =================
+from werkzeug.security import generate_password_hash
+from database.mongo import padres
+
+
+@admin_bp.route("/crear_alumno", methods=["POST"])
+def crear_alumno():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    nombre = request.form.get("nombre")
+    grupo = request.form.get("grupo")
+
+    # =========================
+    # GENERAR USUARIO
+    # =========================
+    base_usuario = nombre.lower().replace(" ", "")
+    usuario = base_usuario
+
+    contador = 1
+    while alumnos.find_one({"usuario": usuario}):
+        usuario = f"{base_usuario}{contador}"
+        contador += 1
+
+    # =========================
+    # PASSWORDS
+    # =========================
+    password_plana = "1234"
+    password_hash = generate_password_hash(password_plana)
+
+    # =========================
+    # CREAR ALUMNO
+    # =========================
+    alumnos.insert_one({
+        "nombre": nombre,
+        "grupo": grupo,
+        "usuario": usuario,
+        "password": password_hash,
+        "calificaciones": [],
+        "asistencias": []
+    })
+
+    # =========================
+    # CREAR PADRE AUTOMÁTICO
+    # =========================
+    usuario_padre = f"padre_{usuario}"
+
+    password_padre = generate_password_hash("1234")
+
+    padres.insert_one({
+        "nombre": f"Padre de {nombre}",
+        "usuario": usuario_padre,
+        "password": password_padre,
+        "alumno": nombre
+    })
+
+    return redirect(url_for("admin.ver_alumnos"))
 
 # ================= PDFS =================
 @admin_bp.route("/kardex/<nombre>")
