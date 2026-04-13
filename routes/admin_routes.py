@@ -277,7 +277,7 @@ def generar_citatorio(id):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    citatorio = citatorios.find_one({"_id": ObjectId(id))
+    citatorio = citatorios.find_one({"_id": ObjectId(id)})
 
     ruta_pdf = generar_citatorio_pdf(citatorio)
 
