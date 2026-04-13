@@ -10,7 +10,7 @@ REGISTRO
 
 <h2>Registrar maestro</h2>
 
-<form action="/crear_maestro" method="POST" class="form-inline">
+<form action="{{ url_for('admin.crear_maestro') }}" method="POST" class="form-inline">
 
 <input type="text" name="nombre" placeholder="Nombre" required>
 <input type="text" name="usuario" placeholder="Usuario" required>
@@ -27,7 +27,7 @@ ASIGNAR GRUPO
 
 <h2>Asignar grupo</h2>
 
-<form action="/asignar_grupo_maestro" method="POST" class="form-inline">
+<form action="{{ url_for('admin.asignar_grupo_maestro') }}" method="POST" class="form-inline">
 
 <select name="maestro">
 {% for maestro in maestros %}
@@ -52,7 +52,7 @@ ASIGNAR MATERIAS
 
 <h2>Asignar materias</h2>
 
-<form action="/admin/asignar_materias" method="POST" class="form-inline">
+<form action="{{ url_for('admin.asignar_materias') }}" method="POST" class="form-inline">
 
 <select name="maestro_id">
 {% for maestro in maestros %}
@@ -128,7 +128,7 @@ MATERIAS
 {{ mat }}
 </span>
 
-<form action="/admin/quitar_materia" method="POST" style="display:inline;">
+<form action="{{ url_for('admin.quitar_materia') }}" method="POST" style="display:inline;">
 
 <input type="hidden" name="maestro_id" value="{{ maestro._id }}">
 <input type="hidden" name="materia" value="{{ mat }}">
@@ -153,7 +153,7 @@ EDITAR
 <td>
 
 <!-- EDITAR GRUPOS -->
-<form action="/admin/editar_grupos_maestro" method="POST" class="form-inline">
+<form action="{{ url_for('admin.editar_grupos_maestro') }}" method="POST" class="form-inline">
 
 <input type="hidden" name="maestro_id" value="{{ maestro._id }}">
 
@@ -174,7 +174,7 @@ EDITAR
 
 
 <!-- EDITAR MATERIAS -->
-<form action="/admin/editar_materias_maestro" method="POST" class="form-inline">
+<form action="{{ url_for('admin.editar_materias_maestro') }}" method="POST" class="form-inline">
 
 <input type="hidden" name="maestro_id" value="{{ maestro._id }}">
 
