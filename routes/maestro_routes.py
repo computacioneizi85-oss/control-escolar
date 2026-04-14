@@ -1,5 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, session, jsonify, url_for
-from database.mongo import alumnos, maestros, horarios, configuracion, reportes
+from flask import Blueprint, render_template, request, redirect, session, jsonify, url_for, send_file
+from bson.objectid import ObjectId
+from datetime import datetime
+
+from database.mongo import alumnos, maestros, horarios, configuracion, reportes, citatorios
+from pdf.generador import generar_citatorio_pdf
 
 maestro_bp = Blueprint("maestro", __name__)
 
@@ -177,15 +181,13 @@ def guardar_asistencia_ajax():
 
 
 # =========================
-# 🔥 VER REPORTES (NUEVO)
+# REPORTES
 # =========================
 @maestro_bp.route("/reportes")
 def ver_reportes_maestro():
 
     if not verificar_maestro():
         return redirect("/")
-
-    maestro = maestros.find_one({"usuario": session.get("usuario")})
 
     lista_reportes = list(reportes.find({
         "maestro": session.get("usuario")
@@ -200,11 +202,6 @@ def ver_reportes_maestro():
     )
 
 
-# =========================
-# 🔥 CREAR REPORTE (NUEVO)
-# =========================
-from datetime import datetime
-
 @maestro_bp.route("/crear_reporte", methods=["POST"])
 def crear_reporte():
 
@@ -217,16 +214,12 @@ def crear_reporte():
         "comentario": request.form.get("comentario"),
         "maestro": session.get("usuario"),
         "fecha": datetime.now().strftime("%Y-%m-%d"),
-        "estado": "pendiente",
-        "firma_direccion": None
+        "estado": "pendiente"
     })
 
     return redirect(url_for("maestro.ver_reportes_maestro"))
 
 
-# =========================
-# 🔥 ENVIAR A DIRECCIÓN
-# =========================
 @maestro_bp.route("/enviar_reportes_maestro", methods=["POST"])
 def enviar_reportes_maestro():
 
@@ -240,16 +233,17 @@ def enviar_reportes_maestro():
 
     return redirect(url_for("maestro.ver_reportes_maestro"))
 
-from database.mongo import citatorios
 
+# =========================
+# CITATORIOS MAESTRO 🔥
+# =========================
 @maestro_bp.route("/citatorios")
 def ver_citatorios_maestro():
 
-    if "rol" not in session or session["rol"] != "maestro":
+    if not verificar_maestro():
         return redirect("/")
 
     maestro = maestros.find_one({"usuario": session["usuario"]}) or {}
-
     grupos_maestro = maestro.get("grupos", [])
 
     lista_citatorios = list(
@@ -259,4 +253,45 @@ def ver_citatorios_maestro():
     return render_template(
         "citatorios_maestro.html",
         citatorios=lista_citatorios
+    )
+
+
+# =========================
+# CONFIRMAR ASISTENCIA 🔥
+# =========================
+@maestro_bp.route("/confirmar_asistencia/<id>")
+def confirmar_asistencia_maestro(id):
+
+    if not verificar_maestro():
+        return redirect("/")
+
+    citatorios.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"estatus": "asistio"}}
+    )
+
+    return redirect("/citatorios")
+
+
+# =========================
+# GENERAR PDF 🔥
+# =========================
+@maestro_bp.route("/generar_citatorio/<id>")
+def generar_citatorio_maestro(id):
+
+    if not verificar_maestro():
+        return redirect("/")
+
+    citatorio = citatorios.find_one({"_id": ObjectId(id)})
+
+    if not citatorio:
+        return "No encontrado"
+
+    pdf = generar_citatorio_pdf(citatorio)
+
+    return send_file(
+        pdf,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name="citatorio.pdf"
     )

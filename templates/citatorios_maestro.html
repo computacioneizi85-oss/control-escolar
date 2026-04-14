@@ -31,29 +31,29 @@
 <td>
 
 {% if c.estatus == "pendiente" %}
-<span style="color:orange;">🟡 Pendiente</span>
+<span style="color:orange; font-weight:bold;">🟡 Pendiente</span>
 
 {% elif c.estatus == "asistio" %}
-<span style="color:green;">✔ Asistió</span>
+<span style="color:green; font-weight:bold;">✔ Asistió</span>
 
 {% else %}
-<span>{{ c.estatus }}</span>
+<span style="color:gray;">{{ c.estatus }}</span>
 {% endif %}
 
 </td>
 
 <td>
 
-<!-- PDF -->
-<a href="/admin/generar_citatorio/{{ c._id }}">
+<!-- ✅ PDF (RUTA CORRECTA MAESTRO) -->
+<a href="/generar_citatorio/{{ c._id }}">
 <button style="background:#3498db;color:white;">
 PDF
 </button>
 </a>
 
-<!-- CONFIRMAR -->
+<!-- ✅ CONFIRMAR (RUTA CORRECTA) -->
 {% if c.estatus != "asistio" %}
-<a href="/admin/confirmar_asistencia/{{ c._id }}">
+<a href="/confirmar_asistencia/{{ c._id }}">
 <button style="background:#27ae60;color:white;">
 ✔ Confirmar
 </button>
@@ -69,7 +69,9 @@ PDF
 {% else %}
 
 <tr>
-<td colspan="7">No hay citatorios</td>
+<td colspan="7" style="text-align:center; color:#777;">
+No hay citatorios
+</td>
 </tr>
 
 {% endif %}
