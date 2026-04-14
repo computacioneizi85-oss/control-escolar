@@ -67,6 +67,29 @@ def admin_dashboard():
         return f"ERROR DASHBOARD: {str(e)}"
 
 
+# ================= 🔥 NUEVO: ACTIVAR TRIMESTRE =================
+@admin_bp.route("/activar_trimestre", methods=["POST"])
+def activar_trimestre():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    trimestre = request.form.get("trimestre")
+    estado = request.form.get("estado")
+
+    configuracion.update_one(
+        {},
+        {
+            "$set": {
+                f"trimestre_{trimestre}": True if estado == "true" else False
+            }
+        },
+        upsert=True
+    )
+
+    return redirect(url_for("admin.admin_dashboard"))
+
+
 # ================= CONFIGURACIÓN =================
 @admin_bp.route("/configuracion")
 def configuracion_admin():
