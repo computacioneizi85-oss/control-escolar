@@ -9,7 +9,7 @@ maestro_bp = Blueprint("maestro", __name__)
 
 
 def verificar_maestro():
-    return "rol" in session and session["rol"] == "maestro"
+    return session.get("rol") == "maestro"
 
 
 # =========================
@@ -243,16 +243,21 @@ def ver_citatorios_maestro():
     if not verificar_maestro():
         return redirect("/")
 
-    maestro = maestros.find_one({"usuario": session["usuario"]}) or {}
+    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
     grupos_maestro = maestro.get("grupos", [])
 
     lista_citatorios = list(
         citatorios.find({"grupo": {"$in": grupos_maestro}})
     )
 
+    lista_alumnos = list(
+        alumnos.find({"grupo": {"$in": grupos_maestro}})
+    )
+
     return render_template(
         "citatorios_maestro.html",
-        citatorios=lista_citatorios
+        citatorios=lista_citatorios,
+        alumnos=lista_alumnos
     )
 
 
@@ -295,3 +300,25 @@ def generar_citatorio_maestro(id):
         as_attachment=True,
         download_name="citatorio.pdf"
     )
+
+
+# =========================
+# CREAR CITATORIO 🔥
+# =========================
+@maestro_bp.route("/crear_citatorio", methods=["POST"])
+def crear_citatorio_maestro():
+
+    if not verificar_maestro():
+        return redirect("/")
+
+    citatorios.insert_one({
+        "alumno": request.form.get("alumno"),
+        "grupo": request.form.get("grupo"),
+        "motivo": request.form.get("motivo"),
+        "fecha_cita": request.form.get("fecha"),
+        "hora": request.form.get("hora"),
+        "estatus": "pendiente",
+        "maestro": session.get("usuario")
+    })
+
+    return redirect("/citatorios")

@@ -4,6 +4,50 @@
 
 <h2>📋 Citatorios de mis alumnos</h2>
 
+<!-- =========================
+GENERAR CITATORIO
+========================= -->
+
+<h3>➕ Generar citatorio</h3>
+
+<form action="/crear_citatorio" method="POST">
+
+<select name="alumno" id="alumnoSelect" required>
+
+<option value="" disabled selected>Selecciona alumno</option>
+
+{% if alumnos %}
+{% for alumno in alumnos %}
+<option value="{{ alumno.nombre }}" data-grupo="{{ alumno.grupo }}">
+{{ alumno.nombre }} - {{ alumno.grupo }}
+</option>
+{% endfor %}
+{% else %}
+<option disabled>No hay alumnos disponibles</option>
+{% endif %}
+
+</select>
+
+<input type="text" name="grupo" id="grupoInput" placeholder="Grupo" required readonly>
+
+<input type="text" name="motivo" placeholder="Motivo del citatorio" required>
+
+<input type="date" name="fecha" required>
+
+<input type="time" name="hora" required>
+
+<button type="submit" style="background:#2ecc71;color:white;">
+Crear citatorio
+</button>
+
+</form>
+
+<br><br>
+
+<!-- =========================
+LISTA
+========================= -->
+
 <table>
 
 <tr>
@@ -44,14 +88,14 @@
 
 <td>
 
-<!-- ✅ PDF (RUTA CORRECTA MAESTRO) -->
+<!-- PDF -->
 <a href="/generar_citatorio/{{ c._id }}">
 <button style="background:#3498db;color:white;">
 PDF
 </button>
 </a>
 
-<!-- ✅ CONFIRMAR (RUTA CORRECTA) -->
+<!-- CONFIRMAR -->
 {% if c.estatus != "asistio" %}
 <a href="/confirmar_asistencia/{{ c._id }}">
 <button style="background:#27ae60;color:white;">
@@ -77,5 +121,21 @@ No hay citatorios
 {% endif %}
 
 </table>
+
+<!-- =========================
+SCRIPT AUTO GRUPO 🔥
+========================= -->
+
+<script>
+
+const selectAlumno = document.getElementById("alumnoSelect");
+const inputGrupo = document.getElementById("grupoInput");
+
+selectAlumno.addEventListener("change", function(){
+    const grupo = this.options[this.selectedIndex].getAttribute("data-grupo");
+    inputGrupo.value = grupo || "";
+});
+
+</script>
 
 {% endblock %}
