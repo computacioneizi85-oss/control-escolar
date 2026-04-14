@@ -27,11 +27,8 @@ GENERAR CITATORIO
 </select>
 
 <input type="text" name="grupo" placeholder="Grupo" required>
-
 <input type="text" name="motivo" placeholder="Motivo del citatorio" required>
-
 <input type="date" name="fecha" required>
-
 <input type="time" name="hora" required>
 
 <button type="submit">Guardar citatorio</button>
@@ -55,7 +52,7 @@ LISTA DE CITATORIOS
 <th>Fecha</th>
 <th>Hora</th>
 <th>Estado</th>
-<th>PDF</th>
+<th>Acciones</th>
 </tr>
 
 {% if citatorios %}
@@ -69,15 +66,39 @@ LISTA DE CITATORIOS
 <td>{{ c.motivo }}</td>
 <td>{{ c.fecha_cita }}</td>
 <td>{{ c.hora }}</td>
-<td>{{ c.estatus }}</td>
+
+<!-- ESTADO BONITO -->
+<td>
+
+{% if c.estatus == "pendiente" %}
+<span style="color:orange; font-weight:bold;">🟡 Pendiente</span>
+
+{% elif c.estatus == "asistio" %}
+<span style="color:green; font-weight:bold;">✔ Asistió</span>
+
+{% else %}
+<span style="color:gray;">{{ c.estatus }}</span>
+{% endif %}
+
+</td>
 
 <td>
 
+<!-- PDF -->
 <a href="/admin/generar_citatorio/{{ c._id }}">
 <button style="background:#3498db;color:white;">
 PDF
 </button>
 </a>
+
+<!-- CONFIRMAR ASISTENCIA -->
+{% if c.estatus != "asistio" %}
+<a href="/admin/confirmar_asistencia/{{ c._id }}">
+<button style="background:#27ae60;color:white;">
+✔ Confirmar
+</button>
+</a>
+{% endif %}
 
 </td>
 
@@ -88,7 +109,9 @@ PDF
 {% else %}
 
 <tr>
-<td colspan="7">No hay citatorios registrados</td>
+<td colspan="7" style="text-align:center; color:#777;">
+No hay citatorios registrados
+</td>
 </tr>
 
 {% endif %}

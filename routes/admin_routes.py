@@ -424,3 +424,16 @@ def boleta(nombre):
     pdf = generar_boleta(nombre)
 
     return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name=f"boleta_{nombre}.pdf")
+
+@admin_bp.route("/confirmar_asistencia/<id>")
+def confirmar_asistencia(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    citatorios.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"estatus": "asistio"}}
+    )
+
+    return redirect(url_for("admin.ver_citatorios"))
