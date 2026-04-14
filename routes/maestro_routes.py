@@ -1,4 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, session, jsonify, url_for, send_file
+
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from io import BytesIO
+
 from bson.objectid import ObjectId
 from datetime import datetime
 
@@ -21,13 +26,10 @@ def panel_maestro():
     if not verificar_maestro():
         return redirect("/")
 
-    maestro = maestros.find_one({"usuario": session.get("usuario")})
+    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
 
-    if not maestro:
-        return redirect("/")
-
-    materias_maestro = maestro.get("materias", []) or []
-    grupos_maestro = maestro.get("grupos", []) or []
+    materias_maestro = maestro.get("materias", [])
+    grupos_maestro = maestro.get("grupos", [])
 
     lista_horarios = list(horarios.find({
         "materia": {"$in": materias_maestro}
@@ -71,8 +73,8 @@ def guardar_calificaciones_ajax():
     if not verificar_maestro():
         return jsonify({"status": "error"})
 
-    maestro = maestros.find_one({"usuario": session.get("usuario")})
-    materias_maestro = maestro.get("materias", []) or []
+    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
+    materias_maestro = maestro.get("materias", [])
 
     alumno_nombre = request.form.get("alumno")
     materia = request.form.get("materia")
@@ -92,7 +94,6 @@ def guardar_calificaciones_ajax():
         return jsonify({"status": "prohibido"})
 
     alumno = alumnos.find_one({"nombre": alumno_nombre})
-
     if not alumno:
         return jsonify({"status": "error"})
 
@@ -136,8 +137,8 @@ def enviar_calificaciones():
     if not verificar_maestro():
         return redirect("/")
 
-    maestro = maestros.find_one({"usuario": session.get("usuario")})
-    grupos = maestro.get("grupos", []) or []
+    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
+    grupos = maestro.get("grupos", [])
 
     alumnos.update_many(
         {"grupo": {"$in": grupos}},
@@ -161,20 +162,12 @@ def guardar_asistencia_ajax():
     fecha = request.form.get("fecha")
 
     alumno = alumnos.find_one({"nombre": alumno_nombre})
-
     if not alumno:
         return jsonify({"status": "error"})
 
     alumnos.update_one(
         {"_id": alumno["_id"]},
-        {
-            "$push": {
-                "asistencias": {
-                    "fecha": fecha,
-                    "estado": estado
-                }
-            }
-        }
+        {"$push": {"asistencias": {"fecha": fecha, "estado": estado}}}
     )
 
     return jsonify({"status": "ok"})
@@ -235,7 +228,7 @@ def enviar_reportes_maestro():
 
 
 # =========================
-# CITATORIOS MAESTRO 🔥
+# CITATORIOS
 # =========================
 @maestro_bp.route("/citatorios")
 def ver_citatorios_maestro():
@@ -246,13 +239,8 @@ def ver_citatorios_maestro():
     maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
     grupos_maestro = maestro.get("grupos", [])
 
-    lista_citatorios = list(
-        citatorios.find({"grupo": {"$in": grupos_maestro}})
-    )
-
-    lista_alumnos = list(
-        alumnos.find({"grupo": {"$in": grupos_maestro}})
-    )
+    lista_citatorios = list(citatorios.find({"grupo": {"$in": grupos_maestro}}))
+    lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos_maestro}}))
 
     return render_template(
         "citatorios_maestro.html",
@@ -261,9 +249,6 @@ def ver_citatorios_maestro():
     )
 
 
-# =========================
-# CONFIRMAR ASISTENCIA 🔥
-# =========================
 @maestro_bp.route("/confirmar_asistencia/<id>")
 def confirmar_asistencia_maestro(id):
 
@@ -278,9 +263,6 @@ def confirmar_asistencia_maestro(id):
     return redirect("/citatorios")
 
 
-# =========================
-# GENERAR PDF 🔥
-# =========================
 @maestro_bp.route("/generar_citatorio/<id>")
 def generar_citatorio_maestro(id):
 
@@ -288,23 +270,14 @@ def generar_citatorio_maestro(id):
         return redirect("/")
 
     citatorio = citatorios.find_one({"_id": ObjectId(id)})
-
     if not citatorio:
         return "No encontrado"
 
     pdf = generar_citatorio_pdf(citatorio)
 
-    return send_file(
-        pdf,
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name="citatorio.pdf"
-    )
+    return send_file(pdf, mimetype='application/pdf', as_attachment=True)
 
 
-# =========================
-# CREAR CITATORIO 🔥
-# =========================
 @maestro_bp.route("/crear_citatorio", methods=["POST"])
 def crear_citatorio_maestro():
 
@@ -322,3 +295,54 @@ def crear_citatorio_maestro():
     })
 
     return redirect("/citatorios")
+
+
+# =========================
+# HORARIO
+# =========================
+@maestro_bp.route("/horario")
+def ver_horario_maestro():
+
+    if not verificar_maestro():
+        return redirect("/")
+
+    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
+    materias_maestro = maestro.get("materias", [])
+
+    lista_horarios = list(horarios.find({"materia": {"$in": materias_maestro}}))
+
+    return render_template(
+        "horario_maestro.html",
+        horarios=lista_horarios
+    )
+
+
+@maestro_bp.route("/horario/pdf")
+def generar_pdf_horario():
+
+    if not verificar_maestro():
+        return redirect("/")
+
+    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
+    materias_maestro = maestro.get("materias", [])
+
+    lista_horarios = list(horarios.find({"materia": {"$in": materias_maestro}}))
+
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(180, 750, "HORARIO DEL MAESTRO")
+
+    y = 700
+
+    for h in lista_horarios:
+        texto = f"{h.get('dia','')} | {h.get('hora','')} | {h.get('materia','')} | {h.get('grupo','')}"
+        c.setFont("Helvetica", 10)
+        c.drawString(50, y, texto)
+        y -= 20
+
+    c.save()
+    buffer.seek(0)
+
+    return send_file(buffer, mimetype='application/pdf', as_attachment=True)

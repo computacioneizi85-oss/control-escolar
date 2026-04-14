@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>📅 Mi Horario</h2>
+
+<a href="/horario/pdf">
+<button style="background:#8e44ad;color:white;">
+📄 Descargar PDF
+</button>
+</a>
+
+<br><br>
+
+<table>
+
+<tr>
+<th>Día</th>
+<th>Hora</th>
+<th>Materia</th>
+<th>Grupo</th>
+</tr>
+
+{% if horarios %}
+
+{% for h in horarios %}
+
+<tr>
+<td>{{ h.dia }}</td>
+<td>{{ h.hora }}</td>
+<td>{{ h.materia }}</td>
+<td>{{ h.grupo }}</td>
+</tr>
+
+{% endfor %}
+
+{% else %}
+
+<tr>
+<td colspan="4">No hay horario asignado</td>
+</tr>
+
+{% endif %}
+
+</table>
+
+{% endblock %}
