@@ -1,111 +1,10 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
+{% extends "layout.html" %}
 
-<meta charset="UTF-8">
-<title>Control Escolar PRO</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
-<style>
-.submenu { display: none; margin-left: 10px; }
-
-.submenu a {
-display: block;
-padding: 8px;
-font-size: 14px;
-background: #2f4f75;
-margin-bottom: 5px;
-border-radius: 5px;
-color: white;
-text-decoration: none;
-}
-
-.submenu-btn {
-width: 100%;
-padding: 10px;
-background: #243b5a;
-color: white;
-border: none;
-cursor: pointer;
-text-align: left;
-margin-bottom: 5px;
-}
-
-.submenu-btn:hover{ background:#3e6aa1; }
-
-.card small{
-color:#777;
-}
-
-button{
-cursor:pointer;
-border-radius:5px;
-border:none;
-padding:6px 10px;
-}
-
-button:hover{
-opacity:0.9;
-}
-
-/* 🔥 GRID NUEVO */
-.dashboard-grid{
-display:grid;
-grid-template-columns: repeat(auto-fit, minmax(350px,1fr));
-gap:20px;
-margin-top:20px;
-}
-
-.dashboard-block{
-padding:15px;
-}
-</style>
-
-</head>
-
-<body>
-
-<div class="sidebar">
-
-<h2>Control Escolar</h2>
-
-<a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a>
-<a href="{{ url_for('admin.ver_alumnos') }}">Alumnos</a>
-<a href="{{ url_for('admin.ver_maestros') }}">Maestros</a>
-<a href="{{ url_for('admin.ver_grupos') }}">Grupos</a>
-<a href="{{ url_for('admin.ver_materias') }}">Materias</a>
-<a href="{{ url_for('admin.ver_horarios') }}">Horarios</a>
-<a href="{{ url_for('admin.ver_asistencias') }}">Asistencias</a>
-<a href="{{ url_for('admin.ver_evaluaciones') }}">📊 Evaluaciones</a>
-
-<button class="submenu-btn" onclick="toggleSubmenu('menuReportes')">
-📄 Reportes ▼
-</button>
-
-<div id="menuReportes" class="submenu">
-<a href="{{ url_for('admin.ver_reportes') }}">Ver reportes</a>
-</div>
-
-<button class="submenu-btn" onclick="toggleSubmenu('menuCitatorios')">
-📢 Citatorios ▼
-</button>
-
-<div id="menuCitatorios" class="submenu">
-<a href="{{ url_for('admin.ver_citatorios') }}">Ver citatorios</a>
-</div>
-
-<a href="{{ url_for('admin.configuracion_admin') }}">Configuración</a>
-<a href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
-
-</div>
-
-
-<div class="content">
+{% block content %}
 
 <h1>Dashboard</h1>
 
-<!-- TARJETAS PRINCIPALES -->
+<!-- TARJETAS -->
 <div class="cards dashboard-cards">
 
 <div class="card small-card">
@@ -135,46 +34,61 @@ padding:15px;
 </div>
 
 
-<!-- GRID PROFESIONAL -->
+<!-- GRID ORDENADO -->
 <div class="dashboard-grid">
 
 <!-- RIESGO -->
 <div class="card dashboard-block">
 <h3>Alumnos en riesgo</h3>
+
+{% if alumnos_riesgo %}
 <table>
 <tr><th>Alumno</th><th>Grupo</th></tr>
+
 {% for a in alumnos_riesgo %}
 <tr>
 <td>{{ a.nombre }}</td>
 <td>{{ a.grupo }}</td>
 </tr>
 {% endfor %}
+
 </table>
+{% else %}
+<p>No hay alumnos en riesgo</p>
+{% endif %}
+
 </div>
+
 
 <!-- ASISTENCIA -->
 <div class="card dashboard-block">
 <h3>Asistencia general</h3>
 
 <div class="cards">
+
 <div class="card">
 <h4>Asistencias</h4>
-<p>{{ total_asistencias }}</p>
+<p>{{ total_asistencias or 0 }}</p>
 </div>
 
 <div class="card">
 <h4>Faltas</h4>
-<p>{{ total_faltas }}</p>
-</div>
+<p>{{ total_faltas or 0 }}</p>
 </div>
 
 </div>
+
+</div>
+
 
 <!-- CITATORIOS -->
 <div class="card dashboard-block">
 <h3>Próximos citatorios</h3>
+
+{% if citatorios %}
 <table>
 <tr><th>Alumno</th><th>Fecha</th><th>Hora</th></tr>
+
 {% for c in citatorios %}
 <tr>
 <td>{{ c.alumno }}</td>
@@ -182,14 +96,23 @@ padding:15px;
 <td>{{ c.hora }}</td>
 </tr>
 {% endfor %}
+
 </table>
+{% else %}
+<p>No hay citatorios</p>
+{% endif %}
+
 </div>
+
 
 <!-- REPORTES -->
 <div class="card dashboard-block">
 <h3>Últimos reportes</h3>
+
+{% if ultimos_reportes %}
 <table>
 <tr><th>Alumno</th><th>Comentario</th><th>Estado</th></tr>
+
 {% for r in ultimos_reportes %}
 <tr>
 <td>{{ r.alumno }}</td>
@@ -197,7 +120,12 @@ padding:15px;
 <td>{{ r.estatus }}</td>
 </tr>
 {% endfor %}
+
 </table>
+{% else %}
+<p>No hay reportes recientes</p>
+{% endif %}
+
 </div>
 
 </div>
@@ -241,17 +169,20 @@ padding:15px;
 <h2>Alumnos registrados</h2>
 
 <table>
+
 <tr>
 <th>Alumno</th>
 <th>Grupo</th>
 <th>PDF</th>
 </tr>
 
-{% for alumno in alumnos or [] %}
+{% if alumnos %}
+
+{% for alumno in alumnos %}
 <tr>
 
-<td>{{ alumno.nombre or '' }}</td>
-<td>{{ alumno.grupo or '' }}</td>
+<td>{{ alumno.nombre }}</td>
+<td>{{ alumno.grupo }}</td>
 
 <td>
 
@@ -268,17 +199,10 @@ padding:15px;
 </tr>
 {% endfor %}
 
+{% else %}
+<tr><td colspan="3">No hay alumnos registrados</td></tr>
+{% endif %}
+
 </table>
 
-</div>
-
-
-<script>
-function toggleSubmenu(id){
-let menu = document.getElementById(id)
-menu.style.display = menu.style.display === "block" ? "none" : "block"
-}
-</script>
-
-</body>
-</html>
+{% endblock %}

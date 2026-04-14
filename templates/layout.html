@@ -2,25 +2,19 @@
 <html lang="es">
 
 <head>
-
 <meta charset="UTF-8">
 <title>Control Escolar</title>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 </head>
 
-
 <body>
-
 
 <div class="sidebar">
 
 <h2>Control Escolar</h2>
-
 
 {% if session.get("rol") == "admin" %}
 
@@ -28,72 +22,55 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 <i class="fa-solid fa-chart-line"></i> Dashboard
 </a>
 
-<a href="/alumnos">
+<a href="/admin/alumnos">
 <i class="fa-solid fa-user-graduate"></i> Alumnos
 </a>
 
-<a href="/maestros">
+<a href="/admin/maestros">
 <i class="fa-solid fa-chalkboard-user"></i> Maestros
 </a>
 
-<a href="/grupos">
+<a href="/admin/grupos">
 <i class="fa-solid fa-users"></i> Grupos
 </a>
 
-<a href="/materias">
+<a href="/admin/materias">
 <i class="fa-solid fa-book"></i> Materias
 </a>
 
-<a href="/reportes">
+<a href="/admin/reportes">
 <i class="fa-solid fa-file"></i> Reportes
 </a>
 
-<a href="/configuracion">
+<a href="/admin/configuracion">
 <i class="fa-solid fa-gear"></i> Configuración
 </a>
 
 {% endif %}
 
-
 {% if session.get("rol") == "maestro" %}
-
 <a href="/panel_maestro">
 <i class="fa-solid fa-chalkboard-user"></i> Panel Maestro
 </a>
-
 {% endif %}
-
 
 <a href="/logout">
 <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
 </a>
 
-
 </div>
-
-
 
 <div class="content">
 
 <div class="topbar">
-
 <h1>Sistema de Control Escolar</h1>
-
 </div>
-
 
 <div class="main-content">
-
-{% block content %}
-
-{% endblock %}
-
+{% block content %}{% endblock %}
 </div>
 
-
 </div>
-
 
 </body>
-
 </html>

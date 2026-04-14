@@ -18,44 +18,53 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 # ================= VERIFICAR ADMIN =================
 def verificar_admin():
-    return "rol" in session and session["rol"] == "admin"
+    return session.get("rol") == "admin"
 
 
 # ================= DASHBOARD =================
 @admin_bp.route("/")
 def admin_dashboard():
+
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    lista_alumnos = list(alumnos.find())
-    lista_grupos = list(grupos.find())
-    lista_maestros = list(maestros.find())
-    lista_reportes = list(reportes.find())
-    lista_citatorios = list(citatorios.find())
+    try:
+        lista_alumnos = list(alumnos.find())
+        lista_grupos = list(grupos.find())
+        lista_maestros = list(maestros.find())
+        lista_reportes = list(reportes.find())
+        lista_citatorios = list(citatorios.find())
 
-    # 🔥 NUEVO (para evitar error 500)
-    alumnos_riesgo = [
-        a for a in lista_alumnos
-        if not a.get("calificaciones")
-    ]
+        alumnos_riesgo = [
+            a for a in lista_alumnos
+            if not a.get("calificaciones")
+        ]
 
-    ultimos_reportes = lista_reportes[-5:] if lista_reportes else []
+        ultimos_reportes = lista_reportes[-5:] if lista_reportes else []
 
-    total_asistencias = sum(len(a.get("asistencias", [])) for a in lista_alumnos)
-    total_faltas = 0
+        total_asistencias = sum(
+            len(a.get("asistencias", []))
+            for a in lista_alumnos
+            if isinstance(a.get("asistencias", []), list)
+        )
 
-    return render_template(
-        "admin.html",
-        alumnos=lista_alumnos or [],
-        grupos=lista_grupos or [],
-        maestros=lista_maestros or [],
-        reportes=lista_reportes or [],
-        citatorios=lista_citatorios or [],
-        alumnos_riesgo=alumnos_riesgo,
-        ultimos_reportes=ultimos_reportes,
-        total_asistencias=total_asistencias,
-        total_faltas=total_faltas
-    )
+        total_faltas = 0
+
+        return render_template(
+            "admin.html",
+            alumnos=lista_alumnos or [],
+            grupos=lista_grupos or [],
+            maestros=lista_maestros or [],
+            reportes=lista_reportes or [],
+            citatorios=lista_citatorios or [],
+            alumnos_riesgo=alumnos_riesgo or [],
+            ultimos_reportes=ultimos_reportes or [],
+            total_asistencias=total_asistencias,
+            total_faltas=total_faltas
+        )
+
+    except Exception as e:
+        return f"ERROR DASHBOARD: {str(e)}"
 
 
 # ================= CONFIGURACIÓN =================
@@ -102,7 +111,6 @@ def crear_alumno():
         "asistencias": []
     })
 
-    # 🔥 crear padre automático
     padres.insert_one({
         "nombre": f"Padre de {nombre}",
         "usuario": f"padre_{usuario}",
@@ -248,7 +256,7 @@ def aprobar_reporte(id):
 
     reportes.update_one(
         {"_id": ObjectId(id)},
-        {"$set": {"estado": "aprobado", "pdf": ruta_pdf}}
+        {"$set": {"estatus": "aprobado", "pdf": ruta_pdf}}
     )
 
     return send_file(ruta_pdf, as_attachment=True)
@@ -276,9 +284,9 @@ def crear_citatorio():
         "alumno": request.form.get("alumno"),
         "grupo": request.form.get("grupo"),
         "motivo": request.form.get("motivo"),
-        "fecha_cita": request.form.get("fecha"),  # 🔥 CORREGIDO
+        "fecha_cita": request.form.get("fecha"),
         "hora": request.form.get("hora"),
-        "estado": "pendiente"
+        "estatus": "pendiente"
     })
 
     return redirect(url_for("admin.ver_citatorios"))
@@ -290,6 +298,9 @@ def generar_citatorio(id):
         return redirect(url_for("auth.login"))
 
     citatorio = citatorios.find_one({"_id": ObjectId(id)})
+
+    if not citatorio:
+        return "Citatorio no encontrado"
 
     ruta_pdf = generar_citatorio_pdf(citatorio)
 

@@ -4,7 +4,10 @@
 
 <h2>Mis Calificaciones</h2>
 
+{% if alumno and alumno.calificaciones %}
+
 <table>
+
 <tr>
 <th>Materia</th>
 <th>Cal1</th>
@@ -13,14 +16,22 @@
 </tr>
 
 {% for c in alumno.calificaciones %}
+
 <tr>
 <td>{{ c.materia }}</td>
 <td>{{ c.cal1 }}</td>
 <td>{{ c.cal2 }}</td>
 <td>{{ c.cal3 }}</td>
 </tr>
+
 {% endfor %}
 
 </table>
+
+{% else %}
+
+<p>No hay calificaciones disponibles.</p>
+
+{% endif %}
 
 {% endblock %}
