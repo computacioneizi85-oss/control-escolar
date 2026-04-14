@@ -12,35 +12,71 @@
 
 <br><br>
 
-<table>
+{% set dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"] %}
+
+<!-- 🔥 OBTENER HORAS ÚNICAS -->
+{% set horas = [] %}
+{% for h in horarios %}
+    {% if h.hora not in horas %}
+        {% set _ = horas.append(h.hora) %}
+    {% endif %}
+{% endfor %}
+
+{% set horas = horas | sort %}
+
+<table style="text-align:center;">
 
 <tr>
-<th>Día</th>
 <th>Hora</th>
-<th>Materia</th>
-<th>Grupo</th>
+{% for dia in dias %}
+<th>{{ dia }}</th>
+{% endfor %}
 </tr>
 
-{% if horarios %}
+{% for hora in horas %}
+
+<tr>
+
+<td><strong>{{ hora }}</strong></td>
+
+{% for dia in dias %}
+
+<td>
+
+{% set clase = None %}
 
 {% for h in horarios %}
+    {% if h.hora == hora and h.dia == dia %}
+        {% set clase = h %}
+    {% endif %}
+{% endfor %}
 
-<tr>
-<td>{{ h.dia }}</td>
-<td>{{ h.hora }}</td>
-<td>{{ h.materia }}</td>
-<td>{{ h.grupo }}</td>
-</tr>
+{% if clase %}
+<div style="
+background:
+{% if clase.materia == "MATEMATICAS" %}#e74c3c
+{% elif clase.materia == "INFORMATICA" %}#2ecc71
+{% else %}#3498db
+{% endif %};
+color:white;
+padding:8px;
+border-radius:8px;
+font-size:12px;
+">
+<strong>{{ clase.materia }}</strong><br>
+{{ clase.grupo }}
+</div>
+{% else %}
+<span style="color:#ccc;">—</span>
+{% endif %}
+
+</td>
 
 {% endfor %}
 
-{% else %}
-
-<tr>
-<td colspan="4">No hay horario asignado</td>
 </tr>
 
-{% endif %}
+{% endfor %}
 
 </table>
 
