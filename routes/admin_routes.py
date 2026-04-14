@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, session, send_file, url_for
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash
+import base64
 
 from database.mongo import (
     alumnos, grupos, materias, maestros,
@@ -35,11 +36,7 @@ def admin_dashboard():
         lista_reportes = list(reportes.find())
         lista_citatorios = list(citatorios.find())
 
-        alumnos_riesgo = [
-            a for a in lista_alumnos
-            if not a.get("calificaciones")
-        ]
-
+        alumnos_riesgo = [a for a in lista_alumnos if not a.get("calificaciones")]
         ultimos_reportes = lista_reportes[-5:] if lista_reportes else []
 
         total_asistencias = sum(
@@ -133,6 +130,46 @@ def crear_alumno():
         "password": generate_password_hash(password),
         "alumno": request.form.get("nombre")
     })
+
+    return redirect(url_for("admin.ver_alumnos"))
+
+
+@admin_bp.route("/editar_grupo", methods=["POST"])
+def editar_grupo():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    alumnos.update_one(
+        {"_id": ObjectId(request.form.get("id"))},
+        {"$set": {"grupo": request.form.get("grupo")}}
+    )
+
+    return redirect(url_for("admin.ver_alumnos"))
+
+
+@admin_bp.route("/eliminar_alumno/<id>")
+def eliminar_alumno(id):
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    alumnos.delete_one({"_id": ObjectId(id)})
+    return redirect(url_for("admin.ver_alumnos"))
+
+
+@admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
+def subir_foto_alumno(id):
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    foto = request.files.get("foto")
+
+    if foto:
+        imagen_base64 = base64.b64encode(foto.read()).decode("utf-8")
+
+        alumnos.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": {"foto": imagen_base64}}
+        )
 
     return redirect(url_for("admin.ver_alumnos"))
 
@@ -313,14 +350,14 @@ def aprobar_reporte(id):
     if not reporte:
         return "Reporte no encontrado"
 
-    ruta_pdf = generar_reporte_pdf(reporte)
+    pdf = generar_reporte_pdf(reporte)
 
     reportes.update_one(
         {"_id": ObjectId(id)},
-        {"$set": {"estatus": "aprobado", "pdf": ruta_pdf}}
+        {"$set": {"estatus": "aprobado"}}
     )
 
-    return send_file(ruta_pdf, mimetype='application/pdf', as_attachment=True)
+    return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name="reporte.pdf")
 
 
 # ================= CITATORIOS =================
@@ -363,9 +400,9 @@ def generar_citatorio(id):
     if not citatorio:
         return "Citatorio no encontrado"
 
-    ruta_pdf = generar_citatorio_pdf(citatorio)
+    pdf = generar_citatorio_pdf(citatorio)
 
-    return send_file(ruta_pdf, mimetype='application/pdf', as_attachment=True)
+    return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name="citatorio.pdf")
 
 
 # ================= PDFS =================
@@ -374,7 +411,9 @@ def kardex(nombre):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    return send_file(generar_kardex(nombre), mimetype='application/pdf', as_attachment=True)
+    pdf = generar_kardex(nombre)
+
+    return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name=f"kardex_{nombre}.pdf")
 
 
 @admin_bp.route("/boleta/<nombre>")
@@ -382,48 +421,6 @@ def boleta(nombre):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    return send_file(generar_boleta(nombre), mimetype='application/pdf', as_attachment=True)
+    pdf = generar_boleta(nombre)
 
-# ================= EDITAR GRUPO ALUMNO =================
-@admin_bp.route("/editar_grupo", methods=["POST"])
-def editar_grupo():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    alumnos.update_one(
-        {"_id": ObjectId(request.form.get("id"))},
-        {"$set": {"grupo": request.form.get("grupo")}}
-    )
-
-    return redirect(url_for("admin.ver_alumnos"))
-
-
-# ================= ELIMINAR ALUMNO =================
-@admin_bp.route("/eliminar_alumno/<id>")
-def eliminar_alumno(id):
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    alumnos.delete_one({"_id": ObjectId(id)})
-    return redirect(url_for("admin.ver_alumnos"))
-
-
-# ================= SUBIR FOTO =================
-import base64
-
-@admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
-def subir_foto_alumno(id):
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    foto = request.files.get("foto")
-
-    if foto:
-        imagen_base64 = base64.b64encode(foto.read()).decode("utf-8")
-
-        alumnos.update_one(
-            {"_id": ObjectId(id)},
-            {"$set": {"foto": imagen_base64}}
-        )
-
-    return redirect(url_for("admin.ver_alumnos"))
+    return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name=f"boleta_{nombre}.pdf")

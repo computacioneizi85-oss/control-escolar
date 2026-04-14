@@ -26,17 +26,17 @@
 
 <tr>
 
-<td>{{ r.alumno if r.alumno else '-' }}</td>
+<td>{{ r.alumno or '-' }}</td>
 
-<td>{{ r.maestro if r.maestro else '-' }}</td>
+<td>{{ r.maestro or '-' }}</td>
 
 <td>
-{{ r.comentario if r.comentario else r.descripcion if r.descripcion else '-' }}
+{{ r.comentario or r.descripcion or '-' }}
 </td>
 
 <td>
 
-{% set estado = r.estado if r.estado else "pendiente" %}
+{% set estado = r.estatus if r.estatus else "pendiente" %}
 
 {% if estado == "pendiente" %}
 <span style="color:orange; font-weight:bold;">🟡 Pendiente</span>
@@ -44,20 +44,23 @@
 {% elif estado == "correccion" %}
 <span style="color:red; font-weight:bold;">✏ En corrección</span>
 
-{% else %}
+{% elif estado == "aprobado" %}
 <span style="color:green; font-weight:bold;">🟢 Aprobado</span>
+
+{% else %}
+<span style="color:gray;">Desconocido</span>
 {% endif %}
 
 </td>
 
 <td>
 
-<!-- 🔥 SI ESTÁ PENDIENTE O EN CORRECCIÓN -->
-{% if estado == "pendiente" or estado == "correccion" %}
+<!-- 🔥 SI NO ESTÁ APROBADO -->
+{% if estado != "aprobado" %}
 
-<a href="{{ url_for('admin.ver_reporte', id=r._id|string) }}">
+<a href="{{ url_for('admin.aprobar_reporte', id=r._id|string) }}">
 <button style="background:#3498db; color:white; border:none; padding:6px 10px; border-radius:6px;">
-👁 Vista previa
+✔ Aprobar y generar PDF
 </button>
 </a>
 
