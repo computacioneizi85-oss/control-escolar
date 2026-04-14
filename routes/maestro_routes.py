@@ -239,3 +239,24 @@ def enviar_reportes_maestro():
     )
 
     return redirect(url_for("maestro.ver_reportes_maestro"))
+
+from database.mongo import citatorios
+
+@maestro_bp.route("/citatorios")
+def ver_citatorios_maestro():
+
+    if "rol" not in session or session["rol"] != "maestro":
+        return redirect("/")
+
+    maestro = maestros.find_one({"usuario": session["usuario"]}) or {}
+
+    grupos_maestro = maestro.get("grupos", [])
+
+    lista_citatorios = list(
+        citatorios.find({"grupo": {"$in": grupos_maestro}})
+    )
+
+    return render_template(
+        "citatorios_maestro.html",
+        citatorios=lista_citatorios
+    )

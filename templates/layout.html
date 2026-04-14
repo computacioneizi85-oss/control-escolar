@@ -16,6 +16,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 
 <h2>Control Escolar</h2>
 
+<!-- ================= ADMIN ================= -->
 {% if session.get("rol") == "admin" %}
 
 <a href="/admin">
@@ -52,6 +53,22 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 
 {% endif %}
 
+
+<!-- ================= MAESTRO ================= -->
+{% if session.get("rol") == "maestro" %}
+
+<a href="/panel_maestro">
+<i class="fa-solid fa-chalkboard-user"></i> Panel Maestro
+</a>
+
+<a href="/citatorios">
+<i class="fa-solid fa-envelope"></i> Citatorios
+</a>
+
+{% endif %}
+
+
+<!-- ================= GLOBAL ================= -->
 <a href="/logout">
 <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
 </a>

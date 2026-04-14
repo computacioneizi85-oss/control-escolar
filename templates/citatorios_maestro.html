@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>📋 Citatorios de mis alumnos</h2>
+
+<table>
+
+<tr>
+<th>Alumno</th>
+<th>Grupo</th>
+<th>Motivo</th>
+<th>Fecha</th>
+<th>Hora</th>
+<th>Estado</th>
+<th>Acciones</th>
+</tr>
+
+{% if citatorios %}
+
+{% for c in citatorios %}
+
+<tr>
+
+<td>{{ c.alumno }}</td>
+<td>{{ c.grupo }}</td>
+<td>{{ c.motivo }}</td>
+<td>{{ c.fecha_cita }}</td>
+<td>{{ c.hora }}</td>
+
+<td>
+
+{% if c.estatus == "pendiente" %}
+<span style="color:orange;">🟡 Pendiente</span>
+
+{% elif c.estatus == "asistio" %}
+<span style="color:green;">✔ Asistió</span>
+
+{% else %}
+<span>{{ c.estatus }}</span>
+{% endif %}
+
+</td>
+
+<td>
+
+<!-- PDF -->
+<a href="/admin/generar_citatorio/{{ c._id }}">
+<button style="background:#3498db;color:white;">
+PDF
+</button>
+</a>
+
+<!-- CONFIRMAR -->
+{% if c.estatus != "asistio" %}
+<a href="/admin/confirmar_asistencia/{{ c._id }}">
+<button style="background:#27ae60;color:white;">
+✔ Confirmar
+</button>
+</a>
+{% endif %}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+{% else %}
+
+<tr>
+<td colspan="7">No hay citatorios</td>
+</tr>
+
+{% endif %}
+
+</table>
+
+{% endblock %}
