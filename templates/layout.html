@@ -42,16 +42,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 <i class="fa-solid fa-file"></i> Reportes
 </a>
 
+<a href="/admin/citatorios">
+<i class="fa-solid fa-envelope"></i> Citatorios
+</a>
+
 <a href="/admin/configuracion">
 <i class="fa-solid fa-gear"></i> Configuración
 </a>
 
-{% endif %}
-
-{% if session.get("rol") == "maestro" %}
-<a href="/panel_maestro">
-<i class="fa-solid fa-chalkboard-user"></i> Panel Maestro
-</a>
 {% endif %}
 
 <a href="/logout">
@@ -66,9 +64,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 <h1>Sistema de Control Escolar</h1>
 </div>
 
-<div class="main-content">
 {% block content %}{% endblock %}
-</div>
 
 </div>
 

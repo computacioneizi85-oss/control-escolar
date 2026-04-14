@@ -16,18 +16,16 @@ REGISTRO
 
 <select name="grupo" required>
 
+<option value="" disabled selected>Selecciona un grupo</option>
+
 {% if grupos %}
 {% for grupo in grupos %}
-
 <option value="{{ grupo.nombre }}">
 {{ grupo.nombre }}
 </option>
-
 {% endfor %}
 {% else %}
-
-<option disabled>No hay grupos</option>
-
+<option disabled>No hay grupos disponibles</option>
 {% endif %}
 
 </select>
@@ -38,9 +36,7 @@ Registrar materia
 
 </form>
 
-
 <br><br>
-
 
 <!-- =========================
 LISTA
@@ -68,9 +64,11 @@ LISTA
 
 <td>
 
-<a href="/admin/eliminar_materia/{{ materia._id }}">
-<button style="background:red;">Eliminar</button>
-</a>
+<form action="/admin/eliminar_materia/{{ materia._id }}" method="GET" onsubmit="return confirm('¿Eliminar esta materia?')">
+<button type="submit" style="background:red;">
+Eliminar
+</button>
+</form>
 
 </td>
 
@@ -81,7 +79,9 @@ LISTA
 {% else %}
 
 <tr>
-<td colspan="3">No hay materias registradas</td>
+<td colspan="3" style="text-align:center; color:#777;">
+No hay materias registradas
+</td>
 </tr>
 
 {% endif %}

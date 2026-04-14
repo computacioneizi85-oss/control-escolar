@@ -14,7 +14,8 @@ REGISTRO
 
 <input type="text" name="nombre" placeholder="Nombre del alumno" required>
 
-<select name="grupo">
+<select name="grupo" required>
+<option value="" disabled selected>Selecciona grupo</option>
 {% for grupo in grupos or [] %}
 <option value="{{ grupo.nombre }}">
 {{ grupo.nombre }}
@@ -159,7 +160,7 @@ Sin foto
 </td>
 
 <td>
-<a href="/admin/eliminar_alumno/{{ alumno._id }}">
+<a href="/admin/eliminar_alumno/{{ alumno._id }}" onclick="return confirm('¿Eliminar alumno?')">
 <button style="background:red;">Eliminar</button>
 </a>
 </td>

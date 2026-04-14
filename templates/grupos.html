@@ -4,55 +4,36 @@
 
 <h1>Gestión de grupos</h1>
 
-
 <h2>Crear grupo</h2>
 
-<form action="/crear_grupo" method="POST">
+<form action="/admin/crear_grupo" method="POST">
 
-<input type="text" name="nombre" placeholder="Nombre del grupo (Ej. 1A, 2B)" required>
+<input type="text" name="nombre" placeholder="Nombre del grupo" required>
 
-<button type="submit">
-Crear grupo
-</button>
+<button type="submit">Crear grupo</button>
 
 </form>
 
-
-<br>
-<br>
-
+<br><br>
 
 <h2>Lista de grupos</h2>
 
 <table>
 
 <tr>
-
 <th>Grupo</th>
 <th>Eliminar</th>
-
 </tr>
 
 {% for grupo in grupos %}
-
 <tr>
-
 <td>{{ grupo.nombre }}</td>
-
 <td>
-
-<a href="/eliminar_grupo/{{ grupo._id }}">
-
-<button style="background:red;">
-Eliminar
-</button>
-
+<a href="/admin/eliminar_grupo/{{ grupo._id }}">
+<button style="background:red;">Eliminar</button>
 </a>
-
 </td>
-
 </tr>
-
 {% endfor %}
 
 </table>
