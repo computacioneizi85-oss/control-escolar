@@ -323,10 +323,24 @@ def generar_pdf_horario():
     if not verificar_maestro():
         return redirect("/")
 
-    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
+    maestro = maestros.find_one({"usuario": session.get("usuario")})
+
+    if not maestro:
+        return redirect("/")
+
     materias_maestro = maestro.get("materias", [])
 
-    lista_horarios = list(horarios.find({"materia": {"$in": materias_maestro}}))
+    # 🔥 si no tiene materias, evitar crash
+    if not materias_maestro:
+        return "El maestro no tiene materias asignadas"
+
+    lista_horarios = list(
+        horarios.find({"materia": {"$in": materias_maestro}})
+    )
+
+    # 🔥 si no hay horarios
+    if not lista_horarios:
+        return "No hay horario registrado"
 
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
@@ -337,12 +351,31 @@ def generar_pdf_horario():
     y = 700
 
     for h in lista_horarios:
-        texto = f"{h.get('dia','')} | {h.get('hora','')} | {h.get('materia','')} | {h.get('grupo','')}"
+
+        dia = str(h.get("dia", "N/A"))
+        hora = str(h.get("hora", "N/A"))
+        materia = str(h.get("materia", "N/A"))
+        grupo = str(h.get("grupo", "N/A"))
+
+        texto = f"{dia} | {hora} | {materia} | {grupo}"
+
         c.setFont("Helvetica", 10)
         c.drawString(50, y, texto)
+
         y -= 20
+
+        # 🔥 evitar que se salga de la hoja
+        if y < 50:
+            c.showPage()
+            c.setFont("Helvetica", 10)
+            y = 750
 
     c.save()
     buffer.seek(0)
 
-    return send_file(buffer, mimetype='application/pdf', as_attachment=True)
+    return send_file(
+        buffer,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name="horario_maestro.pdf"
+    )
