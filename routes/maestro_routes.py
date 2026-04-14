@@ -300,53 +300,52 @@ def crear_citatorio_maestro():
 # =========================
 # HORARIO
 # =========================
+# =========================
+# HORARIO
+# =========================
 @maestro_bp.route("/horario")
 def ver_horario_maestro():
 
     if not verificar_maestro():
         return redirect("/")
 
-    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
-    materias_maestro = maestro.get("materias", [])
+    usuario = session.get("usuario")
 
-    lista_horarios = list(horarios.find({"materia": {"$in": materias_maestro}}))
+    lista_horarios = list(
+        horarios.find({"maestro": usuario})
+    )
 
     return render_template(
         "horario_maestro.html",
         horarios=lista_horarios
     )
 
-
+# =========================
+# PDF HORARIO 🔥
+# =========================
 @maestro_bp.route("/horario/pdf")
 def generar_pdf_horario():
 
     if not verificar_maestro():
         return redirect("/")
 
-    maestro = maestros.find_one({"usuario": session.get("usuario")})
+    usuario = session.get("usuario")
 
-    if not maestro:
+    if not usuario:
         return redirect("/")
 
-    materias_maestro = maestro.get("materias", [])
-
-    # 🔥 si no tiene materias, evitar crash
-    if not materias_maestro:
-        return "El maestro no tiene materias asignadas"
-
     lista_horarios = list(
-        horarios.find({"materia": {"$in": materias_maestro}})
+        horarios.find({"maestro": usuario})
     )
 
-    # 🔥 si no hay horarios
     if not lista_horarios:
-        return "No hay horario registrado"
+        return "No tienes horario asignado"
 
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
 
     c.setFont("Helvetica-Bold", 14)
-    c.drawString(180, 750, "HORARIO DEL MAESTRO")
+    c.drawString(180, 750, f"HORARIO DE {usuario.upper()}")
 
     y = 700
 
@@ -364,7 +363,6 @@ def generar_pdf_horario():
 
         y -= 20
 
-        # 🔥 evitar que se salga de la hoja
         if y < 50:
             c.showPage()
             c.setFont("Helvetica", 10)
