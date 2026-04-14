@@ -2,27 +2,36 @@
 
 {% block content %}
 
-<h2>📢 Citatorios a Padres de Familia</h2>
+<h2>Citatorios a Padres de Familia</h2>
+
+<!-- =========================
+GENERAR CITATORIO
+========================= -->
 
 <h3>Generar citatorio</h3>
 
-<form action="{{ url_for('admin.crear_citatorio') }}" method="POST">
+<form action="/admin/crear_citatorio" method="POST">
 
 <select name="alumno" required>
+
 {% if alumnos %}
-    {% for alumno in alumnos %}
-    <option value="{{ alumno.nombre }}">
-        {{ alumno.nombre }} - {{ alumno.grupo }}
-    </option>
-    {% endfor %}
+{% for alumno in alumnos %}
+<option value="{{ alumno.nombre }}">
+{{ alumno.nombre }} - {{ alumno.grupo }}
+</option>
+{% endfor %}
 {% else %}
-    <option value="">No hay alumnos</option>
+<option disabled>No hay alumnos</option>
 {% endif %}
+
 </select>
 
 <input type="text" name="grupo" placeholder="Grupo" required>
+
 <input type="text" name="motivo" placeholder="Motivo del citatorio" required>
+
 <input type="date" name="fecha" required>
+
 <input type="time" name="hora" required>
 
 <button type="submit">Guardar citatorio</button>
@@ -31,13 +40,15 @@
 
 <br><br>
 
-<h3>📄 Citatorios registrados</h3>
+<!-- =========================
+LISTA DE CITATORIOS
+========================= -->
 
-{% if citatorios and citatorios|length > 0 %}
+<h3>Citatorios registrados</h3>
 
-<table border="1" style="width:100%; background:white;">
+<table>
 
-<tr style="background:#2c3e50; color:white;">
+<tr>
 <th>Alumno</th>
 <th>Grupo</th>
 <th>Motivo</th>
@@ -47,45 +58,41 @@
 <th>PDF</th>
 </tr>
 
+{% if citatorios %}
+
 {% for c in citatorios %}
 
 <tr>
 
-<td>{{ c.alumno if c.alumno else "-" }}</td>
-<td>{{ c.grupo if c.grupo else "-" }}</td>
-<td>{{ c.motivo if c.motivo else "-" }}</td>
-
-<!-- 🔥 FIX FECHA -->
-<td>{{ c.fecha if c.fecha else "-" }}</td>
-
-<td>{{ c.hora if c.hora else "-" }}</td>
+<td>{{ c.alumno }}</td>
+<td>{{ c.grupo }}</td>
+<td>{{ c.motivo }}</td>
+<td>{{ c.fecha_cita }}</td>
+<td>{{ c.hora }}</td>
+<td>{{ c.estatus }}</td>
 
 <td>
-{% if c.estado == "pendiente" %}
-<span style="color:orange; font-weight:bold;">Pendiente</span>
-{% else %}
-<span style="color:green; font-weight:bold;">Generado</span>
-{% endif %}
-</td>
 
-<td>
-<a href="{{ url_for('admin.generar_citatorio', id=c._id) }}" target="_blank">
-<button style="background:#3498db; color:white;">
-Ver PDF
+<a href="/admin/generar_citatorio/{{ c._id }}">
+<button style="background:#3498db;color:white;">
+PDF
 </button>
 </a>
+
 </td>
 
 </tr>
 
 {% endfor %}
 
-</table>
-
 {% else %}
 
-<p>No hay citatorios registrados</p>
+<tr>
+<td colspan="7">No hay citatorios registrados</td>
+</tr>
 
 {% endif %}
+
+</table>
 
 {% endblock %}

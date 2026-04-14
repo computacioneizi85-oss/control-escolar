@@ -4,15 +4,19 @@
 
 <h1>Gestión de materias</h1>
 
+<!-- =========================
+REGISTRO
+========================= -->
 
 <h2>Registrar materia</h2>
 
-<form action="/crear_materia" method="POST">
+<form action="/admin/crear_materia" method="POST">
 
 <input type="text" name="nombre" placeholder="Nombre de la materia" required>
 
-<select name="grupo">
+<select name="grupo" required>
 
+{% if grupos %}
 {% for grupo in grupos %}
 
 <option value="{{ grupo.nombre }}">
@@ -20,6 +24,11 @@
 </option>
 
 {% endfor %}
+{% else %}
+
+<option disabled>No hay grupos</option>
+
+{% endif %}
 
 </select>
 
@@ -30,9 +39,12 @@ Registrar materia
 </form>
 
 
-<br>
-<br>
+<br><br>
 
+
+<!-- =========================
+LISTA
+========================= -->
 
 <h2>Lista de materias</h2>
 
@@ -44,6 +56,8 @@ Registrar materia
 <th>Eliminar</th>
 </tr>
 
+{% if materias %}
+
 {% for materia in materias %}
 
 <tr>
@@ -54,7 +68,7 @@ Registrar materia
 
 <td>
 
-<a href="/eliminar_materia/{{ materia._id }}">
+<a href="/admin/eliminar_materia/{{ materia._id }}">
 <button style="background:red;">Eliminar</button>
 </a>
 
@@ -63,6 +77,14 @@ Registrar materia
 </tr>
 
 {% endfor %}
+
+{% else %}
+
+<tr>
+<td colspan="3">No hay materias registradas</td>
+</tr>
+
+{% endif %}
 
 </table>
 

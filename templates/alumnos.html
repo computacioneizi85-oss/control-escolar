@@ -15,12 +15,16 @@ REGISTRO
 <input type="text" name="nombre" placeholder="Nombre del alumno" required>
 
 <select name="grupo">
-{% for grupo in grupos %}
+{% for grupo in grupos or [] %}
 <option value="{{ grupo.nombre }}">
 {{ grupo.nombre }}
 </option>
 {% endfor %}
 </select>
+
+<!-- 🔥 NUEVOS CAMPOS -->
+<input type="text" name="usuario" placeholder="Usuario" required>
+<input type="text" name="password" placeholder="Contraseña" required>
 
 <input type="file" name="foto">
 
@@ -34,7 +38,7 @@ Registrar alumno
 <br><br>
 
 <!-- =========================
-FILTRO 🔥
+FILTRO
 ========================= -->
 
 <h2>Filtrar por grupo</h2>
@@ -43,7 +47,7 @@ FILTRO 🔥
 <option value="todos">Todos</option>
 
 {% set lista_grupos = [] %}
-{% for alumno in alumnos %}
+{% for alumno in alumnos or [] %}
 {% if alumno.grupo not in lista_grupos %}
 {% set _ = lista_grupos.append(alumno.grupo) %}
 <option value="{{ alumno.grupo }}">{{ alumno.grupo }}</option>
@@ -66,6 +70,7 @@ LISTA
 <tr>
 <th>Foto</th>
 <th>Alumno</th>
+<th>Usuario</th>
 <th>Grupo</th>
 <th>Editar grupo</th>
 <th>Kardex</th>
@@ -73,6 +78,8 @@ LISTA
 <th>Cambiar foto</th>
 <th>Eliminar</th>
 </tr>
+
+{% if alumnos %}
 
 {% for alumno in alumnos %}
 
@@ -102,9 +109,12 @@ Sin foto
 
 <td>{{ alumno.nombre }}</td>
 
+<!-- 🔥 NUEVO -->
+<td>{{ alumno.usuario or "—" }}</td>
+
 <td>{{ alumno.grupo }}</td>
 
-<!-- 🔥 EDITAR GRUPO -->
+<!-- EDITAR GRUPO -->
 <td>
 
 <form action="/admin/editar_grupo" method="POST" style="display:flex;gap:5px;">
@@ -149,7 +159,7 @@ Sin foto
 </td>
 
 <td>
-<a href="/eliminar_alumno/{{ alumno._id }}">
+<a href="/admin/eliminar_alumno/{{ alumno._id }}">
 <button style="background:red;">Eliminar</button>
 </a>
 </td>
@@ -157,6 +167,12 @@ Sin foto
 </tr>
 
 {% endfor %}
+
+{% else %}
+<tr>
+<td colspan="9">No hay alumnos registrados</td>
+</tr>
+{% endif %}
 
 </table>
 
@@ -199,17 +215,16 @@ document.getElementById("modalFoto").onclick = function(){
     this.style.display = "none"
 }
 
-
 function filtrarGrupo(grupo){
 
 document.querySelectorAll("table tr").forEach((row, index)=>{
 
-if(index === 0) return // encabezado
+if(index === 0) return
 
 if(grupo === "todos"){
 row.style.display = ""
 }else{
-let g = row.children[2].innerText
+let g = row.children[3].innerText
 row.style.display = (g === grupo) ? "" : "none"
 }
 

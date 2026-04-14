@@ -116,14 +116,19 @@ def ver_alumnos():
 
 @admin_bp.route("/crear_alumno", methods=["POST"])
 def crear_alumno():
+
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
     nombre = request.form.get("nombre")
     grupo = request.form.get("grupo")
+    usuario = request.form.get("usuario")
+    password = request.form.get("password")
 
-    usuario = nombre.lower().replace(" ", "")
-    password_hash = generate_password_hash("1234")
+    if not usuario or not password:
+        return "Faltan usuario o contraseña"
+
+    password_hash = generate_password_hash(password)
 
     alumnos.insert_one({
         "nombre": nombre,
@@ -137,7 +142,7 @@ def crear_alumno():
     padres.insert_one({
         "nombre": f"Padre de {nombre}",
         "usuario": f"padre_{usuario}",
-        "password": generate_password_hash("1234"),
+        "password": generate_password_hash(password),
         "alumno": nombre
     })
 
