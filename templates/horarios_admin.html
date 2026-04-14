@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>📅 Gestión de horarios</h1>
+
+<h2>Asignar horario</h2>
+
+<form action="/admin/crear_horario" method="POST">
+
+<!-- MAESTRO -->
+<select name="maestro" required>
+{% for m in maestros %}
+<option value="{{ m.usuario }}">
+{{ m.nombre }} ({{ m.usuario }})
+</option>
+{% endfor %}
+</select>
+
+<!-- MATERIA -->
+<select name="materia" required>
+{% for mat in materias %}
+<option value="{{ mat.nombre }}">
+{{ mat.nombre }}
+</option>
+{% endfor %}
+</select>
+
+<!-- GRUPO -->
+<select name="grupo" required>
+{% for g in grupos %}
+<option value="{{ g.nombre }}">
+{{ g.nombre }}
+</option>
+{% endfor %}
+</select>
+
+<!-- DIA -->
+<select name="dia" required>
+<option>Lunes</option>
+<option>Martes</option>
+<option>Miércoles</option>
+<option>Jueves</option>
+<option>Viernes</option>
+</select>
+
+<!-- HORA -->
+<input type="time" name="hora" required>
+
+<button style="background:#2ecc71;color:white;">
+Guardar horario
+</button>
+
+</form>
+
+<br><br>
+
+<h2>Horarios registrados</h2>
+
+<table>
+
+<tr>
+<th>Maestro</th>
+<th>Materia</th>
+<th>Grupo</th>
+<th>Día</th>
+<th>Hora</th>
+<th>Eliminar</th>
+</tr>
+
+{% for h in horarios %}
+
+<tr>
+
+<td>{{ h.maestro }}</td>
+<td>{{ h.materia }}</td>
+<td>{{ h.grupo }}</td>
+<td>{{ h.dia }}</td>
+<td>{{ h.hora }}</td>
+
+<td>
+<a href="/admin/eliminar_horario/{{ h._id }}">
+<button style="background:red;">Eliminar</button>
+</a>
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}

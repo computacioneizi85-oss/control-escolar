@@ -64,6 +64,75 @@ def admin_dashboard():
         return f"ERROR DASHBOARD: {str(e)}"
 
 
+# ================= HORARIOS =================
+@admin_bp.route("/horarios")
+def admin_horarios():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template(
+        "horarios_admin.html",
+        horarios=list(horarios.find()),
+        maestros=list(maestros.find()),
+        materias=list(materias.find()),
+        grupos=list(grupos.find())
+    )
+
+
+@admin_bp.route("/crear_horario", methods=["POST"])
+def crear_horario():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    maestro = request.form.get("maestro")  # usuario
+    materia = request.form.get("materia")
+    grupo = request.form.get("grupo")
+    dia = request.form.get("dia")
+    hora = request.form.get("hora")
+
+    # evitar choque de grupo
+    existe_grupo = horarios.find_one({
+        "grupo": grupo,
+        "dia": dia,
+        "hora": hora
+    })
+
+    if existe_grupo:
+        return "Ese grupo ya tiene clase en ese horario"
+
+    # evitar choque de maestro
+    existe_maestro = horarios.find_one({
+        "maestro": maestro,
+        "dia": dia,
+        "hora": hora
+    })
+
+    if existe_maestro:
+        return "El maestro ya tiene clase en ese horario"
+
+    horarios.insert_one({
+        "maestro": maestro,
+        "materia": materia,
+        "grupo": grupo,
+        "dia": dia,
+        "hora": hora
+    })
+
+    return redirect("/admin/horarios")
+
+
+@admin_bp.route("/eliminar_horario/<id>")
+def eliminar_horario(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    horarios.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/horarios")
+
+
 # ================= TRIMESTRE =================
 @admin_bp.route("/activar_trimestre", methods=["POST"])
 def activar_trimestre():
@@ -405,6 +474,20 @@ def generar_citatorio(id):
     return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name="citatorio.pdf")
 
 
+@admin_bp.route("/confirmar_asistencia/<id>")
+def confirmar_asistencia(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    citatorios.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"estatus": "asistio"}}
+    )
+
+    return redirect(url_for("admin.ver_citatorios"))
+
+
 # ================= PDFS =================
 @admin_bp.route("/kardex/<nombre>")
 def kardex(nombre):
@@ -424,16 +507,3 @@ def boleta(nombre):
     pdf = generar_boleta(nombre)
 
     return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name=f"boleta_{nombre}.pdf")
-
-@admin_bp.route("/confirmar_asistencia/<id>")
-def confirmar_asistencia(id):
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    citatorios.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {"estatus": "asistio"}}
-    )
-
-    return redirect(url_for("admin.ver_citatorios"))
