@@ -250,3 +250,37 @@ def activar_trimestre():
     )
 
     return redirect(url_for("admin.admin_dashboard"))
+
+# ================= PDFS =================
+@admin_bp.route("/kardex/<nombre>")
+def kardex(nombre):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    pdf = generar_kardex(nombre)
+    pdf.seek(0)
+
+    return send_file(
+        pdf,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=f"kardex_{nombre}.pdf"
+    )
+
+
+@admin_bp.route("/boleta/<nombre>")
+def boleta(nombre):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    pdf = generar_boleta(nombre)
+    pdf.seek(0)
+
+    return send_file(
+        pdf,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=f"boleta_{nombre}.pdf"
+    )
