@@ -200,20 +200,24 @@ def generar_citatorio_maestro(id):
     if not verificar_maestro():
         return redirect("/")
 
-    citatorio = citatorios.find_one({"_id": ObjectId(id)})
+    try:
+        citatorio = citatorios.find_one({"_id": ObjectId(id)})
 
-    if not citatorio:
-        return "No encontrado"
+        if not citatorio:
+            return "No encontrado"
 
-    pdf = generar_citatorio_pdf(citatorio)
-    pdf.seek(0)
+        pdf = generar_citatorio_pdf(citatorio)
+        pdf.seek(0)
 
-    return send_file(
-        pdf,
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name="citatorio.pdf"
-    )
+        return send_file(
+            pdf,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name="citatorio.pdf"
+        )
+
+    except Exception as e:
+        return f"ERROR PDF MAESTRO: {str(e)}"
 
 
 # 🔥 MODIFICADO

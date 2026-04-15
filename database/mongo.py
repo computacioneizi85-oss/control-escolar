@@ -7,16 +7,18 @@ import os
 
 MONGO_URI = os.getenv("MONGO_URI")
 
-client = MongoClient(MONGO_URI)
+if not MONGO_URI:
+    raise Exception("❌ ERROR: MONGO_URI no está configurado")
+
+client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
 
 db = client["control_escolar"]
 
-
 # =========================
-# COLECCIONES PRINCIPALES
+# COLECCIONES
 # =========================
 
-usuarios = db["usuarios"]        # admin
+usuarios = db["usuarios"]
 alumnos = db["alumnos"]
 maestros = db["maestros"]
 grupos = db["grupos"]
@@ -24,31 +26,15 @@ materias = db["materias"]
 reportes = db["reportes"]
 calificaciones = db["calificaciones"]
 
-
-# =========================
-# CONFIGURACIÓN
-# =========================
-
 configuracion = db["configuracion"]
-
-
-# =========================
-# OPERACIÓN ESCOLAR
-# =========================
 
 horarios = db["horarios"]
 citatorios = db["citatorios"]
 
+padres = db["padres"]
 
 # =========================
-# 🆕 NUEVAS COLECCIONES
-# =========================
-
-padres = db["padres"]   # 🔥 LOGIN DE PADRES
-
-
-# =========================
-# ÍNDICES (MEJOR RENDIMIENTO)
+# ÍNDICES
 # =========================
 
 try:

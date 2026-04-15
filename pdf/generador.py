@@ -239,7 +239,7 @@ def generar_citatorio_pdf(citatorio):
 
     c.drawString(50, 600, "Se solicita su presencia por el siguiente motivo:")
 
-    texto = citatorio.get("motivo", "")
+    texto = str(citatorio.get("motivo", ""))
 
     y = 580
     for linea in texto.split("\n"):

@@ -200,20 +200,24 @@ def generar_citatorio(id):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    citatorio = citatorios.find_one({"_id": ObjectId(id)})
+    try:
+        citatorio = citatorios.find_one({"_id": ObjectId(id)})
 
-    if not citatorio:
-        return "Citatorio no encontrado"
+        if not citatorio:
+            return "Citatorio no encontrado"
 
-    pdf = generar_citatorio_pdf(citatorio)
-    pdf.seek(0)
+        pdf = generar_citatorio_pdf(citatorio)
+        pdf.seek(0)
 
-    return send_file(
-        pdf,
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name="citatorio.pdf"
-    )
+        return send_file(
+            pdf,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name="citatorio.pdf"
+        )
+
+    except Exception as e:
+        return f"ERROR PDF CITATORIO: {str(e)}"
 
 
 @admin_bp.route("/confirmar_asistencia/<id>")
