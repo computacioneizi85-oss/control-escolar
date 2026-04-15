@@ -52,6 +52,7 @@ LISTA DE CITATORIOS
 <th>Fecha</th>
 <th>Hora</th>
 <th>Estado</th>
+<th>Enterado</th> <!-- 🔥 NUEVO -->
 <th>Acciones</th>
 </tr>
 
@@ -67,7 +68,7 @@ LISTA DE CITATORIOS
 <td>{{ c.fecha_cita }}</td>
 <td>{{ c.hora }}</td>
 
-<!-- ESTADO BONITO -->
+<!-- ESTADO -->
 <td>
 
 {% if c.estatus == "pendiente" %}
@@ -78,6 +79,17 @@ LISTA DE CITATORIOS
 
 {% else %}
 <span style="color:gray;">{{ c.estatus }}</span>
+{% endif %}
+
+</td>
+
+<!-- 🔥 ENTERADO -->
+<td>
+
+{% if c.enterado %}
+<span style="color:green; font-weight:bold;">✔ Sí</span>
+{% else %}
+<span style="color:red;">No</span>
 {% endif %}
 
 </td>
@@ -109,7 +121,7 @@ PDF
 {% else %}
 
 <tr>
-<td colspan="7" style="text-align:center; color:#777;">
+<td colspan="8" style="text-align:center; color:#777;">
 No hay citatorios registrados
 </td>
 </tr>

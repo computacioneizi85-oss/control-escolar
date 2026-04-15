@@ -31,7 +31,6 @@
 </td>
 
 <td>
-
 {% if not c.enterado %}
 <form action="/enterado" method="POST">
 <input type="hidden" name="alumno" value="{{ alumno.nombre }}">
@@ -39,11 +38,74 @@
 <button>Enterado</button>
 </form>
 {% endif %}
-
 </td>
 
 </tr>
 {% endfor %}
+</table>
+
+
+<br><br>
+
+<!-- =========================
+🔥 CITATORIOS
+========================= -->
+
+<h2>📩 Citatorios</h2>
+
+<table>
+
+<tr>
+<th>Motivo</th>
+<th>Fecha</th>
+<th>Hora</th>
+<th>Estado</th>
+<th>Acción</th>
+</tr>
+
+{% if citatorios %}
+
+{% for c in citatorios %}
+
+<tr>
+
+<td>{{ c.motivo }}</td>
+<td>{{ c.fecha_cita }}</td>
+<td>{{ c.hora }}</td>
+
+<td>
+{% if c.enterado %}
+<span style="color:green; font-weight:bold;">✔ Enterado</span>
+{% else %}
+<span style="color:red;">Pendiente</span>
+{% endif %}
+</td>
+
+<td>
+
+{% if not c.enterado %}
+<a href="/enterado_citatorio/{{ c._id }}">
+<button style="background:#2ecc71;color:white;">
+✔ Enterado
+</button>
+</a>
+{% endif %}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+{% else %}
+
+<tr>
+<td colspan="5" style="text-align:center; color:#777;">
+No hay citatorios
+</td>
+</tr>
+
+{% endif %}
 
 </table>
 

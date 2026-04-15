@@ -36,7 +36,6 @@ def panel_maestro():
 
     if not grupos:
         grupos = list(set([h.get("grupo") for h in lista_horarios if h.get("grupo")]))
-
     if not grupos:
         grupos = list(set([a.get("grupo") for a in alumnos.find()]))
 
@@ -195,7 +194,6 @@ def confirmar_asistencia_maestro(id):
     return redirect("/citatorios")
 
 
-# 🔥 FIX PDF CITATORIO
 @maestro_bp.route("/generar_citatorio/<id>")
 def generar_citatorio_maestro(id):
 
@@ -208,8 +206,6 @@ def generar_citatorio_maestro(id):
         return "No encontrado"
 
     pdf = generar_citatorio_pdf(citatorio)
-
-    # 🔥 FIX CRÍTICO
     pdf.seek(0)
 
     return send_file(
@@ -220,6 +216,7 @@ def generar_citatorio_maestro(id):
     )
 
 
+# 🔥 MODIFICADO
 @maestro_bp.route("/crear_citatorio", methods=["POST"])
 def crear_citatorio_maestro():
 
@@ -233,6 +230,7 @@ def crear_citatorio_maestro():
         "fecha_cita": request.form.get("fecha"),
         "hora": request.form.get("hora"),
         "estatus": "pendiente",
+        "enterado": False,  # 🔥 NUEVO
         "maestro": session.get("usuario")
     })
 

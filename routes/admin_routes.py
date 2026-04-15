@@ -17,7 +17,6 @@ from pdf.generador import (
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-# ================= VERIFICAR ADMIN =================
 def verificar_admin():
     return session.get("rol") == "admin"
 
@@ -86,30 +85,16 @@ def crear_horario():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    maestro = request.form.get("maestro")  # usuario
+    maestro = request.form.get("maestro")
     materia = request.form.get("materia")
     grupo = request.form.get("grupo")
     dia = request.form.get("dia")
     hora = request.form.get("hora")
 
-    # evitar choque de grupo
-    existe_grupo = horarios.find_one({
-        "grupo": grupo,
-        "dia": dia,
-        "hora": hora
-    })
-
-    if existe_grupo:
+    if horarios.find_one({"grupo": grupo, "dia": dia, "hora": hora}):
         return "Ese grupo ya tiene clase en ese horario"
 
-    # evitar choque de maestro
-    existe_maestro = horarios.find_one({
-        "maestro": maestro,
-        "dia": dia,
-        "hora": hora
-    })
-
-    if existe_maestro:
+    if horarios.find_one({"maestro": maestro, "dia": dia, "hora": hora}):
         return "El maestro ya tiene clase en ese horario"
 
     horarios.insert_one({
@@ -125,35 +110,11 @@ def crear_horario():
 
 @admin_bp.route("/eliminar_horario/<id>")
 def eliminar_horario(id):
-
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
     horarios.delete_one({"_id": ObjectId(id)})
     return redirect("/admin/horarios")
-
-
-# ================= TRIMESTRE =================
-@admin_bp.route("/activar_trimestre", methods=["POST"])
-def activar_trimestre():
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    trimestre = request.form.get("trimestre")
-    estado = request.form.get("estado")
-
-    configuracion.update_one(
-        {},
-        {
-            "$set": {
-                f"trimestre_{trimestre}": True if estado == "true" else False
-            }
-        },
-        upsert=True
-    )
-
-    return redirect(url_for("admin.admin_dashboard"))
 
 
 # ================= ALUMNOS =================
@@ -203,232 +164,6 @@ def crear_alumno():
     return redirect(url_for("admin.ver_alumnos"))
 
 
-@admin_bp.route("/editar_grupo", methods=["POST"])
-def editar_grupo():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    alumnos.update_one(
-        {"_id": ObjectId(request.form.get("id"))},
-        {"$set": {"grupo": request.form.get("grupo")}}
-    )
-
-    return redirect(url_for("admin.ver_alumnos"))
-
-
-@admin_bp.route("/eliminar_alumno/<id>")
-def eliminar_alumno(id):
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    alumnos.delete_one({"_id": ObjectId(id)})
-    return redirect(url_for("admin.ver_alumnos"))
-
-
-@admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
-def subir_foto_alumno(id):
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    foto = request.files.get("foto")
-
-    if foto:
-        imagen_base64 = base64.b64encode(foto.read()).decode("utf-8")
-
-        alumnos.update_one(
-            {"_id": ObjectId(id)},
-            {"$set": {"foto": imagen_base64}}
-        )
-
-    return redirect(url_for("admin.ver_alumnos"))
-
-
-# ================= MAESTROS =================
-@admin_bp.route("/maestros")
-def ver_maestros():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    return render_template(
-        "maestros.html",
-        maestros=list(maestros.find()),
-        grupos=list(grupos.find()),
-        materias=list(materias.find())
-    )
-
-
-@admin_bp.route("/crear_maestro", methods=["POST"])
-def crear_maestro():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    maestros.insert_one({
-        "nombre": request.form.get("nombre"),
-        "usuario": request.form.get("usuario"),
-        "password": request.form.get("password"),
-        "grupos": [],
-        "materias": []
-    })
-
-    return redirect(url_for("admin.ver_maestros"))
-
-
-@admin_bp.route("/asignar_grupo_maestro", methods=["POST"])
-def asignar_grupo_maestro():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    maestros.update_one(
-        {"_id": ObjectId(request.form.get("maestro"))},
-        {"$addToSet": {"grupos": request.form.get("grupo")}}
-    )
-
-    return redirect(url_for("admin.ver_maestros"))
-
-
-@admin_bp.route("/editar_grupos_maestro", methods=["POST"])
-def editar_grupos_maestro():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    maestros.update_one(
-        {"_id": ObjectId(request.form.get("maestro_id"))},
-        {"$set": {"grupos": request.form.getlist("grupos")}}
-    )
-
-    return redirect(url_for("admin.ver_maestros"))
-
-
-@admin_bp.route("/editar_materias_maestro", methods=["POST"])
-def editar_materias_maestro():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    maestros.update_one(
-        {"_id": ObjectId(request.form.get("maestro_id"))},
-        {"$set": {"materias": request.form.getlist("materias")}}
-    )
-
-    return redirect(url_for("admin.ver_maestros"))
-
-
-@admin_bp.route("/asignar_materias", methods=["POST"])
-def asignar_materias():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    maestros.update_one(
-        {"_id": ObjectId(request.form.get("maestro_id"))},
-        {"$addToSet": {"materias": {"$each": request.form.getlist("materias")}}}
-    )
-
-    return redirect(url_for("admin.ver_maestros"))
-
-
-@admin_bp.route("/quitar_materia", methods=["POST"])
-def quitar_materia():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    maestros.update_one(
-        {"_id": ObjectId(request.form.get("maestro_id"))},
-        {"$pull": {"materias": request.form.get("materia")}}
-    )
-
-    return redirect(url_for("admin.ver_maestros"))
-
-
-# ================= GRUPOS =================
-@admin_bp.route("/grupos")
-def ver_grupos():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    return render_template("grupos.html", grupos=list(grupos.find()))
-
-
-@admin_bp.route("/crear_grupo", methods=["POST"])
-def crear_grupo():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    grupos.insert_one({"nombre": request.form.get("nombre")})
-    return redirect(url_for("admin.ver_grupos"))
-
-
-@admin_bp.route("/eliminar_grupo/<id>")
-def eliminar_grupo(id):
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    grupos.delete_one({"_id": ObjectId(id)})
-    return redirect(url_for("admin.ver_grupos"))
-
-
-# ================= MATERIAS =================
-@admin_bp.route("/materias")
-def ver_materias():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    return render_template(
-        "materias.html",
-        materias=list(materias.find()),
-        grupos=list(grupos.find())
-    )
-
-
-@admin_bp.route("/crear_materia", methods=["POST"])
-def crear_materia():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    materias.insert_one({
-        "nombre": request.form.get("nombre"),
-        "grupo": request.form.get("grupo")
-    })
-
-    return redirect(url_for("admin.ver_materias"))
-
-
-@admin_bp.route("/eliminar_materia/<id>")
-def eliminar_materia(id):
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    materias.delete_one({"_id": ObjectId(id)})
-    return redirect(url_for("admin.ver_materias"))
-
-
-# ================= REPORTES =================
-@admin_bp.route("/reportes")
-def ver_reportes():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    return render_template("reportes_admin.html", reportes=list(reportes.find()))
-
-
-@admin_bp.route("/aprobar_reporte/<string:id>")
-def aprobar_reporte(id):
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    reporte = reportes.find_one({"_id": ObjectId(id)})
-
-    if not reporte:
-        return "Reporte no encontrado"
-
-    pdf = generar_reporte_pdf(reporte)
-
-    reportes.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {"estatus": "aprobado"}}
-    )
-
-    return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name="reporte.pdf")
-
-
 # ================= CITATORIOS =================
 @admin_bp.route("/citatorios")
 def ver_citatorios():
@@ -453,7 +188,8 @@ def crear_citatorio():
         "motivo": request.form.get("motivo"),
         "fecha_cita": request.form.get("fecha"),
         "hora": request.form.get("hora"),
-        "estatus": "pendiente"
+        "estatus": "pendiente",
+        "enterado": False  # 🔥 NUEVO
     })
 
     return redirect(url_for("admin.ver_citatorios"))
@@ -470,8 +206,14 @@ def generar_citatorio(id):
         return "Citatorio no encontrado"
 
     pdf = generar_citatorio_pdf(citatorio)
+    pdf.seek(0)
 
-    return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name="citatorio.pdf")
+    return send_file(
+        pdf,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name="citatorio.pdf"
+    )
 
 
 @admin_bp.route("/confirmar_asistencia/<id>")
@@ -486,24 +228,3 @@ def confirmar_asistencia(id):
     )
 
     return redirect(url_for("admin.ver_citatorios"))
-
-
-# ================= PDFS =================
-@admin_bp.route("/kardex/<nombre>")
-def kardex(nombre):
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    pdf = generar_kardex(nombre)
-
-    return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name=f"kardex_{nombre}.pdf")
-
-
-@admin_bp.route("/boleta/<nombre>")
-def boleta(nombre):
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    pdf = generar_boleta(nombre)
-
-    return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name=f"boleta_{nombre}.pdf")
