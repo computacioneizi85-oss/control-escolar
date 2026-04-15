@@ -17,29 +17,27 @@ from pdf.generador import (
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-# ================= VERIFICAR ADMIN =================
+# ================= SEGURIDAD =================
 def verificar_admin():
     return session.get("rol") == "admin"
+
+
+def proteger():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
 
 
 # ================= DASHBOARD =================
 @admin_bp.route("/")
 def admin_dashboard():
 
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
+    if proteger(): return proteger()
 
     lista_alumnos = list(alumnos.find())
     lista_grupos = list(grupos.find())
     lista_maestros = list(maestros.find())
     lista_reportes = list(reportes.find())
     lista_citatorios = list(citatorios.find())
-
-    alumnos_riesgo = [a for a in lista_alumnos if not a.get("calificaciones")]
-    ultimos_reportes = lista_reportes[-5:]
-
-    total_asistencias = sum(len(a.get("asistencias", [])) for a in lista_alumnos)
-    total_faltas = 0
 
     return render_template(
         "admin.html",
@@ -48,37 +46,77 @@ def admin_dashboard():
         maestros=lista_maestros,
         reportes=lista_reportes,
         citatorios=lista_citatorios,
-        alumnos_riesgo=alumnos_riesgo,
-        ultimos_reportes=ultimos_reportes,
-        total_asistencias=total_asistencias,
-        total_faltas=total_faltas
+        alumnos_riesgo=[a for a in lista_alumnos if not a.get("calificaciones")],
+        ultimos_reportes=lista_reportes[-5:],
+        total_asistencias=sum(len(a.get("asistencias", [])) for a in lista_alumnos),
+        total_faltas=0
     )
+
+
+# ================= CONFIGURACIÓN =================
+@admin_bp.route("/configuracion")
+def ver_configuracion():
+    if proteger(): return proteger()
+
+    config = configuracion.find_one() or {}
+    return render_template("configuracion.html", config=config)
 
 
 # ================= TRIMESTRE =================
 @admin_bp.route("/activar_trimestre", methods=["POST"])
 def activar_trimestre():
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    trimestre = request.form.get("trimestre")
-    estado = request.form.get("estado")
+    if proteger(): return proteger()
 
     configuracion.update_one(
         {},
-        {"$set": {f"trimestre_{trimestre}": estado == "true"}},
+        {"$set": {f"trimestre_{request.form.get('trimestre')}": request.form.get("estado") == "true"}},
         upsert=True
     )
 
-    return redirect(url_for("admin.admin_dashboard"))
+    return redirect("/admin")
+
+
+# ================= HORARIOS =================
+@admin_bp.route("/horarios")
+def ver_horarios():
+    if proteger(): return proteger()
+
+    return render_template(
+        "horarios_admin.html",
+        horarios=list(horarios.find()),
+        maestros=list(maestros.find()),
+        materias=list(materias.find()),
+        grupos=list(grupos.find())
+    )
+
+
+@admin_bp.route("/crear_horario", methods=["POST"])
+def crear_horario():
+    if proteger(): return proteger()
+
+    horarios.insert_one({
+        "maestro": request.form.get("maestro"),
+        "materia": request.form.get("materia"),
+        "grupo": request.form.get("grupo"),
+        "dia": request.form.get("dia"),
+        "hora": request.form.get("hora")
+    })
+
+    return redirect("/admin/horarios")
+
+
+@admin_bp.route("/eliminar_horario/<id>")
+def eliminar_horario(id):
+    if proteger(): return proteger()
+
+    horarios.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/horarios")
 
 
 # ================= ALUMNOS =================
 @admin_bp.route("/alumnos")
 def ver_alumnos():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
+    if proteger(): return proteger()
 
     return render_template(
         "alumnos.html",
@@ -90,28 +128,33 @@ def ver_alumnos():
 
 @admin_bp.route("/crear_alumno", methods=["POST"])
 def crear_alumno():
+    if proteger(): return proteger()
 
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
+    try:
+        password = request.form.get("password")
+        if not password:
+            return "Contraseña requerida"
 
-    usuario = request.form.get("usuario")
-    password = generate_password_hash(request.form.get("password"))
+        usuario = request.form.get("usuario")
 
-    alumnos.insert_one({
-        "nombre": request.form.get("nombre"),
-        "grupo": request.form.get("grupo"),
-        "usuario": usuario,
-        "password": password,
-        "calificaciones": [],
-        "asistencias": []
-    })
+        alumnos.insert_one({
+            "nombre": request.form.get("nombre"),
+            "grupo": request.form.get("grupo"),
+            "usuario": usuario,
+            "password": generate_password_hash(password),
+            "calificaciones": [],
+            "asistencias": []
+        })
 
-    padres.insert_one({
-        "nombre": f"Padre de {request.form.get('nombre')}",
-        "usuario": f"padre_{usuario}",
-        "password": generate_password_hash(request.form.get("password")),
-        "alumno": request.form.get("nombre")
-    })
+        padres.insert_one({
+            "nombre": f"Padre de {request.form.get('nombre')}",
+            "usuario": f"padre_{usuario}",
+            "password": generate_password_hash(password),
+            "alumno": request.form.get("nombre")
+        })
+
+    except Exception as e:
+        return f"ERROR CREAR ALUMNO: {str(e)}"
 
     return redirect("/admin/alumnos")
 
@@ -265,20 +308,20 @@ def ver_reportes():
 @admin_bp.route("/aprobar_reporte/<id>")
 def aprobar_reporte(id):
 
-    reporte = reportes.find_one({"_id": ObjectId(id)})
+    try:
+        reporte = reportes.find_one({"_id": ObjectId(id)})
+        pdf = generar_reporte_pdf(reporte)
+        pdf.seek(0)
 
-    if not reporte:
-        return "No encontrado"
+        reportes.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": {"estatus": "aprobado"}}
+        )
 
-    pdf = generar_reporte_pdf(reporte)
-    pdf.seek(0)
+        return send_file(pdf, mimetype='application/pdf', as_attachment=True)
 
-    reportes.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {"estatus": "aprobado"}}
-    )
-
-    return send_file(pdf, mimetype='application/pdf', as_attachment=True)
+    except Exception as e:
+        return f"ERROR REPORTE: {str(e)}"
 
 
 # ================= CITATORIOS =================
@@ -316,7 +359,7 @@ def generar_citatorio(id):
         return send_file(pdf, mimetype='application/pdf', as_attachment=True)
 
     except Exception as e:
-        return f"ERROR PDF: {str(e)}"
+        return f"ERROR CITATORIO: {str(e)}"
 
 
 @admin_bp.route("/confirmar_asistencia/<id>")
@@ -331,13 +374,23 @@ def confirmar_asistencia(id):
 # ================= PDFS =================
 @admin_bp.route("/kardex/<nombre>")
 def kardex(nombre):
-    pdf = generar_kardex(nombre)
-    pdf.seek(0)
-    return send_file(pdf, mimetype='application/pdf', as_attachment=True)
+
+    try:
+        pdf = generar_kardex(nombre)
+        pdf.seek(0)
+        return send_file(pdf, mimetype='application/pdf', as_attachment=True)
+
+    except Exception as e:
+        return f"ERROR KARDEX: {str(e)}"
 
 
 @admin_bp.route("/boleta/<nombre>")
 def boleta(nombre):
-    pdf = generar_boleta(nombre)
-    pdf.seek(0)
-    return send_file(pdf, mimetype='application/pdf', as_attachment=True)
+
+    try:
+        pdf = generar_boleta(nombre)
+        pdf.seek(0)
+        return send_file(pdf, mimetype='application/pdf', as_attachment=True)
+
+    except Exception as e:
+        return f"ERROR BOLETA: {str(e)}"
