@@ -228,3 +228,25 @@ def confirmar_asistencia(id):
     )
 
     return redirect(url_for("admin.ver_citatorios"))
+
+# ================= TRIMESTRE =================
+@admin_bp.route("/activar_trimestre", methods=["POST"])
+def activar_trimestre():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    trimestre = request.form.get("trimestre")
+    estado = request.form.get("estado")
+
+    configuracion.update_one(
+        {},
+        {
+            "$set": {
+                f"trimestre_{trimestre}": True if estado == "true" else False
+            }
+        },
+        upsert=True
+    )
+
+    return redirect(url_for("admin.admin_dashboard"))
