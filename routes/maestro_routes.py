@@ -300,9 +300,7 @@ def crear_citatorio_maestro():
 # =========================
 # HORARIO
 # =========================
-# =========================
-# HORARIO
-# =========================
+
 @maestro_bp.route("/horario")
 def ver_horario_maestro():
 
@@ -311,15 +309,26 @@ def ver_horario_maestro():
 
     usuario = session.get("usuario")
 
+    maestro = maestros.find_one({"usuario": usuario})
+
+    if not maestro:
+        return render_template("horario_maestro.html", horarios=[])
+
+    nombre = maestro.get("nombre")
+
     lista_horarios = list(
-        horarios.find({"maestro": usuario})
+        horarios.find({
+            "$or": [
+                {"maestro": usuario},
+                {"maestro": nombre}
+            ]
+        })
     )
 
     return render_template(
         "horario_maestro.html",
         horarios=lista_horarios
     )
-
 # =========================
 # PDF HORARIO 🔥
 # =========================
@@ -331,49 +340,38 @@ def generar_pdf_horario():
 
     usuario = session.get("usuario")
 
-    if not usuario:
-        return redirect("/")
+    maestro = maestros.find_one({"usuario": usuario})
+    nombre = maestro.get("nombre")
 
     lista_horarios = list(
-        horarios.find({"maestro": usuario})
+        horarios.find({
+            "$or": [
+                {"maestro": usuario},
+                {"maestro": nombre}
+            ]
+        })
     )
 
     if not lista_horarios:
         return "No tienes horario asignado"
 
+    from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas
+    from io import BytesIO
+
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
 
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(180, 750, f"HORARIO DE {usuario.upper()}")
+    c.drawString(200, 750, "HORARIO")
 
     y = 700
 
     for h in lista_horarios:
-
-        dia = str(h.get("dia", "N/A"))
-        hora = str(h.get("hora", "N/A"))
-        materia = str(h.get("materia", "N/A"))
-        grupo = str(h.get("grupo", "N/A"))
-
-        texto = f"{dia} | {hora} | {materia} | {grupo}"
-
-        c.setFont("Helvetica", 10)
+        texto = f"{h.get('dia')} {h.get('hora')} {h.get('materia')} {h.get('grupo')}"
         c.drawString(50, y, texto)
-
         y -= 20
-
-        if y < 50:
-            c.showPage()
-            c.setFont("Helvetica", 10)
-            y = 750
 
     c.save()
     buffer.seek(0)
 
-    return send_file(
-        buffer,
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name="horario_maestro.pdf"
-    )
+    return send_file(buffer, as_attachment=True, download_name="horario.pdf")
