@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, session, jsonify, url_for, send_file
 
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from io import BytesIO
-
 from bson.objectid import ObjectId
 from datetime import datetime
+from io import BytesIO
+
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
 
 from database.mongo import alumnos, maestros, horarios, configuracion, reportes, citatorios
 from pdf.generador import generar_citatorio_pdf
@@ -17,9 +18,7 @@ def verificar_maestro():
     return session.get("rol") == "maestro"
 
 
-# =========================
-# PANEL MAESTRO
-# =========================
+# ================= PANEL =================
 @maestro_bp.route("/panel_maestro")
 def panel_maestro():
 
@@ -64,172 +63,110 @@ def panel_maestro():
     )
 
 
-# =========================
-# GUARDAR CALIFICACIONES
-# =========================
-@maestro_bp.route("/guardar_calificaciones_ajax", methods=["POST"])
-def guardar_calificaciones_ajax():
+# ================= HORARIO =================
+@maestro_bp.route("/horario")
+def ver_horario_maestro():
 
     if not verificar_maestro():
-        return jsonify({"status": "error"})
+        return redirect("/")
 
-    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
-    materias_maestro = maestro.get("materias", [])
+    usuario = session.get("usuario")
+    maestro = maestros.find_one({"usuario": usuario}) or {}
 
-    alumno_nombre = request.form.get("alumno")
-    materia = request.form.get("materia")
-    trimestre = str(request.form.get("trimestre"))
-    cal1 = request.form.get("cal1")
+    nombre = maestro.get("nombre")
 
-    if not alumno_nombre or not materia or not trimestre or cal1 is None:
-        return jsonify({"status": "error"})
-
-    config = configuracion.find_one({"tipo": "trimestre"}) or {}
-    estado = str(config.get("estado")).lower()
-
-    if estado != "true":
-        return jsonify({"status": "cerrado"})
-
-    if materia not in materias_maestro:
-        return jsonify({"status": "prohibido"})
-
-    alumno = alumnos.find_one({"nombre": alumno_nombre})
-    if not alumno:
-        return jsonify({"status": "error"})
-
-    if alumno.get("enviado"):
-        return jsonify({"status": "bloqueado"})
-
-    try:
-        cal1 = float(cal1)
-    except:
-        return jsonify({"status": "error"})
-
-    calificaciones = alumno.get("calificaciones", [])
-    encontrada = False
-
-    for c in calificaciones:
-        if c.get("materia") == materia and str(c.get("trimestre")) == trimestre:
-            c["calificacion"] = cal1
-            encontrada = True
-
-    if not encontrada:
-        calificaciones.append({
-            "materia": materia,
-            "calificacion": cal1,
-            "trimestre": trimestre
+    lista_horarios = list(
+        horarios.find({
+            "$or": [
+                {"maestro": usuario},
+                {"maestro": nombre}
+            ]
         })
-
-    alumnos.update_one(
-        {"_id": alumno["_id"]},
-        {"$set": {"calificaciones": calificaciones}}
     )
 
-    return jsonify({"status": "ok"})
+    return render_template("horario_maestro.html", horarios=lista_horarios)
 
 
-# =========================
-# ENVIAR CALIFICACIONES
-# =========================
-@maestro_bp.route("/enviar_calificaciones")
-def enviar_calificaciones():
+# ================= PDF HORARIO PRO 🔥 =================
+@maestro_bp.route("/horario/pdf")
+def generar_pdf_horario():
 
     if not verificar_maestro():
         return redirect("/")
 
-    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
-    grupos = maestro.get("grupos", [])
+    usuario = session.get("usuario")
+    maestro = maestros.find_one({"usuario": usuario}) or {}
 
-    alumnos.update_many(
-        {"grupo": {"$in": grupos}},
-        {"$set": {"enviado": True}}
+    nombre = maestro.get("nombre")
+
+    lista_horarios = list(
+        horarios.find({
+            "$or": [
+                {"maestro": usuario},
+                {"maestro": nombre}
+            ]
+        })
     )
 
-    return redirect("/panel_maestro")
+    if not lista_horarios:
+        return "No tienes horario asignado"
 
+    # 🔥 FORMATO TIPO ESCUELA
+    dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
+    horas = sorted(list(set([h["hora"] for h in lista_horarios])))
 
-# =========================
-# ASISTENCIAS
-# =========================
-@maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])
-def guardar_asistencia_ajax():
+    data = [["Hora"] + dias]
 
-    if not verificar_maestro():
-        return jsonify({"status": "error"})
+    for hora in horas:
+        fila = [hora]
 
-    alumno_nombre = request.form.get("alumno")
-    estado = request.form.get("estado")
-    fecha = request.form.get("fecha")
+        for dia in dias:
+            celda = ""
 
-    alumno = alumnos.find_one({"nombre": alumno_nombre})
-    if not alumno:
-        return jsonify({"status": "error"})
+            for h in lista_horarios:
+                if h["hora"] == hora and h["dia"] == dia:
+                    celda = f"{h['materia']}\n{h['grupo']}"
 
-    alumnos.update_one(
-        {"_id": alumno["_id"]},
-        {"$push": {"asistencias": {"fecha": fecha, "estado": estado}}}
+            fila.append(celda)
+
+        data.append(fila)
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+
+    tabla = Table(data)
+
+    tabla.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.darkblue),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+
+        ("GRID", (0, 0), (-1, -1), 1, colors.black),
+
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
+
+        ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
+    ]))
+
+    elements = []
+    elements.append(tabla)
+
+    doc.build(elements)
+
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name="horario.pdf"
     )
 
-    return jsonify({"status": "ok"})
 
-
-# =========================
-# REPORTES
-# =========================
-@maestro_bp.route("/reportes")
-def ver_reportes_maestro():
-
-    if not verificar_maestro():
-        return redirect("/")
-
-    lista_reportes = list(reportes.find({
-        "maestro": session.get("usuario")
-    }))
-
-    lista_alumnos = list(alumnos.find())
-
-    return render_template(
-        "reportes_maestro.html",
-        reportes=lista_reportes,
-        alumnos=lista_alumnos
-    )
-
-
-@maestro_bp.route("/crear_reporte", methods=["POST"])
-def crear_reporte():
-
-    if not verificar_maestro():
-        return redirect("/")
-
-    reportes.insert_one({
-        "alumno": request.form.get("alumno"),
-        "grupo": request.form.get("grupo"),
-        "comentario": request.form.get("comentario"),
-        "maestro": session.get("usuario"),
-        "fecha": datetime.now().strftime("%Y-%m-%d"),
-        "estado": "pendiente"
-    })
-
-    return redirect(url_for("maestro.ver_reportes_maestro"))
-
-
-@maestro_bp.route("/enviar_reportes_maestro", methods=["POST"])
-def enviar_reportes_maestro():
-
-    if not verificar_maestro():
-        return redirect("/")
-
-    reportes.update_many(
-        {"maestro": session.get("usuario")},
-        {"$set": {"estado": "enviado"}}
-    )
-
-    return redirect(url_for("maestro.ver_reportes_maestro"))
-
-
-# =========================
-# CITATORIOS
-# =========================
+# ================= CITATORIOS =================
 @maestro_bp.route("/citatorios")
 def ver_citatorios_maestro():
 
@@ -295,83 +232,3 @@ def crear_citatorio_maestro():
     })
 
     return redirect("/citatorios")
-
-
-# =========================
-# HORARIO
-# =========================
-
-@maestro_bp.route("/horario")
-def ver_horario_maestro():
-
-    if not verificar_maestro():
-        return redirect("/")
-
-    usuario = session.get("usuario")
-
-    maestro = maestros.find_one({"usuario": usuario})
-
-    if not maestro:
-        return render_template("horario_maestro.html", horarios=[])
-
-    nombre = maestro.get("nombre")
-
-    lista_horarios = list(
-        horarios.find({
-            "$or": [
-                {"maestro": usuario},
-                {"maestro": nombre}
-            ]
-        })
-    )
-
-    return render_template(
-        "horario_maestro.html",
-        horarios=lista_horarios
-    )
-# =========================
-# PDF HORARIO 🔥
-# =========================
-@maestro_bp.route("/horario/pdf")
-def generar_pdf_horario():
-
-    if not verificar_maestro():
-        return redirect("/")
-
-    usuario = session.get("usuario")
-
-    maestro = maestros.find_one({"usuario": usuario})
-    nombre = maestro.get("nombre")
-
-    lista_horarios = list(
-        horarios.find({
-            "$or": [
-                {"maestro": usuario},
-                {"maestro": nombre}
-            ]
-        })
-    )
-
-    if not lista_horarios:
-        return "No tienes horario asignado"
-
-    from reportlab.lib.pagesizes import letter
-    from reportlab.pdfgen import canvas
-    from io import BytesIO
-
-    buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
-
-    c.drawString(200, 750, "HORARIO")
-
-    y = 700
-
-    for h in lista_horarios:
-        texto = f"{h.get('dia')} {h.get('hora')} {h.get('materia')} {h.get('grupo')}"
-        c.drawString(50, y, texto)
-        y -= 20
-
-    c.save()
-    buffer.seek(0)
-
-    return send_file(buffer, as_attachment=True, download_name="horario.pdf")
