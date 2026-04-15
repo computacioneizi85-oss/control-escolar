@@ -5,8 +5,9 @@ from datetime import datetime
 from io import BytesIO
 
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
 
 from database.mongo import alumnos, maestros, horarios, configuracion, reportes, citatorios
 from pdf.generador import generar_citatorio_pdf
@@ -87,7 +88,7 @@ def ver_horario_maestro():
     return render_template("horario_maestro.html", horarios=lista_horarios)
 
 
-# ================= PDF HORARIO PRO 🔥 =================
+# ================= PDF HORARIO PRO (ESTABLE) =================
 @maestro_bp.route("/horario/pdf")
 def generar_pdf_horario():
 
@@ -97,7 +98,7 @@ def generar_pdf_horario():
     usuario = session.get("usuario")
     maestro = maestros.find_one({"usuario": usuario}) or {}
 
-    nombre = maestro.get("nombre")
+    nombre = maestro.get("nombre", "").upper()
 
     lista_horarios = list(
         horarios.find({
@@ -111,11 +112,11 @@ def generar_pdf_horario():
     if not lista_horarios:
         return "No tienes horario asignado"
 
-    # 🔥 FORMATO TIPO ESCUELA
+    # 🔥 ESTRUCTURA
     dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
-    horas = sorted(list(set([h["hora"] for h in lista_horarios])))
+    horas = sorted(list(set([h.get("hora", "") for h in lista_horarios])))
 
-    data = [["Hora"] + dias]
+    data = [["HORA"] + dias]
 
     for hora in horas:
         fila = [hora]
@@ -124,8 +125,8 @@ def generar_pdf_horario():
             celda = ""
 
             for h in lista_horarios:
-                if h["hora"] == hora and h["dia"] == dia:
-                    celda = f"{h['materia']}\n{h['grupo']}"
+                if h.get("hora") == hora and h.get("dia") == dia:
+                    celda = f"{h.get('materia','')}\n{h.get('grupo','')}"
 
             fila.append(celda)
 
@@ -134,27 +135,40 @@ def generar_pdf_horario():
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter)
 
-    tabla = Table(data)
+    styles = getSampleStyleSheet()
+    elementos = []
+
+    # 🔥 TITULO
+    elementos.append(Paragraph("<b>HORARIO 2025 - 2026</b>", styles["Title"]))
+    elementos.append(Spacer(1, 10))
+
+    # 🔥 MAESTRO
+    elementos.append(Paragraph(f"<b>MAESTRO:</b> {nombre}", styles["Normal"]))
+    elementos.append(Spacer(1, 20))
+
+    # 🔥 TABLA (SIN ERROR)
+    tabla = Table(data, repeatRows=1, rowHeights=28)
 
     tabla.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.darkblue),
+
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2c3e50")),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
 
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
 
         ("GRID", (0, 0), (-1, -1), 1, colors.black),
 
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
-
         ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
+
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
     ]))
 
-    elements = []
-    elements.append(tabla)
+    elementos.append(tabla)
 
-    doc.build(elements)
+    doc.build(elementos)
 
     buffer.seek(0)
 
@@ -162,7 +176,7 @@ def generar_pdf_horario():
         buffer,
         mimetype='application/pdf',
         as_attachment=True,
-        download_name="horario.pdf"
+        download_name="horario_oficial.pdf"
     )
 
 
