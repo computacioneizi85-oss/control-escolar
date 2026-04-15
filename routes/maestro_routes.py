@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, request, redirect, session, url_for, send_file
-
 from bson.objectid import ObjectId
 from io import BytesIO
 
@@ -23,19 +22,28 @@ def verificar_maestro():
 def panel_maestro():
 
     if not verificar_maestro():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
     maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
 
     materias = maestro.get("materias", [])
     grupos = maestro.get("grupos", [])
+    nombre = maestro.get("nombre", "").strip()
+    usuario = maestro.get("usuario", "").strip()
 
+    # 🔥 FILTRO MEJORADO
     lista_horarios = list(horarios.find({
-        "materia": {"$in": materias}
+        "$or": [
+            {"maestro": usuario},
+            {"maestro": nombre},
+            {"maestro": nombre.lower()},
+            {"maestro": nombre.upper()}
+        ]
     }))
 
     if not grupos:
         grupos = list(set([h.get("grupo") for h in lista_horarios if h.get("grupo")]))
+
     if not grupos:
         grupos = list(set([a.get("grupo") for a in alumnos.find()]))
 
@@ -61,17 +69,19 @@ def panel_maestro():
 def ver_horario_maestro():
 
     if not verificar_maestro():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
-    usuario = session.get("usuario")
-    maestro = maestros.find_one({"usuario": usuario}) or {}
+    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
 
-    nombre = maestro.get("nombre")
+    nombre = maestro.get("nombre", "").strip()
+    usuario = maestro.get("usuario", "").strip()
 
     lista_horarios = list(horarios.find({
         "$or": [
             {"maestro": usuario},
-            {"maestro": nombre}
+            {"maestro": nombre},
+            {"maestro": nombre.lower()},
+            {"maestro": nombre.upper()}
         ]
     }))
 
@@ -83,81 +93,79 @@ def ver_horario_maestro():
 def generar_pdf_horario():
 
     if not verificar_maestro():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
-    usuario = session.get("usuario")
-    maestro = maestros.find_one({"usuario": usuario}) or {}
+    try:
+        maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
 
-    nombre = maestro.get("nombre", "").upper()
+        nombre = maestro.get("nombre", "").upper()
+        usuario = maestro.get("usuario", "")
 
-    lista_horarios = list(horarios.find({
-        "$or": [
-            {"maestro": usuario},
-            {"maestro": nombre}
-        ]
-    }))
+        lista_horarios = list(horarios.find({
+            "$or": [
+                {"maestro": usuario},
+                {"maestro": nombre},
+                {"maestro": nombre.lower()}
+            ]
+        }))
 
-    if not lista_horarios:
-        return "No tienes horario asignado"
+        if not lista_horarios:
+            return "No tienes horario asignado"
 
-    dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
-    horas = sorted(list(set([h.get("hora", "") for h in lista_horarios])))
+        dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
+        horas = sorted(list(set([h.get("hora", "") for h in lista_horarios])))
 
-    data = [["HORA"] + dias]
+        data = [["HORA"] + dias]
 
-    for hora in horas:
-        fila = [hora]
+        for hora in horas:
+            fila = [hora]
 
-        for dia in dias:
-            celda = ""
+            for dia in dias:
+                celda = ""
 
-            for h in lista_horarios:
-                if h.get("hora") == hora and h.get("dia") == dia:
-                    celda = f"{h.get('materia','')}\n{h.get('grupo','')}"
+                for h in lista_horarios:
+                    if h.get("hora") == hora and h.get("dia") == dia:
+                        celda = f"{h.get('materia','')}\n{h.get('grupo','')}"
 
-            fila.append(celda)
+                fila.append(celda)
 
-        data.append(fila)
+            data.append(fila)
 
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
 
-    styles = getSampleStyleSheet()
-    elementos = []
+        styles = getSampleStyleSheet()
+        elementos = []
 
-    elementos.append(Paragraph("<b>HORARIO 2025 - 2026</b>", styles["Title"]))
-    elementos.append(Spacer(1, 10))
-    elementos.append(Paragraph(f"<b>MAESTRO:</b> {nombre}", styles["Normal"]))
-    elementos.append(Spacer(1, 20))
+        elementos.append(Paragraph("<b>HORARIO ESCOLAR</b>", styles["Title"]))
+        elementos.append(Spacer(1, 10))
+        elementos.append(Paragraph(f"<b>MAESTRO:</b> {nombre}", styles["Normal"]))
+        elementos.append(Spacer(1, 20))
 
-    tabla = Table(data, repeatRows=1, rowHeights=28)
+        tabla = Table(data, repeatRows=1, rowHeights=28)
 
-    tabla.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2c3e50")),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        tabla.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2c3e50")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
+        ]))
 
-        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        elementos.append(tabla)
 
-        ("GRID", (0, 0), (-1, -1), 1, colors.black),
-        ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
+        doc.build(elementos)
+        buffer.seek(0)
 
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-    ]))
+        return send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name="horario_oficial.pdf"
+        )
 
-    elementos.append(tabla)
-
-    doc.build(elementos)
-    buffer.seek(0)
-
-    return send_file(
-        buffer,
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name="horario_oficial.pdf"
-    )
+    except Exception as e:
+        return f"ERROR HORARIO PDF: {str(e)}"
 
 
 # ================= CITATORIOS =================
@@ -165,7 +173,7 @@ def generar_pdf_horario():
 def ver_citatorios_maestro():
 
     if not verificar_maestro():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
     maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
     grupos = maestro.get("grupos", [])
@@ -184,7 +192,7 @@ def ver_citatorios_maestro():
 def confirmar_asistencia_maestro(id):
 
     if not verificar_maestro():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
     citatorios.update_one(
         {"_id": ObjectId(id)},
@@ -198,7 +206,7 @@ def confirmar_asistencia_maestro(id):
 def generar_citatorio_maestro(id):
 
     if not verificar_maestro():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
     try:
         citatorio = citatorios.find_one({"_id": ObjectId(id)})
@@ -220,12 +228,12 @@ def generar_citatorio_maestro(id):
         return f"ERROR PDF MAESTRO: {str(e)}"
 
 
-# 🔥 MODIFICADO
+# ================= CREAR CITATORIO =================
 @maestro_bp.route("/crear_citatorio", methods=["POST"])
 def crear_citatorio_maestro():
 
     if not verificar_maestro():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
     citatorios.insert_one({
         "alumno": request.form.get("alumno"),
@@ -234,7 +242,7 @@ def crear_citatorio_maestro():
         "fecha_cita": request.form.get("fecha"),
         "hora": request.form.get("hora"),
         "estatus": "pendiente",
-        "enterado": False,  # 🔥 NUEVO
+        "enterado": False,
         "maestro": session.get("usuario")
     })
 

@@ -256,55 +256,7 @@ def quitar_materia():
     return redirect("/admin/maestros")
 
 
-# ================= GRUPOS =================
-@admin_bp.route("/grupos")
-def ver_grupos():
-    return render_template("grupos.html", grupos=list(grupos.find()))
-
-
-@admin_bp.route("/crear_grupo", methods=["POST"])
-def crear_grupo():
-    grupos.insert_one({"nombre": request.form.get("nombre")})
-    return redirect("/admin/grupos")
-
-
-@admin_bp.route("/eliminar_grupo/<id>")
-def eliminar_grupo(id):
-    grupos.delete_one({"_id": ObjectId(id)})
-    return redirect("/admin/grupos")
-
-
-# ================= MATERIAS =================
-@admin_bp.route("/materias")
-def ver_materias():
-    return render_template(
-        "materias.html",
-        materias=list(materias.find()),
-        grupos=list(grupos.find())
-    )
-
-
-@admin_bp.route("/crear_materia", methods=["POST"])
-def crear_materia():
-    materias.insert_one({
-        "nombre": request.form.get("nombre"),
-        "grupo": request.form.get("grupo")
-    })
-    return redirect("/admin/materias")
-
-
-@admin_bp.route("/eliminar_materia/<id>")
-def eliminar_materia(id):
-    materias.delete_one({"_id": ObjectId(id)})
-    return redirect("/admin/materias")
-
-
 # ================= REPORTES =================
-@admin_bp.route("/reportes")
-def ver_reportes():
-    return render_template("reportes_admin.html", reportes=list(reportes.find()))
-
-
 @admin_bp.route("/aprobar_reporte/<id>")
 def aprobar_reporte(id):
 
@@ -318,36 +270,13 @@ def aprobar_reporte(id):
             {"$set": {"estatus": "aprobado"}}
         )
 
-        return send_file(pdf, mimetype='application/pdf', as_attachment=True)
+        return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name="reporte.pdf")
 
     except Exception as e:
         return f"ERROR REPORTE: {str(e)}"
 
 
 # ================= CITATORIOS =================
-@admin_bp.route("/citatorios")
-def ver_citatorios():
-    return render_template(
-        "citatorios.html",
-        citatorios=list(citatorios.find()),
-        alumnos=list(alumnos.find())
-    )
-
-
-@admin_bp.route("/crear_citatorio", methods=["POST"])
-def crear_citatorio():
-    citatorios.insert_one({
-        "alumno": request.form.get("alumno"),
-        "grupo": request.form.get("grupo"),
-        "motivo": request.form.get("motivo"),
-        "fecha_cita": request.form.get("fecha"),
-        "hora": request.form.get("hora"),
-        "estatus": "pendiente",
-        "enterado": False
-    })
-    return redirect("/admin/citatorios")
-
-
 @admin_bp.route("/generar_citatorio/<id>")
 def generar_citatorio(id):
 
@@ -356,19 +285,10 @@ def generar_citatorio(id):
         pdf = generar_citatorio_pdf(citatorio)
         pdf.seek(0)
 
-        return send_file(pdf, mimetype='application/pdf', as_attachment=True)
+        return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name="citatorio.pdf")
 
     except Exception as e:
         return f"ERROR CITATORIO: {str(e)}"
-
-
-@admin_bp.route("/confirmar_asistencia/<id>")
-def confirmar_asistencia(id):
-    citatorios.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {"estatus": "asistio"}}
-    )
-    return redirect("/admin/citatorios")
 
 
 # ================= PDFS =================
@@ -378,7 +298,7 @@ def kardex(nombre):
     try:
         pdf = generar_kardex(nombre)
         pdf.seek(0)
-        return send_file(pdf, mimetype='application/pdf', as_attachment=True)
+        return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name=f"kardex_{nombre}.pdf")
 
     except Exception as e:
         return f"ERROR KARDEX: {str(e)}"
@@ -390,7 +310,7 @@ def boleta(nombre):
     try:
         pdf = generar_boleta(nombre)
         pdf.seek(0)
-        return send_file(pdf, mimetype='application/pdf', as_attachment=True)
+        return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name=f"boleta_{nombre}.pdf")
 
     except Exception as e:
         return f"ERROR BOLETA: {str(e)}"
