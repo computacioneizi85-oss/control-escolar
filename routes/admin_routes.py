@@ -22,7 +22,7 @@ def verificar_admin():
     return session.get("rol") == "admin"
 
 
-def proteger():
+def require_admin():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -30,8 +30,8 @@ def proteger():
 # ================= DASHBOARD =================
 @admin_bp.route("/")
 def admin_dashboard():
-
-    if proteger(): return proteger()
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
 
     lista_alumnos = list(alumnos.find())
     lista_grupos = list(grupos.find())
@@ -56,7 +56,8 @@ def admin_dashboard():
 # ================= CONFIGURACIÓN =================
 @admin_bp.route("/configuracion")
 def ver_configuracion():
-    if proteger(): return proteger()
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
 
     config = configuracion.find_one() or {}
     return render_template("configuracion.html", config=config)
@@ -65,7 +66,8 @@ def ver_configuracion():
 # ================= TRIMESTRE =================
 @admin_bp.route("/activar_trimestre", methods=["POST"])
 def activar_trimestre():
-    if proteger(): return proteger()
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
 
     configuracion.update_one(
         {},
@@ -79,7 +81,8 @@ def activar_trimestre():
 # ================= HORARIOS =================
 @admin_bp.route("/horarios")
 def ver_horarios():
-    if proteger(): return proteger()
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
 
     return render_template(
         "horarios_admin.html",
@@ -92,7 +95,8 @@ def ver_horarios():
 
 @admin_bp.route("/crear_horario", methods=["POST"])
 def crear_horario():
-    if proteger(): return proteger()
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
 
     horarios.insert_one({
         "maestro": request.form.get("maestro"),
@@ -107,16 +111,54 @@ def crear_horario():
 
 @admin_bp.route("/eliminar_horario/<id>")
 def eliminar_horario(id):
-    if proteger(): return proteger()
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
 
     horarios.delete_one({"_id": ObjectId(id)})
     return redirect("/admin/horarios")
 
 
+# ================= GRUPOS =================
+@admin_bp.route("/grupos")
+def ver_grupos():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template("grupos.html", grupos=list(grupos.find()))
+
+
+# ================= MATERIAS =================
+@admin_bp.route("/materias")
+def ver_materias():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template("materias.html", materias=list(materias.find()))
+
+
+# ================= REPORTES =================
+@admin_bp.route("/reportes")
+def ver_reportes():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template("reportes.html", reportes=list(reportes.find()))
+
+
+# ================= CITATORIOS =================
+@admin_bp.route("/citatorios")
+def ver_citatorios():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template("citatorios.html", citatorios=list(citatorios.find()))
+
+
 # ================= ALUMNOS =================
 @admin_bp.route("/alumnos")
 def ver_alumnos():
-    if proteger(): return proteger()
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
 
     return render_template(
         "alumnos.html",
@@ -128,7 +170,8 @@ def ver_alumnos():
 
 @admin_bp.route("/crear_alumno", methods=["POST"])
 def crear_alumno():
-    if proteger(): return proteger()
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
 
     try:
         password = request.form.get("password")
@@ -176,7 +219,6 @@ def eliminar_alumno(id):
 
 @admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
 def subir_foto_alumno(id):
-
     foto = request.files.get("foto")
 
     if foto:
@@ -191,6 +233,9 @@ def subir_foto_alumno(id):
 # ================= MAESTROS =================
 @admin_bp.route("/maestros")
 def ver_maestros():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
     return render_template(
         "maestros.html",
         maestros=list(maestros.find()),
@@ -201,6 +246,9 @@ def ver_maestros():
 
 @admin_bp.route("/crear_maestro", methods=["POST"])
 def crear_maestro():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
     maestros.insert_one({
         "nombre": request.form.get("nombre"),
         "usuario": request.form.get("usuario"),
@@ -213,6 +261,9 @@ def crear_maestro():
 
 @admin_bp.route("/asignar_grupo_maestro", methods=["POST"])
 def asignar_grupo_maestro():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
     maestros.update_one(
         {"_id": ObjectId(request.form.get("maestro"))},
         {"$addToSet": {"grupos": request.form.get("grupo")}}
@@ -222,6 +273,9 @@ def asignar_grupo_maestro():
 
 @admin_bp.route("/editar_grupos_maestro", methods=["POST"])
 def editar_grupos_maestro():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
     maestros.update_one(
         {"_id": ObjectId(request.form.get("maestro_id"))},
         {"$set": {"grupos": request.form.getlist("grupos")}}
@@ -231,6 +285,9 @@ def editar_grupos_maestro():
 
 @admin_bp.route("/asignar_materias", methods=["POST"])
 def asignar_materias():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
     maestros.update_one(
         {"_id": ObjectId(request.form.get("maestro_id"))},
         {"$addToSet": {"materias": {"$each": request.form.getlist("materias")}}}
@@ -240,6 +297,9 @@ def asignar_materias():
 
 @admin_bp.route("/editar_materias_maestro", methods=["POST"])
 def editar_materias_maestro():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
     maestros.update_one(
         {"_id": ObjectId(request.form.get("maestro_id"))},
         {"$set": {"materias": request.form.getlist("materias")}}
@@ -249,6 +309,9 @@ def editar_materias_maestro():
 
 @admin_bp.route("/quitar_materia", methods=["POST"])
 def quitar_materia():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
     maestros.update_one(
         {"_id": ObjectId(request.form.get("maestro_id"))},
         {"$pull": {"materias": request.form.get("materia")}}
@@ -256,10 +319,9 @@ def quitar_materia():
     return redirect("/admin/maestros")
 
 
-# ================= REPORTES =================
+# ================= REPORTES PDF =================
 @admin_bp.route("/aprobar_reporte/<id>")
 def aprobar_reporte(id):
-
     try:
         reporte = reportes.find_one({"_id": ObjectId(id)})
         pdf = generar_reporte_pdf(reporte)
@@ -276,10 +338,9 @@ def aprobar_reporte(id):
         return f"ERROR REPORTE: {str(e)}"
 
 
-# ================= CITATORIOS =================
+# ================= CITATORIOS PDF =================
 @admin_bp.route("/generar_citatorio/<id>")
 def generar_citatorio(id):
-
     try:
         citatorio = citatorios.find_one({"_id": ObjectId(id)})
         pdf = generar_citatorio_pdf(citatorio)
@@ -294,7 +355,6 @@ def generar_citatorio(id):
 # ================= PDFS =================
 @admin_bp.route("/kardex/<nombre>")
 def kardex(nombre):
-
     try:
         pdf = generar_kardex(nombre)
         pdf.seek(0)
@@ -306,7 +366,6 @@ def kardex(nombre):
 
 @admin_bp.route("/boleta/<nombre>")
 def boleta(nombre):
-
     try:
         pdf = generar_boleta(nombre)
         pdf.seek(0)
