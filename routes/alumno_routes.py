@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, session, redirect
-from database.mongo import alumnos, avisos  # 🔥 agregamos avisos
+from database.mongo import alumnos, avisos
 
 alumno_bp = Blueprint("alumno", __name__)
 
@@ -21,10 +21,13 @@ def panel_alumno():
     if not alumno:
         return "Alumno no encontrado"
 
-    return render_template("panel_alumno.html", alumno=alumno)
+    return render_template(
+        "panel_alumno.html",
+        alumno=alumno
+    )
 
 
-# ================= 🔔 AVISOS ALUMNO =================
+# ================= AVISOS =================
 @alumno_bp.route("/avisos")
 def ver_avisos_alumno():
 
@@ -36,4 +39,4 @@ def ver_avisos_alumno():
     return render_template(
         "avisos_alumno.html",
         avisos=lista_avisos
-    )=alumno)
+    )
