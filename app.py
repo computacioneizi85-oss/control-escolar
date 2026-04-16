@@ -56,9 +56,9 @@ def proteger_rutas():
     if request.path in rutas_publicas:
         return
 
-    # evitar errores internos
+    # 🔴 CORRECCIÓN CLAVE
     if request.endpoint is None:
-        return
+        return redirect(url_for("auth.login"))
 
     # 🔥 SI NO HAY SESIÓN
     if "usuario" not in session:
