@@ -1,18 +1,20 @@
 from flask import Blueprint, render_template, request, redirect, session, url_for, send_file
 from bson.objectid import ObjectId
 from io import BytesIO
+from datetime import datetime
 
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 
-from database.mongo import alumnos, maestros, horarios, configuracion, citatorios
+from database.mongo import alumnos, maestros, horarios, configuracion, citatorios, avisos
 from pdf.generador import generar_citatorio_pdf
 
 maestro_bp = Blueprint("maestro", __name__)
 
 
+# ================= SEGURIDAD =================
 def verificar_maestro():
     return session.get("rol") == "maestro"
 
@@ -31,7 +33,6 @@ def panel_maestro():
     nombre = maestro.get("nombre", "").strip()
     usuario = maestro.get("usuario", "").strip()
 
-    # 🔥 FILTRO MEJORADO
     lista_horarios = list(horarios.find({
         "$or": [
             {"maestro": usuario},
@@ -62,6 +63,39 @@ def panel_maestro():
         materias=materias,
         config=config
     )
+
+
+# ================= 🔔 AVISOS MAESTRO =================
+@maestro_bp.route("/avisos_maestro")
+def avisos_maestro():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
+
+    return render_template(
+        "avisos_maestro.html",
+        grupos=maestro.get("grupos", [])
+    )
+
+
+@maestro_bp.route("/crear_aviso_maestro", methods=["POST"])
+def crear_aviso_maestro():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    avisos.insert_one({
+        "tipo": "grupo",
+        "grupo": request.form.get("grupo"),
+        "titulo": request.form.get("titulo"),
+        "mensaje": request.form.get("mensaje"),
+        "fecha": datetime.now().strftime("%d/%m/%Y"),
+        "maestro": session.get("usuario")
+    })
+
+    return redirect("/avisos_maestro")
 
 
 # ================= HORARIO =================

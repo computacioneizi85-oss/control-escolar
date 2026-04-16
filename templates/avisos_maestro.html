@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Enviar aviso</h2>
+
+<form action="/crear_aviso" method="POST">
+
+<select name="grupo">
+{% for g in grupos %}
+<option value="{{ g }}">{{ g }}</option>
+{% endfor %}
+</select>
+
+<input name="titulo" placeholder="Título" required>
+<textarea name="mensaje" placeholder="Mensaje" required></textarea>
+
+<button>Enviar</button>
+
+</form>
+
+{% endblock %}
