@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Avisos</h2>
+
+<h3>Crear aviso</h3>
+
+<form action="/admin/crear_aviso" method="POST">
+
+<select name="tipo">
+<option value="alumno">Alumnos</option>
+<option value="padre">Padres</option>
+</select>
+
+<input type="text" name="titulo" placeholder="Título" required>
+<textarea name="mensaje" placeholder="Mensaje" required></textarea>
+
+<button type="submit">Enviar aviso</button>
+
+</form>
+
+<hr>
+
+<h3>Lista de avisos</h3>
+
+{% for a in avisos %}
+
+<div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
+
+<b>{{ a.titulo }}</b> ({{ a.tipo }})<br>
+<p>{{ a.mensaje }}</p>
+<small>{{ a.fecha }}</small>
+
+<form action="/admin/editar_aviso/{{ a._id }}" method="POST">
+<input name="titulo" value="{{ a.titulo }}">
+<input name="mensaje" value="{{ a.mensaje }}">
+<button>Editar</button>
+</form>
+
+<a href="/admin/eliminar_aviso/{{ a._id }}">
+<button style="background:red;color:white;">Eliminar</button>
+</a>
+
+</div>
+
+{% endfor %}
+
+{% endblock %}

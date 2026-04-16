@@ -25,6 +25,7 @@ grupos = db["grupos"]
 materias = db["materias"]
 reportes = db["reportes"]
 calificaciones = db["calificaciones"]
+avisos = db["avisos"]
 
 configuracion = db["configuracion"]
 

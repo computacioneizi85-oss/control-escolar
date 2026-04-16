@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Avisos para alumnos</h2>
+
+{% for a in avisos %}
+<div>
+<h4>{{ a.titulo }}</h4>
+<p>{{ a.mensaje }}</p>
+<small>{{ a.fecha }}</small>
+</div>
+{% endfor %}
+
+{% endblock %}

@@ -39,7 +39,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 <i class="fa-solid fa-book"></i> Materias
 </a>
 
-<!-- 🔥 NUEVO -->
 <a href="/admin/horarios">
 <i class="fa-solid fa-calendar"></i> Horarios
 </a>
@@ -50,6 +49,11 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 
 <a href="/admin/citatorios">
 <i class="fa-solid fa-envelope"></i> Citatorios
+</a>
+
+<!-- 🔔 NUEVO AVISOS -->
+<a href="/admin/avisos">
+<i class="fa-solid fa-bullhorn"></i> Avisos
 </a>
 
 <a href="/admin/configuracion">
@@ -72,6 +76,36 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 
 <a href="/citatorios">
 <i class="fa-solid fa-envelope"></i> Citatorios
+</a>
+
+{% endif %}
+
+
+<!-- ================= ALUMNO ================= -->
+{% if session.get("rol") == "alumno" %}
+
+<a href="/panel_alumno">
+<i class="fa-solid fa-user"></i> Panel Alumno
+</a>
+
+<!-- 🔔 AVISOS ALUMNO -->
+<a href="/avisos">
+<i class="fa-solid fa-bullhorn"></i> Avisos
+</a>
+
+{% endif %}
+
+
+<!-- ================= PADRE ================= -->
+{% if session.get("rol") == "padre" %}
+
+<a href="/panel_padre">
+<i class="fa-solid fa-user"></i> Panel Padre
+</a>
+
+<!-- 🔔 AVISOS PADRE -->
+<a href="/avisos">
+<i class="fa-solid fa-bullhorn"></i> Avisos
 </a>
 
 {% endif %}

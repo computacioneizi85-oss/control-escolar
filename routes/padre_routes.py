@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, session, redirect, request
 from bson.objectid import ObjectId
 
-from database.mongo import alumnos, citatorios
+from database.mongo import alumnos, citatorios, avisos  # 🔥 agregado avisos
 
 padre_bp = Blueprint("padre", __name__)
 
 
+# ================= SEGURIDAD =================
 def verificar_padre():
     return session.get("rol") == "padre"
 
@@ -21,7 +22,6 @@ def panel_padre():
 
     alumno = alumnos.find_one({"nombre": alumno_nombre})
 
-    # 🔥 NUEVO: obtener citatorios del alumno
     lista_citatorios = list(
         citatorios.find({"alumno": alumno_nombre})
     )
@@ -30,6 +30,21 @@ def panel_padre():
         "panel_padre.html",
         alumno=alumno,
         citatorios=lista_citatorios
+    )
+
+
+# ================= 🔔 AVISOS PADRE =================
+@padre_bp.route("/avisos")
+def ver_avisos_padre():
+
+    if not verificar_padre():
+        return redirect("/")
+
+    lista_avisos = list(avisos.find({"tipo": "padre"}))
+
+    return render_template(
+        "avisos_padre.html",
+        avisos=lista_avisos
     )
 
 
@@ -53,7 +68,7 @@ def marcar_enterado():
     return redirect("/panel_padre")
 
 
-# ================= 🔥 ENTERADO CITATORIOS =================
+# ================= ENTERADO CITATORIOS =================
 @padre_bp.route("/enterado_citatorio/<id>")
 def enterado_citatorio(id):
 
