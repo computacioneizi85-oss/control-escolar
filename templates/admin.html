@@ -1,355 +1,205 @@
-from flask import Blueprint, render_template, request, redirect, session, send_file, url_for
-from bson.objectid import ObjectId
-from werkzeug.security import generate_password_hash
-import base64
-
-from database.mongo import (
-    alumnos, grupos, materias, maestros,
-    reportes, configuracion, horarios,
-    citatorios, padres
-)
-
-from pdf.generador import (
-    generar_kardex, generar_boleta,
-    generar_reporte_pdf, generar_citatorio_pdf
-)
+{% extends "layout.html" %}
+
+{% block content %}
 
-admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
-
+<h1>Dashboard</h1>
 
-# ================= SEGURIDAD =================
-def verificar_admin():
-    return session.get("rol") == "admin"
-
+<!-- TARJETAS -->
+<div class="cards dashboard-cards">
 
-def proteger():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
+<div class="card small-card">
+<h4>Alumnos</h4>
+<p>{{ alumnos|length if alumnos else 0 }}</p>
+<small>Total registrados</small>
+</div>
 
+<div class="card small-card">
+<h4>Grupos</h4>
+<p>{{ grupos|length if grupos else 0 }}</p>
+<small>Activos</small>
+</div>
 
-# ================= DASHBOARD =================
-@admin_bp.route("/")
-def admin_dashboard():
-    if proteger(): return proteger()
-
-    lista_alumnos = list(alumnos.find())
-    lista_grupos = list(grupos.find())
-    lista_maestros = list(maestros.find())
-    lista_reportes = list(reportes.find())
-    lista_citatorios = list(citatorios.find())
+<div class="card small-card">
+<h4>Maestros</h4>
+<p>{{ maestros|length if maestros else 0 }}</p>
+<small>Registrados</small>
+</div>
+
+<div class="card small-card">
+<h4>Reportes</h4>
+<p>{{ reportes|length if reportes else 0 }}</p>
+<small>Generados</small>
+</div>
 
-    return render_template(
-        "admin.html",
-        alumnos=lista_alumnos,
-        grupos=lista_grupos,
-        maestros=lista_maestros,
-        reportes=lista_reportes,
-        citatorios=lista_citatorios,
-        alumnos_riesgo=[a for a in lista_alumnos if not a.get("calificaciones")],
-        ultimos_reportes=lista_reportes[-5:],
-        total_asistencias=sum(len(a.get("asistencias", [])) for a in lista_alumnos),
-        total_faltas=0
-    )
+</div>
 
 
-# ================= CONFIGURACIÓN =================
-@admin_bp.route("/configuracion")
-def ver_configuracion():
-    if proteger(): return proteger()
-    config = configuracion.find_one() or {}
-    return render_template("configuracion.html", config=config)
+<!-- GRID -->
+<div class="dashboard-grid">
 
+<!-- RIESGO -->
+<div class="card dashboard-block">
+<h3>Alumnos en riesgo</h3>
 
-# ================= TRIMESTRE =================
-@admin_bp.route("/activar_trimestre", methods=["POST"])
-def activar_trimestre():
-    if proteger(): return proteger()
+{% if alumnos_riesgo %}
+<table>
+<tr><th>Alumno</th><th>Grupo</th></tr>
 
-    configuracion.update_one(
-        {},
-        {"$set": {f"trimestre_{request.form.get('trimestre')}": request.form.get("estado") == "true"}},
-        upsert=True
-    )
+{% for a in alumnos_riesgo %}
+<tr>
+<td>{{ a.nombre }}</td>
+<td>{{ a.grupo }}</td>
+</tr>
+{% endfor %}
 
-    return redirect("/admin")
+</table>
+{% else %}
+<p>No hay alumnos en riesgo</p>
+{% endif %}
+</div>
 
 
-# ================= HORARIOS =================
-@admin_bp.route("/horarios")
-def ver_horarios():
-    if proteger(): return proteger()
+<!-- ASISTENCIA -->
+<div class="card dashboard-block">
+<h3>Asistencia general</h3>
 
-    return render_template(
-        "horarios_admin.html",
-        horarios=list(horarios.find()),
-        maestros=list(maestros.find()),
-        materias=list(materias.find()),
-        grupos=list(grupos.find())
-    )
+<div class="cards">
+<div class="card">
+<h4>Asistencias</h4>
+<p>{{ total_asistencias or 0 }}</p>
+</div>
 
-
-@admin_bp.route("/crear_horario", methods=["POST"])
-def crear_horario():
-    if proteger(): return proteger()
-
-    horarios.insert_one({
-        "maestro": request.form.get("maestro"),
-        "materia": request.form.get("materia"),
-        "grupo": request.form.get("grupo"),
-        "dia": request.form.get("dia"),
-        "hora": request.form.get("hora")
-    })
+<div class="card">
+<h4>Faltas</h4>
+<p>{{ total_faltas or 0 }}</p>
+</div>
+</div>
 
-    return redirect("/admin/horarios")
+</div>
 
 
-@admin_bp.route("/eliminar_horario/<id>")
-def eliminar_horario(id):
-    if proteger(): return proteger()
+<!-- CITATORIOS -->
+<div class="card dashboard-block">
+<h3>Próximos citatorios</h3>
 
-    horarios.delete_one({"_id": ObjectId(id)})
-    return redirect("/admin/horarios")
+{% if citatorios %}
+<table>
+<tr><th>Alumno</th><th>Fecha</th><th>Hora</th></tr>
 
+{% for c in citatorios %}
+<tr>
+<td>{{ c.alumno }}</td>
+<td>{{ c.fecha_cita }}</td>
+<td>{{ c.hora }}</td>
+</tr>
+{% endfor %}
 
-# ================= GRUPOS =================
-@admin_bp.route("/grupos")
-def ver_grupos():
-    if proteger(): return proteger()
+</table>
+{% else %}
+<p>No hay citatorios</p>
+{% endif %}
 
-    return render_template(
-        "grupos.html",
-        grupos=list(grupos.find())
-    )
+</div>
 
 
-# ================= MATERIAS =================
-@admin_bp.route("/materias")
-def ver_materias():
-    if proteger(): return proteger()
+<!-- REPORTES -->
+<div class="card dashboard-block">
+<h3>Últimos reportes</h3>
 
-    return render_template(
-        "materias.html",
-        materias=list(materias.find())
-    )
+{% if ultimos_reportes %}
+<table>
+<tr><th>Alumno</th><th>Comentario</th><th>Estado</th></tr>
 
+{% for r in ultimos_reportes %}
+<tr>
+<td>{{ r.alumno }}</td>
+<td>{{ r.comentario }}</td>
+<td>{{ r.estatus }}</td>
+</tr>
+{% endfor %}
 
-# ================= REPORTES =================
-@admin_bp.route("/reportes")
-def ver_reportes():
-    if proteger(): return proteger()
+</table>
+{% else %}
+<p>No hay reportes recientes</p>
+{% endif %}
 
-    return render_template(
-        "reportes.html",
-        reportes=list(reportes.find())
-    )
+</div>
 
+</div>
 
-# ================= CITATORIOS =================
-@admin_bp.route("/citatorios")
-def ver_citatorios():
-    if proteger(): return proteger()
 
-    return render_template(
-        "citatorios.html",
-        citatorios=list(citatorios.find())
-    )
+<!-- BACKUP -->
+<h2>Backup del sistema</h2>
 
+<a href="/admin/backup/descargar">
+<button style="background:#3498db;color:white;">📥 Descargar Backup</button>
+</a>
 
-# ================= ALUMNOS =================
-@admin_bp.route("/alumnos")
-def ver_alumnos():
-    if proteger(): return proteger()
+<form action="/admin/backup/restaurar" method="POST" enctype="multipart/form-data">
+<input type="file" name="archivo" required>
+<button type="submit" style="background:#27ae60;color:white;">♻ Restaurar sistema</button>
+</form>
 
-    return render_template(
-        "alumnos.html",
-        alumnos=list(alumnos.find()),
-        grupos=list(grupos.find()),
-        maestros=list(maestros.find())
-    )
 
+<!-- TRIMESTRES -->
+<h2>Control de evaluaciones</h2>
 
-@admin_bp.route("/crear_alumno", methods=["POST"])
-def crear_alumno():
-    if proteger(): return proteger()
+<form action="{{ url_for('admin.activar_trimestre') }}" method="POST">
 
-    try:
-        password = request.form.get("password")
-        if not password:
-            return "Contraseña requerida"
+<select name="trimestre">
+<option value="1">Trimestre 1</option>
+<option value="2">Trimestre 2</option>
+<option value="3">Trimestre 3</option>
+</select>
 
-        usuario = request.form.get("usuario")
+<select name="estado">
+<option value="true">Habilitar</option>
+<option value="false">Deshabilitar</option>
+</select>
 
-        alumnos.insert_one({
-            "nombre": request.form.get("nombre"),
-            "grupo": request.form.get("grupo"),
-            "usuario": usuario,
-            "password": generate_password_hash(password),
-            "calificaciones": [],
-            "asistencias": []
-        })
+<button type="submit" style="background:#2ecc71;color:white;">Guardar</button>
 
-        padres.insert_one({
-            "nombre": f"Padre de {request.form.get('nombre')}",
-            "usuario": f"padre_{usuario}",
-            "password": generate_password_hash(password),
-            "alumno": request.form.get("nombre")
-        })
+</form>
 
-    except Exception as e:
-        return f"ERROR CREAR ALUMNO: {str(e)}"
 
-    return redirect("/admin/alumnos")
+<!-- ALUMNOS -->
+<h2>Alumnos registrados</h2>
 
+<table>
 
-@admin_bp.route("/editar_grupo", methods=["POST"])
-def editar_grupo():
-    alumnos.update_one(
-        {"_id": ObjectId(request.form.get("id"))},
-        {"$set": {"grupo": request.form.get("grupo")}}
-    )
-    return redirect("/admin/alumnos")
+<tr>
+<th>Alumno</th>
+<th>Grupo</th>
+<th>PDF</th>
+</tr>
 
+{% if alumnos %}
 
-@admin_bp.route("/eliminar_alumno/<id>")
-def eliminar_alumno(id):
-    alumnos.delete_one({"_id": ObjectId(id)})
-    return redirect("/admin/alumnos")
+{% for alumno in alumnos %}
+<tr>
 
+<td>{{ alumno.nombre }}</td>
+<td>{{ alumno.grupo }}</td>
 
-@admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
-def subir_foto_alumno(id):
-    foto = request.files.get("foto")
+<td>
 
-    if foto:
-        alumnos.update_one(
-            {"_id": ObjectId(id)},
-            {"$set": {"foto": base64.b64encode(foto.read()).decode()}}
-        )
+<a href="{{ url_for('admin.kardex', nombre=alumno.nombre) }}">
+<button style="background:#8e44ad;color:white;">Kardex</button>
+</a>
 
-    return redirect("/admin/alumnos")
+<a href="{{ url_for('admin.boleta', nombre=alumno.nombre) }}">
+<button style="background:#16a085;color:white;">Boleta</button>
+</a>
 
+</td>
 
-# ================= MAESTROS =================
-@admin_bp.route("/maestros")
-def ver_maestros():
-    if proteger(): return proteger()
+</tr>
+{% endfor %}
 
-    return render_template(
-        "maestros.html",
-        maestros=list(maestros.find()),
-        grupos=list(grupos.find()),
-        materias=list(materias.find())
-    )
+{% else %}
+<tr><td colspan="3">No hay alumnos registrados</td></tr>
+{% endif %}
 
+</table>
 
-@admin_bp.route("/crear_maestro", methods=["POST"])
-def crear_maestro():
-    maestros.insert_one({
-        "nombre": request.form.get("nombre"),
-        "usuario": request.form.get("usuario"),
-        "password": request.form.get("password"),
-        "grupos": [],
-        "materias": []
-    })
-    return redirect("/admin/maestros")
-
-
-@admin_bp.route("/asignar_grupo_maestro", methods=["POST"])
-def asignar_grupo_maestro():
-    maestros.update_one(
-        {"_id": ObjectId(request.form.get("maestro"))},
-        {"$addToSet": {"grupos": request.form.get("grupo")}}
-    )
-    return redirect("/admin/maestros")
-
-
-@admin_bp.route("/editar_grupos_maestro", methods=["POST"])
-def editar_grupos_maestro():
-    maestros.update_one(
-        {"_id": ObjectId(request.form.get("maestro_id"))},
-        {"$set": {"grupos": request.form.getlist("grupos")}}
-    )
-    return redirect("/admin/maestros")
-
-
-@admin_bp.route("/asignar_materias", methods=["POST"])
-def asignar_materias():
-    maestros.update_one(
-        {"_id": ObjectId(request.form.get("maestro_id"))},
-        {"$addToSet": {"materias": {"$each": request.form.getlist("materias")}}}
-    )
-    return redirect("/admin/maestros")
-
-
-@admin_bp.route("/editar_materias_maestro", methods=["POST"])
-def editar_materias_maestro():
-    maestros.update_one(
-        {"_id": ObjectId(request.form.get("maestro_id"))},
-        {"$set": {"materias": request.form.getlist("materias")}}
-    )
-    return redirect("/admin/maestros")
-
-
-@admin_bp.route("/quitar_materia", methods=["POST"])
-def quitar_materia():
-    maestros.update_one(
-        {"_id": ObjectId(request.form.get("maestro_id"))},
-        {"$pull": {"materias": request.form.get("materia")}}
-    )
-    return redirect("/admin/maestros")
-
-
-# ================= REPORTES PDF =================
-@admin_bp.route("/aprobar_reporte/<id>")
-def aprobar_reporte(id):
-    try:
-        reporte = reportes.find_one({"_id": ObjectId(id)})
-        pdf = generar_reporte_pdf(reporte)
-        pdf.seek(0)
-
-        reportes.update_one(
-            {"_id": ObjectId(id)},
-            {"$set": {"estatus": "aprobado"}}
-        )
-
-        return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name="reporte.pdf")
-
-    except Exception as e:
-        return f"ERROR REPORTE: {str(e)}"
-
-
-# ================= CITATORIOS PDF =================
-@admin_bp.route("/generar_citatorio/<id>")
-def generar_citatorio(id):
-    try:
-        citatorio = citatorios.find_one({"_id": ObjectId(id)})
-        pdf = generar_citatorio_pdf(citatorio)
-        pdf.seek(0)
-
-        return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name="citatorio.pdf")
-
-    except Exception as e:
-        return f"ERROR CITATORIO: {str(e)}"
-
-
-# ================= PDFS =================
-@admin_bp.route("/kardex/<nombre>")
-def kardex(nombre):
-    try:
-        pdf = generar_kardex(nombre)
-        pdf.seek(0)
-        return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name=f"kardex_{nombre}.pdf")
-
-    except Exception as e:
-        return f"ERROR KARDEX: {str(e)}"
-
-
-@admin_bp.route("/boleta/<nombre>")
-def boleta(nombre):
-    try:
-        pdf = generar_boleta(nombre)
-        pdf.seek(0)
-        return send_file(pdf, mimetype='application/pdf', as_attachment=True, download_name=f"boleta_{nombre}.pdf")
-
-    except Exception as e:
-        return f"ERROR BOLETA: {str(e)}"
+{% endblock %}
