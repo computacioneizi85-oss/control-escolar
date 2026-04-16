@@ -1,52 +1,45 @@
 {% extends "layout.html" %}
 
-{% block contenido %}
+{% block content %}
 
-<div class="card">
+<h2>Reportes</h2>
 
-<h2>Reportes disciplinarios</h2>
+{% if reportes %}
 
 <table>
-
 <tr>
-<th>Maestro</th>
 <th>Alumno</th>
-<th>Descripción</th>
+<th>Grupo</th>
+<th>Maestro</th>
+<th>Comentario</th>
 <th>Estado</th>
 <th>Acción</th>
 </tr>
 
 {% for r in reportes %}
-
 <tr>
 
-<td>{{r.maestro}}</td>
-<td>{{r.alumno}}</td>
-<td>{{r.descripcion}}</td>
-<td>{{r.estado}}</td>
+<td>{{ r.alumno }}</td>
+<td>{{ r.grupo }}</td>
+<td>{{ r.maestro }}</td>
+<td>{{ r.comentario }}</td>
+<td>{{ r.estatus or "Pendiente" }}</td>
 
 <td>
-
-{% if r.estado == 'pendiente' %}
-
-<a href="/aprobar_reporte/{{r.id}}">
-<button>Aprobar</button>
+<a href="/admin/aprobar_reporte/{{ r._id }}">
+<button style="background:#27ae60;color:white;">PDF</button>
 </a>
-
-{% endif %}
-
-<a href="/reporte_pdf/{{r.id}}">
-<button>PDF</button>
-</a>
-
 </td>
 
 </tr>
-
 {% endfor %}
 
 </table>
 
-</div>
+{% else %}
+
+<p>No hay reportes registrados</p>
+
+{% endif %}
 
 {% endblock %}
