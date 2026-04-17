@@ -8,12 +8,12 @@ import os
 app = Flask(__name__)
 
 # =========================
-# 🔐 CLAVE SEGURA (IMPORTANTE)
+# 🔐 CLAVE SEGURA
 # =========================
 app.secret_key = os.environ.get("SECRET_KEY") or "control_escolar_2026_seguro_fijo"
 
 # =========================
-# 🔒 TIEMPO DE SESIÓN (30 MIN)
+# 🔒 TIEMPO DE SESIÓN
 # =========================
 app.permanent_session_lifetime = timedelta(minutes=30)
 
@@ -41,7 +41,7 @@ app.register_blueprint(padre_bp)
 
 
 # =========================
-# 🔐 PROTECCIÓN TOTAL DE RUTAS
+# 🔐 PROTECCIÓN TOTAL DE RUTAS (FIXED)
 # =========================
 @app.before_request
 def proteger_rutas():
@@ -56,11 +56,7 @@ def proteger_rutas():
     if request.path in rutas_publicas:
         return
 
-    # 🔴 CORRECCIÓN CLAVE
-    if request.endpoint is None:
-        return redirect(url_for("auth.login"))
-
-    # 🔥 SI NO HAY SESIÓN
+    # 🔥 VALIDAR SESIÓN
     if "usuario" not in session:
         return redirect(url_for("auth.login"))
 
@@ -69,31 +65,34 @@ def proteger_rutas():
 
     rol = session.get("rol")
 
-    # =========================
-    # 🔴 ADMIN
-    # =========================
+    # ================= ADMIN =================
     if request.path.startswith("/admin"):
         if rol != "admin":
             return redirect(url_for("auth.login"))
 
-    # =========================
-    # 🔵 MAESTRO
-    # =========================
-    if request.path.startswith("/panel_maestro"):
+    # ================= MAESTRO =================
+    if (
+        request.path.startswith("/panel_maestro") or
+        request.path.startswith("/horario") or
+        request.path.startswith("/citatorios") or
+        request.path.startswith("/avisos_maestro")
+    ):
         if rol != "maestro":
             return redirect(url_for("auth.login"))
 
-    # =========================
-    # 🟢 ALUMNO
-    # =========================
-    if request.path.startswith("/panel_alumno"):
+    # ================= ALUMNO =================
+    if (
+        request.path.startswith("/panel_alumno") or
+        request.path.startswith("/avisos_alumno")
+    ):
         if rol != "alumno":
             return redirect(url_for("auth.login"))
 
-    # =========================
-    # 🟣 PADRE
-    # =========================
-    if request.path.startswith("/panel_padre"):
+    # ================= PADRE =================
+    if (
+        request.path.startswith("/panel_padre") or
+        request.path.startswith("/avisos_padre")
+    ):
         if rol != "padre":
             return redirect(url_for("auth.login"))
 
