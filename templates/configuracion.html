@@ -32,10 +32,10 @@
 <h1>Configuración de la escuela</h1>
 
 <!-- =========================
-DATOS GENERALES
+FORMULARIO UNIFICADO 🔥
 ========================= -->
 
-<form action="/guardar_configuracion" method="POST">
+<form action="/admin/guardar_configuracion" method="POST" enctype="multipart/form-data">
 
 <label>Nombre de la escuela</label>
 <input type="text" name="escuela" value="{{ config.escuela if config else '' }}">
@@ -51,31 +51,20 @@ DATOS GENERALES
 
 <br><br>
 
-<button type="submit">Guardar datos</button>
+<h2>Escudo de la escuela</h2>
 
-</form>
-
+<input type="file" name="escudo">
 
 <br><br>
 
-<!-- =========================
-ESCUDO (SEPARADO 🔥)
-========================= -->
-
-<h2>Escudo de la escuela</h2>
-
-<form action="/admin/subir_escudo" method="POST" enctype="multipart/form-data">
-
-<input type="file" name="escudo" required>
-
-<button type="submit">Subir escudo</button>
+<button type="submit">Guardar configuración</button>
 
 </form>
 
 
-<br>
-
-<!-- MOSTRAR ESCUDO ACTUAL -->
+<!-- =========================
+MOSTRAR ESCUDO
+========================= -->
 
 {% if config and config.escudo %}
 
