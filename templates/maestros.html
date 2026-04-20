@@ -85,6 +85,7 @@ LISTA
 <th>Grupos</th>
 <th>Materias</th>
 <th>Editar</th>
+<th>Eliminar</th> <!-- 🔥 NUEVO -->
 </tr>
 
 {% for maestro in maestros %}
@@ -192,6 +193,22 @@ EDITAR
 <button type="submit">Guardar</button>
 
 </form>
+
+</td>
+
+
+<!-- =========================
+ELIMINAR 🔥
+========================= -->
+
+<td>
+
+<a href="{{ url_for('admin.eliminar_maestro', id=maestro._id) }}"
+   onclick="return confirm('¿Eliminar maestro? Esta acción no se puede deshacer.')">
+
+<button style="background:#e74c3c; color:white;">Eliminar</button>
+
+</a>
 
 </td>
 

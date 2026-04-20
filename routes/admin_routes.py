@@ -494,6 +494,18 @@ def quitar_materia():
     )
     return redirect("/admin/maestros")
 
+@admin_bp.route("/eliminar_maestro/<id>")
+def eliminar_maestro(id):
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    try:
+        maestros.delete_one({"_id": ObjectId(id)})
+    except Exception as e:
+        return f"ERROR ELIMINAR MAESTRO: {str(e)}"
+
+    return redirect("/admin/maestros")
+
 
 # ================= PDFS =================
 @admin_bp.route("/kardex/<nombre>")
