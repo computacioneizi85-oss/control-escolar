@@ -381,3 +381,70 @@ def ver_citatorios():
         return redirect(url_for("auth.login"))
 
     return render_template("citatorios.html", citatorios=list(citatorios.find()))
+
+@admin_bp.route("/eliminar_grupo/<id>")
+def eliminar_grupo(id):
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    grupos.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/grupos")
+
+@admin_bp.route("/eliminar_horario/<id>")
+def eliminar_horario(id):
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    horarios.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/horarios")
+
+@admin_bp.route("/generar_reporte/<id>")
+def generar_reporte(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    try:
+        reporte = reportes.find_one({"_id": ObjectId(id)})
+
+        if not reporte:
+            return "Reporte no encontrado"
+
+        pdf = generar_reporte_pdf(reporte)
+        pdf.seek(0)
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name="reporte.pdf"
+        )
+
+    except Exception as e:
+        return f"ERROR REPORTE: {str(e)}"
+
+@admin_bp.route("/generar_citatorio/<id>")
+def generar_citatorio(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    try:
+        citatorio = citatorios.find_one({"_id": ObjectId(id)})
+
+        if not citatorio:
+            return "Citatorio no encontrado"
+
+        pdf = generar_citatorio_pdf(citatorio)
+        pdf.seek(0)
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name="citatorio.pdf"
+        )
+
+    except Exception as e:
+        return f"ERROR CITATORIO: {str(e)}"
+
