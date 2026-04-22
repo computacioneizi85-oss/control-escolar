@@ -8,7 +8,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 
-from database.mongo import alumnos, maestros, horarios, configuracion, citatorios, avisos
+from database.mongo import alumnos, maestros, horarios, configuracion, citatorios, avisos, reportes
 from pdf.generador import generar_citatorio_pdf
 
 maestro_bp = Blueprint("maestro", __name__)
@@ -30,42 +30,18 @@ def panel_maestro():
 
     materias = maestro.get("materias", [])
     grupos = maestro.get("grupos", [])
-    nombre = maestro.get("nombre", "").strip()
-    usuario = maestro.get("usuario", "").strip()
-
-    lista_horarios = list(horarios.find({
-        "$or": [
-            {"maestro": usuario},
-            {"maestro": nombre},
-            {"maestro": nombre.lower()},
-            {"maestro": nombre.upper()}
-        ]
-    }))
-
-    if not grupos:
-        grupos = list(set([h.get("grupo") for h in lista_horarios if h.get("grupo")]))
-
-    if not grupos:
-        grupos = list(set([a.get("grupo") for a in alumnos.find()]))
 
     lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
-
-    config = configuracion.find_one({"tipo": "trimestre"}) or {
-        "estado": "false",
-        "trimestre": "1"
-    }
 
     return render_template(
         "panel_maestro.html",
         alumnos=lista_alumnos,
         grupos=grupos,
-        horarios=lista_horarios,
-        materias=materias,
-        config=config
+        materias=materias
     )
 
 
-# ================= 🔔 AVISOS MAESTRO =================
+# ================= AVISOS =================
 @maestro_bp.route("/avisos_maestro")
 def avisos_maestro():
 
@@ -89,117 +65,11 @@ def crear_aviso_maestro():
     avisos.insert_one({
         "tipo": "grupo",
         "grupo": request.form.get("grupo"),
-        "titulo": request.form.get("titulo"),
         "mensaje": request.form.get("mensaje"),
-        "fecha": datetime.now().strftime("%d/%m/%Y"),
-        "maestro": session.get("usuario")
+        "fecha": datetime.now()
     })
 
     return redirect("/avisos_maestro")
-
-
-# ================= HORARIO =================
-@maestro_bp.route("/horario")
-def ver_horario_maestro():
-
-    if not verificar_maestro():
-        return redirect(url_for("auth.login"))
-
-    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
-
-    nombre = maestro.get("nombre", "").strip()
-    usuario = maestro.get("usuario", "").strip()
-
-    lista_horarios = list(horarios.find({
-        "$or": [
-            {"maestro": usuario},
-            {"maestro": nombre},
-            {"maestro": nombre.lower()},
-            {"maestro": nombre.upper()}
-        ]
-    }))
-
-    return render_template("horario_maestro.html", horarios=lista_horarios)
-
-
-# ================= PDF HORARIO =================
-@maestro_bp.route("/horario/pdf")
-def generar_pdf_horario():
-
-    if not verificar_maestro():
-        return redirect(url_for("auth.login"))
-
-    try:
-        maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
-
-        nombre = maestro.get("nombre", "").upper()
-        usuario = maestro.get("usuario", "")
-
-        lista_horarios = list(horarios.find({
-            "$or": [
-                {"maestro": usuario},
-                {"maestro": nombre},
-                {"maestro": nombre.lower()}
-            ]
-        }))
-
-        if not lista_horarios:
-            return "No tienes horario asignado"
-
-        dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
-        horas = sorted(list(set([h.get("hora", "") for h in lista_horarios])))
-
-        data = [["HORA"] + dias]
-
-        for hora in horas:
-            fila = [hora]
-
-            for dia in dias:
-                celda = ""
-
-                for h in lista_horarios:
-                    if h.get("hora") == hora and h.get("dia") == dia:
-                        celda = f"{h.get('materia','')}\n{h.get('grupo','')}"
-
-                fila.append(celda)
-
-            data.append(fila)
-
-        buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter)
-
-        styles = getSampleStyleSheet()
-        elementos = []
-
-        elementos.append(Paragraph("<b>HORARIO ESCOLAR</b>", styles["Title"]))
-        elementos.append(Spacer(1, 10))
-        elementos.append(Paragraph(f"<b>MAESTRO:</b> {nombre}", styles["Normal"]))
-        elementos.append(Spacer(1, 20))
-
-        tabla = Table(data, repeatRows=1, rowHeights=28)
-
-        tabla.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2c3e50")),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
-        ]))
-
-        elementos.append(tabla)
-
-        doc.build(elementos)
-        buffer.seek(0)
-
-        return send_file(
-            buffer,
-            mimetype='application/pdf',
-            as_attachment=True,
-            download_name="horario_oficial.pdf"
-        )
-
-    except Exception as e:
-        return f"ERROR HORARIO PDF: {str(e)}"
 
 
 # ================= CITATORIOS =================
@@ -212,58 +82,13 @@ def ver_citatorios_maestro():
     maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
     grupos = maestro.get("grupos", [])
 
-    lista_citatorios = list(citatorios.find({"grupo": {"$in": grupos}}))
-    lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
-
     return render_template(
         "citatorios_maestro.html",
-        citatorios=lista_citatorios,
-        alumnos=lista_alumnos
+        citatorios=list(citatorios.find({"grupo": {"$in": grupos}})),
+        alumnos=list(alumnos.find({"grupo": {"$in": grupos}}))
     )
 
 
-@maestro_bp.route("/confirmar_asistencia/<id>")
-def confirmar_asistencia_maestro(id):
-
-    if not verificar_maestro():
-        return redirect(url_for("auth.login"))
-
-    citatorios.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {"estatus": "asistio"}}
-    )
-
-    return redirect("/citatorios")
-
-
-@maestro_bp.route("/generar_citatorio/<id>")
-def generar_citatorio_maestro(id):
-
-    if not verificar_maestro():
-        return redirect(url_for("auth.login"))
-
-    try:
-        citatorio = citatorios.find_one({"_id": ObjectId(id)})
-
-        if not citatorio:
-            return "No encontrado"
-
-        pdf = generar_citatorio_pdf(citatorio)
-        pdf.seek(0)
-
-        return send_file(
-            pdf,
-            mimetype='application/pdf',
-            as_attachment=True,
-            download_name="citatorio.pdf"
-        )
-
-    except Exception as e:
-        return f"ERROR PDF MAESTRO: {str(e)}"
-
-
-# ================= CREAR CITATORIO =================
-# ================= CREAR CITATORIO =================
 @maestro_bp.route("/crear_citatorio", methods=["POST"])
 def crear_citatorio_maestro():
 
@@ -277,56 +102,41 @@ def crear_citatorio_maestro():
         "fecha_cita": request.form.get("fecha"),
         "hora": request.form.get("hora"),
         "estatus": "pendiente",
-        "enterado": False,
         "maestro": session.get("usuario")
     })
 
     return redirect("/citatorios")
 
 
-# ================= ENVIAR REPORTES =================
-@maestro_bp.route("/enviar_reportes_maestro", methods=["POST"])
-def enviar_reportes_maestro():
+@maestro_bp.route("/generar_citatorio/<id>")
+def generar_citatorio_maestro(id):
 
     if not verificar_maestro():
         return redirect(url_for("auth.login"))
 
-    from database.mongo import reportes
+    citatorio = citatorios.find_one({"_id": ObjectId(id)})
 
-    reportes.update_many(
-        {"maestro": session.get("usuario")},
-        {"$set": {"estatus": "enviado"}}
-    )
+    pdf = generar_citatorio_pdf(citatorio)
+    pdf.seek(0)
 
-    return redirect("/panel_maestro")
-    })
+    return send_file(pdf, as_attachment=True, download_name="citatorio.pdf")
 
-    return redirect("/citatorios")
 
+# ================= EVALUACIONES =================
 @maestro_bp.route("/guardar_calificaciones_ajax", methods=["POST"])
 def guardar_calificaciones_ajax():
 
     if not verificar_maestro():
         return {"status": "error"}
 
-    alumno = request.form.get("alumno")
-    materia = request.form.get("materia")
-    trimestre = request.form.get("trimestre")
-    cal = request.form.get("cal1")
-
-    try:
-        cal = float(cal)
-    except:
-        cal = 0
-
     alumnos.update_one(
-        {"nombre": alumno},
+        {"nombre": request.form.get("alumno")},
         {
             "$push": {
                 "calificaciones": {
-                    "materia": materia,
-                    "calificacion": cal,
-                    "trimestre": trimestre
+                    "materia": request.form.get("materia"),
+                    "calificacion": float(request.form.get("cal1") or 0),
+                    "trimestre": request.form.get("trimestre")
                 }
             }
         }
@@ -334,23 +144,21 @@ def guardar_calificaciones_ajax():
 
     return {"status": "ok"}
 
+
+# ================= ASISTENCIA =================
 @maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])
 def guardar_asistencia_ajax():
 
     if not verificar_maestro():
         return {"status": "error"}
 
-    alumno = request.form.get("alumno")
-    estado = request.form.get("estado")
-    fecha = request.form.get("fecha")
-
     alumnos.update_one(
-        {"nombre": alumno},
+        {"nombre": request.form.get("alumno")},
         {
             "$push": {
                 "asistencias": {
-                    "fecha": fecha,
-                    "estado": estado
+                    "fecha": request.form.get("fecha"),
+                    "estado": request.form.get("estado")
                 }
             }
         }
@@ -358,13 +166,13 @@ def guardar_asistencia_ajax():
 
     return {"status": "ok"}
 
+
+# ================= REPORTES =================
 @maestro_bp.route("/crear_reporte", methods=["POST"])
 def crear_reporte():
 
     if not verificar_maestro():
         return redirect(url_for("auth.login"))
-
-    from database.mongo import reportes
 
     reportes.insert_one({
         "alumno": request.form.get("alumno"),
@@ -374,5 +182,19 @@ def crear_reporte():
         "maestro": session.get("usuario"),
         "estatus": "pendiente"
     })
+
+    return redirect("/panel_maestro")
+
+
+@maestro_bp.route("/enviar_reportes_maestro", methods=["POST"])
+def enviar_reportes_maestro():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    reportes.update_many(
+        {"maestro": session.get("usuario")},
+        {"$set": {"estatus": "enviado"}}
+    )
 
     return redirect("/panel_maestro")
