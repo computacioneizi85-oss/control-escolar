@@ -169,30 +169,29 @@ def guardar_asistencia_ajax():
     estado = request.form.get("estado")
     fecha = request.form.get("fecha")
 
-    # 🔥 VALIDACIÓN REAL
     if not alumno or not estado or not fecha:
         return {"status": "error", "msg": "datos incompletos"}
 
-    # 🔥 evitar duplicado mismo día
+    # 🔥 BUSQUEDA FLEXIBLE (CLAVE)
+    alumno_db = alumnos.find_one({"nombre": {"$regex": f"^{alumno}$", "$options": "i"}})
+
+    if not alumno_db:
+        return {"status": "error", "msg": "alumno no encontrado"}
+
     alumnos.update_one(
-        {"nombre": alumno},
+        {"_id": alumno_db["_id"]},
         {"$pull": {"asistencias": {"fecha": fecha}}}
     )
 
-    result = alumnos.update_one(
-        {"nombre": alumno},
+    alumnos.update_one(
+        {"_id": alumno_db["_id"]},
         {"$push": {"asistencias": {
             "fecha": fecha,
             "estado": estado
         }}}
     )
 
-    # 🔴 si no encontró alumno
-    if result.matched_count == 0:
-        return {"status": "error", "msg": "alumno no encontrado"}
-
     return {"status": "ok"}
-
 
 # ================= REPORTES =================
 @maestro_bp.route("/crear_reporte", methods=["POST"])
@@ -264,6 +263,11 @@ def descargar_horario():
     if not verificar_maestro():
         return redirect(url_for("auth.login"))
 
+    from io import BytesIO
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import letter
+
     maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
     grupos = maestro.get("grupos", [])
 
@@ -284,11 +288,17 @@ def descargar_horario():
 
     table = Table(data)
     table.setStyle(TableStyle([
-        ("BACKGROUND", (0,0), (-1,0), colors.grey),
-        ("GRID", (0,0), (-1,-1), 1, colors.black)
+        ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+        ("GRID", (0, 0), (-1, -1), 1, colors.black)
     ]))
 
     doc.build([table])
+
     buffer.seek(0)
 
-    return send_file(buffer, as_attachment=True, download_name="horario.pdf")
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name="horario.pdf",
+        mimetype="application/pdf"
+    )
