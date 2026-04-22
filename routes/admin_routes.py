@@ -340,3 +340,44 @@ def registro_completo():
         return f"ERROR REGISTRO COMPLETO: {str(e)}"
 
     return redirect("/admin")
+
+@admin_bp.route("/grupos")
+def ver_grupos():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template("grupos.html", grupos=list(grupos.find()))
+
+@admin_bp.route("/materias")
+def ver_materias():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template("materias.html", materias=list(materias.find()))
+
+@admin_bp.route("/horarios")
+def ver_horarios():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template(
+        "horarios_admin.html",
+        horarios=list(horarios.find()),
+        maestros=list(maestros.find()),
+        materias=list(materias.find()),
+        grupos=list(grupos.find())
+    )
+
+@admin_bp.route("/reportes")
+def ver_reportes():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template("reportes.html", reportes=list(reportes.find()))
+
+@admin_bp.route("/citatorios")
+def ver_citatorios():
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template("citatorios.html", citatorios=list(citatorios.find()))
