@@ -1,16 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, session, send_file, url_for
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash
-import base64
-from datetime import datetime
-import json
-
 from database.mongo import (
     alumnos, grupos, materias, maestros,
     reportes, configuracion, horarios,
     citatorios, padres, avisos
 )
-
 from pdf.generador import (
     generar_kardex, generar_boleta,
     generar_reporte_pdf, generar_citatorio_pdf
@@ -19,7 +14,6 @@ from pdf.generador import (
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-# ================= SEGURIDAD =================
 def verificar_admin():
     return session.get("rol") == "admin"
 
@@ -47,9 +41,6 @@ def admin_dashboard():
 # ================= ALUMNOS =================
 @admin_bp.route("/alumnos")
 def ver_alumnos():
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
     return render_template("alumnos.html",
         alumnos=list(alumnos.find()),
         grupos=list(grupos.find()),
@@ -59,17 +50,14 @@ def ver_alumnos():
 
 @admin_bp.route("/crear_alumno", methods=["POST"])
 def crear_alumno():
-    password = request.form.get("password") or "1234"
-
     alumnos.insert_one({
         "nombre": request.form.get("nombre"),
         "grupo": request.form.get("grupo"),
         "usuario": request.form.get("usuario"),
-        "password": generate_password_hash(password),
+        "password": generate_password_hash(request.form.get("password")),
         "calificaciones": [],
         "asistencias": []
     })
-
     return redirect("/admin/alumnos")
 
 
@@ -107,73 +95,48 @@ def eliminar_maestro(id):
     return redirect("/admin/maestros")
 
 
-# 🔥 ASIGNAR GRUPO
 @admin_bp.route("/asignar_grupo_maestro", methods=["POST"])
 def asignar_grupo_maestro():
-    maestro_id = request.form.get("maestro")
-    grupo = request.form.get("grupo")
-
     maestros.update_one(
-        {"_id": ObjectId(maestro_id)},
-        {"$addToSet": {"grupos": grupo}}
+        {"_id": ObjectId(request.form.get("maestro"))},
+        {"$addToSet": {"grupos": request.form.get("grupo")}}
     )
-
     return redirect("/admin/maestros")
 
 
-# 🔥 ASIGNAR MATERIAS
 @admin_bp.route("/asignar_materias", methods=["POST"])
 def asignar_materias():
-    maestro_id = request.form.get("maestro_id")
-    materias_seleccionadas = request.form.getlist("materias")
-
     maestros.update_one(
-        {"_id": ObjectId(maestro_id)},
-        {"$set": {"materias": materias_seleccionadas}}
+        {"_id": ObjectId(request.form.get("maestro_id"))},
+        {"$set": {"materias": request.form.getlist("materias")}}
     )
-
     return redirect("/admin/maestros")
 
 
-# 🔥 EDITAR GRUPOS
 @admin_bp.route("/editar_grupos_maestro", methods=["POST"])
 def editar_grupos_maestro():
-    maestro_id = request.form.get("maestro_id")
-    grupos_seleccionados = request.form.getlist("grupos")
-
     maestros.update_one(
-        {"_id": ObjectId(maestro_id)},
-        {"$set": {"grupos": grupos_seleccionados}}
+        {"_id": ObjectId(request.form.get("maestro_id"))},
+        {"$set": {"grupos": request.form.getlist("grupos")}}
     )
-
     return redirect("/admin/maestros")
 
 
-# 🔥 EDITAR MATERIAS
 @admin_bp.route("/editar_materias_maestro", methods=["POST"])
 def editar_materias_maestro():
-    maestro_id = request.form.get("maestro_id")
-    materias_seleccionadas = request.form.getlist("materias")
-
     maestros.update_one(
-        {"_id": ObjectId(maestro_id)},
-        {"$set": {"materias": materias_seleccionadas}}
+        {"_id": ObjectId(request.form.get("maestro_id"))},
+        {"$set": {"materias": request.form.getlist("materias")}}
     )
-
     return redirect("/admin/maestros")
 
 
-# 🔥 QUITAR MATERIA
 @admin_bp.route("/quitar_materia", methods=["POST"])
 def quitar_materia():
-    maestro_id = request.form.get("maestro_id")
-    materia = request.form.get("materia")
-
     maestros.update_one(
-        {"_id": ObjectId(maestro_id)},
-        {"$pull": {"materias": materia}}
+        {"_id": ObjectId(request.form.get("maestro_id"))},
+        {"$pull": {"materias": request.form.get("materia")}}
     )
-
     return redirect("/admin/maestros")
 
 
@@ -232,13 +195,7 @@ def ver_horarios():
 
 @admin_bp.route("/crear_horario", methods=["POST"])
 def crear_horario():
-    horarios.insert_one({
-        "maestro": request.form.get("maestro"),
-        "materia": request.form.get("materia"),
-        "grupo": request.form.get("grupo"),
-        "dia": request.form.get("dia"),
-        "hora": request.form.get("hora")
-    })
+    horarios.insert_one(request.form.to_dict())
     return redirect("/admin/horarios")
 
 
@@ -256,8 +213,7 @@ def ver_reportes():
 
 @admin_bp.route("/generar_reporte/<id>")
 def generar_reporte(id):
-    reporte = reportes.find_one({"_id": ObjectId(id)})
-    pdf = generar_reporte_pdf(reporte)
+    pdf = generar_reporte_pdf(reportes.find_one({"_id": ObjectId(id)}))
     pdf.seek(0)
     return send_file(pdf, mimetype="application/pdf", as_attachment=True)
 
@@ -273,15 +229,7 @@ def ver_citatorios():
 
 @admin_bp.route("/crear_citatorio", methods=["POST"])
 def crear_citatorio():
-    citatorios.insert_one({
-        "alumno": request.form.get("alumno"),
-        "grupo": request.form.get("grupo"),
-        "motivo": request.form.get("motivo"),
-        "fecha_cita": request.form.get("fecha"),
-        "hora": request.form.get("hora"),
-        "estatus": "pendiente",
-        "enterado": False
-    })
+    citatorios.insert_one(request.form.to_dict())
     return redirect("/admin/citatorios")
 
 
@@ -296,8 +244,7 @@ def confirmar_asistencia(id):
 
 @admin_bp.route("/generar_citatorio/<id>")
 def generar_citatorio(id):
-    citatorio = citatorios.find_one({"_id": ObjectId(id)})
-    pdf = generar_citatorio_pdf(citatorio)
+    pdf = generar_citatorio_pdf(citatorios.find_one({"_id": ObjectId(id)}))
     pdf.seek(0)
     return send_file(pdf, mimetype="application/pdf", as_attachment=True)
 
@@ -317,43 +264,19 @@ def boleta(nombre):
     return send_file(pdf, mimetype="application/pdf", as_attachment=True)
 
 
+# ================= TRIMESTRE =================
 @admin_bp.route("/activar_trimestre", methods=["POST"])
 def activar_trimestre():
 
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    trimestre = request.form.get("trimestre")
-    estado = request.form.get("estado") == "true"
-
     configuracion.update_one(
         {},
         {
             "$set": {
-                "trimestre_activo": trimestre,
-                "trimestre_habilitado": estado
-            }
-        },
-        upsert=True
-    )
-
-    return redirect("/admin")
-
-@admin_bp.route("/activar_trimestre", methods=["POST"])
-def activar_trimestre():
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    trimestre = request.form.get("trimestre")
-    estado = request.form.get("estado") == "true"
-
-    configuracion.update_one(
-        {},
-        {
-            "$set": {
-                "trimestre_activo": trimestre,
-                "trimestre_habilitado": estado
+                "trimestre_activo": request.form.get("trimestre"),
+                "trimestre_habilitado": request.form.get("estado") == "true"
             }
         },
         upsert=True
