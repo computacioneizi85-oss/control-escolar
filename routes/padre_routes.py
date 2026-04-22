@@ -6,10 +6,12 @@ from database.mongo import alumnos, citatorios, avisos
 padre_bp = Blueprint("padre", __name__)
 
 
+# ================= SEGURIDAD =================
 def verificar_padre():
     return session.get("rol") == "padre"
 
 
+# ================= PANEL =================
 @padre_bp.route("/panel_padre")
 def panel_padre():
 
@@ -20,7 +22,9 @@ def panel_padre():
 
     alumno = alumnos.find_one({"nombre": alumno_nombre})
 
-    lista_citatorios = list(citatorios.find({"alumno": alumno_nombre}))
+    lista_citatorios = list(
+        citatorios.find({"alumno": alumno_nombre})
+    )
 
     return render_template(
         "panel_padre.html",
@@ -29,7 +33,8 @@ def panel_padre():
     )
 
 
-@padre_bp.route("/avisos_padre")
+# ================= AVISOS PADRE =================
+@padre_bp.route("/avisos_padre")  # 🔥 ruta única
 def ver_avisos_padre():
 
     if not verificar_padre():
@@ -44,9 +49,13 @@ def ver_avisos_padre():
         ]
     }))
 
-    return render_template("avisos_padre.html", avisos=lista_avisos)
+    return render_template(
+        "avisos_padre.html",
+        avisos=lista_avisos
+    )
 
 
+# ================= ENTERADO CALIFICACIONES =================
 @padre_bp.route("/enterado", methods=["POST"])
 def marcar_enterado():
 
@@ -66,6 +75,7 @@ def marcar_enterado():
     return redirect("/panel_padre")
 
 
+# ================= ENTERADO CITATORIOS =================
 @padre_bp.route("/enterado_citatorio/<id>")
 def enterado_citatorio(id):
 

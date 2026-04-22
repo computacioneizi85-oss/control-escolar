@@ -216,3 +216,78 @@
 </form>
 
 {% endblock %}
+
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>Dashboard</h1>
+
+<!-- TODO TU CÓDIGO ORIGINAL SE QUEDA IGUAL -->
+
+<!-- ================= IMPORTAR BD ================= -->
+<h2>Importar base de datos</h2>
+
+<form action="/admin/importar_bd" method="POST" enctype="multipart/form-data">
+
+<input type="file" name="archivo" accept=".json" required>
+
+<button style="background:#2980b9;color:white;">
+📥 Importar datos
+</button>
+
+</form>
+
+
+<!-- ================= NUEVO FORMULARIO COMPLETO 🔥 ================= -->
+<h2>Registro completo de alumno</h2>
+
+<form action="/admin/registro_completo" method="POST">
+
+<h3>Datos del alumno</h3>
+
+<input name="nombre" placeholder="Nombre completo" required>
+<input name="curp" placeholder="CURP">
+<input name="sexo" placeholder="Sexo">
+<input type="date" name="fecha">
+<input name="telefono" placeholder="Teléfono">
+<input name="escuela" placeholder="Escuela de procedencia">
+
+<input name="promedio_primaria" placeholder="Promedio primaria">
+<input name="promedio_anterior" placeholder="Promedio anterior">
+
+<input name="afecciones" placeholder="Afecciones médicas">
+<input name="beca" placeholder="Beca">
+
+<input name="grupo" placeholder="Grupo">
+
+<input name="usuario" placeholder="Usuario" required>
+<input name="password" placeholder="Contraseña" required>
+
+
+<h3>Datos del padre o tutor</h3>
+
+<input name="padre_nombre" placeholder="Nombre">
+<input name="padre_ocupacion" placeholder="Ocupación">
+<input name="padre_curp" placeholder="CURP">
+<input name="padre_parentesco" placeholder="Parentesco">
+<input name="padre_estudios" placeholder="Grado de estudios">
+
+<input name="padre_telefono" placeholder="Teléfono">
+<input name="padre_direccion" placeholder="Dirección">
+
+<h3>Responsable extra</h3>
+
+<input name="extra_nombre" placeholder="Nombre">
+<input name="extra_parentesco" placeholder="Parentesco">
+<input name="extra_telefono" placeholder="Teléfono">
+
+<input name="correo" placeholder="Correo">
+
+<button style="background:#2ecc71;color:white;">
+Registrar completo
+</button>
+
+</form>
+
+{% endblock %}

@@ -597,3 +597,104 @@ def importar_bd():
         return f"ERROR IMPORTAR: {str(e)}"
 
     return redirect("/admin")
+
+from flask import Blueprint, render_template, session, redirect
+from database.mongo import alumnos, avisos
+
+alumno_bp = Blueprint("alumno", __name__)
+
+
+# ================= SEGURIDAD =================
+def verificar_alumno():
+    return session.get("rol") == "alumno"
+
+
+# ================= PANEL ALUMNO =================
+@alumno_bp.route("/panel_alumno")
+def panel_alumno():
+
+    if not verificar_alumno():
+        return redirect("/")
+
+    alumno = alumnos.find_one({"usuario": session.get("usuario")})
+
+    if not alumno:
+        return "Alumno no encontrado"
+
+    return render_template(
+        "panel_alumno.html",
+        alumno=alumno
+    )
+
+
+# ================= AVISOS =================
+@alumno_bp.route("/avisos_alumno")  # 🔥 ruta única
+def ver_avisos_alumno():
+
+    if not verificar_alumno():
+        return redirect("/")
+
+    alumno = alumnos.find_one({"usuario": session.get("usuario")})
+
+    lista_avisos = list(avisos.find({
+        "$or": [
+            {"tipo": "alumno"},
+            {"tipo": "grupo", "grupo": alumno.get("grupo")}
+        ]
+    }))
+
+    return render_template(
+        "avisos_alumno.html",
+        avisos=lista_avisos
+    )
+
+@admin_bp.route("/registro_completo", methods=["POST"])
+def registro_completo():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    try:
+        alumno = {
+            "nombre": request.form.get("nombre"),
+            "curp": request.form.get("curp"),
+            "sexo": request.form.get("sexo"),
+            "fecha_nacimiento": request.form.get("fecha"),
+            "telefono": request.form.get("telefono"),
+            "escuela_procedencia": request.form.get("escuela"),
+            "promedio_primaria": request.form.get("promedio_primaria"),
+            "promedio_anterior": request.form.get("promedio_anterior"),
+            "afecciones": request.form.get("afecciones"),
+            "beca": request.form.get("beca"),
+            "grupo": request.form.get("grupo"),
+            "usuario": request.form.get("usuario"),
+            "password": generate_password_hash(request.form.get("password")),
+            "calificaciones": [],
+            "asistencias": []
+        }
+
+        alumnos.insert_one(alumno)
+
+        padre = {
+            "nombre": request.form.get("padre_nombre"),
+            "ocupacion": request.form.get("padre_ocupacion"),
+            "curp": request.form.get("padre_curp"),
+            "parentesco": request.form.get("padre_parentesco"),
+            "estudios": request.form.get("padre_estudios"),
+            "telefono": request.form.get("padre_telefono"),
+            "direccion": request.form.get("padre_direccion"),
+            "extra": request.form.get("extra_nombre"),
+            "extra_parentesco": request.form.get("extra_parentesco"),
+            "extra_telefono": request.form.get("extra_telefono"),
+            "correo": request.form.get("correo"),
+            "usuario": f"padre_{request.form.get('usuario')}",
+            "password": generate_password_hash(request.form.get("password")),
+            "alumno": request.form.get("nombre")
+        }
+
+        padres.insert_one(padre)
+
+    except Exception as e:
+        return f"ERROR REGISTRO COMPLETO: {str(e)}"
+
+    return redirect("/admin")
