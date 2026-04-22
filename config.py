@@ -1,7 +1,10 @@
 import os
 
-MONGO_URI = "mongodb+srv://joel:CAMELLO2052@cluster0.ethhsnm.mongodb.net/control_escolar?retryWrites=true&w=majority"
+class Config:
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "clave_super_segura_2026"
 
-SECRET_KEY = "control_escolar_pro"
+    # 🔥 Mongo Atlas
+    MONGO_URI = os.environ.get("MONGO_URI") or "mongodb://localhost:27017/control_escolar"
 
-PORT = int(os.environ.get("PORT", 10000))
+    # opcional
+    DEBUG = False
