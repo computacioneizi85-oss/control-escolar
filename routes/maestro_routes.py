@@ -1,12 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, session, url_for, send_file
 from bson.objectid import ObjectId
-from io import BytesIO
 from datetime import datetime
-
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet
 
 from database.mongo import alumnos, maestros, horarios, configuracion, citatorios, avisos, reportes
 from pdf.generador import generar_citatorio_pdf
@@ -32,12 +26,16 @@ def panel_maestro():
     grupos = maestro.get("grupos", [])
 
     lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
+    lista_horarios = list(horarios.find({"grupo": {"$in": grupos}}))
+    config = configuracion.find_one() or {"trimestre": "1", "estado": True}
 
     return render_template(
         "panel_maestro.html",
         alumnos=lista_alumnos,
         grupos=grupos,
-        materias=materias
+        materias=materias,
+        horarios=lista_horarios,
+        config=config
     )
 
 
@@ -122,21 +120,44 @@ def generar_citatorio_maestro(id):
     return send_file(pdf, as_attachment=True, download_name="citatorio.pdf")
 
 
-# ================= EVALUACIONES =================
+# ================= EVALUACIONES (SIN DUPLICADOS) =================
 @maestro_bp.route("/guardar_calificaciones_ajax", methods=["POST"])
 def guardar_calificaciones_ajax():
 
     if not verificar_maestro():
         return {"status": "error"}
 
+    alumno = request.form.get("alumno")
+    materia = request.form.get("materia")
+    trimestre = request.form.get("trimestre")
+
+    try:
+        cal = float(request.form.get("cal1") or 0)
+    except:
+        cal = 0
+
+    # 🔥 evitar duplicados → eliminar previa
     alumnos.update_one(
-        {"nombre": request.form.get("alumno")},
+        {"nombre": alumno},
+        {
+            "$pull": {
+                "calificaciones": {
+                    "materia": materia,
+                    "trimestre": trimestre
+                }
+            }
+        }
+    )
+
+    # 🔥 insertar nueva
+    alumnos.update_one(
+        {"nombre": alumno},
         {
             "$push": {
                 "calificaciones": {
-                    "materia": request.form.get("materia"),
-                    "calificacion": float(request.form.get("cal1") or 0),
-                    "trimestre": request.form.get("trimestre")
+                    "materia": materia,
+                    "calificacion": cal,
+                    "trimestre": trimestre
                 }
             }
         }
@@ -145,20 +166,40 @@ def guardar_calificaciones_ajax():
     return {"status": "ok"}
 
 
-# ================= ASISTENCIA =================
+# ================= ASISTENCIA (VALIDADA) =================
 @maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])
 def guardar_asistencia_ajax():
 
     if not verificar_maestro():
         return {"status": "error"}
 
+    alumno = request.form.get("alumno")
+    estado = request.form.get("estado")
+    fecha = request.form.get("fecha")
+
+    # 🔴 VALIDACIÓN
+    if not fecha or not estado:
+        return {"status": "error"}
+
+    # 🔥 evitar duplicado mismo día
     alumnos.update_one(
-        {"nombre": request.form.get("alumno")},
+        {"nombre": alumno},
+        {
+            "$pull": {
+                "asistencias": {
+                    "fecha": fecha
+                }
+            }
+        }
+    )
+
+    alumnos.update_one(
+        {"nombre": alumno},
         {
             "$push": {
                 "asistencias": {
-                    "fecha": request.form.get("fecha"),
-                    "estado": request.form.get("estado")
+                    "fecha": fecha,
+                    "estado": estado
                 }
             }
         }
@@ -198,3 +239,18 @@ def enviar_reportes_maestro():
     )
 
     return redirect("/panel_maestro")
+
+
+# ================= CONFIRMAR CITATORIO =================
+@maestro_bp.route("/confirmar_asistencia/<id>")
+def confirmar_asistencia_maestro(id):
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    citatorios.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"estatus": "asistio"}}
+    )
+
+    return redirect("/citatorios")

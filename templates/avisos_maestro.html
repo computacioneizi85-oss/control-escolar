@@ -1,20 +1,27 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<h2>Enviar aviso</h2>
+<h2>📢 Enviar aviso</h2>
 
-<form action="/crear_aviso" method="POST">
+<form action="/crear_aviso_maestro" method="POST">
 
-<select name="grupo">
+<label>Grupo:</label>
+<select name="grupo" required>
 {% for g in grupos %}
 <option value="{{ g }}">{{ g }}</option>
 {% endfor %}
 </select>
 
-<input name="titulo" placeholder="Título" required>
-<textarea name="mensaje" placeholder="Mensaje" required></textarea>
+<br><br>
 
-<button>Enviar</button>
+<label>Mensaje:</label>
+<textarea name="mensaje" placeholder="Escribe el aviso..." required></textarea>
+
+<br><br>
+
+<button style="background:#2ecc71;color:white;padding:8px 15px;border:none;border-radius:6px;">
+📤 Enviar aviso
+</button>
 
 </form>
 

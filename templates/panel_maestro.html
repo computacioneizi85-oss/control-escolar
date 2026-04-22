@@ -223,7 +223,7 @@ min="0" max="10"
 <select id="alumno" name="alumno" onchange="preview()" required>
 <option value="">Seleccionar alumno</option>
 {% for alumno in alumnos %}
-<option value="{{ alumno.nombre }} - {{ alumno.grupo }}">
+<option value="{{ alumno.nombre }}">
 {{ alumno.nombre }} - {{ alumno.grupo }}
 </option>
 {% endfor %}
