@@ -71,11 +71,16 @@ def proteger_rutas():
             return redirect(url_for("auth.login"))
 
     # ================= MAESTRO =================
-    if (
-        request.path.startswith("/panel_maestro") or
-        request.path.startswith("/horario") or
-        request.path.startswith("/citatorios") or
-        request.path.startswith("/avisos_maestro")
+if (
+    request.path.startswith("/panel_maestro") or
+    request.path.startswith("/horario") or
+    request.path.startswith("/citatorios") or
+    request.path.startswith("/avisos_maestro") or
+    request.path.startswith("/guardar_asistencia_ajax") or
+    request.path.startswith("/guardar_calificaciones_ajax") or
+    request.path.startswith("/crear_reporte") or
+    request.path.startswith("/enviar_reportes_maestro")
+
     ):
         if rol != "maestro":
             return redirect(url_for("auth.login"))

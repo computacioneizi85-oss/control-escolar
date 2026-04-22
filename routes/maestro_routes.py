@@ -254,3 +254,20 @@ def confirmar_asistencia_maestro(id):
     )
 
     return redirect("/citatorios")
+
+# ================= HORARIO =================
+@maestro_bp.route("/horario")
+def horario_maestro():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
+    grupos = maestro.get("grupos", [])
+
+    lista_horarios = list(horarios.find({"grupo": {"$in": grupos}}))
+
+    return render_template(
+        "horario_maestro.html",
+        horarios=lista_horarios
+    )
