@@ -17,7 +17,6 @@ from pdf.generador import (
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-# ================= SEGURIDAD =================
 def verificar_admin():
     return session.get("rol") == "admin"
 
@@ -225,7 +224,13 @@ def generar_reporte(id):
         pdf = generar_reporte_pdf(reporte)
         pdf.seek(0)
 
-        return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name="reporte.pdf"
+        )
+
     except Exception as e:
         return f"ERROR REPORTE: {str(e)}"
 
@@ -268,7 +273,13 @@ def generar_citatorio(id):
         pdf = generar_citatorio_pdf(citatorio)
         pdf.seek(0)
 
-        return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name="citatorio.pdf"
+        )
+
     except Exception as e:
         return f"ERROR CITATORIO: {str(e)}"
 
@@ -308,7 +319,14 @@ def kardex(nombre):
     try:
         pdf = generar_kardex(nombre)
         pdf.seek(0)
-        return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name=f"kardex_{nombre}.pdf"
+        )
+
     except Exception as e:
         return f"ERROR KARDEX: {str(e)}"
 
@@ -323,7 +341,14 @@ def boleta(nombre):
     try:
         pdf = generar_boleta(nombre)
         pdf.seek(0)
-        return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name=f"boleta_{nombre}.pdf"
+        )
+
     except Exception as e:
         return f"ERROR BOLETA: {str(e)}"
 
