@@ -247,13 +247,23 @@ def kardex(nombre):
 
 @admin_bp.route("/boleta/<nombre>")
 def boleta(nombre):
+
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    pdf = generar_boleta(nombre)
-    pdf.seek(0)
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    try:
+        pdf = generar_boleta(nombre)
+        pdf.seek(0)
 
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name=f"boleta_{nombre}.pdf"
+        )
+
+    except Exception as e:
+        return f"ERROR BOLETA:\n{str(e)}"
 
 # ================= IMPORTAR BD =================
 @admin_bp.route("/importar_bd", methods=["POST"])
