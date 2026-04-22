@@ -263,6 +263,7 @@ def generar_citatorio_maestro(id):
 
 
 # ================= CREAR CITATORIO =================
+# ================= CREAR CITATORIO =================
 @maestro_bp.route("/crear_citatorio", methods=["POST"])
 def crear_citatorio_maestro():
 
@@ -281,3 +282,97 @@ def crear_citatorio_maestro():
     })
 
     return redirect("/citatorios")
+
+
+# ================= ENVIAR REPORTES =================
+@maestro_bp.route("/enviar_reportes_maestro", methods=["POST"])
+def enviar_reportes_maestro():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    from database.mongo import reportes
+
+    reportes.update_many(
+        {"maestro": session.get("usuario")},
+        {"$set": {"estatus": "enviado"}}
+    )
+
+    return redirect("/panel_maestro")
+    })
+
+    return redirect("/citatorios")
+
+@maestro_bp.route("/guardar_calificaciones_ajax", methods=["POST"])
+def guardar_calificaciones_ajax():
+
+    if not verificar_maestro():
+        return {"status": "error"}
+
+    alumno = request.form.get("alumno")
+    materia = request.form.get("materia")
+    trimestre = request.form.get("trimestre")
+    cal = request.form.get("cal1")
+
+    try:
+        cal = float(cal)
+    except:
+        cal = 0
+
+    alumnos.update_one(
+        {"nombre": alumno},
+        {
+            "$push": {
+                "calificaciones": {
+                    "materia": materia,
+                    "calificacion": cal,
+                    "trimestre": trimestre
+                }
+            }
+        }
+    )
+
+    return {"status": "ok"}
+
+@maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])
+def guardar_asistencia_ajax():
+
+    if not verificar_maestro():
+        return {"status": "error"}
+
+    alumno = request.form.get("alumno")
+    estado = request.form.get("estado")
+    fecha = request.form.get("fecha")
+
+    alumnos.update_one(
+        {"nombre": alumno},
+        {
+            "$push": {
+                "asistencias": {
+                    "fecha": fecha,
+                    "estado": estado
+                }
+            }
+        }
+    )
+
+    return {"status": "ok"}
+
+@maestro_bp.route("/crear_reporte", methods=["POST"])
+def crear_reporte():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    from database.mongo import reportes
+
+    reportes.insert_one({
+        "alumno": request.form.get("alumno"),
+        "grupo": request.form.get("grupo"),
+        "comentario": request.form.get("comentario"),
+        "fecha": request.form.get("fecha"),
+        "maestro": session.get("usuario"),
+        "estatus": "pendiente"
+    })
+
+    return redirect("/panel_maestro")
