@@ -1,6 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, session, url_for, send_file
 from bson.objectid import ObjectId
 from datetime import datetime
+from io import BytesIO
+
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
 
 from database.mongo import alumnos, maestros, horarios, configuracion, citatorios, avisos, reportes
 from pdf.generador import generar_citatorio_pdf
@@ -120,7 +125,7 @@ def generar_citatorio_maestro(id):
     return send_file(pdf, as_attachment=True, download_name="citatorio.pdf")
 
 
-# ================= EVALUACIONES (SIN DUPLICADOS) =================
+# ================= EVALUACIONES =================
 @maestro_bp.route("/guardar_calificaciones_ajax", methods=["POST"])
 def guardar_calificaciones_ajax():
 
@@ -136,37 +141,24 @@ def guardar_calificaciones_ajax():
     except:
         cal = 0
 
-    # 🔥 evitar duplicados → eliminar previa
     alumnos.update_one(
         {"nombre": alumno},
-        {
-            "$pull": {
-                "calificaciones": {
-                    "materia": materia,
-                    "trimestre": trimestre
-                }
-            }
-        }
+        {"$pull": {"calificaciones": {"materia": materia, "trimestre": trimestre}}}
     )
 
-    # 🔥 insertar nueva
     alumnos.update_one(
         {"nombre": alumno},
-        {
-            "$push": {
-                "calificaciones": {
-                    "materia": materia,
-                    "calificacion": cal,
-                    "trimestre": trimestre
-                }
-            }
-        }
+        {"$push": {"calificaciones": {
+            "materia": materia,
+            "calificacion": cal,
+            "trimestre": trimestre
+        }}}
     )
 
     return {"status": "ok"}
 
 
-# ================= ASISTENCIA (VALIDADA) =================
+# ================= ASISTENCIA (ARREGLADA REAL) =================
 @maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])
 def guardar_asistencia_ajax():
 
@@ -177,33 +169,27 @@ def guardar_asistencia_ajax():
     estado = request.form.get("estado")
     fecha = request.form.get("fecha")
 
-    # 🔴 VALIDACIÓN
-    if not fecha or not estado:
-        return {"status": "error"}
+    # 🔥 VALIDACIÓN REAL
+    if not alumno or not estado or not fecha:
+        return {"status": "error", "msg": "datos incompletos"}
 
     # 🔥 evitar duplicado mismo día
     alumnos.update_one(
         {"nombre": alumno},
-        {
-            "$pull": {
-                "asistencias": {
-                    "fecha": fecha
-                }
-            }
-        }
+        {"$pull": {"asistencias": {"fecha": fecha}}}
     )
 
-    alumnos.update_one(
+    result = alumnos.update_one(
         {"nombre": alumno},
-        {
-            "$push": {
-                "asistencias": {
-                    "fecha": fecha,
-                    "estado": estado
-                }
-            }
-        }
+        {"$push": {"asistencias": {
+            "fecha": fecha,
+            "estado": estado
+        }}}
     )
+
+    # 🔴 si no encontró alumno
+    if result.matched_count == 0:
+        return {"status": "error", "msg": "alumno no encontrado"}
 
     return {"status": "ok"}
 
@@ -255,6 +241,7 @@ def confirmar_asistencia_maestro(id):
 
     return redirect("/citatorios")
 
+
 # ================= HORARIO =================
 @maestro_bp.route("/horario")
 def horario_maestro():
@@ -267,7 +254,41 @@ def horario_maestro():
 
     lista_horarios = list(horarios.find({"grupo": {"$in": grupos}}))
 
-    return render_template(
-        "horario_maestro.html",
-        horarios=lista_horarios
-    )
+    return render_template("horario_maestro.html", horarios=lista_horarios)
+
+
+# ================= PDF HORARIO =================
+@maestro_bp.route("/descargar_horario")
+def descargar_horario():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
+    grupos = maestro.get("grupos", [])
+
+    lista = list(horarios.find({"grupo": {"$in": grupos}}))
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+
+    data = [["Día", "Hora", "Materia", "Grupo"]]
+
+    for h in lista:
+        data.append([
+            h.get("dia", ""),
+            h.get("hora", ""),
+            h.get("materia", ""),
+            h.get("grupo", "")
+        ])
+
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,0), colors.grey),
+        ("GRID", (0,0), (-1,-1), 1, colors.black)
+    ]))
+
+    doc.build([table])
+    buffer.seek(0)
+
+    return send_file(buffer, as_attachment=True, download_name="horario.pdf")
