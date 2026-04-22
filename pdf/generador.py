@@ -125,7 +125,11 @@ def generar_kardex(nombre):
     if calificaciones:
         for cal in calificaciones:
             materia = cal.get("materia", "")
-            valor = float(cal.get("calificacion", 0))
+
+            try:
+                valor = float(cal.get("calificacion", 0) or 0)
+            except:
+                valor = 0
 
             c.drawString(50, y, materia)
             c.drawString(320, y, str(valor))
@@ -170,18 +174,24 @@ def generar_boleta(nombre):
     suma = 0
     total = 0
 
-    for cal in alumno.get("calificaciones", []):
-        materia = cal.get("materia", "")
-        valor = float(cal.get("calificacion", 0))
+    calificaciones = alumno.get("calificaciones", [])
 
-        c.drawString(50, y, materia)
-        c.drawString(320, y, str(valor))
+    if calificaciones:
+        for cal in calificaciones:
+            materia = cal.get("materia", "")
 
-        suma += valor
-        total += 1
-        y -= 25
+            try:
+                valor = float(cal.get("calificacion", 0) or 0)
+            except:
+                valor = 0
 
-    if total == 0:
+            c.drawString(50, y, materia)
+            c.drawString(320, y, str(valor))
+
+            suma += valor
+            total += 1
+            y -= 25
+    else:
         c.drawString(50, y, "Sin calificaciones")
 
     promedio = round(suma / total, 2) if total else 0
