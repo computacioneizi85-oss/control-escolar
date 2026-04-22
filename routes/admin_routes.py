@@ -338,3 +338,25 @@ def activar_trimestre():
     )
 
     return redirect("/admin")
+
+@admin_bp.route("/activar_trimestre", methods=["POST"])
+def activar_trimestre():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    trimestre = request.form.get("trimestre")
+    estado = request.form.get("estado") == "true"
+
+    configuracion.update_one(
+        {},
+        {
+            "$set": {
+                "trimestre_activo": trimestre,
+                "trimestre_habilitado": estado
+            }
+        },
+        upsert=True
+    )
+
+    return redirect("/admin")
