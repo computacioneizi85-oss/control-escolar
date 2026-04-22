@@ -162,7 +162,9 @@ def generar_boleta(nombre):
 
     encabezado(c, escuela, ciclo, direccion, escudo, "BOLETA DE CALIFICACIONES")
 
-    alumno = alumnos.find_one({"nombre": nombre}) or {}
+    alumno = alumnos.find_one({
+    "nombre": {"$regex": f"^{nombre}$", "$options": "i"}
+}) or {}
 
     c.setFont("Helvetica", 11)
     c.drawString(50, 670, f"Alumno: {nombre}")
