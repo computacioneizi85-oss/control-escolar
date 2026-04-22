@@ -542,3 +542,58 @@ def boleta(nombre):
         )
     except Exception as e:
         return f"ERROR BOLETA: {str(e)}"
+
+# ================= IMPORTAR BASE DE DATOS =================
+import json
+
+@admin_bp.route("/importar_bd", methods=["POST"])
+def importar_bd():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    archivo = request.files.get("archivo")
+
+    if not archivo:
+        return "No se subió archivo"
+
+    try:
+        data = json.load(archivo)
+
+        # ================= ALUMNOS =================
+        for a in data.get("alumnos", []):
+            if not alumnos.find_one({"usuario": a.get("usuario")}):
+                alumnos.insert_one({
+                    "nombre": a.get("nombre"),
+                    "grupo": a.get("grupo"),
+                    "usuario": a.get("usuario"),
+                    "password": generate_password_hash(a.get("password", "1234")),
+                    "calificaciones": [],
+                    "asistencias": []
+                })
+
+        # ================= MAESTROS =================
+        for m in data.get("maestros", []):
+            if not maestros.find_one({"usuario": m.get("usuario")}):
+                maestros.insert_one({
+                    "nombre": m.get("nombre"),
+                    "usuario": m.get("usuario"),
+                    "password": m.get("password", "1234"),
+                    "grupos": m.get("grupos", []),
+                    "materias": m.get("materias", [])
+                })
+
+        # ================= GRUPOS =================
+        for g in data.get("grupos", []):
+            if not grupos.find_one({"nombre": g.get("nombre")}):
+                grupos.insert_one({"nombre": g.get("nombre")})
+
+        # ================= MATERIAS =================
+        for mat in data.get("materias", []):
+            if not materias.find_one({"nombre": mat.get("nombre")}):
+                materias.insert_one({"nombre": mat.get("nombre")})
+
+    except Exception as e:
+        return f"ERROR IMPORTAR: {str(e)}"
+
+    return redirect("/admin")

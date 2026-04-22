@@ -202,4 +202,17 @@
 
 </table>
 
+<!-- ================= IMPORTAR BD ================= -->
+<h2>Importar base de datos</h2>
+
+<form action="/admin/importar_bd" method="POST" enctype="multipart/form-data">
+
+<input type="file" name="archivo" accept=".json" required>
+
+<button style="background:#2980b9;color:white;">
+📥 Importar datos
+</button>
+
+</form>
+
 {% endblock %}
