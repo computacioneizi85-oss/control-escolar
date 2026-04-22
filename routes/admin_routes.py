@@ -216,10 +216,29 @@ def ver_reportes():
 
 @admin_bp.route("/generar_reporte/<id>")
 def generar_reporte(id):
-    reporte = reportes.find_one({"_id": ObjectId(id)})
-    pdf = generar_reporte_pdf(reporte)
-    pdf.seek(0)
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True, download_name="reporte.pdf")
+
+    try:
+        reporte = reportes.find_one({"_id": ObjectId(id)})
+
+        if not reporte:
+            return "ERROR: Reporte no encontrado"
+
+        pdf = generar_reporte_pdf(reporte)
+
+        if not pdf:
+            return "ERROR: No se pudo generar PDF"
+
+        pdf.seek(0)
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name="reporte.pdf"
+        )
+
+    except Exception as e:
+        return f"ERROR REPORTE: {str(e)}"
 
 
 # ================= CITATORIOS =================
@@ -266,12 +285,17 @@ def ver_avisos():
 
 @admin_bp.route("/crear_aviso", methods=["POST"])
 def crear_aviso():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
     avisos.insert_one({
         "mensaje": request.form.get("mensaje"),
         "tipo": request.form.get("tipo"),
         "grupo": request.form.get("grupo"),  # 🔥 IMPORTANTE
         "fecha": datetime.now()
     })
+
     return redirect("/admin/avisos")
 
 

@@ -1,85 +1,33 @@
 {% extends "layout.html" %}
-
 {% block content %}
 
-<h1>📢 Avisos</h1>
-
-<!-- ================= CREAR AVISO ================= -->
-<div class="card" style="margin-bottom:20px;">
-
-<h3>Nuevo aviso</h3>
+<h1>Avisos</h1>
 
 <form action="{{ url_for('admin.crear_aviso') }}" method="POST">
+    <textarea name="mensaje" required></textarea>
 
-<textarea name="mensaje" placeholder="Escribe el aviso..." required style="width:100%; height:80px;"></textarea>
+    <select name="tipo">
+        <option value="alumno">Alumno</option>
+        <option value="padre">Padre</option>
+        <option value="grupo">Grupo</option>
+    </select>
 
-<br><br>
+    <input name="grupo" placeholder="Grupo opcional">
 
-<select name="tipo" required>
-<option value="alumno">Para alumnos</option>
-<option value="padre">Para padres</option>
-<option value="grupo">Por grupo</option>
-</select>
-
-<br><br>
-
-<input type="text" name="grupo" placeholder="Grupo (solo si es por grupo)">
-
-<br><br>
-
-<button style="background:#2ecc71;color:white;">Enviar aviso</button>
-
+    <button type="submit">Enviar</button>
 </form>
 
-</div>
-
-
-<!-- ================= LISTA DE AVISOS ================= -->
-<div class="card">
-
-<h3>Lista de avisos</h3>
-
-{% if avisos %}
-
-<table>
-
-<tr>
-<th>Mensaje</th>
-<th>Tipo</th>
-<th>Fecha</th>
-<th>Acciones</th>
-</tr>
+<hr>
 
 {% for aviso in avisos %}
+    <div style="border:1px solid #ccc; padding:10px; margin:10px;">
+        <p>{{ aviso.mensaje }}</p>
+        <small>{{ aviso.tipo }}</small>
 
-<tr>
-
-<td>{{ aviso.mensaje }}</td>
-<td>{{ aviso.tipo }}</td>
-<td>
-{{ aviso.fecha.strftime("%d/%m/%Y %H:%M") if aviso.fecha else "" }}
-</td>
-
-<td>
-
-<a href="{{ url_for('admin.eliminar_aviso', id=aviso._id) }}">
-<button style="background:#e74c3c;color:white;">Eliminar</button>
-</a>
-
-</td>
-
-</tr>
-
+        <a href="{{ url_for('admin.eliminar_aviso', id=aviso._id) }}">
+            <button>Eliminar</button>
+        </a>
+    </div>
 {% endfor %}
-
-</table>
-
-{% else %}
-
-<p>No hay avisos registrados</p>
-
-{% endif %}
-
-</div>
 
 {% endblock %}
