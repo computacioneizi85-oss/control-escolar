@@ -1,11 +1,14 @@
 from flask import Blueprint, render_template, request, redirect, session, send_file, url_for
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash
+from datetime import datetime
+
 from database.mongo import (
     alumnos, grupos, materias, maestros,
     reportes, configuracion, horarios,
     citatorios, padres, avisos
 )
+
 from pdf.generador import (
     generar_kardex, generar_boleta,
     generar_reporte_pdf, generar_citatorio_pdf
@@ -14,6 +17,7 @@ from pdf.generador import (
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
+# ================= SEGURIDAD =================
 def verificar_admin():
     return session.get("rol") == "admin"
 
@@ -213,9 +217,17 @@ def ver_reportes():
 
 @admin_bp.route("/generar_reporte/<id>")
 def generar_reporte(id):
-    pdf = generar_reporte_pdf(reportes.find_one({"_id": ObjectId(id)}))
-    pdf.seek(0)
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    try:
+        reporte = reportes.find_one({"_id": ObjectId(id)})
+        if not reporte:
+            return "Reporte no encontrado"
+
+        pdf = generar_reporte_pdf(reporte)
+        pdf.seek(0)
+
+        return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    except Exception as e:
+        return f"ERROR REPORTE: {str(e)}"
 
 
 # ================= CITATORIOS =================
@@ -229,7 +241,11 @@ def ver_citatorios():
 
 @admin_bp.route("/crear_citatorio", methods=["POST"])
 def crear_citatorio():
-    citatorios.insert_one(request.form.to_dict())
+    citatorios.insert_one({
+        **request.form.to_dict(),
+        "estatus": "pendiente",
+        "enterado": False
+    })
     return redirect("/admin/citatorios")
 
 
@@ -244,24 +260,72 @@ def confirmar_asistencia(id):
 
 @admin_bp.route("/generar_citatorio/<id>")
 def generar_citatorio(id):
-    pdf = generar_citatorio_pdf(citatorios.find_one({"_id": ObjectId(id)}))
-    pdf.seek(0)
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    try:
+        citatorio = citatorios.find_one({"_id": ObjectId(id)})
+        if not citatorio:
+            return "Citatorio no encontrado"
+
+        pdf = generar_citatorio_pdf(citatorio)
+        pdf.seek(0)
+
+        return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    except Exception as e:
+        return f"ERROR CITATORIO: {str(e)}"
+
+
+# ================= AVISOS =================
+@admin_bp.route("/avisos")
+def ver_avisos():
+    return render_template("avisos_admin.html",
+        avisos=list(avisos.find())
+    )
+
+
+@admin_bp.route("/crear_aviso", methods=["POST"])
+def crear_aviso():
+    avisos.insert_one({
+        "mensaje": request.form.get("mensaje"),
+        "tipo": request.form.get("tipo"),
+        "fecha": datetime.now()
+    })
+    return redirect("/admin/avisos")
+
+
+@admin_bp.route("/eliminar_aviso/<id>")
+def eliminar_aviso(id):
+    avisos.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/avisos")
 
 
 # ================= PDFS =================
 @admin_bp.route("/kardex/<nombre>")
 def kardex(nombre):
-    pdf = generar_kardex(nombre)
-    pdf.seek(0)
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    alumno = alumnos.find_one({"nombre": nombre})
+
+    if not alumno:
+        return f"Alumno no encontrado: {nombre}"
+
+    try:
+        pdf = generar_kardex(nombre)
+        pdf.seek(0)
+        return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    except Exception as e:
+        return f"ERROR KARDEX: {str(e)}"
 
 
 @admin_bp.route("/boleta/<nombre>")
 def boleta(nombre):
-    pdf = generar_boleta(nombre)
-    pdf.seek(0)
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    alumno = alumnos.find_one({"nombre": nombre})
+
+    if not alumno:
+        return f"Alumno no encontrado: {nombre}"
+
+    try:
+        pdf = generar_boleta(nombre)
+        pdf.seek(0)
+        return send_file(pdf, mimetype="application/pdf", as_attachment=True)
+    except Exception as e:
+        return f"ERROR BOLETA: {str(e)}"
 
 
 # ================= TRIMESTRE =================
