@@ -4,7 +4,7 @@
 
 <h1>Dashboard</h1>
 
-<!-- TARJETAS -->
+<!-- ================= TARJETAS ================= -->
 <div class="cards dashboard-cards">
 
 <div class="card small-card">
@@ -34,7 +34,7 @@
 </div>
 
 
-<!-- GRID -->
+<!-- ================= GRID ================= -->
 <div class="dashboard-grid">
 
 <!-- RIESGO -->
@@ -51,11 +51,11 @@
 <td>{{ a.grupo }}</td>
 </tr>
 {% endfor %}
-
 </table>
 {% else %}
 <p>No hay alumnos en riesgo</p>
 {% endif %}
+
 </div>
 
 
@@ -64,6 +64,7 @@
 <h3>Asistencia general</h3>
 
 <div class="cards">
+
 <div class="card">
 <h4>Asistencias</h4>
 <p>{{ total_asistencias or 0 }}</p>
@@ -73,6 +74,7 @@
 <h4>Faltas</h4>
 <p>{{ total_faltas or 0 }}</p>
 </div>
+
 </div>
 
 </div>
@@ -93,7 +95,6 @@
 <td>{{ c.hora }}</td>
 </tr>
 {% endfor %}
-
 </table>
 {% else %}
 <p>No hay citatorios</p>
@@ -117,7 +118,6 @@
 <td>{{ r.estatus }}</td>
 </tr>
 {% endfor %}
-
 </table>
 {% else %}
 <p>No hay reportes recientes</p>
@@ -128,7 +128,7 @@
 </div>
 
 
-<!-- BACKUP -->
+<!-- ================= BACKUP ================= -->
 <h2>Backup del sistema</h2>
 
 <a href="/admin/backup/descargar">
@@ -141,7 +141,7 @@
 </form>
 
 
-<!-- TRIMESTRES -->
+<!-- ================= TRIMESTRES ================= -->
 <h2>Control de evaluaciones</h2>
 
 <form action="{{ url_for('admin.activar_trimestre') }}" method="POST">
@@ -162,70 +162,7 @@
 </form>
 
 
-<!-- ALUMNOS -->
-<h2>Alumnos registrados</h2>
-
-<table>
-
-<tr>
-<th>Alumno</th>
-<th>Grupo</th>
-<th>PDF</th>
-</tr>
-
-{% if alumnos %}
-
-{% for alumno in alumnos %}
-<tr>
-
-<td>{{ alumno.nombre }}</td>
-<td>{{ alumno.grupo }}</td>
-
-<td>
-
-<a href="{{ url_for('admin.kardex', nombre=alumno.nombre) }}">
-<button style="background:#8e44ad;color:white;">Kardex</button>
-</a>
-
-<a href="{{ url_for('admin.boleta', nombre=alumno.nombre) }}">
-<button style="background:#16a085;color:white;">Boleta</button>
-</a>
-
-</td>
-
-</tr>
-{% endfor %}
-
-{% else %}
-<tr><td colspan="3">No hay alumnos registrados</td></tr>
-{% endif %}
-
-</table>
-
-<!-- ================= IMPORTAR BD ================= -->
-<h2>Importar base de datos</h2>
-
-<form action="/admin/importar_bd" method="POST" enctype="multipart/form-data">
-
-<input type="file" name="archivo" accept=".json" required>
-
-<button style="background:#2980b9;color:white;">
-📥 Importar datos
-</button>
-
-</form>
-
-{% endblock %}
-
-{% extends "layout.html" %}
-
-{% block content %}
-
-<h1>Dashboard</h1>
-
-<!-- TODO TU CÓDIGO ORIGINAL SE QUEDA IGUAL -->
-
-<!-- ================= IMPORTAR BD ================= -->
+<!-- ================= IMPORTAR ================= -->
 <h2>Importar base de datos</h2>
 
 <form action="/admin/importar_bd" method="POST" enctype="multipart/form-data">
@@ -239,7 +176,7 @@
 </form>
 
 
-<!-- ================= NUEVO FORMULARIO COMPLETO 🔥 ================= -->
+<!-- ================= REGISTRO COMPLETO ================= -->
 <h2>Registro completo de alumno</h2>
 
 <form action="/admin/registro_completo" method="POST">
@@ -289,5 +226,46 @@ Registrar completo
 </button>
 
 </form>
+
+
+<!-- ================= ALUMNOS ================= -->
+<h2>Alumnos registrados</h2>
+
+<table>
+
+<tr>
+<th>Alumno</th>
+<th>Grupo</th>
+<th>PDF</th>
+</tr>
+
+{% if alumnos %}
+
+{% for alumno in alumnos %}
+<tr>
+
+<td>{{ alumno.nombre }}</td>
+<td>{{ alumno.grupo }}</td>
+
+<td>
+
+<a href="{{ url_for('admin.kardex', nombre=alumno.nombre) }}">
+<button style="background:#8e44ad;color:white;">Kardex</button>
+</a>
+
+<a href="{{ url_for('admin.boleta', nombre=alumno.nombre) }}">
+<button style="background:#16a085;color:white;">Boleta</button>
+</a>
+
+</td>
+
+</tr>
+{% endfor %}
+
+{% else %}
+<tr><td colspan="3">No hay alumnos registrados</td></tr>
+{% endif %}
+
+</table>
 
 {% endblock %}
