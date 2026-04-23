@@ -209,3 +209,36 @@ def activar_trimestre():
 
     except Exception as e:
         return f"ERROR TRIMESTRE: {str(e)}"
+
+# ================= KARDEX =================
+@admin_bp.route("/kardex/<nombre>")
+def kardex(nombre):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    pdf = generar_kardex(nombre)
+
+    return send_file(
+        pdf,
+        as_attachment=True,
+        download_name=f"kardex_{nombre}.pdf",
+        mimetype="application/pdf"
+    )
+
+
+# ================= BOLETA =================
+@admin_bp.route("/boleta/<nombre>")
+def boleta(nombre):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    pdf = generar_boleta(nombre)
+
+    return send_file(
+        pdf,
+        as_attachment=True,
+        download_name=f"boleta_{nombre}.pdf",
+        mimetype="application/pdf"
+    )
