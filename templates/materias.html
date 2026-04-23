@@ -63,8 +63,8 @@ LISTA
 
 <td>
 
-<!-- 🔥 CORREGIDO -->
-<a href="{{ url_for('admin.eliminar_materia', id=materia._id) }}"
+<!-- 🔥 SOLUCIÓN SEGURA -->
+<a href="/admin/eliminar_materia/{{ materia._id }}"
    onclick="return confirm('¿Eliminar esta materia?')">
 
 <button style="background:red;color:white;">
