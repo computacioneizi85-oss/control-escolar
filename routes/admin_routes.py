@@ -41,30 +41,56 @@ def admin_dashboard():
     )
 
 
-# ================= MENÚS FALTANTES (🔥 CLAVE) =================
+# ================= ALUMNOS =================
 @admin_bp.route("/alumnos")
 def admin_alumnos():
-    return render_template("alumnos.html", alumnos=list(alumnos.find()), grupos=list(grupos.find()))
+    return render_template(
+        "alumnos.html",
+        alumnos=list(alumnos.find()),
+        grupos=list(grupos.find())
+    )
 
+
+# ================= MAESTROS =================
 @admin_bp.route("/maestros")
 def admin_maestros():
-    return "<h2>Maestros módulo activo</h2>"
+    return render_template(
+        "maestros.html",
+        maestros=list(maestros.find())
+    )
 
+
+# ================= GRUPOS =================
 @admin_bp.route("/grupos")
 def admin_grupos():
-    return "<h2>Grupos módulo activo</h2>"
+    return render_template(
+        "grupos.html",
+        grupos=list(grupos.find())
+    )
 
+
+# ================= REPORTES =================
 @admin_bp.route("/reportes")
 def admin_reportes():
-    return "<h2>Reportes módulo activo</h2>"
+    return render_template(
+        "reportes.html",
+        reportes=list(reportes.find())
+    )
 
+
+# ================= AVISOS =================
 @admin_bp.route("/avisos")
 def admin_avisos():
-    return "<h2>Avisos módulo activo</h2>"
+    return render_template(
+        "avisos.html",
+        avisos=list(avisos.find())
+    )
 
+
+# ================= CONFIG =================
 @admin_bp.route("/configuracion")
 def admin_configuracion():
-    return "<h2>Configuración módulo activo</h2>"
+    return render_template("configuracion.html")
 
 
 # ================= REGISTRO COMPLETO =================
@@ -237,3 +263,11 @@ def expediente_pdf(id):
 @admin_bp.route("/activar_trimestre", methods=["POST"])
 def activar_trimestre():
     return redirect("/admin")
+
+
+@admin_bp.route("/reporte_pdf/<id>")
+def reporte_pdf(id):
+    reporte = reportes.find_one({"_id": ObjectId(id)})
+    pdf = generar_citatorio_pdf(reporte)  # o tu función de reporte
+    pdf.seek(0)
+    return send_file(pdf, as_attachment=True, download_name="reporte.pdf")

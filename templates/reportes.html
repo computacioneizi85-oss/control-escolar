@@ -26,7 +26,7 @@
 <td>{{ r.estatus or "Pendiente" }}</td>
 
 <td>
-<a href="{{ url_for('admin.generar_reporte', id=r._id) }}">
+<a href="/admin/reporte_pdf/{{ r._id }}">
 <button style="background:#27ae60;color:white;">PDF</button>
 </a>
 </td>
