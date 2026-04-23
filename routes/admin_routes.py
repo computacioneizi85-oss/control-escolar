@@ -353,3 +353,64 @@ def activar_trimestre():
 def ver_configuracion():
     config = configuracion.find_one() or {}
     return render_template("configuracion.html", config=config)
+
+# ================= IMPORTAR BD =================
+@admin_bp.route("/importar_bd", methods=["POST"])
+def importar_bd():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    archivo = request.files.get("archivo")
+
+    if not archivo:
+        return "No se subió archivo"
+
+    import json
+
+    data = json.load(archivo)
+
+    # 🔥 BORRAR COLECCIONES (opcional, puedes comentar si no quieres reset)
+    alumnos.delete_many({})
+    maestros.delete_many({})
+    grupos.delete_many({})
+    materias.delete_many({})
+    horarios.delete_many({})
+
+    # 🔥 INSERTAR
+    if "alumnos" in data:
+        alumnos.insert_many(data["alumnos"])
+
+    if "maestros" in data:
+        maestros.insert_many(data["maestros"])
+
+    if "grupos" in data:
+        grupos.insert_many(data["grupos"])
+
+    if "materias" in data:
+        materias.insert_many(data["materias"])
+
+    if "horarios" in data:
+        horarios.insert_many(data["horarios"])
+
+    return redirect("/admin")
+
+# ================= REGISTRO COMPLETO =================
+@admin_bp.route("/registro_completo_alumno", methods=["POST"])
+def registro_completo_alumno():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    alumnos.insert_one({
+        "nombre": request.form.get("nombre"),
+        "grupo": request.form.get("grupo"),
+        "curp": request.form.get("curp"),
+        "tutor": request.form.get("tutor"),
+        "telefono": request.form.get("telefono"),
+        "calificaciones": [],
+        "asistencias": []
+    })
+
+    return redirect("/admin")
+

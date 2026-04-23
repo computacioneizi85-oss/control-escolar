@@ -33,7 +33,6 @@
 
 </div>
 
-
 <!-- ================= GRID ================= -->
 <div class="dashboard-grid">
 
@@ -56,7 +55,6 @@
 
 </div>
 
-
 <div class="card dashboard-block">
 <h3>Asistencia general</h3>
 
@@ -73,7 +71,6 @@
 </div>
 
 </div>
-
 
 <div class="card dashboard-block">
 <h3>Próximos citatorios</h3>
@@ -94,7 +91,6 @@
 {% endif %}
 
 </div>
-
 
 <div class="card dashboard-block">
 <h3>Últimos reportes</h3>
@@ -118,7 +114,6 @@
 
 </div>
 
-
 <!-- ================= BACKUP ================= -->
 <h2>Backup del sistema</h2>
 
@@ -130,7 +125,6 @@
 <input type="file" name="archivo" required>
 <button type="submit" style="background:#27ae60;color:white;">♻ Restaurar sistema</button>
 </form>
-
 
 <!-- ================= TRIMESTRES ================= -->
 <h2>Control de evaluaciones</h2>
@@ -152,39 +146,32 @@
 
 </form>
 
-
 <!-- ================= IMPORTAR ================= -->
 <h2>Importar base de datos</h2>
 
-<!-- ❌ DESACTIVADO: NO EXISTE RUTA EN BACKEND -->
-<!--
 <form action="/admin/importar_bd" method="POST" enctype="multipart/form-data">
 <input type="file" name="archivo" accept=".json" required>
 <button style="background:#2980b9;color:white;">
 📥 Importar datos
 </button>
 </form>
--->
-
 
 <!-- ================= REGISTRO COMPLETO ================= -->
 <h2>Registro completo de alumno</h2>
 
-<!-- ❌ DESACTIVADO: NO EXISTE RUTA EN BACKEND -->
-<!--
-<form action="/admin/registro_completo" method="POST">
+<form action="/admin/registro_completo_alumno" method="POST">
 
 <input name="nombre" placeholder="Nombre completo" required>
-<input name="usuario" placeholder="Usuario" required>
-<input name="password" placeholder="Contraseña" required>
+<input name="grupo" placeholder="Grupo" required>
+<input name="curp" placeholder="CURP">
+<input name="tutor" placeholder="Tutor">
+<input name="telefono" placeholder="Teléfono">
 
 <button style="background:#2ecc71;color:white;">
-Registrar completo
+Registrar alumno
 </button>
 
 </form>
--->
-
 
 <!-- ================= ALUMNOS ================= -->
 <h2>Alumnos registrados</h2>
@@ -196,8 +183,6 @@ Registrar completo
 <th>Grupo</th>
 <th>PDF</th>
 </tr>
-
-{% if alumnos %}
 
 {% for alumno in alumnos %}
 <tr>
@@ -219,10 +204,6 @@ Registrar completo
 
 </tr>
 {% endfor %}
-
-{% else %}
-<tr><td colspan="3">No hay alumnos registrados</td></tr>
-{% endif %}
 
 </table>
 
