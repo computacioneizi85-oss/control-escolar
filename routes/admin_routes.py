@@ -244,14 +244,3 @@ def citatorio_pdf(id):
         download_name="citatorio.pdf",
         mimetype="application/pdf"
     )
-
-# ================= ELIMINAR MATERIA =================
-@admin_bp.route("/eliminar_materia/<id>")
-def eliminar_materia(id):
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    materias.delete_one({"_id": ObjectId(id)})
-
-    return redirect("/admin/materias")
