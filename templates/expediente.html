@@ -3,21 +3,48 @@
 
 <h2>Expediente del alumno</h2>
 
-<p><b>Nombre:</b> {{ alumno.nombre }}</p>
-<p><b>CURP:</b> {{ alumno.curp }}</p>
-<p><b>Sexo:</b> {{ alumno.sexo }}</p>
-<p><b>Fecha nacimiento:</b> {{ alumno.fecha_nacimiento }}</p>
-<p><b>Teléfono:</b> {{ alumno.telefono }}</p>
-<p><b>Dirección:</b> {{ alumno.direccion }}</p>
-<p><b>Escuela:</b> {{ alumno.escuela_procedencia }}</p>
-<p><b>Promedio:</b> {{ alumno.promedio }}</p>
-<p><b>Afecciones:</b> {{ alumno.afecciones }}</p>
+<!-- BOTÓN EDITAR -->
+<a href="/admin/editar_expediente/{{ alumno._id }}">
+<button style="background:#f39c12;color:white; margin-bottom:15px;">
+✏️ Editar expediente
+</button>
+</a>
 
 <hr>
 
-<h3>Padre/Tutor</h3>
-<p>{{ alumno.padre_nombre }}</p>
-<p>{{ alumno.padre_telefono }}</p>
-<p>{{ alumno.padre_correo }}</p>
+<h3>📌 Datos del alumno</h3>
+
+<p><b>Nombre:</b> {{ alumno.nombre or "—" }}</p>
+<p><b>CURP:</b> {{ alumno.curp or "—" }}</p>
+<p><b>Sexo:</b> {{ alumno.sexo or "—" }}</p>
+<p><b>Fecha de nacimiento:</b> {{ alumno.fecha_nacimiento or "—" }}</p>
+<p><b>Teléfono:</b> {{ alumno.telefono or "—" }}</p>
+<p><b>Dirección:</b> {{ alumno.direccion or "—" }}</p>
+<p><b>Escuela de procedencia:</b> {{ alumno.escuela_procedencia or "—" }}</p>
+<p><b>Promedio:</b> {{ alumno.promedio or "—" }}</p>
+<p><b>Afecciones médicas:</b> {{ alumno.afecciones or "—" }}</p>
+
+<hr>
+
+<h3>👨‍👩‍👧 Datos del padre o tutor</h3>
+
+<p><b>Nombre:</b> {{ alumno.padre_nombre or "—" }}</p>
+<p><b>Teléfono:</b> {{ alumno.padre_telefono or "—" }}</p>
+<p><b>Correo:</b> {{ alumno.padre_correo or "—" }}</p>
+
+<hr>
+
+<h3>🏫 Información escolar</h3>
+
+<p><b>Grupo:</b> {{ alumno.grupo or "—" }}</p>
+
+<hr>
+
+<!-- BOTÓN REGRESAR -->
+<a href="/admin">
+<button style="background:#3498db;color:white;">
+⬅️ Volver al panel
+</button>
+</a>
 
 {% endblock %}

@@ -415,3 +415,44 @@ def filtrar_alumnos():
     return render_template("alumnos.html",
         alumnos=list(alumnos.find(query))
     )
+
+# ================= EDITAR EXPEDIENTE =================
+@admin_bp.route("/editar_expediente/<id>")
+def editar_expediente(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    alumno = alumnos.find_one({"_id": ObjectId(id)})
+
+    return render_template("editar_expediente.html", alumno=alumno)
+
+
+@admin_bp.route("/actualizar_expediente/<id>", methods=["POST"])
+def actualizar_expediente(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    alumnos.update_one(
+        {"_id": ObjectId(id)},
+        {
+            "$set": {
+                "nombre": request.form.get("nombre"),
+                "curp": request.form.get("curp"),
+                "sexo": request.form.get("sexo"),
+                "fecha_nacimiento": request.form.get("fecha_nacimiento"),
+                "telefono": request.form.get("telefono"),
+                "direccion": request.form.get("direccion"),
+                "escuela_procedencia": request.form.get("escuela"),
+                "promedio": request.form.get("promedio"),
+                "afecciones": request.form.get("afecciones"),
+                "padre_nombre": request.form.get("padre_nombre"),
+                "padre_telefono": request.form.get("padre_telefono"),
+                "padre_correo": request.form.get("padre_correo"),
+                "grupo": request.form.get("grupo")
+            }
+        }
+    )
+
+    return redirect(f"/admin/expediente/{id}")

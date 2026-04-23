@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Editar expediente</h2>
+
+<form action="/admin/actualizar_expediente/{{ alumno._id }}" method="POST">
+
+<input name="nombre" value="{{ alumno.nombre }}">
+<input name="curp" value="{{ alumno.curp }}">
+
+<select name="sexo">
+<option {% if alumno.sexo=="Masculino" %}selected{% endif %}>Masculino</option>
+<option {% if alumno.sexo=="Femenino" %}selected{% endif %}>Femenino</option>
+</select>
+
+<input type="date" name="fecha_nacimiento" value="{{ alumno.fecha_nacimiento }}">
+
+<input name="telefono" value="{{ alumno.telefono }}">
+<input name="direccion" value="{{ alumno.direccion }}">
+<input name="escuela" value="{{ alumno.escuela_procedencia }}">
+<input name="promedio" value="{{ alumno.promedio }}">
+<input name="afecciones" value="{{ alumno.afecciones }}">
+
+<input name="padre_nombre" value="{{ alumno.padre_nombre }}">
+<input name="padre_telefono" value="{{ alumno.padre_telefono }}">
+<input name="padre_correo" value="{{ alumno.padre_correo }}">
+
+<input name="grupo" value="{{ alumno.grupo }}">
+
+<br><br>
+
+<button style="background:#27ae60;color:white;">💾 Guardar cambios</button>
+
+</form>
+
+{% endblock %}
