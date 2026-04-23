@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Expediente del alumno</h2>
+
+<p><b>Nombre:</b> {{ alumno.nombre }}</p>
+<p><b>CURP:</b> {{ alumno.curp }}</p>
+<p><b>Sexo:</b> {{ alumno.sexo }}</p>
+<p><b>Fecha nacimiento:</b> {{ alumno.fecha_nacimiento }}</p>
+<p><b>Teléfono:</b> {{ alumno.telefono }}</p>
+<p><b>Dirección:</b> {{ alumno.direccion }}</p>
+<p><b>Escuela:</b> {{ alumno.escuela_procedencia }}</p>
+<p><b>Promedio:</b> {{ alumno.promedio }}</p>
+<p><b>Afecciones:</b> {{ alumno.afecciones }}</p>
+
+<hr>
+
+<h3>Padre/Tutor</h3>
+<p>{{ alumno.padre_nombre }}</p>
+<p>{{ alumno.padre_telefono }}</p>
+<p>{{ alumno.padre_correo }}</p>
+
+{% endblock %}

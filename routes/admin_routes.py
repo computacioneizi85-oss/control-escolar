@@ -64,6 +64,37 @@ def crear_alumno():
     return redirect("/admin/alumnos")
 
 
+# 🔥 NUEVO REGISTRO COMPLETO
+@admin_bp.route("/registro_completo_alumno", methods=["POST"])
+def registro_completo_alumno():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    alumnos.insert_one({
+        "nombre": request.form.get("nombre"),
+        "curp": request.form.get("curp"),
+        "sexo": request.form.get("sexo"),
+        "fecha_nacimiento": request.form.get("fecha_nacimiento"),
+        "telefono": request.form.get("telefono"),
+        "direccion": request.form.get("direccion"),
+        "escuela_procedencia": request.form.get("escuela"),
+        "promedio": request.form.get("promedio"),
+        "afecciones": request.form.get("afecciones"),
+
+        "padre_nombre": request.form.get("padre_nombre"),
+        "padre_telefono": request.form.get("padre_telefono"),
+        "padre_correo": request.form.get("padre_correo"),
+
+        "grupo": request.form.get("grupo"),
+
+        "calificaciones": [],
+        "asistencias": []
+    })
+
+    return redirect("/admin")
+
+
 @admin_bp.route("/eliminar_alumno/<id>")
 def eliminar_alumno(id):
     alumnos.delete_one({"_id": ObjectId(id)})
@@ -216,29 +247,10 @@ def ver_reportes():
 
 @admin_bp.route("/generar_reporte/<id>")
 def generar_reporte(id):
-
-    try:
-        reporte = reportes.find_one({"_id": ObjectId(id)})
-
-        if not reporte:
-            return "ERROR: Reporte no encontrado"
-
-        pdf = generar_reporte_pdf(reporte)
-
-        if not pdf:
-            return "ERROR: No se pudo generar PDF"
-
-        pdf.seek(0)
-
-        return send_file(
-            pdf,
-            mimetype="application/pdf",
-            as_attachment=True,
-            download_name="reporte.pdf"
-        )
-
-    except Exception as e:
-        return f"ERROR REPORTE: {str(e)}"
+    reporte = reportes.find_one({"_id": ObjectId(id)})
+    pdf = generar_reporte_pdf(reporte)
+    pdf.seek(0)
+    return send_file(pdf, mimetype="application/pdf", as_attachment=True, download_name="reporte.pdf")
 
 
 # ================= CITATORIOS =================
@@ -285,17 +297,12 @@ def ver_avisos():
 
 @admin_bp.route("/crear_aviso", methods=["POST"])
 def crear_aviso():
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
     avisos.insert_one({
         "mensaje": request.form.get("mensaje"),
         "tipo": request.form.get("tipo"),
-        "grupo": request.form.get("grupo"),  # 🔥 IMPORTANTE
+        "grupo": request.form.get("grupo"),
         "fecha": datetime.now()
     })
-
     return redirect("/admin/avisos")
 
 
@@ -308,26 +315,16 @@ def eliminar_aviso(id):
 # ================= PDFS =================
 @admin_bp.route("/kardex/<nombre>")
 def kardex(nombre):
-    alumno = alumnos.find_one({
-        "nombre": {"$regex": f"^{nombre}$", "$options": "i"}
-    })
-
     pdf = generar_kardex(nombre)
     pdf.seek(0)
-
     return send_file(pdf, mimetype="application/pdf", as_attachment=True,
                      download_name=f"kardex_{nombre}.pdf")
 
 
 @admin_bp.route("/boleta/<nombre>")
 def boleta(nombre):
-    alumno = alumnos.find_one({
-        "nombre": {"$regex": f"^{nombre}$", "$options": "i"}
-    })
-
     pdf = generar_boleta(nombre)
     pdf.seek(0)
-
     return send_file(pdf, mimetype="application/pdf", as_attachment=True,
                      download_name=f"boleta_{nombre}.pdf")
 
@@ -348,11 +345,12 @@ def activar_trimestre():
     return redirect("/admin")
 
 
-# ================= CONFIGURACION =================
+# ================= CONFIG =================
 @admin_bp.route("/configuracion")
 def ver_configuracion():
     config = configuracion.find_one() or {}
     return render_template("configuracion.html", config=config)
+
 
 # ================= IMPORTAR BD =================
 @admin_bp.route("/importar_bd", methods=["POST"])
@@ -370,14 +368,12 @@ def importar_bd():
 
     data = json.load(archivo)
 
-    # 🔥 BORRAR COLECCIONES (opcional, puedes comentar si no quieres reset)
     alumnos.delete_many({})
     maestros.delete_many({})
     grupos.delete_many({})
     materias.delete_many({})
     horarios.delete_many({})
 
-    # 🔥 INSERTAR
     if "alumnos" in data:
         alumnos.insert_many(data["alumnos"])
 
@@ -395,22 +391,27 @@ def importar_bd():
 
     return redirect("/admin")
 
-# ================= REGISTRO COMPLETO =================
-@admin_bp.route("/registro_completo_alumno", methods=["POST"])
-def registro_completo_alumno():
+@admin_bp.route("/expediente/<id>")
+def expediente(id):
 
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
+    alumno = alumnos.find_one({"_id": ObjectId(id)})
 
-    alumnos.insert_one({
-        "nombre": request.form.get("nombre"),
-        "grupo": request.form.get("grupo"),
-        "curp": request.form.get("curp"),
-        "tutor": request.form.get("tutor"),
-        "telefono": request.form.get("telefono"),
-        "calificaciones": [],
-        "asistencias": []
-    })
+    return render_template("expediente.html", alumno=alumno)
 
-    return redirect("/admin")
+@admin_bp.route("/filtrar_alumnos")
+def filtrar_alumnos():
 
+    grupo = request.args.get("grupo")
+    nombre = request.args.get("nombre")
+
+    query = {}
+
+    if grupo:
+        query["grupo"] = grupo
+
+    if nombre:
+        query["nombre"] = {"$regex": nombre, "$options": "i"}
+
+    return render_template("alumnos.html",
+        alumnos=list(alumnos.find(query))
+    )

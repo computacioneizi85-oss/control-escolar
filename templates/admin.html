@@ -181,7 +181,7 @@ Registrar alumno
 <tr>
 <th>Alumno</th>
 <th>Grupo</th>
-<th>PDF</th>
+<th>Acciones</th>
 </tr>
 
 {% for alumno in alumnos %}
@@ -198,6 +198,12 @@ Registrar alumno
 
 <a href="{{ url_for('admin.boleta', nombre=alumno.nombre) }}">
 <button style="background:#16a085;color:white;">Boleta</button>
+</a>
+
+<br><br>
+
+<a href="/admin/expediente/{{ alumno._id }}">
+<button style="background:#34495e;color:white;">📄 Expediente</button>
 </a>
 
 </td>
