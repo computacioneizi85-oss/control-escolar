@@ -298,7 +298,11 @@ def admin_reportes():
 
 @admin_bp.route("/citatorios")
 def admin_citatorios():
-    return render_template("citatorios.html", citatorios=list(citatorios.find()))
+    return render_template(
+    "citatorios.html",
+    citatorios=list(citatorios.find()),
+    alumnos=list(alumnos.find())
+)
 
 
 @admin_bp.route("/avisos")
@@ -513,3 +517,60 @@ def guardar_configuracion():
 @admin_bp.route("/importar_bd", methods=["POST"])
 def importar_bd():
     return redirect("/admin")
+
+
+# ================= CITATORIO PDF =================
+@admin_bp.route("/citatorio_pdf/<id>")
+def citatorio_pdf(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    citatorio = citatorios.find_one({"_id": ObjectId(id)})
+
+    pdf = generar_citatorio_pdf(citatorio)
+    pdf.seek(0)
+
+    return send_file(
+        pdf,
+        as_attachment=True,
+        download_name="citatorio.pdf",
+        mimetype="application/pdf"
+    )
+
+# ================= CREAR CITATORIO =================
+@admin_bp.route("/crear_citatorio", methods=["POST"])
+def crear_citatorio():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    citatorios.insert_one({
+        "alumno": request.form.get("alumno"),
+        "grupo": request.form.get("grupo"),
+        "motivo": request.form.get("motivo"),
+        "fecha_cita": request.form.get("fecha"),
+        "hora": request.form.get("hora"),
+        "estatus": "pendiente",
+        "enterado": False
+    })
+
+    return redirect("/admin/citatorios")
+
+
+# ================= CONFIRMAR ASISTENCIA =================
+@admin_bp.route("/confirmar_asistencia/<id>")
+def confirmar_asistencia(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    citatorios.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {
+            "estatus": "asistio",
+            "enterado": True
+        }}
+    )
+
+    return redirect("/admin/citatorios")

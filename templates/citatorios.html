@@ -10,7 +10,7 @@ GENERAR CITATORIO
 
 <h3>Generar citatorio</h3>
 
-<form action="/admin/crear_citatorio" method="POST">
+<form action="{{ url_for('admin.crear_citatorio') }}" method="POST">
 
 <select name="alumno" required>
 
@@ -31,7 +31,9 @@ GENERAR CITATORIO
 <input type="date" name="fecha" required>
 <input type="time" name="hora" required>
 
-<button type="submit">Guardar citatorio</button>
+<button type="submit" style="background:#2ecc71;color:white;">
+Guardar citatorio
+</button>
 
 </form>
 
@@ -52,7 +54,7 @@ LISTA DE CITATORIOS
 <th>Fecha</th>
 <th>Hora</th>
 <th>Estado</th>
-<th>Enterado</th> <!-- 🔥 NUEVO -->
+<th>Enterado</th>
 <th>Acciones</th>
 </tr>
 
@@ -65,7 +67,10 @@ LISTA DE CITATORIOS
 <td>{{ c.alumno }}</td>
 <td>{{ c.grupo }}</td>
 <td>{{ c.motivo }}</td>
-<td>{{ c.fecha_cita }}</td>
+
+<!-- 🔥 SOPORTA AMBOS NOMBRES -->
+<td>{{ c.fecha_cita or c.fecha or "—" }}</td>
+
 <td>{{ c.hora }}</td>
 
 <!-- ESTADO -->
@@ -78,12 +83,12 @@ LISTA DE CITATORIOS
 <span style="color:green; font-weight:bold;">✔ Asistió</span>
 
 {% else %}
-<span style="color:gray;">{{ c.estatus }}</span>
+<span style="color:gray;">{{ c.estatus or "—" }}</span>
 {% endif %}
 
 </td>
 
-<!-- 🔥 ENTERADO -->
+<!-- ENTERADO -->
 <td>
 
 {% if c.enterado %}
@@ -96,16 +101,16 @@ LISTA DE CITATORIOS
 
 <td>
 
-<!-- PDF -->
-<a href="/admin/generar_citatorio/{{ c._id }}">
+<!-- 🔥 PDF CORREGIDO -->
+<a href="{{ url_for('admin.citatorio_pdf', id=c._id) }}" target="_blank">
 <button style="background:#3498db;color:white;">
 PDF
 </button>
 </a>
 
-<!-- CONFIRMAR ASISTENCIA -->
+<!-- CONFIRMAR -->
 {% if c.estatus != "asistio" %}
-<a href="/admin/confirmar_asistencia/{{ c._id }}">
+<a href="{{ url_for('admin.confirmar_asistencia', id=c._id) }}">
 <button style="background:#27ae60;color:white;">
 ✔ Confirmar
 </button>

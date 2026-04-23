@@ -6,62 +6,59 @@
 
 <h2>Crear horario</h2>
 
-<form action="/crear_horario" method="POST">
+<!-- 🔥 CORREGIDO: usa url_for -->
+<form action="{{ url_for('admin.crear_horario') }}" method="POST">
 
-<select name="grupo">
-
-{% for grupo in grupos %}
+<select name="grupo" required>
+<option value="">Selecciona grupo</option>
+{% for grupo in grupos or [] %}
 <option value="{{ grupo.nombre }}">
 {{ grupo.nombre }}
 </option>
 {% endfor %}
-
 </select>
 
 
-<select name="materia">
-
-{% for materia in materias %}
+<select name="materia" required>
+<option value="">Selecciona materia</option>
+{% for materia in materias or [] %}
 <option value="{{ materia.nombre }}">
 {{ materia.nombre }}
 </option>
 {% endfor %}
-
 </select>
 
 
-<select name="maestro">
-
-{% for maestro in maestros %}
+<select name="maestro" required>
+<option value="">Selecciona maestro</option>
+{% for maestro in maestros or [] %}
 <option value="{{ maestro.nombre }}">
 {{ maestro.nombre }}
 </option>
 {% endfor %}
-
 </select>
 
 
-<select name="dia">
-
+<select name="dia" required>
+<option value="">Selecciona día</option>
 <option>Lunes</option>
 <option>Martes</option>
 <option>Miércoles</option>
 <option>Jueves</option>
 <option>Viernes</option>
-
 </select>
 
 
-<input type="time" name="hora">
+<input type="time" name="hora" required>
 
-<button type="submit">Crear horario</button>
+<button type="submit" style="background:#2ecc71;color:white;">
+Crear horario
+</button>
 
 </form>
 
 
-<br>
-<br>
-
+<br><br>
 
 <h2>Lista de horarios</h2>
 
@@ -76,6 +73,8 @@
 <th>Eliminar</th>
 </tr>
 
+{% if horarios %}
+
 {% for horario in horarios %}
 
 <tr>
@@ -87,14 +86,28 @@
 <td>{{ horario.hora }}</td>
 
 <td>
-<a href="/eliminar_horario/{{ horario._id }}">
-<button style="background:red;">Eliminar</button>
+<!-- 🔥 CORREGIDO -->
+<a href="{{ url_for('admin.eliminar_horario', id=horario._id) }}"
+   onclick="return confirm('¿Eliminar horario?')">
+
+<button style="background:red;color:white;">
+Eliminar
+</button>
+
 </a>
 </td>
 
 </tr>
 
 {% endfor %}
+
+{% else %}
+
+<tr>
+<td colspan="6">No hay horarios registrados</td>
+</tr>
+
+{% endif %}
 
 </table>
 
