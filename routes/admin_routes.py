@@ -244,3 +244,28 @@ def citatorio_pdf(id):
         download_name="citatorio.pdf",
         mimetype="application/pdf"
     )
+
+# ================= ACTIVAR TRIMESTRE =================
+@admin_bp.route("/activar_trimestre", methods=["POST"])
+def activar_trimestre():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    try:
+        trimestre = request.form.get("trimestre")
+        estado = request.form.get("estado")
+
+        configuracion.update_one(
+            {},
+            {"$set": {
+                "trimestre_activo": trimestre,
+                "evaluaciones_activas": estado == "true"
+            }},
+            upsert=True
+        )
+
+        return redirect("/admin")
+
+    except Exception as e:
+        return f"ERROR TRIMESTRE: {str(e)}"
