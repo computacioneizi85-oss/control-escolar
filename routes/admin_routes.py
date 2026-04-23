@@ -253,12 +253,21 @@ def boleta(nombre):
 
 @admin_bp.route("/alumnos")
 def admin_alumnos():
-    return render_template("alumnos.html", alumnos=list(alumnos.find()))
+    return render_template(
+        "alumnos.html",
+        alumnos=list(alumnos.find()),
+        grupos=list(grupos.find())
+    )
 
 
 @admin_bp.route("/maestros")
 def admin_maestros():
-    return render_template("maestros.html", maestros=list(maestros.find()))
+    return render_template(
+        "maestros.html",
+        maestros=list(maestros.find()),
+        grupos=list(grupos.find()),
+        materias=list(materias.find())
+    )
 
 
 @admin_bp.route("/grupos")
@@ -273,7 +282,13 @@ def admin_materias():
 
 @admin_bp.route("/horarios")
 def admin_horarios():
-    return render_template("horarios.html", horarios=list(horarios.find()))
+    return render_template(
+        "horarios.html",
+        horarios=list(horarios.find()),
+        grupos=list(grupos.find()),
+        materias=list(materias.find()),
+        maestros=list(maestros.find())
+    )
 
 
 @admin_bp.route("/reportes")
@@ -293,7 +308,10 @@ def admin_avisos():
 
 @admin_bp.route("/configuracion")
 def admin_configuracion():
-    return render_template("configuracion.html")
+    return render_template(
+    "configuracion.html",
+    config=configuracion.find_one()
+)
 
 # ================= ALUMNOS CRUD =================
 @admin_bp.route("/crear_alumno", methods=["POST"])
