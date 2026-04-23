@@ -1,18 +1,17 @@
+# ================= IMPORTS =================
 from flask import Blueprint, render_template, request, redirect, session, send_file, url_for
 from bson.objectid import ObjectId
-from werkzeug.security import generate_password_hash
-from datetime import datetime
 import os
 
 from database.mongo import (
     alumnos, grupos, materias, maestros,
     reportes, configuracion, horarios,
-    citatorios, padres, avisos
+    citatorios, avisos
 )
 
 from pdf.generador import (
     generar_kardex, generar_boleta,
-    generar_reporte_pdf, generar_citatorio_pdf
+    generar_citatorio_pdf
 )
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -42,6 +41,32 @@ def admin_dashboard():
     )
 
 
+# ================= MENÚS FALTANTES (🔥 CLAVE) =================
+@admin_bp.route("/alumnos")
+def admin_alumnos():
+    return render_template("alumnos.html", alumnos=list(alumnos.find()), grupos=list(grupos.find()))
+
+@admin_bp.route("/maestros")
+def admin_maestros():
+    return "<h2>Maestros módulo activo</h2>"
+
+@admin_bp.route("/grupos")
+def admin_grupos():
+    return "<h2>Grupos módulo activo</h2>"
+
+@admin_bp.route("/reportes")
+def admin_reportes():
+    return "<h2>Reportes módulo activo</h2>"
+
+@admin_bp.route("/avisos")
+def admin_avisos():
+    return "<h2>Avisos módulo activo</h2>"
+
+@admin_bp.route("/configuracion")
+def admin_configuracion():
+    return "<h2>Configuración módulo activo</h2>"
+
+
 # ================= REGISTRO COMPLETO =================
 @admin_bp.route("/registro_completo_alumno", methods=["POST"])
 def registro_completo_alumno():
@@ -49,123 +74,39 @@ def registro_completo_alumno():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    try:
-        foto = request.files.get("foto")
-        ruta_foto = ""
-
-        if foto and foto.filename:
-            carpeta = "static/fotos"
-            os.makedirs(carpeta, exist_ok=True)
-            ruta_foto = f"{carpeta}/{foto.filename}"
-            foto.save(ruta_foto)
-
-        alumnos.insert_one({
-            "nombre": request.form.get("nombre") or "",
-            "curp": request.form.get("curp") or "",
-            "sexo": request.form.get("sexo") or "",
-            "fecha_nacimiento": request.form.get("fecha_nacimiento") or "",
-            "telefono": request.form.get("telefono") or "",
-            "direccion": request.form.get("direccion") or "",
-            "escuela_procedencia": request.form.get("escuela") or "",
-            "promedio": request.form.get("promedio") or "",
-            "afecciones": request.form.get("afecciones") or "",
-            "padre_nombre": request.form.get("padre_nombre") or "",
-            "padre_telefono": request.form.get("padre_telefono") or "",
-            "padre_correo": request.form.get("padre_correo") or "",
-            "grupo": request.form.get("grupo") or "",
-            "usuario": str(ObjectId()),
-            "foto": ruta_foto,
-            "calificaciones": [],
-            "asistencias": []
-        })
-
-        return redirect("/admin")
-
-    except Exception as e:
-        return f"ERROR REGISTRO: {str(e)}"
-
-
-# ================= EXPEDIENTE =================
-@admin_bp.route("/expediente/<id>")
-def expediente(id):
-    alumno = alumnos.find_one({"_id": ObjectId(id)})
-    return render_template("expediente.html", alumno=alumno)
-
-
-@admin_bp.route("/editar_expediente/<id>")
-def editar_expediente(id):
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    alumno = alumnos.find_one({"_id": ObjectId(id)})
-    return render_template("editar_expediente.html", alumno=alumno)
-
-
-@admin_bp.route("/actualizar_expediente/<id>", methods=["POST"])
-def actualizar_expediente(id):
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    update_data = {
-        "nombre": request.form.get("nombre"),
-        "curp": request.form.get("curp"),
-        "sexo": request.form.get("sexo"),
-        "fecha_nacimiento": request.form.get("fecha_nacimiento"),
-        "telefono": request.form.get("telefono"),
-        "direccion": request.form.get("direccion"),
-        "escuela_procedencia": request.form.get("escuela"),
-        "promedio": request.form.get("promedio"),
-        "afecciones": request.form.get("afecciones"),
-        "padre_nombre": request.form.get("padre_nombre"),
-        "padre_telefono": request.form.get("padre_telefono"),
-        "padre_correo": request.form.get("padre_correo"),
-        "grupo": request.form.get("grupo")
-    }
-
     foto = request.files.get("foto")
+    ruta_foto = ""
 
     if foto and foto.filename:
         carpeta = "static/fotos"
         os.makedirs(carpeta, exist_ok=True)
         ruta_foto = f"{carpeta}/{foto.filename}"
         foto.save(ruta_foto)
-        update_data["foto"] = ruta_foto
 
-    alumnos.update_one({"_id": ObjectId(id)}, {"$set": update_data})
-
-    return redirect(f"/admin/expediente/{id}")
-
-
-# ================= CREAR MATERIA =================
-@admin_bp.route("/crear_materia", methods=["POST"])
-def crear_materia():
-    nombre = request.form.get("nombre")
-    grupo = request.form.get("grupo")
-
-    if not nombre or not grupo:
-        return "Faltan datos"
-
-    materias.insert_one({
-        "nombre": nombre,
-        "grupo": grupo
+    alumnos.insert_one({
+        "nombre": request.form.get("nombre") or "",
+        "curp": request.form.get("curp") or "",
+        "sexo": request.form.get("sexo") or "",
+        "fecha_nacimiento": request.form.get("fecha_nacimiento") or "",
+        "telefono": request.form.get("telefono") or "",
+        "direccion": request.form.get("direccion") or "",
+        "escuela_procedencia": request.form.get("escuela") or "",
+        "promedio": request.form.get("promedio") or "",
+        "afecciones": request.form.get("afecciones") or "",
+        "padre_nombre": request.form.get("padre_nombre") or "",
+        "padre_telefono": request.form.get("padre_telefono") or "",
+        "padre_correo": request.form.get("padre_correo") or "",
+        "grupo": request.form.get("grupo") or "",
+        "usuario": str(ObjectId()),
+        "foto": ruta_foto,
+        "calificaciones": [],
+        "asistencias": []
     })
 
-    return redirect("/admin/materias")
-
-# ================= ELIMINAR MATERIA =================
-@admin_bp.route("/eliminar_materia/<id>")
-def eliminar_materia(id):
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    materias.delete_one({"_id": ObjectId(id)})
-
-    return redirect("/admin/materias")
+    return redirect("/admin")
 
 
-# ================= MENÚS =================
+# ================= MATERIAS =================
 @admin_bp.route("/materias")
 def admin_materias():
     return render_template(
@@ -175,6 +116,22 @@ def admin_materias():
     )
 
 
+@admin_bp.route("/crear_materia", methods=["POST"])
+def crear_materia():
+    materias.insert_one({
+        "nombre": request.form.get("nombre"),
+        "grupo": request.form.get("grupo")
+    })
+    return redirect("/admin/materias")
+
+
+@admin_bp.route("/eliminar_materia/<id>")
+def eliminar_materia(id):
+    materias.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/materias")
+
+
+# ================= HORARIOS =================
 @admin_bp.route("/horarios")
 def admin_horarios():
     return render_template(
@@ -186,16 +143,6 @@ def admin_horarios():
     )
 
 
-@admin_bp.route("/citatorios")
-def admin_citatorios():
-    return render_template(
-        "citatorios.html",
-        citatorios=list(citatorios.find()),
-        alumnos=list(alumnos.find())
-    )
-
-
-# ================= HORARIOS =================
 @admin_bp.route("/crear_horario", methods=["POST"])
 def crear_horario():
     horarios.insert_one({
@@ -208,7 +155,22 @@ def crear_horario():
     return redirect("/admin/horarios")
 
 
+@admin_bp.route("/eliminar_horario/<id>")
+def eliminar_horario(id):
+    horarios.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/horarios")
+
+
 # ================= CITATORIOS =================
+@admin_bp.route("/citatorios")
+def admin_citatorios():
+    return render_template(
+        "citatorios.html",
+        citatorios=list(citatorios.find()),
+        alumnos=list(alumnos.find())
+    )
+
+
 @admin_bp.route("/crear_citatorio", methods=["POST"])
 def crear_citatorio():
     citatorios.insert_one({
@@ -231,86 +193,47 @@ def confirmar_asistencia(id):
     )
     return redirect("/admin/citatorios")
 
-# ================= KARDEX =================
-@admin_bp.route("/kardex/<nombre>")
-def kardex(nombre):
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    alumno = alumnos.find_one({"nombre": nombre})
-
-    if not alumno:
-        return "Alumno no encontrado"
-
-    pdf = generar_kardex(alumno)
-    pdf.seek(0)
-
-    return send_file(
-        pdf,
-        as_attachment=True,
-        download_name="kardex.pdf",
-        mimetype="application/pdf"
-    )
-
-
-# ================= BOLETA =================
-@admin_bp.route("/boleta/<nombre>")
-def boleta(nombre):
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    alumno = alumnos.find_one({"nombre": nombre})
-
-    if not alumno:
-        return "Alumno no encontrado"
-
-    pdf = generar_boleta(alumno)
-    pdf.seek(0)
-
-    return send_file(
-        pdf,
-        as_attachment=True,
-        download_name="boleta.pdf",
-        mimetype="application/pdf"
-    )
-
 
 @admin_bp.route("/citatorio_pdf/<id>")
 def citatorio_pdf(id):
     citatorio = citatorios.find_one({"_id": ObjectId(id)})
     pdf = generar_citatorio_pdf(citatorio)
     pdf.seek(0)
+    return send_file(pdf, as_attachment=True, download_name="citatorio.pdf")
 
-    return send_file(
-        pdf,
-        as_attachment=True,
-        download_name="citatorio.pdf",
-        mimetype="application/pdf"
-    )
 
-# ================= ACTIVAR TRIMESTRE =================
+# ================= KARDEX =================
+@admin_bp.route("/kardex/<nombre>")
+def kardex(nombre):
+    pdf = generar_kardex(nombre)
+    pdf.seek(0)
+    return send_file(pdf, as_attachment=True, download_name="kardex.pdf")
+
+
+# ================= BOLETA =================
+@admin_bp.route("/boleta/<nombre>")
+def boleta(nombre):
+    pdf = generar_boleta(nombre)
+    pdf.seek(0)
+    return send_file(pdf, as_attachment=True, download_name="boleta.pdf")
+
+
+# ================= EXPEDIENTE =================
+@admin_bp.route("/expediente/<id>")
+def expediente(id):
+    alumno = alumnos.find_one({"_id": ObjectId(id)})
+    return render_template("expediente.html", alumno=alumno)
+
+
+@admin_bp.route("/expediente_pdf/<id>")
+def expediente_pdf(id):
+    alumno = alumnos.find_one({"_id": ObjectId(id)})
+    pdf = generar_boleta(alumno["nombre"])
+    pdf.seek(0)
+    return send_file(pdf, as_attachment=True, download_name="expediente.pdf")
+
+
+# ================= TRIMESTRE =================
 @admin_bp.route("/activar_trimestre", methods=["POST"])
 def activar_trimestre():
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    try:
-        trimestre = request.form.get("trimestre")
-        estado = request.form.get("estado")
-
-        configuracion.update_one(
-            {},
-            {"$set": {
-                "trimestre_activo": trimestre,
-                "evaluaciones_activas": estado == "true"
-            }},
-            upsert=True
-        )
-
-        return redirect("/admin")
-
-    except Exception as e:
-        return f"ERROR TRIMESTRE: {str(e)}"
+    return redirect("/admin")

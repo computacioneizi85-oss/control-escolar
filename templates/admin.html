@@ -221,11 +221,11 @@
 
 <td>
 
-<a href="{{ url_for('admin.kardex', nombre=alumno.nombre) }}">
+<a href="/admin/kardex/{{ alumno.nombre }}">
 <button style="background:#8e44ad;color:white;">Kardex</button>
 </a>
 
-<a href="{{ url_for('admin.boleta', nombre=alumno.nombre) }}">
+<a href="/admin/boleta/{{ alumno.nombre }}">
 <button style="background:#16a085;color:white;">Boleta</button>
 </a>
 
