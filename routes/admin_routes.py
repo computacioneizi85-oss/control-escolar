@@ -248,3 +248,49 @@ def boleta(nombre):
         download_name=f"boleta_{nombre}.pdf",
         mimetype="application/pdf"
     )
+
+# ================= MENÚS ADMIN (RESTAURAR) =================
+
+@admin_bp.route("/alumnos")
+def admin_alumnos():
+    return render_template("alumnos.html", alumnos=list(alumnos.find()))
+
+
+@admin_bp.route("/maestros")
+def admin_maestros():
+    return render_template("maestros.html", maestros=list(maestros.find()))
+
+
+@admin_bp.route("/grupos")
+def admin_grupos():
+    return render_template("grupos.html", grupos=list(grupos.find()))
+
+
+@admin_bp.route("/materias")
+def admin_materias():
+    return render_template("materias.html", materias=list(materias.find()))
+
+
+@admin_bp.route("/horarios")
+def admin_horarios():
+    return render_template("horarios.html", horarios=list(horarios.find()))
+
+
+@admin_bp.route("/reportes")
+def admin_reportes():
+    return render_template("reportes.html", reportes=list(reportes.find()))
+
+
+@admin_bp.route("/citatorios")
+def admin_citatorios():
+    return render_template("citatorios.html", citatorios=list(citatorios.find()))
+
+
+@admin_bp.route("/avisos")
+def admin_avisos():
+    return render_template("avisos_admin.html", avisos=list(avisos.find()))
+
+
+@admin_bp.route("/configuracion")
+def admin_configuracion():
+    return render_template("configuracion.html")
