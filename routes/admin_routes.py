@@ -277,7 +277,11 @@ def admin_grupos():
 
 @admin_bp.route("/materias")
 def admin_materias():
-    return render_template("materias.html", materias=list(materias.find()))
+    return render_template(
+        "materias.html",
+        materias=list(materias.find()),
+        grupos=list(grupos.find())
+    )
 
 
 @admin_bp.route("/horarios")
