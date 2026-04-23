@@ -1,39 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
+{% extends "layout.html" %}
 
-<title>Configuración escolar</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
-</head>
-
-<body>
-
-<div class="sidebar">
-
-<h2>Control Escolar</h2>
-
-<a href="/admin">Dashboard</a>
-<a href="/admin/alumnos">Alumnos</a>
-<a href="/admin/maestros">Maestros</a>
-<a href="/admin/grupos">Grupos</a>
-<a href="/admin/materias">Materias</a>
-<a href="/admin/reportes">Reportes</a>
-<a href="/admin/configuracion">Configuración</a>
-
-<a href="/logout">Cerrar sesión</a>
-
-</div>
-
-
-<div class="content">
+{% block content %}
 
 <h1>Configuración de la escuela</h1>
 
-<!-- =========================
-FORMULARIO UNIFICADO 🔥
-========================= -->
+<!-- ================= FORMULARIO ================= -->
 
 <form action="/admin/guardar_configuracion" method="POST" enctype="multipart/form-data">
 
@@ -57,14 +28,14 @@ FORMULARIO UNIFICADO 🔥
 
 <br><br>
 
-<button type="submit">Guardar configuración</button>
+<button type="submit" style="background:#2ecc71;color:white;">
+Guardar configuración
+</button>
 
 </form>
 
 
-<!-- =========================
-MOSTRAR ESCUDO
-========================= -->
+<!-- ================= MOSTRAR ESCUDO ================= -->
 
 {% if config and config.escudo %}
 
@@ -75,8 +46,4 @@ MOSTRAR ESCUDO
 
 {% endif %}
 
-
-</div>
-
-</body>
-</html>
+{% endblock %}

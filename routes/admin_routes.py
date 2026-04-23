@@ -356,3 +356,57 @@ def editar_aviso(id):
 def eliminar_aviso(id):
     avisos.delete_one({"_id": ObjectId(id)})
     return redirect("/admin/avisos")
+
+# ================= CONFIGURACION =================
+@admin_bp.route("/configuracion")
+def admin_configuracion():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    config = configuracion.find_one()
+
+    return render_template("configuracion.html", config=config)
+
+
+# ================= GUARDAR CONFIGURACION =================
+@admin_bp.route("/guardar_configuracion", methods=["POST"])
+def guardar_configuracion():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    try:
+        import base64
+
+        escudo_file = request.files.get("escudo")
+        escudo_base64 = None
+
+        # 🔥 Si suben nuevo escudo
+        if escudo_file and escudo_file.filename:
+            escudo_base64 = base64.b64encode(escudo_file.read()).decode("utf-8")
+
+        # 🔥 Mantener escudo anterior si no suben nuevo
+        config_actual = configuracion.find_one()
+
+        if not escudo_base64 and config_actual:
+            escudo_base64 = config_actual.get("escudo")
+
+        configuracion.update_one(
+            {},
+            {
+                "$set": {
+                    "escuela": request.form.get("escuela"),
+                    "ciclo": request.form.get("ciclo"),
+                    "director": request.form.get("director"),
+                    "direccion": request.form.get("direccion"),
+                    "escudo": escudo_base64
+                }
+            },
+            upsert=True
+        )
+
+        return redirect("/admin/configuracion")
+
+    except Exception as e:
+        return f"ERROR CONFIG: {str(e)}"
