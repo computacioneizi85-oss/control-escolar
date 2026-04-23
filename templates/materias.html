@@ -10,7 +10,7 @@ REGISTRO
 
 <h2>Registrar materia</h2>
 
-<form action="/admin/crear_materia" method="POST">
+<form action="{{ url_for('admin.crear_materia') }}" method="POST">
 
 <input type="text" name="nombre" placeholder="Nombre de la materia" required>
 
@@ -30,7 +30,7 @@ REGISTRO
 
 </select>
 
-<button type="submit">
+<button type="submit" style="background:#2ecc71;color:white;">
 Registrar materia
 </button>
 
@@ -59,16 +59,19 @@ LISTA
 <tr>
 
 <td>{{ materia.nombre }}</td>
-
 <td>{{ materia.grupo }}</td>
 
 <td>
 
-<form action="/admin/eliminar_materia/{{ materia._id }}" method="GET" onsubmit="return confirm('¿Eliminar esta materia?')">
-<button type="submit" style="background:red;">
+<!-- 🔥 CORREGIDO -->
+<a href="{{ url_for('admin.eliminar_materia', id=materia._id) }}"
+   onclick="return confirm('¿Eliminar esta materia?')">
+
+<button style="background:red;color:white;">
 Eliminar
 </button>
-</form>
+
+</a>
 
 </td>
 
