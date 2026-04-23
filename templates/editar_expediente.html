@@ -3,14 +3,26 @@
 
 <h2>Editar expediente</h2>
 
-<form action="/admin/actualizar_expediente/{{ alumno._id }}" method="POST">
+<form action="/admin/actualizar_expediente/{{ alumno._id }}" method="POST" enctype="multipart/form-data">
+
+<!-- FOTO ACTUAL -->
+{% if alumno.foto %}
+<div style="margin-bottom:15px;">
+<img src="/{{ alumno.foto }}" width="120" style="border-radius:10px;">
+</div>
+{% endif %}
+
+<!-- CAMBIAR FOTO -->
+<input type="file" name="foto">
+
+<hr>
 
 <input name="nombre" value="{{ alumno.nombre }}">
 <input name="curp" value="{{ alumno.curp }}">
 
 <select name="sexo">
-<option {% if alumno.sexo=="Masculino" %}selected{% endif %}>Masculino</option>
-<option {% if alumno.sexo=="Femenino" %}selected{% endif %}>Femenino</option>
+<option value="Masculino" {% if alumno.sexo=="Masculino" %}selected{% endif %}>Masculino</option>
+<option value="Femenino" {% if alumno.sexo=="Femenino" %}selected{% endif %}>Femenino</option>
 </select>
 
 <input type="date" name="fecha_nacimiento" value="{{ alumno.fecha_nacimiento }}">
@@ -29,8 +41,19 @@
 
 <br><br>
 
-<button style="background:#27ae60;color:white;">💾 Guardar cambios</button>
+<button style="background:#27ae60;color:white;">
+💾 Guardar cambios
+</button>
 
 </form>
+
+<br>
+
+<!-- VOLVER -->
+<a href="/admin/expediente/{{ alumno._id }}">
+<button style="background:#3498db;color:white;">
+⬅️ Volver al expediente
+</button>
+</a>
 
 {% endblock %}

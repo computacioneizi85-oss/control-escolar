@@ -159,7 +159,8 @@
 <!-- ================= REGISTRO COMPLETO ================= -->
 <h2>Registro completo de alumno</h2>
 
-<form action="/admin/registro_completo_alumno" method="POST">
+<!-- 🔥 IMPORTANTE: enctype agregado -->
+<form action="/admin/registro_completo_alumno" method="POST" enctype="multipart/form-data">
 
 <input name="nombre" placeholder="Nombre del alumno" required>
 
@@ -189,6 +190,9 @@
 <input name="padre_correo" placeholder="Correo del padre">
 
 <input name="grupo" placeholder="Grupo" required>
+
+<!-- 🔥 NUEVO -->
+<input type="file" name="foto">
 
 <br><br>
 

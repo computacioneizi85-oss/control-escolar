@@ -3,14 +3,27 @@
 
 <h2>Expediente del alumno</h2>
 
-<!-- BOTÓN EDITAR -->
+<!-- BOTONES -->
 <a href="/admin/editar_expediente/{{ alumno._id }}">
-<button style="background:#f39c12;color:white; margin-bottom:15px;">
+<button style="background:#f39c12;color:white; margin-bottom:10px;">
 ✏️ Editar expediente
 </button>
 </a>
 
+<a href="/admin/expediente_pdf/{{ alumno._id }}" target="_blank">
+<button style="background:#2c3e50;color:white; margin-bottom:15px;">
+📄 Descargar PDF
+</button>
+</a>
+
 <hr>
+
+<!-- FOTO -->
+{% if alumno.foto %}
+<div style="margin-bottom:20px;">
+<img src="/{{ alumno.foto }}" width="150" style="border-radius:10px;">
+</div>
+{% endif %}
 
 <h3>📌 Datos del alumno</h3>
 
