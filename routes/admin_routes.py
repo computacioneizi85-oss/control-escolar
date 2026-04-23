@@ -271,3 +271,88 @@ def reporte_pdf(id):
     pdf = generar_citatorio_pdf(reporte)  # o tu función de reporte
     pdf.seek(0)
     return send_file(pdf, as_attachment=True, download_name="reporte.pdf")
+
+# ================= CREAR ALUMNO =================
+@admin_bp.route("/crear_alumno", methods=["POST"])
+def crear_alumno():
+    alumnos.insert_one({
+        "nombre": request.form.get("nombre"),
+        "grupo": request.form.get("grupo"),
+        "calificaciones": [],
+        "asistencias": []
+    })
+    return redirect("/admin/alumnos")
+
+
+# ================= ELIMINAR ALUMNO =================
+@admin_bp.route("/eliminar_alumno/<id>")
+def eliminar_alumno(id):
+    alumnos.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/alumnos")
+
+
+# ================= CREAR MAESTRO =================
+@admin_bp.route("/crear_maestro", methods=["POST"])
+def crear_maestro():
+    maestros.insert_one({
+        "nombre": request.form.get("nombre"),
+        "usuario": request.form.get("usuario"),
+        "password": request.form.get("password"),
+        "grupos": [],
+        "materias": []
+    })
+    return redirect("/admin/maestros")
+
+
+# ================= ELIMINAR MAESTRO =================
+@admin_bp.route("/eliminar_maestro/<id>")
+def eliminar_maestro(id):
+    maestros.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/maestros")
+
+
+# ================= CREAR GRUPO =================
+@admin_bp.route("/crear_grupo", methods=["POST"])
+def crear_grupo():
+    grupos.insert_one({
+        "nombre": request.form.get("nombre")
+    })
+    return redirect("/admin/grupos")
+
+
+# ================= ELIMINAR GRUPO =================
+@admin_bp.route("/eliminar_grupo/<id>")
+def eliminar_grupo(id):
+    grupos.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/grupos")
+
+
+# ================= CREAR AVISO =================
+@admin_bp.route("/crear_aviso", methods=["POST"])
+def crear_aviso():
+    avisos.insert_one({
+        "titulo": request.form.get("titulo"),
+        "mensaje": request.form.get("mensaje"),
+        "tipo": request.form.get("tipo")
+    })
+    return redirect("/admin/avisos")
+
+
+# ================= EDITAR AVISO =================
+@admin_bp.route("/editar_aviso/<id>", methods=["POST"])
+def editar_aviso(id):
+    avisos.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {
+            "titulo": request.form.get("titulo"),
+            "mensaje": request.form.get("mensaje")
+        }}
+    )
+    return redirect("/admin/avisos")
+
+
+# ================= ELIMINAR AVISO =================
+@admin_bp.route("/eliminar_aviso/<id>")
+def eliminar_aviso(id):
+    avisos.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/avisos")
