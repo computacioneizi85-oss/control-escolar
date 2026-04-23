@@ -73,6 +73,10 @@ def registro_completo_alumno():
             "padre_telefono": request.form.get("padre_telefono") or "",
             "padre_correo": request.form.get("padre_correo") or "",
             "grupo": request.form.get("grupo") or "",
+
+            # 🔥 SOLUCIÓN CLAVE (NO ROMPE NADA)
+            "usuario": str(ObjectId()),
+
             "foto": ruta_foto,
             "calificaciones": [],
             "asistencias": []
@@ -185,6 +189,7 @@ def expediente_pdf(id):
         mimetype="application/pdf"
     )
 
+
 # ================= ACTIVAR TRIMESTRE =================
 @admin_bp.route("/activar_trimestre", methods=["POST"])
 def activar_trimestre():
@@ -209,6 +214,7 @@ def activar_trimestre():
 
     except Exception as e:
         return f"ERROR TRIMESTRE: {str(e)}"
+
 
 # ================= KARDEX =================
 @admin_bp.route("/kardex/<nombre>")
