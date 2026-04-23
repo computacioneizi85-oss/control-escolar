@@ -231,6 +231,51 @@ def confirmar_asistencia(id):
     )
     return redirect("/admin/citatorios")
 
+# ================= KARDEX =================
+@admin_bp.route("/kardex/<nombre>")
+def kardex(nombre):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    alumno = alumnos.find_one({"nombre": nombre})
+
+    if not alumno:
+        return "Alumno no encontrado"
+
+    pdf = generar_kardex(alumno)
+    pdf.seek(0)
+
+    return send_file(
+        pdf,
+        as_attachment=True,
+        download_name="kardex.pdf",
+        mimetype="application/pdf"
+    )
+
+
+# ================= BOLETA =================
+@admin_bp.route("/boleta/<nombre>")
+def boleta(nombre):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    alumno = alumnos.find_one({"nombre": nombre})
+
+    if not alumno:
+        return "Alumno no encontrado"
+
+    pdf = generar_boleta(alumno)
+    pdf.seek(0)
+
+    return send_file(
+        pdf,
+        as_attachment=True,
+        download_name="boleta.pdf",
+        mimetype="application/pdf"
+    )
+
 
 @admin_bp.route("/citatorio_pdf/<id>")
 def citatorio_pdf(id):
