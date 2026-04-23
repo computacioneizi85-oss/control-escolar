@@ -68,6 +68,59 @@ def crear_alumno():
     return redirect("/admin/alumnos")
 
 
+# ================= REGISTRO COMPLETO ALUMNO (CON LOGIN) =================
+@admin_bp.route("/registro_completo_alumno", methods=["POST"])
+def registro_completo_alumno():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    # ================= FOTO =================
+    foto = request.files.get("foto")
+    ruta_foto = ""
+
+    if foto and foto.filename:
+        carpeta = "static/fotos"
+        os.makedirs(carpeta, exist_ok=True)
+        ruta_foto = f"{carpeta}/{foto.filename}"
+        foto.save(ruta_foto)
+
+    # ================= LOGIN AUTOMÁTICO =================
+    curp = request.form.get("curp")
+    nombre = request.form.get("nombre")
+
+    usuario = curp if curp else nombre.replace(" ", "").lower()
+    password = curp[-4:] if curp else "1234"
+
+    # ================= INSERT =================
+    alumnos.insert_one({
+        "nombre": nombre,
+        "curp": curp,
+        "sexo": request.form.get("sexo"),
+        "fecha_nacimiento": request.form.get("fecha_nacimiento"),
+        "telefono": request.form.get("telefono"),
+        "direccion": request.form.get("direccion"),
+        "escuela_procedencia": request.form.get("escuela"),
+        "promedio": request.form.get("promedio"),
+        "afecciones": request.form.get("afecciones"),
+        "padre_nombre": request.form.get("padre_nombre"),
+        "padre_telefono": request.form.get("padre_telefono"),
+        "padre_correo": request.form.get("padre_correo"),
+        "grupo": request.form.get("grupo"),
+
+        # 🔐 LOGIN
+        "usuario": usuario,
+        "password": password,
+        "rol": "alumno",
+
+        "foto": ruta_foto,
+        "calificaciones": [],
+        "asistencias": []
+    })
+
+    return redirect("/admin")
+
+
 @admin_bp.route("/eliminar_alumno/<id>")
 def eliminar_alumno(id):
     if not verificar_admin():
