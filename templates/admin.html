@@ -161,14 +161,39 @@
 
 <form action="/admin/registro_completo_alumno" method="POST">
 
-<input name="nombre" placeholder="Nombre completo" required>
+<input name="nombre" placeholder="Nombre del alumno" required>
+
+<input name="curp" placeholder="CURP" required>
+
+<select name="sexo">
+<option value="Masculino">Masculino</option>
+<option value="Femenino">Femenino</option>
+</select>
+
+<input type="date" name="fecha_nacimiento" required>
+
+<input name="telefono" placeholder="Teléfono del alumno">
+
+<input name="direccion" placeholder="Dirección">
+
+<input name="escuela" placeholder="Escuela de procedencia">
+
+<input name="promedio" placeholder="Promedio">
+
+<input name="afecciones" placeholder="Afecciones médicas">
+
+<input name="padre_nombre" placeholder="Nombre del padre o tutor">
+
+<input name="padre_telefono" placeholder="Teléfono del padre">
+
+<input name="padre_correo" placeholder="Correo del padre">
+
 <input name="grupo" placeholder="Grupo" required>
-<input name="curp" placeholder="CURP">
-<input name="tutor" placeholder="Tutor">
-<input name="telefono" placeholder="Teléfono">
+
+<br><br>
 
 <button style="background:#2ecc71;color:white;">
-Registrar alumno
+💾 Registrar alumno completo
 </button>
 
 </form>
