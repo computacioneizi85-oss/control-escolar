@@ -294,3 +294,204 @@ def admin_avisos():
 @admin_bp.route("/configuracion")
 def admin_configuracion():
     return render_template("configuracion.html")
+
+# ================= ALUMNOS CRUD =================
+@admin_bp.route("/crear_alumno", methods=["POST"])
+def crear_alumno():
+    alumnos.insert_one({
+        "nombre": request.form.get("nombre"),
+        "grupo": request.form.get("grupo"),
+        "usuario": request.form.get("usuario"),
+        "password": generate_password_hash(request.form.get("password")),
+        "foto": ""
+    })
+    return redirect("/admin/alumnos")
+
+
+@admin_bp.route("/editar_grupo", methods=["POST"])
+def editar_grupo():
+    alumnos.update_one(
+        {"_id": ObjectId(request.form.get("id"))},
+        {"$set": {"grupo": request.form.get("grupo")}}
+    )
+    return redirect("/admin/alumnos")
+
+
+@admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
+def subir_foto_alumno(id):
+    foto = request.files.get("foto")
+    if foto:
+        ruta = f"static/fotos/{foto.filename}"
+        os.makedirs("static/fotos", exist_ok=True)
+        foto.save(ruta)
+
+        alumnos.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": {"foto": ruta}}
+        )
+
+    return redirect("/admin/alumnos")
+
+
+@admin_bp.route("/eliminar_alumno/<id>")
+def eliminar_alumno(id):
+    alumnos.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/alumnos")
+
+
+# ================= MAESTROS =================
+@admin_bp.route("/crear_maestro", methods=["POST"])
+def crear_maestro():
+    maestros.insert_one({
+        "nombre": request.form.get("nombre"),
+        "usuario": request.form.get("usuario"),
+        "password": generate_password_hash(request.form.get("password")),
+        "grupos": [],
+        "materias": []
+    })
+    return redirect("/admin/maestros")
+
+
+@admin_bp.route("/asignar_grupo_maestro", methods=["POST"])
+def asignar_grupo_maestro():
+    maestros.update_one(
+        {"_id": ObjectId(request.form.get("maestro"))},
+        {"$addToSet": {"grupos": request.form.get("grupo")}}
+    )
+    return redirect("/admin/maestros")
+
+
+@admin_bp.route("/asignar_materias", methods=["POST"])
+def asignar_materias():
+    materias_lista = request.form.getlist("materias")
+    maestros.update_one(
+        {"_id": ObjectId(request.form.get("maestro_id"))},
+        {"$set": {"materias": materias_lista}}
+    )
+    return redirect("/admin/maestros")
+
+
+@admin_bp.route("/quitar_materia", methods=["POST"])
+def quitar_materia():
+    maestros.update_one(
+        {"_id": ObjectId(request.form.get("maestro_id"))},
+        {"$pull": {"materias": request.form.get("materia")}}
+    )
+    return redirect("/admin/maestros")
+
+
+@admin_bp.route("/editar_grupos_maestro", methods=["POST"])
+def editar_grupos_maestro():
+    grupos_lista = request.form.getlist("grupos")
+    maestros.update_one(
+        {"_id": ObjectId(request.form.get("maestro_id"))},
+        {"$set": {"grupos": grupos_lista}}
+    )
+    return redirect("/admin/maestros")
+
+
+@admin_bp.route("/editar_materias_maestro", methods=["POST"])
+def editar_materias_maestro():
+    materias_lista = request.form.getlist("materias")
+    maestros.update_one(
+        {"_id": ObjectId(request.form.get("maestro_id"))},
+        {"$set": {"materias": materias_lista}}
+    )
+    return redirect("/admin/maestros")
+
+
+@admin_bp.route("/eliminar_maestro/<id>")
+def eliminar_maestro(id):
+    maestros.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/maestros")
+
+
+# ================= GRUPOS =================
+@admin_bp.route("/crear_grupo", methods=["POST"])
+def crear_grupo():
+    grupos.insert_one({"nombre": request.form.get("nombre")})
+    return redirect("/admin/grupos")
+
+
+@admin_bp.route("/eliminar_grupo/<id>")
+def eliminar_grupo(id):
+    grupos.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/grupos")
+
+
+# ================= HORARIOS =================
+@admin_bp.route("/crear_horario", methods=["POST"])
+def crear_horario():
+    horarios.insert_one({
+        "grupo": request.form.get("grupo"),
+        "materia": request.form.get("materia"),
+        "maestro": request.form.get("maestro"),
+        "dia": request.form.get("dia"),
+        "hora": request.form.get("hora")
+    })
+    return redirect("/admin/horarios")
+
+
+@admin_bp.route("/eliminar_horario/<id>")
+def eliminar_horario(id):
+    horarios.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/horarios")
+
+
+# ================= REPORTES =================
+@admin_bp.route("/generar_reporte/<id>")
+def generar_reporte(id):
+    reporte = reportes.find_one({"_id": ObjectId(id)})
+    pdf = generar_reporte_pdf(reporte)
+    pdf.seek(0)
+    return send_file(pdf, as_attachment=True, download_name="reporte.pdf")
+
+
+# ================= AVISOS =================
+@admin_bp.route("/crear_aviso", methods=["POST"])
+def crear_aviso():
+    avisos.insert_one({
+        "mensaje": request.form.get("mensaje"),
+        "tipo": request.form.get("tipo"),
+        "grupo": request.form.get("grupo"),
+        "fecha": datetime.now()
+    })
+    return redirect("/admin/avisos")
+
+
+@admin_bp.route("/eliminar_aviso/<id>")
+def eliminar_aviso(id):
+    avisos.delete_one({"_id": ObjectId(id)})
+    return redirect("/admin/avisos")
+
+
+# ================= CONFIG =================
+@admin_bp.route("/guardar_configuracion", methods=["POST"])
+def guardar_configuracion():
+
+    archivo = request.files.get("escudo")
+    escudo_base64 = None
+
+    if archivo:
+        import base64
+        escudo_base64 = base64.b64encode(archivo.read()).decode("utf-8")
+
+    configuracion.update_one(
+        {},
+        {"$set": {
+            "escuela": request.form.get("escuela"),
+            "ciclo": request.form.get("ciclo"),
+            "director": request.form.get("director"),
+            "direccion": request.form.get("direccion"),
+            "escudo": escudo_base64
+        }},
+        upsert=True
+    )
+
+    return redirect("/admin/configuracion")
+
+
+# ================= IMPORTAR BD =================
+@admin_bp.route("/importar_bd", methods=["POST"])
+def importar_bd():
+    return redirect("/admin")
