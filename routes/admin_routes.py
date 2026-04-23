@@ -42,42 +42,46 @@ def admin_dashboard():
     )
 
 
-# ================= ALUMNOS =================
+# ================= REGISTRO COMPLETO =================
 @admin_bp.route("/registro_completo_alumno", methods=["POST"])
 def registro_completo_alumno():
 
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    foto = request.files.get("foto")
-    ruta_foto = ""
+    try:
+        foto = request.files.get("foto")
+        ruta_foto = ""
 
-    if foto and foto.filename:
-        carpeta = "static/fotos"
-        os.makedirs(carpeta, exist_ok=True)
-        ruta_foto = f"{carpeta}/{foto.filename}"
-        foto.save(ruta_foto)
+        if foto and foto.filename:
+            carpeta = "static/fotos"
+            os.makedirs(carpeta, exist_ok=True)
+            ruta_foto = f"{carpeta}/{foto.filename}"
+            foto.save(ruta_foto)
 
-    alumnos.insert_one({
-        "nombre": request.form.get("nombre") or "",
-        "curp": request.form.get("curp") or "",
-        "sexo": request.form.get("sexo") or "",
-        "fecha_nacimiento": request.form.get("fecha_nacimiento") or "",
-        "telefono": request.form.get("telefono") or "",
-        "direccion": request.form.get("direccion") or "",
-        "escuela_procedencia": request.form.get("escuela") or "",
-        "promedio": request.form.get("promedio") or "",
-        "afecciones": request.form.get("afecciones") or "",
-        "padre_nombre": request.form.get("padre_nombre") or "",
-        "padre_telefono": request.form.get("padre_telefono") or "",
-        "padre_correo": request.form.get("padre_correo") or "",
-        "grupo": request.form.get("grupo") or "",
-        "foto": ruta_foto,
-        "calificaciones": [],
-        "asistencias": []
-    })
+        alumnos.insert_one({
+            "nombre": request.form.get("nombre") or "",
+            "curp": request.form.get("curp") or "",
+            "sexo": request.form.get("sexo") or "",
+            "fecha_nacimiento": request.form.get("fecha_nacimiento") or "",
+            "telefono": request.form.get("telefono") or "",
+            "direccion": request.form.get("direccion") or "",
+            "escuela_procedencia": request.form.get("escuela") or "",
+            "promedio": request.form.get("promedio") or "",
+            "afecciones": request.form.get("afecciones") or "",
+            "padre_nombre": request.form.get("padre_nombre") or "",
+            "padre_telefono": request.form.get("padre_telefono") or "",
+            "padre_correo": request.form.get("padre_correo") or "",
+            "grupo": request.form.get("grupo") or "",
+            "foto": ruta_foto,
+            "calificaciones": [],
+            "asistencias": []
+        })
 
-    return redirect("/admin")
+        return redirect("/admin")
+
+    except Exception as e:
+        return f"ERROR REGISTRO: {str(e)}"
 
 
 # ================= EXPEDIENTE =================
@@ -87,6 +91,7 @@ def expediente(id):
     return render_template("expediente.html", alumno=alumno)
 
 
+# ================= EDITAR =================
 @admin_bp.route("/editar_expediente/<id>")
 def editar_expediente(id):
 
@@ -103,42 +108,49 @@ def actualizar_expediente(id):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    update_data = {
-        "nombre": request.form.get("nombre"),
-        "curp": request.form.get("curp"),
-        "sexo": request.form.get("sexo"),
-        "fecha_nacimiento": request.form.get("fecha_nacimiento"),
-        "telefono": request.form.get("telefono"),
-        "direccion": request.form.get("direccion"),
-        "escuela_procedencia": request.form.get("escuela"),
-        "promedio": request.form.get("promedio"),
-        "afecciones": request.form.get("afecciones"),
-        "padre_nombre": request.form.get("padre_nombre"),
-        "padre_telefono": request.form.get("padre_telefono"),
-        "padre_correo": request.form.get("padre_correo"),
-        "grupo": request.form.get("grupo")
-    }
+    try:
+        update_data = {
+            "nombre": request.form.get("nombre"),
+            "curp": request.form.get("curp"),
+            "sexo": request.form.get("sexo"),
+            "fecha_nacimiento": request.form.get("fecha_nacimiento"),
+            "telefono": request.form.get("telefono"),
+            "direccion": request.form.get("direccion"),
+            "escuela_procedencia": request.form.get("escuela"),
+            "promedio": request.form.get("promedio"),
+            "afecciones": request.form.get("afecciones"),
+            "padre_nombre": request.form.get("padre_nombre"),
+            "padre_telefono": request.form.get("padre_telefono"),
+            "padre_correo": request.form.get("padre_correo"),
+            "grupo": request.form.get("grupo")
+        }
 
-    foto = request.files.get("foto")
+        foto = request.files.get("foto")
 
-    if foto and foto.filename:
-        carpeta = "static/fotos"
-        os.makedirs(carpeta, exist_ok=True)
-        ruta_foto = f"{carpeta}/{foto.filename}"
-        foto.save(ruta_foto)
-        update_data["foto"] = ruta_foto
+        if foto and foto.filename:
+            carpeta = "static/fotos"
+            os.makedirs(carpeta, exist_ok=True)
+            ruta_foto = f"{carpeta}/{foto.filename}"
+            foto.save(ruta_foto)
+            update_data["foto"] = ruta_foto
 
-    alumnos.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": update_data}
-    )
+        alumnos.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": update_data}
+        )
 
-    return redirect(f"/admin/expediente/{id}")
+        return redirect(f"/admin/expediente/{id}")
+
+    except Exception as e:
+        return f"ERROR ACTUALIZAR: {str(e)}"
 
 
 # ================= PDF EXPEDIENTE =================
 @admin_bp.route("/expediente_pdf/<id>")
 def expediente_pdf(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
 
     from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
     from reportlab.lib.styles import getSampleStyleSheet
