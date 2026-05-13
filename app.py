@@ -2,17 +2,19 @@ from flask import Flask, session, redirect, request, url_for
 from datetime import timedelta
 import os
 
+from licencia import licencia_activa
+
 # =========================
 # CREAR APP
 # =========================
 app = Flask(__name__)
 
 # =========================
-# 🔐 CONFIGURACIÓN
+# CONFIGURACIÓN
 # =========================
 app.secret_key = os.environ.get("SECRET_KEY") or "control_escolar_2026_seguro_fijo"
-app.permanent_session_lifetime = timedelta(minutes=30)
 
+app.permanent_session_lifetime = timedelta(minutes=30)
 
 # =========================
 # IMPORTAR BLUEPRINTS
@@ -24,7 +26,6 @@ from routes.alumno_routes import alumno_bp
 from routes.padre_routes import padre_bp
 from routes.backup_routes import backup_bp
 
-
 # =========================
 # REGISTRAR BLUEPRINTS
 # =========================
@@ -35,36 +36,66 @@ app.register_blueprint(alumno_bp)
 app.register_blueprint(padre_bp)
 app.register_blueprint(backup_bp)
 
-
 # =========================
-# 🔐 PROTECCIÓN DE RUTAS
+# PROTECCIÓN DE RUTAS
 # =========================
 @app.before_request
 def proteger_rutas():
 
     rutas_publicas = ["/", "/login"]
 
-    # permitir archivos estáticos
     if request.path.startswith("/static"):
         return
 
-    # permitir login
     if request.path in rutas_publicas:
         return
 
-    # validar sesión
+    # 🔐 VALIDAR LICENCIA
+    licencia_ok = licencia_activa()
+
+    session["modo_restringido"] = not licencia_ok
+
+    # =========================
+    # BLOQUEOS
+    # =========================
+
+    if session.get("modo_restringido"):
+
+        rutas_bloqueadas = [
+            "/admin/alumnos",
+            "/admin/maestros",
+            "/admin/grupos",
+            "/admin/materias",
+            "/admin/horarios",
+            "/admin/configuracion",
+            "/admin/crear",
+            "/admin/eliminar",
+            "/admin/generar",
+        ]
+
+        for ruta in rutas_bloqueadas:
+            if request.path.startswith(ruta):
+                return redirect(url_for("auth.login"))
+
+    # =========================
+    # VALIDAR SESIÓN
+    # =========================
+
     if "usuario" not in session:
         return redirect(url_for("auth.login"))
 
     session.permanent = True
+
     rol = session.get("rol")
 
     # ================= ADMIN =================
+
     if request.path.startswith("/admin"):
         if rol != "admin":
             return redirect(url_for("auth.login"))
 
     # ================= MAESTRO =================
+
     if (
         request.path.startswith("/panel_maestro") or
         request.path.startswith("/horario") or
@@ -81,6 +112,7 @@ def proteger_rutas():
             return redirect(url_for("auth.login"))
 
     # ================= ALUMNO =================
+
     if (
         request.path.startswith("/panel_alumno") or
         request.path.startswith("/avisos_alumno")
@@ -89,6 +121,7 @@ def proteger_rutas():
             return redirect(url_for("auth.login"))
 
     # ================= PADRE =================
+
     if (
         request.path.startswith("/panel_padre") or
         request.path.startswith("/avisos_padre")
@@ -100,13 +133,17 @@ def proteger_rutas():
 
 
 # =========================
-# 🚫 NO CACHE
+# NO CACHE
 # =========================
 @app.after_request
 def no_cache(response):
+
     response.headers["Cache-Control"] = "no-store"
+
     response.headers["Pragma"] = "no-cache"
+
     response.headers["Expires"] = "0"
+
     return response
 
 
@@ -114,4 +151,4 @@ def no_cache(response):
 # RUN
 # =========================
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)

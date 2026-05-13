@@ -1,11 +1,17 @@
 from pymongo import MongoClient
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # =========================
-# CONEXIÓN A MONGO
+# VARIABLES SaaS
 # =========================
 
 MONGO_URI = os.getenv("MONGO_URI")
+
+LICENSE_KEY = os.getenv("LICENSE_KEY")
+INSTALL_ID = os.getenv("INSTALL_ID")
 
 if not MONGO_URI:
     raise Exception("❌ ERROR: MONGO_URI no está configurado")
