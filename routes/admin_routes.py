@@ -618,6 +618,25 @@ def deshabilitar_trimestre(numero):
 
     return redirect("/admin/evaluaciones")
 
+
+@admin_bp.route("/deshabilitar_trimestre/<numero>")
+def deshabilitar_trimestre(numero):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    configuracion.update_one(
+        {},
+        {
+            "$set": {
+                f"trimestre_{numero}": False
+            }
+        },
+        upsert=True
+    )
+
+    return redirect("/admin/evaluaciones")
+
 # ================= CONFIGURACION =================
 @admin_bp.route("/configuracion")
 def admin_configuracion():
