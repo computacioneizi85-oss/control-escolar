@@ -31,14 +31,14 @@ def panel_maestro():
     grupos = maestro.get("grupos", [])
 
     lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
-    lista_horarios = list(horarios.find({"grupo": {"$in": grupos}}))
+   lista_horarios = list(horarios.find({"grupo": {"$in": grupos}}))
 
-config = configuracion.find_one() or {
-    "trimestre_1": True,
-    "trimestre_2": False,
-    "trimestre_3": False,
-    "captura_evaluaciones": True
-}
+    config = configuracion.find_one() or {
+        "trimestre_1": True,
+        "trimestre_2": False,
+        "trimestre_3": False,
+        "captura_evaluaciones": True
+    }
 
     return render_template(
         "panel_maestro.html",
