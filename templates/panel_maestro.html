@@ -45,11 +45,11 @@ text-align:center;
 <!-- T1 -->
 <td>
 
-{% set cal1 = "" %}
+{% set cal1 = namespace(valor='') %}
 
 {% for c in alumno.get("calificaciones", []) %}
 {% if c.materia == m and c.trimestre == "1" %}
-{% set cal1 = c.calificacion %}
+{% set cal1.valor = c.calificacion %}
 {% endif %}
 {% endfor %}
 
@@ -58,13 +58,13 @@ type="number"
 min="0"
 max="10"
 id="cal_{{ alumno.nombre }}_{{ m }}_1"
-value="{{ cal1 }}"
-{% if not config.trimestre_1 %}disabled{% endif %}
+value="{{ cal1.valor }}"
+{% if not config.trimestre_1 or not config.captura_evaluaciones %}disabled{% endif %}
 >
 
 <button
 onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','1')"
-{% if not config.trimestre_1 %}disabled{% endif %}
+{% if not config.trimestre_1 or not config.captura_evaluaciones %}disabled{% endif %}
 >
 💾
 </button>
@@ -74,11 +74,11 @@ onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','1')"
 <!-- T2 -->
 <td>
 
-{% set cal2 = "" %}
+{% set cal2 = namespace(valor='') %}
 
 {% for c in alumno.get("calificaciones", []) %}
 {% if c.materia == m and c.trimestre == "2" %}
-{% set cal2 = c.calificacion %}
+{% set cal2.valor = c.calificacion %}
 {% endif %}
 {% endfor %}
 
@@ -87,13 +87,13 @@ type="number"
 min="0"
 max="10"
 id="cal_{{ alumno.nombre }}_{{ m }}_2"
-value="{{ cal2 }}"
-{% if not config.trimestre_2 %}disabled{% endif %}
+value="{{ cal2.valor }}"
+{% if not config.trimestre_2 or not config.captura_evaluaciones %}disabled{% endif %}
 >
 
 <button
 onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','2')"
-{% if not config.trimestre_2 %}disabled{% endif %}
+{% if not config.trimestre_2 or not config.captura_evaluaciones %}disabled{% endif %}
 >
 💾
 </button>
@@ -103,11 +103,11 @@ onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','2')"
 <!-- T3 -->
 <td>
 
-{% set cal3 = "" %}
+{% set cal3 = namespace(valor='') %}
 
 {% for c in alumno.get("calificaciones", []) %}
 {% if c.materia == m and c.trimestre == "3" %}
-{% set cal3 = c.calificacion %}
+{% set cal3.valor = c.calificacion %}
 {% endif %}
 {% endfor %}
 
@@ -116,13 +116,13 @@ type="number"
 min="0"
 max="10"
 id="cal_{{ alumno.nombre }}_{{ m }}_3"
-value="{{ cal3 }}"
-{% if not config.trimestre_3 %}disabled{% endif %}
+value="{{ cal3.valor }}"
+{% if not config.trimestre_3 or not config.captura_evaluaciones %}disabled{% endif %}
 >
 
 <button
 onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','3')"
-{% if not config.trimestre_3 %}disabled{% endif %}
+{% if not config.trimestre_3 or not config.captura_evaluaciones %}disabled{% endif %}
 >
 💾
 </button>
