@@ -88,6 +88,12 @@ def guardar_calificaciones_ajax():
     materia = request.form.get("materia")
     trimestre = request.form.get("trimestre")
 
+    if not config.get(f"trimestre_{trimestre}", False):
+        return {
+            "status": "error",
+            "msg": "Trimestre deshabilitado"
+        }
+
     try:
         cal = float(request.form.get("cal1") or 0)
     except:
@@ -143,3 +149,172 @@ def guardar_calificaciones_ajax():
     )
 
     return {"status": "ok"}
+
+
+# ================= HORARIO =================
+@maestro_bp.route("/horario")
+def horario_maestro():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    maestro = maestros.find_one({
+        "usuario": session.get("usuario")
+    }) or {}
+
+    lista_horarios = list(
+        horarios.find({
+            "maestro": maestro.get("nombre", "")
+        })
+    )
+
+    return render_template(
+        "horario_maestro.html",
+        horarios=lista_horarios
+    )
+
+
+# ================= PDF HORARIO =================
+@maestro_bp.route("/horario/pdf")
+def horario_pdf():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    return redirect("/horario")
+
+
+# ================= DESCARGAR HORARIO =================
+@maestro_bp.route("/descargar_horario")
+def descargar_horario():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    return redirect("/horario")
+
+
+# ================= CITATORIOS =================
+@maestro_bp.route("/citatorios")
+def citatorios_maestro():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    maestro = maestros.find_one({
+        "usuario": session.get("usuario")
+    }) or {}
+
+    grupos = maestro.get("grupos", [])
+
+    lista_alumnos = list(
+        alumnos.find({
+            "grupo": {
+                "$in": grupos
+            }
+        })
+    )
+
+    lista_citatorios = list(citatorios.find())
+
+    return render_template(
+        "citatorios_maestro.html",
+        citatorios=lista_citatorios,
+        alumnos=lista_alumnos
+    )
+
+
+# ================= CREAR CITATORIO =================
+@maestro_bp.route("/crear_citatorio", methods=["POST"])
+def crear_citatorio_maestro():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    citatorios.insert_one({
+        "alumno": request.form.get("alumno"),
+        "grupo": request.form.get("grupo"),
+        "motivo": request.form.get("motivo"),
+        "fecha_cita": request.form.get("fecha"),
+        "hora": request.form.get("hora"),
+        "estatus": "pendiente",
+        "enterado": False
+    })
+
+    return redirect("/citatorios")
+
+
+# ================= PDF CITATORIO =================
+@maestro_bp.route("/generar_citatorio/<id>")
+def generar_citatorio(id):
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    citatorio = citatorios.find_one({
+        "_id": ObjectId(id)
+    })
+
+    pdf = generar_citatorio_pdf(citatorio)
+
+    pdf.seek(0)
+
+    return send_file(
+        pdf,
+        as_attachment=True,
+        download_name="citatorio.pdf"
+    )
+
+
+# ================= CONFIRMAR ASISTENCIA =================
+@maestro_bp.route("/confirmar_asistencia/<id>")
+def confirmar_asistencia_maestro(id):
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    citatorios.update_one(
+        {"_id": ObjectId(id)},
+        {
+            "$set": {
+                "estatus": "asistio",
+                "enterado": True
+            }
+        }
+    )
+
+    return redirect("/citatorios")
+
+
+# ================= AVISOS =================
+@maestro_bp.route("/avisos_maestro")
+def avisos_maestro():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    maestro = maestros.find_one({
+        "usuario": session.get("usuario")
+    }) or {}
+
+    return render_template(
+        "avisos_maestro.html",
+        grupos=maestro.get("grupos", [])
+    )
+
+
+# ================= CREAR AVISO =================
+@maestro_bp.route("/crear_aviso_maestro", methods=["POST"])
+def crear_aviso_maestro():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    avisos.insert_one({
+        "grupo": request.form.get("grupo"),
+        "mensaje": request.form.get("mensaje"),
+        "autor": session.get("usuario"),
+        "fecha": datetime.now()
+    })
+
+    return redirect("/avisos_maestro")
