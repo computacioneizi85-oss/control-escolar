@@ -2,88 +2,7 @@
 
 {% block content %}
 
-<style>
-.panel-container{display:flex;gap:20px;}
-
-.menu-maestro{
-width:220px;
-background:#243b5a;
-padding:20px;
-border-radius:10px;
-color:white;
-box-shadow:0 5px 15px rgba(0,0,0,0.1);
-}
-
-.menu-maestro button{
-width:100%;
-padding:12px;
-margin-bottom:10px;
-border:none;
-background:#2f4f75;
-color:white;
-cursor:pointer;
-border-radius:6px;
-font-size:14px;
-transition:0.3s;
-}
-
-.menu-maestro button:hover{
-background:#3e6aa1;
-transform:scale(1.03);
-}
-
-.seccion{display:none;}
-.seccion.activa{display:block;}
-
-.input-cal{
-width:70px;
-padding:6px;
-border-radius:6px;
-border:1px solid #ccc;
-text-align:center;
-}
-
-.guardado-ok{background:#d4edda;}
-.editando{background:#fff3cd;}
-
-.btn-save{background:#27ae60;color:white;border:none;padding:6px 12px;border-radius:6px;}
-.btn-edit{background:#3498db;color:white;border:none;padding:5px 10px;border-radius:6px;}
-.btn-reset{background:#e74c3c;color:white;font-size:11px;margin-top:5px;border:none;padding:4px 8px;border-radius:4px;}
-
-textarea{
-width:100%;
-height:100px;
-padding:10px;
-border-radius:8px;
-border:1px solid #ccc;
-}
-
-.preview{
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 5px 15px rgba(0,0,0,0.1);
-margin-top:20px;
-max-width:700px;
-}
-</style>
-
-<div class="panel-container">
-
-<!-- MENÚ -->
-<div class="menu-maestro">
-<button onclick="mostrarSeccion('inicio')">🏠 Dashboard</button>
-<button onclick="mostrarSeccion('clases')">📚 Mis clases</button>
-<button onclick="mostrarSeccion('evaluaciones')">📝 Evaluaciones</button>
-<button onclick="mostrarSeccion('asistencias')">📅 Asistencias</button>
-<button onclick="mostrarSeccion('reportes')">⚠️ Reportes</button>
-</div>
-
-<div style="flex:1;">
-
-<!-- DASHBOARD -->
-<div id="inicio" class="seccion activa">
-<h2>Resumen</h2>
+<h2>Panel Maestro</h2>
 
 {% if not config.captura_evaluaciones %}
 
@@ -96,127 +15,54 @@ margin-bottom:20px;
 font-weight:bold;
 text-align:center;
 ">
-
 🚫 Evaluaciones deshabilitadas para captura
-
-</div>
-
-{% else %}
-
-<div style="
-background:#27ae60;
-color:white;
-padding:15px;
-border-radius:10px;
-margin-bottom:20px;
-font-weight:bold;
-text-align:center;
-">
-
-✅ Captura de evaluaciones habilitada
-
 </div>
 
 {% endif %}
 
-<p>Alumnos: {{ alumnos|length }}</p>
-<p>Clases: {{ horarios|length }}</p>
-</div>
+<table border="1" cellpadding="10" cellspacing="0" width="100%">
 
-<!-- CLASES -->
-<div id="clases" class="seccion">
-<h3>Mis clases</h3>
-
-<a href="/descargar_horario" target="_blank">
-<button class="btn-save">📄 Descargar horario</button>
-</a>
-
-<table>
-<tr><th>Grupo</th><th>Materia</th></tr>
-{% for h in horarios %}
 <tr>
-<td>{{ h.grupo }}</td>
-<td>{{ h.materia }}</td>
-</tr>
-{% endfor %}
-</table>
-</div>
 
-<!-- EVALUACIONES -->
-<div id="evaluaciones" class="seccion">
-<h3>Evaluaciones</h3>
-
-{% if not config.captura_evaluaciones %}
-
-<div style="
-background:#c0392b;
-color:white;
-padding:15px;
-border-radius:10px;
-margin-bottom:20px;
-font-weight:bold;
-text-align:center;
-">
-
-🚫 Evaluaciones deshabilitadas para captura
-
-</div>
-
-{% else %}
-
-<div style="
-background:#27ae60;
-color:white;
-padding:15px;
-border-radius:10px;
-margin-bottom:20px;
-font-weight:bold;
-text-align:center;
-">
-
-✅ Captura de evaluaciones habilitada
-
-</div>
-
-{% endif %}
-
-{% set lista_materias = materias if materias else [] %}
-
-<table>
-<tr>
 <th>Alumno</th>
 
-{% for m in lista_materias %}
+{% for m in materias %}
 <th>{{ m }} T1</th>
 <th>{{ m }} T2</th>
 <th>{{ m }} T3</th>
 {% endfor %}
-{% for m in lista_materias %}
+
+</tr>
+
+{% for alumno in alumnos %}
+
+<tr>
+
+<td>{{ alumno.nombre }}</td>
+
+{% for m in materias %}
 
 <!-- T1 -->
 <td>
 
-{% set cal1 = None %}
-{% for c in alumno.calificaciones %}
+{% set cal1 = "" %}
+
+{% for c in alumno.get("calificaciones", []) %}
 {% if c.materia == m and c.trimestre == "1" %}
 {% set cal1 = c.calificacion %}
 {% endif %}
 {% endfor %}
 
 <input
-class="input-cal"
 type="number"
-id="cal_{{ alumno.nombre }}_{{ m }}_1"
-value="{{ cal1 if cal1 is not none else '' }}"
 min="0"
 max="10"
+id="cal_{{ alumno.nombre }}_{{ m }}_1"
+value="{{ cal1 }}"
 {% if not config.trimestre_1 %}disabled{% endif %}
 >
 
-<br><br>
-
 <button
-class="btn-save"
 onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','1')"
 {% if not config.trimestre_1 %}disabled{% endif %}
 >
@@ -228,27 +74,24 @@ onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','1')"
 <!-- T2 -->
 <td>
 
-{% set cal2 = None %}
-{% for c in alumno.calificaciones %}
+{% set cal2 = "" %}
+
+{% for c in alumno.get("calificaciones", []) %}
 {% if c.materia == m and c.trimestre == "2" %}
 {% set cal2 = c.calificacion %}
 {% endif %}
 {% endfor %}
 
 <input
-class="input-cal"
 type="number"
-id="cal_{{ alumno.nombre }}_{{ m }}_2"
-value="{{ cal2 if cal2 is not none else '' }}"
 min="0"
 max="10"
+id="cal_{{ alumno.nombre }}_{{ m }}_2"
+value="{{ cal2 }}"
 {% if not config.trimestre_2 %}disabled{% endif %}
 >
 
-<br><br>
-
 <button
-class="btn-save"
 onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','2')"
 {% if not config.trimestre_2 %}disabled{% endif %}
 >
@@ -260,27 +103,24 @@ onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','2')"
 <!-- T3 -->
 <td>
 
-{% set cal3 = None %}
-{% for c in alumno.calificaciones %}
+{% set cal3 = "" %}
+
+{% for c in alumno.get("calificaciones", []) %}
 {% if c.materia == m and c.trimestre == "3" %}
 {% set cal3 = c.calificacion %}
 {% endif %}
 {% endfor %}
 
 <input
-class="input-cal"
 type="number"
-id="cal_{{ alumno.nombre }}_{{ m }}_3"
-value="{{ cal3 if cal3 is not none else '' }}"
 min="0"
 max="10"
+id="cal_{{ alumno.nombre }}_{{ m }}_3"
+value="{{ cal3 }}"
 {% if not config.trimestre_3 %}disabled{% endif %}
 >
 
-<br><br>
-
 <button
-class="btn-save"
 onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','3')"
 {% if not config.trimestre_3 %}disabled{% endif %}
 >
@@ -290,114 +130,14 @@ onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','3')"
 </td>
 
 {% endfor %}
+
 </tr>
 
-{% for alumno in alumnos %}
-<tr>
-
-<td>
-<strong>{{ alumno.nombre }}</strong><br>
-<button class="btn-reset" onclick="resetAlumno('{{ alumno.nombre }}')">🔄 Reset</button>
-</td>
-
-{% for m in lista_materias %}
-<td>
-
-{% set cal = None %}
-{% for c in alumno.calificaciones %}
-{% if c.materia == m and c.trimestre == config.trimestre %}
-{% set cal = c.calificacion %}
-{% endif %}
-{% endfor %}
-
-<input
-class="input-cal"
-type="number"
-id="cal_{{ alumno.nombre }}_{{ m }}"
-value="{{ cal if cal is not none else '' }}"
-min="0"
-max="10"
-{% if not config.captura_evaluaciones %}disabled{% endif %}
->
-
-<br><br>
-
-<button
-class="btn-save"
-onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}')"
-{% if not config.captura_evaluaciones %}disabled{% endif %}
->
-💾
-</button>
-
-</td>
-{% endfor %}
-</tr>
-{% endfor %}
-</table>
-</div>
-
-<!-- ASISTENCIAS -->
-<div id="asistencias" class="seccion">
-<h3>Asistencias</h3>
-
-<table>
-<tr><th>Alumno</th><th>Fecha</th><th>Acción</th></tr>
-
-{% for alumno in alumnos %}
-<tr>
-<td>{{ alumno.nombre }}</td>
-<td><input type="date" id="fecha_{{ loop.index }}"></td>
-<td>
-<button onclick="marcar('{{ alumno.nombre }}','asistio','{{ loop.index }}')">✔</button>
-<button onclick="marcar('{{ alumno.nombre }}','falta','{{ loop.index }}')">✖</button>
-</td>
-</tr>
 {% endfor %}
 
 </table>
-</div>
-
-<!-- REPORTES -->
-<div id="reportes" class="seccion">
-
-<h3>Reportes disciplinarios</h3>
-
-<form action="/crear_reporte" method="POST">
-
-<select id="alumno" name="alumno" onchange="preview()" required>
-<option value="">Seleccionar alumno</option>
-{% for alumno in alumnos %}
-<option value="{{ alumno.nombre }}">
-{{ alumno.nombre }} - {{ alumno.grupo }}
-</option>
-{% endfor %}
-</select>
-
-<input type="text" id="grupo" name="grupo" placeholder="Grupo" onkeyup="preview()" required>
-<input type="date" id="fecha" name="fecha" onchange="preview()" required>
-
-<br><br>
-
-<textarea id="comentario" name="comentario" placeholder="Describe el reporte..." onkeyup="preview()" required></textarea>
-
-<br><br>
-
-<button class="btn-save">📤 Enviar reporte</button>
-
-</form>
-
-</div>
-
-</div>
-</div>
 
 <script>
-
-function mostrarSeccion(id){
-document.querySelectorAll(".seccion").forEach(s=>s.classList.remove("activa"))
-document.getElementById(id).classList.add("activa")
-}
 
 function guardarAjax(alumno, materia, trimestre){
 
@@ -413,7 +153,7 @@ headers:{
 "Content-Type":"application/x-www-form-urlencoded"
 },
 
-body: new URLSearchParams({
+body:new URLSearchParams({
 
 alumno: alumno,
 materia: materia,
@@ -429,44 +169,13 @@ cal1: input.value
 .then(d=>{
 
 if(d.status==="ok"){
-
-input.classList.add("guardado-ok")
-
+alert("Guardado")
 }else{
-
-alert(d.msg || "No se pudo guardar")
-
+alert(d.msg || "Error")
 }
 
 })
 
-}
-
-function marcar(alumno,estado,id){
-let fecha=document.getElementById("fecha_"+id).value
-
-if(!fecha){
-alert("Selecciona fecha")
-return
-}
-
-fetch("/guardar_asistencia_ajax",{
-method:"POST",
-headers:{"Content-Type":"application/x-www-form-urlencoded"},
-body: new URLSearchParams({
-alumno: alumno,
-estado: estado,
-fecha: fecha
-})
-})
-.then(r=>r.json())
-.then(d=>{
-if(d.status==="ok"){
-alert("✔ Asistencia guardada")
-}else{
-alert("Error: "+(d.msg||"no guardó"))
-}
-})
 }
 
 </script>

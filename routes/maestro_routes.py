@@ -25,13 +25,28 @@ def panel_maestro():
     if not verificar_maestro():
         return redirect(url_for("auth.login"))
 
-    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
+    maestro = maestros.find_one({
+        "usuario": session.get("usuario")
+    }) or {}
 
-    materias = maestro.get("materias", [])
+    materias_maestro = maestro.get("materias", [])
     grupos = maestro.get("grupos", [])
 
-    lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
-   lista_horarios = list(horarios.find({"grupo": {"$in": grupos}}))
+    lista_alumnos = list(
+        alumnos.find({
+            "grupo": {
+                "$in": grupos
+            }
+        })
+    )
+
+    lista_horarios = list(
+        horarios.find({
+            "grupo": {
+                "$in": grupos
+            }
+        })
+    )
 
     config = configuracion.find_one() or {
         "trimestre_1": True,
@@ -44,7 +59,7 @@ def panel_maestro():
         "panel_maestro.html",
         alumnos=lista_alumnos,
         grupos=grupos,
-        materias=materias,
+        materias=materias_maestro,
         horarios=lista_horarios,
         config=config
     )
@@ -128,7 +143,11 @@ def generar_citatorio_maestro(id):
     pdf = generar_citatorio_pdf(citatorio)
     pdf.seek(0)
 
-    return send_file(pdf, as_attachment=True, download_name="citatorio.pdf")
+    return send_file(
+        pdf,
+        as_attachment=True,
+        download_name="citatorio.pdf"
+    )
 
 
 # ================= EVALUACIONES =================
@@ -140,7 +159,6 @@ def guardar_calificaciones_ajax():
 
     config = configuracion.find_one() or {}
 
-    # 🔥 VALIDAR CAPTURA
     if not config.get("captura_evaluaciones", True):
         return {
             "status": "error",
@@ -177,7 +195,6 @@ def guardar_calificaciones_ajax():
 
     grupo = alumno_db.get("grupo", "")
 
-    # 🔥 ELIMINAR CALIFICACIÓN ANTERIOR
     alumnos.update_one(
         {"_id": alumno_db["_id"]},
         {
@@ -190,7 +207,6 @@ def guardar_calificaciones_ajax():
         }
     )
 
-    # 🔥 INSERTAR NUEVA CALIFICACIÓN
     alumnos.update_one(
         {"_id": alumno_db["_id"]},
         {
@@ -269,35 +285,6 @@ def crear_reporte():
     return redirect("/panel_maestro")
 
 
-@maestro_bp.route("/enviar_reportes_maestro", methods=["POST"])
-def enviar_reportes_maestro():
-
-    if not verificar_maestro():
-        return redirect(url_for("auth.login"))
-
-    reportes.update_many(
-        {"maestro": session.get("usuario")},
-        {"$set": {"estatus": "enviado"}}
-    )
-
-    return redirect("/panel_maestro")
-
-
-# ================= CONFIRMAR CITATORIO =================
-@maestro_bp.route("/confirmar_asistencia/<id>")
-def confirmar_asistencia_maestro(id):
-
-    if not verificar_maestro():
-        return redirect(url_for("auth.login"))
-
-    citatorios.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {"estatus": "asistio"}}
-    )
-
-    return redirect("/citatorios")
-
-
 # ================= HORARIO =================
 @maestro_bp.route("/horario")
 def horario_maestro():
@@ -313,48 +300,4 @@ def horario_maestro():
     return render_template(
         "horario_maestro.html",
         horarios=lista_horarios
-    )
-
-
-# ================= PDF HORARIO =================
-@maestro_bp.route("/descargar_horario")
-def descargar_horario():
-
-    if not verificar_maestro():
-        return redirect(url_for("auth.login"))
-
-    maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
-    grupos = maestro.get("grupos", [])
-
-    lista = list(horarios.find({"grupo": {"$in": grupos}}))
-
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
-
-    data = [["Día", "Hora", "Materia", "Grupo"]]
-
-    for h in lista:
-        data.append([
-            h.get("dia", ""),
-            h.get("hora", ""),
-            h.get("materia", ""),
-            h.get("grupo", "")
-        ])
-
-    table = Table(data)
-
-    table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-        ("GRID", (0, 0), (-1, -1), 1, colors.black)
-    ]))
-
-    doc.build([table])
-
-    buffer.seek(0)
-
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name="horario.pdf",
-        mimetype="application/pdf"
     )
