@@ -640,11 +640,16 @@ def deshabilitar_trimestre(numero):
 # ================= CONFIGURACION =================
 @admin_bp.route("/configuracion")
 def admin_configuracion():
+
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
     config = configuracion.find_one()
-    return render_template("configuracion.html", config=config)
+
+    return render_template(
+        "configuracion.html",
+        config=config
+    )
 
 
 @admin_bp.route("/guardar_configuracion", methods=["POST"])
