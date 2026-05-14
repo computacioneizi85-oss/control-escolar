@@ -1,0 +1,25 @@
+Para activar licencia, cambia los ENVIRONMENT VARIABLES de render a los que corresponden a tu .env de control escolar, ejemplo: 
+
+MONGO_URI=mongodb+srv://joel:CAMELLO2052@cluster0.ethhsnm.mongodb.net/control_escolar?retryWrites=true&w=majority
+
+SECRET_KEY=licencias_server_super_seguro_2026
+
+LICENSE_SERVER=https://licencias-server-tth8.onrender.com
+
+LICENSE_KEY=V2ZL-QBPT-RUKM
+
+INSTALL_ID=Joel_001
+
+y al final abre tu servidor de licencias y activala
+
+
+
+control escolar
+usuario:admin
+contraseña:admin123
+
+licencias
+
+usuario:admin
+contraseña:12345
+ 

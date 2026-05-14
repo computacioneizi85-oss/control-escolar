@@ -7,7 +7,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
 
-from database.mongo import alumnos, maestros, horarios, configuracion, citatorios, avisos, reportes
+from database.mongo import alumnos, maestros, horarios, configuracion, citatorios, avisos, reportes, materias
 from pdf.generador import generar_citatorio_pdf
 
 maestro_bp = Blueprint("maestro", __name__)
@@ -132,6 +132,16 @@ def guardar_calificaciones_ajax():
     if not verificar_maestro():
         return {"status": "error"}
 
+    config = configuracion.find_one() or {}
+
+    captura_habilitada = config.get("captura_evaluaciones", True)
+
+    if not captura_habilitada:
+        return {
+            "status": "error",
+            "msg": "Captura deshabilitada"
+        }
+
     alumno = request.form.get("alumno")
     materia = request.form.get("materia")
     trimestre = request.form.get("trimestre")
@@ -141,22 +151,48 @@ def guardar_calificaciones_ajax():
     except:
         cal = 0
 
+    maestro_actual = maestros.find_one({
+        "usuario": session.get("usuario")
+    }) or {}
+
+    nombre_maestro = maestro_actual.get("nombre", "")
+
+    alumno_db = alumnos.find_one({"nombre": alumno})
+
+    if not alumno_db:
+        return {"status": "error"}
+
+    grupo = alumno_db.get("grupo", "")
+
     alumnos.update_one(
         {"nombre": alumno},
-        {"$pull": {"calificaciones": {"materia": materia, "trimestre": trimestre}}}
+        {
+            "$pull": {
+                "calificaciones": {
+                    "materia": materia,
+                    "trimestre": trimestre
+                }
+            }
+        }
     )
 
     alumnos.update_one(
         {"nombre": alumno},
-        {"$push": {"calificaciones": {
-            "materia": materia,
-            "calificacion": cal,
-            "trimestre": trimestre
-        }}}
+        {
+            "$push": {
+                "calificaciones": {
+                    "materia": materia,
+                    "calificacion": cal,
+                    "trimestre": trimestre,
+                    "grupo": grupo,
+                    "maestro": nombre_maestro,
+                    "fecha": datetime.now()
+                }
+            }
+        }
     )
 
     return {"status": "ok"}
-
 
 # ================= ASISTENCIA (ARREGLADA REAL) =================
 @maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])

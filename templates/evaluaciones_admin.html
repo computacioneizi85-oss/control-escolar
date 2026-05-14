@@ -55,10 +55,10 @@ background:#c0392b;
 
 
 <!-- 🔥 GENERAR LISTA DE GRUPOS -->
-{% set grupos = [] %}
+{% set grupos_unicos = [] %}
 {% for d in datos %}
-{% if d.grupo not in grupos %}
-{% set _ = grupos.append(d.grupo) %}
+{% if d.grupo not in grupos_unicos %}
+{% set _ = grupos_unicos.append(d.grupo) %}
 {% endif %}
 {% endfor %}
 
@@ -73,7 +73,7 @@ background:#c0392b;
 <select name="grupo" required>
 <option value="">Seleccionar grupo</option>
 
-{% for g in grupos %}
+{% for g in grupos_unicos %}
 <option value="{{ g }}">{{ g }}</option>
 {% endfor %}
 
@@ -91,19 +91,102 @@ onclick="return confirm('⚠ Esto borrará TODAS las calificaciones del grupo')"
 </div>
 
 
-<!-- FILTRO -->
+<!-- FILTROS -->
 <div class="card">
 
-<h4>Filtrar por grupo</h4>
+<h4>Filtrar evaluaciones</h4>
 
-<select onchange="filtrarGrupo(this.value)">
-<option value="todos">Todos</option>
+<div style="display:flex; gap:10px; flex-wrap:wrap;">
 
-{% for g in grupos %}
+<select id="filtroGrupo" onchange="aplicarFiltros()">
+
+<option value="todos">Todos los grupos</option>
+
+{% for g in grupos_unicos %}
 <option value="{{ g }}">{{ g }}</option>
 {% endfor %}
 
 </select>
+
+<select id="filtroMaestro" onchange="aplicarFiltros()">
+
+<option value="todos">Todos los maestros</option>
+
+{% for m in maestros %}
+<option value="{{ m.nombre }}">{{ m.nombre }}</option>
+{% endfor %}
+
+</select>
+
+</div>
+
+<br>
+
+{% if config.captura_evaluaciones %}
+
+<div style="
+background:#27ae60;
+padding:12px;
+border-radius:8px;
+color:white;
+font-weight:bold;
+margin-bottom:15px;
+">
+
+✅ Captura de evaluaciones ACTIVADA
+
+</div>
+
+<a href="/admin/deshabilitar_evaluaciones">
+
+<button style="
+background:#c0392b;
+color:white;
+border:none;
+padding:10px 15px;
+border-radius:8px;
+cursor:pointer;
+">
+
+🚫 Deshabilitar captura
+
+</button>
+
+</a>
+
+{% else %}
+
+<div style="
+background:#c0392b;
+padding:12px;
+border-radius:8px;
+color:white;
+font-weight:bold;
+margin-bottom:15px;
+">
+
+❌ Captura de evaluaciones DESHABILITADA
+
+</div>
+
+<a href="/admin/habilitar_evaluaciones">
+
+<button style="
+background:#27ae60;
+color:white;
+border:none;
+padding:10px 15px;
+border-radius:8px;
+cursor:pointer;
+">
+
+✅ Habilitar captura
+
+</button>
+
+</a>
+
+{% endif %}
 
 </div>
 
@@ -117,6 +200,7 @@ onclick="return confirm('⚠ Esto borrará TODAS las calificaciones del grupo')"
 <th>Alumno</th>
 <th>Grupo</th>
 <th>Materia</th>
+<th>Maestro</th>
 <th>Calificación</th>
 <th>Trimestre</th>
 <th>Estado</th>
@@ -128,8 +212,12 @@ onclick="return confirm('⚠ Esto borrará TODAS las calificaciones del grupo')"
 <tr>
 
 <td>{{ d.alumno }}</td>
+
 <td>{{ d.grupo }}</td>
+
 <td>{{ d.materia }}</td>
+
+<td>{{ d.maestro }}</td>
 
 <td>
 <span class="
@@ -199,16 +287,27 @@ onclick="return confirm('⚠ Esto borrará TODAS las calificaciones del grupo')"
 <!-- SCRIPT -->
 <script>
 
-function filtrarGrupo(grupo){
+function aplicarFiltros(){
+
+let grupo = document.getElementById("filtroGrupo").value
+let maestro = document.getElementById("filtroMaestro").value
 
 document.querySelectorAll("tbody tr").forEach(row=>{
 
-if(grupo === "todos"){
-row.style.display = ""
-}else{
-let g = row.children[1].innerText
-row.style.display = (g === grupo) ? "" : "none"
+let grupoRow = row.children[1].innerText.trim()
+let maestroRow = row.children[3].innerText.trim()
+
+let mostrar = true
+
+if(grupo !== "todos" && grupoRow !== grupo){
+mostrar = false
 }
+
+if(maestro !== "todos" && maestroRow !== maestro){
+mostrar = false
+}
+
+row.style.display = mostrar ? "" : "none"
 
 })
 
