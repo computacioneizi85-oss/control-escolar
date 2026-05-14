@@ -1,6 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, session, url_for, send_file
 from bson.objectid import ObjectId
 from datetime import datetime
+from io import BytesIO
+
+from reportlab.pdfgen import canvas
 
 from database.mongo import (
     alumnos,
@@ -50,9 +53,23 @@ def panel_maestro():
     lista_horarios = list(
         horarios.find({
             "$or": [
-                {"maestro": nombre_maestro},
-                {"maestro": usuario_maestro},
-                {"grupo": {"$in": grupos}}
+                {
+                    "maestro": {
+                        "$regex": f"^{nombre_maestro}$",
+                        "$options": "i"
+                    }
+                },
+                {
+                    "maestro": {
+                        "$regex": f"^{usuario_maestro}$",
+                        "$options": "i"
+                    }
+                },
+                {
+                    "grupo": {
+                        "$in": grupos
+                    }
+                }
             ]
         })
     )
@@ -174,9 +191,23 @@ def horario_maestro():
     lista_horarios = list(
         horarios.find({
             "$or": [
-                {"maestro": nombre_maestro},
-                {"maestro": usuario_maestro},
-                {"grupo": {"$in": grupos}}
+                {
+                    "maestro": {
+                        "$regex": f"^{nombre_maestro}$",
+                        "$options": "i"
+                    }
+                },
+                {
+                    "maestro": {
+                        "$regex": f"^{usuario_maestro}$",
+                        "$options": "i"
+                    }
+                },
+                {
+                    "grupo": {
+                        "$in": grupos
+                    }
+                }
             ]
         })
     )
@@ -190,11 +221,7 @@ def horario_maestro():
 # ================= PDF HORARIO =================
 @maestro_bp.route("/horario/pdf")
 def horario_pdf():
-
-    if not verificar_maestro():
-        return redirect(url_for("auth.login"))
-
-    return redirect("/horario")
+    return redirect("/descargar_horario")
 
 
 # ================= DESCARGAR HORARIO =================
@@ -215,16 +242,67 @@ def descargar_horario():
     lista_horarios = list(
         horarios.find({
             "$or": [
-                {"maestro": nombre_maestro},
-                {"maestro": usuario_maestro},
-                {"grupo": {"$in": grupos}}
+                {
+                    "maestro": {
+                        "$regex": f"^{nombre_maestro}$",
+                        "$options": "i"
+                    }
+                },
+                {
+                    "maestro": {
+                        "$regex": f"^{usuario_maestro}$",
+                        "$options": "i"
+                    }
+                },
+                {
+                    "grupo": {
+                        "$in": grupos
+                    }
+                }
             ]
         })
     )
 
-    return render_template(
-        "horario_maestro.html",
-        horarios=lista_horarios
+    buffer = BytesIO()
+
+    pdf = canvas.Canvas(buffer)
+
+    pdf.setTitle("Horario Maestro")
+
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(180, 800, "HORARIO DEL MAESTRO")
+
+    pdf.setFont("Helvetica", 12)
+    pdf.drawString(50, 770, f"Maestro: {nombre_maestro}")
+
+    y = 730
+
+    for h in lista_horarios:
+
+        texto = (
+            f"{h.get('dia', '')} | "
+            f"{h.get('hora', '')} | "
+            f"{h.get('grupo', '')} | "
+            f"{h.get('materia', '')}"
+        )
+
+        pdf.drawString(50, y, texto)
+
+        y -= 25
+
+        if y < 50:
+            pdf.showPage()
+            y = 750
+
+    pdf.save()
+
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name="horario_maestro.pdf",
+        mimetype="application/pdf"
     )
 
 
