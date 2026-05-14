@@ -524,11 +524,13 @@ def admin_evaluaciones():
 
             })
 
-    config = configuracion.find_one() or {
-        "trimestre": "1",
-        "estado": "true",
-        "captura_evaluaciones": True
-    }
+config = configuracion.find_one() or {
+    "trimestre_activo": "1",
+    "trimestre_1": True,
+    "trimestre_2": False,
+    "trimestre_3": False,
+    "captura_evaluaciones": True
+}
 
     return render_template(
         "evaluaciones_admin.html",
@@ -570,6 +572,45 @@ def deshabilitar_evaluaciones():
         {
             "$set": {
                 "captura_evaluaciones": False
+            }
+        },
+        upsert=True
+    )
+
+    return redirect("/admin/evaluaciones")
+
+# ================= TRIMESTRES =================
+@admin_bp.route("/activar_trimestre/<numero>")
+def activar_trimestre(numero):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    configuracion.update_one(
+        {},
+        {
+            "$set": {
+                "trimestre_activo": numero,
+                f"trimestre_{numero}": True
+            }
+        },
+        upsert=True
+    )
+
+    return redirect("/admin/evaluaciones")
+
+
+@admin_bp.route("/deshabilitar_trimestre/<numero>")
+def deshabilitar_trimestre(numero):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    configuracion.update_one(
+        {},
+        {
+            "$set": {
+                f"trimestre_{numero}": False
             }
         },
         upsert=True

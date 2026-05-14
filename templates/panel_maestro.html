@@ -185,8 +185,110 @@ text-align:center;
 <table>
 <tr>
 <th>Alumno</th>
+
 {% for m in lista_materias %}
-<th>{{ m }}</th>
+<th>{{ m }} T1</th>
+<th>{{ m }} T2</th>
+<th>{{ m }} T3</th>
+{% endfor %}
+{% for m in lista_materias %}
+
+<!-- T1 -->
+<td>
+
+{% set cal1 = None %}
+{% for c in alumno.calificaciones %}
+{% if c.materia == m and c.trimestre == "1" %}
+{% set cal1 = c.calificacion %}
+{% endif %}
+{% endfor %}
+
+<input
+class="input-cal"
+type="number"
+id="cal_{{ alumno.nombre }}_{{ m }}_1"
+value="{{ cal1 if cal1 is not none else '' }}"
+min="0"
+max="10"
+{% if not config.trimestre_1 %}disabled{% endif %}
+>
+
+<br><br>
+
+<button
+class="btn-save"
+onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','1')"
+{% if not config.trimestre_1 %}disabled{% endif %}
+>
+💾
+</button>
+
+</td>
+
+<!-- T2 -->
+<td>
+
+{% set cal2 = None %}
+{% for c in alumno.calificaciones %}
+{% if c.materia == m and c.trimestre == "2" %}
+{% set cal2 = c.calificacion %}
+{% endif %}
+{% endfor %}
+
+<input
+class="input-cal"
+type="number"
+id="cal_{{ alumno.nombre }}_{{ m }}_2"
+value="{{ cal2 if cal2 is not none else '' }}"
+min="0"
+max="10"
+{% if not config.trimestre_2 %}disabled{% endif %}
+>
+
+<br><br>
+
+<button
+class="btn-save"
+onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','2')"
+{% if not config.trimestre_2 %}disabled{% endif %}
+>
+💾
+</button>
+
+</td>
+
+<!-- T3 -->
+<td>
+
+{% set cal3 = None %}
+{% for c in alumno.calificaciones %}
+{% if c.materia == m and c.trimestre == "3" %}
+{% set cal3 = c.calificacion %}
+{% endif %}
+{% endfor %}
+
+<input
+class="input-cal"
+type="number"
+id="cal_{{ alumno.nombre }}_{{ m }}_3"
+value="{{ cal3 if cal3 is not none else '' }}"
+min="0"
+max="10"
+{% if not config.trimestre_3 %}disabled{% endif %}
+>
+
+<br><br>
+
+<button
+class="btn-save"
+onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','3')"
+{% if not config.trimestre_3 %}disabled{% endif %}
+>
+💾
+</button>
+
+</td>
+
 {% endfor %}
 </tr>
 
@@ -297,21 +399,35 @@ document.querySelectorAll(".seccion").forEach(s=>s.classList.remove("activa"))
 document.getElementById(id).classList.add("activa")
 }
 
-function guardarAjax(alumno, materia){
-let input = document.getElementById("cal_"+alumno+"_"+materia)
+function guardarAjax(alumno, materia, trimestre){
+
+let input = document.getElementById(
+"cal_"+alumno+"_"+materia+"_"+trimestre
+)
 
 fetch("/guardar_calificaciones_ajax",{
+
 method:"POST",
-headers:{"Content-Type":"application/x-www-form-urlencoded"},
+
+headers:{
+"Content-Type":"application/x-www-form-urlencoded"
+},
+
 body: new URLSearchParams({
+
 alumno: alumno,
 materia: materia,
-trimestre: "{{ config.trimestre }}",
+trimestre: trimestre,
 cal1: input.value
+
 })
+
 })
+
 .then(r=>r.json())
+
 .then(d=>{
+
 if(d.status==="ok"){
 
 input.classList.add("guardado-ok")
@@ -321,7 +437,9 @@ input.classList.add("guardado-ok")
 alert(d.msg || "No se pudo guardar")
 
 }
+
 })
+
 }
 
 function marcar(alumno,estado,id){

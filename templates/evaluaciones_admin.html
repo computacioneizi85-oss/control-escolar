@@ -31,7 +31,119 @@ background:#c0392b;
 
 <h2>📊 Control de Evaluaciones</h2>
 
+
+
 <!-- ESTADO -->
+
+<div class="card">
+
+<h3>📚 Control de Trimestres</h3>
+
+<div style="display:flex; gap:15px; flex-wrap:wrap;">
+
+<!-- T1 -->
+<div style="border:1px solid #ccc;padding:15px;border-radius:10px;">
+
+<h4>Trimestre 1</h4>
+
+{% if config.trimestre_1 %}
+
+<p style="color:green;font-weight:bold;">
+✅ Habilitado
+</p>
+
+<a href="/admin/deshabilitar_trimestre/1">
+<button class="btn-reset">
+Deshabilitar
+</button>
+</a>
+
+{% else %}
+
+<p style="color:red;font-weight:bold;">
+❌ Deshabilitado
+</p>
+
+<a href="/admin/activar_trimestre/1">
+<button style="background:green;color:white;border:none;padding:8px 12px;border-radius:5px;">
+Habilitar
+</button>
+</a>
+
+{% endif %}
+
+</div>
+
+<!-- T2 -->
+<div style="border:1px solid #ccc;padding:15px;border-radius:10px;">
+
+<h4>Trimestre 2</h4>
+
+{% if config.trimestre_2 %}
+
+<p style="color:green;font-weight:bold;">
+✅ Habilitado
+</p>
+
+<a href="/admin/deshabilitar_trimestre/2">
+<button class="btn-reset">
+Deshabilitar
+</button>
+</a>
+
+{% else %}
+
+<p style="color:red;font-weight:bold;">
+❌ Deshabilitado
+</p>
+
+<a href="/admin/activar_trimestre/2">
+<button style="background:green;color:white;border:none;padding:8px 12px;border-radius:5px;">
+Habilitar
+</button>
+</a>
+
+{% endif %}
+
+</div>
+
+<!-- T3 -->
+<div style="border:1px solid #ccc;padding:15px;border-radius:10px;">
+
+<h4>Trimestre 3</h4>
+
+{% if config.trimestre_3 %}
+
+<p style="color:green;font-weight:bold;">
+✅ Habilitado
+</p>
+
+<a href="/admin/deshabilitar_trimestre/3">
+<button class="btn-reset">
+Deshabilitar
+</button>
+</a>
+
+{% else %}
+
+<p style="color:red;font-weight:bold;">
+❌ Deshabilitado
+</p>
+
+<a href="/admin/activar_trimestre/3">
+<button style="background:green;color:white;border:none;padding:8px 12px;border-radius:5px;">
+Habilitar
+</button>
+</a>
+
+{% endif %}
+
+</div>
+
+</div>
+
+</div>
+
 <div class="card">
 
 {% if config.estado == "true" %}
