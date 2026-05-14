@@ -42,13 +42,16 @@
 {% if alumnos_riesgo %}
 <table>
 <tr><th>Alumno</th><th>Grupo</th></tr>
+
 {% for a in alumnos_riesgo %}
 <tr>
 <td>{{ a.nombre }}</td>
 <td>{{ a.grupo }}</td>
 </tr>
 {% endfor %}
+
 </table>
+
 {% else %}
 <p>No hay alumnos en riesgo</p>
 {% endif %}
@@ -56,9 +59,11 @@
 </div>
 
 <div class="card dashboard-block">
+
 <h3>Asistencia general</h3>
 
 <div class="cards">
+
 <div class="card">
 <h4>Asistencias</h4>
 <p>{{ total_asistencias or 0 }}</p>
@@ -68,16 +73,25 @@
 <h4>Faltas</h4>
 <p>{{ total_faltas or 0 }}</p>
 </div>
+
 </div>
 
 </div>
 
 <div class="card dashboard-block">
+
 <h3>Próximos citatorios</h3>
 
 {% if citatorios %}
+
 <table>
-<tr><th>Alumno</th><th>Fecha</th><th>Hora</th></tr>
+
+<tr>
+<th>Alumno</th>
+<th>Fecha</th>
+<th>Hora</th>
+</tr>
+
 {% for c in citatorios %}
 <tr>
 <td>{{ c.alumno }}</td>
@@ -85,7 +99,9 @@
 <td>{{ c.hora }}</td>
 </tr>
 {% endfor %}
+
 </table>
+
 {% else %}
 <p>No hay citatorios</p>
 {% endif %}
@@ -93,11 +109,19 @@
 </div>
 
 <div class="card dashboard-block">
+
 <h3>Últimos reportes</h3>
 
 {% if ultimos_reportes %}
+
 <table>
-<tr><th>Alumno</th><th>Comentario</th><th>Estado</th></tr>
+
+<tr>
+<th>Alumno</th>
+<th>Comentario</th>
+<th>Estado</th>
+</tr>
+
 {% for r in ultimos_reportes %}
 <tr>
 <td>{{ r.alumno }}</td>
@@ -105,7 +129,9 @@
 <td>{{ r.estatus }}</td>
 </tr>
 {% endfor %}
+
 </table>
+
 {% else %}
 <p>No hay reportes recientes</p>
 {% endif %}
@@ -118,48 +144,163 @@
 <h2>Backup del sistema</h2>
 
 <a href="/admin/backup/descargar">
-<button style="background:#3498db;color:white;">📥 Descargar Backup</button>
+<button style="background:#3498db;color:white;">
+📥 Descargar Backup
+</button>
 </a>
 
 <form action="/admin/backup/restaurar" method="POST" enctype="multipart/form-data">
+
 <input type="file" name="archivo" required>
-<button type="submit" style="background:#27ae60;color:white;">♻ Restaurar sistema</button>
+
+<button type="submit" style="background:#27ae60;color:white;">
+♻ Restaurar sistema
+</button>
+
 </form>
 
-<!-- ================= TRIMESTRES ================= -->
+<!-- ================= CONTROL EVALUACIONES ================= -->
 <h2>Control de evaluaciones</h2>
 
-<form action="{{ url_for('admin.activar_trimestre') }}" method="POST">
+<div style="
+display:flex;
+gap:20px;
+flex-wrap:wrap;
+margin-bottom:30px;
+">
 
-<select name="trimestre">
-<option value="1">Trimestre 1</option>
-<option value="2">Trimestre 2</option>
-<option value="3">Trimestre 3</option>
-</select>
+<!-- T1 -->
+<div style="
+border:1px solid #ccc;
+padding:15px;
+border-radius:10px;
+min-width:200px;
+">
 
-<select name="estado">
-<option value="true">Habilitar</option>
-<option value="false">Deshabilitar</option>
-</select>
+<h3>Trimestre 1</h3>
 
-<button type="submit" style="background:#2ecc71;color:white;">Guardar</button>
+{% if config.trimestre_1 %}
 
-</form>
+<p style="color:green;font-weight:bold;">
+✅ Habilitado
+</p>
+
+<a href="{{ url_for('admin.deshabilitar_trimestre', numero=1) }}">
+<button style="background:#c0392b;color:white;">
+Deshabilitar
+</button>
+</a>
+
+{% else %}
+
+<p style="color:red;font-weight:bold;">
+❌ Deshabilitado
+</p>
+
+<a href="{{ url_for('admin.activar_trimestre_numero', numero=1) }}">
+<button style="background:#27ae60;color:white;">
+Habilitar
+</button>
+</a>
+
+{% endif %}
+
+</div>
+
+<!-- T2 -->
+<div style="
+border:1px solid #ccc;
+padding:15px;
+border-radius:10px;
+min-width:200px;
+">
+
+<h3>Trimestre 2</h3>
+
+{% if config.trimestre_2 %}
+
+<p style="color:green;font-weight:bold;">
+✅ Habilitado
+</p>
+
+<a href="{{ url_for('admin.deshabilitar_trimestre', numero=2) }}">
+<button style="background:#c0392b;color:white;">
+Deshabilitar
+</button>
+</a>
+
+{% else %}
+
+<p style="color:red;font-weight:bold;">
+❌ Deshabilitado
+</p>
+
+<a href="{{ url_for('admin.activar_trimestre_numero', numero=2) }}">
+<button style="background:#27ae60;color:white;">
+Habilitar
+</button>
+</a>
+
+{% endif %}
+
+</div>
+
+<!-- T3 -->
+<div style="
+border:1px solid #ccc;
+padding:15px;
+border-radius:10px;
+min-width:200px;
+">
+
+<h3>Trimestre 3</h3>
+
+{% if config.trimestre_3 %}
+
+<p style="color:green;font-weight:bold;">
+✅ Habilitado
+</p>
+
+<a href="{{ url_for('admin.deshabilitar_trimestre', numero=3) }}">
+<button style="background:#c0392b;color:white;">
+Deshabilitar
+</button>
+</a>
+
+{% else %}
+
+<p style="color:red;font-weight:bold;">
+❌ Deshabilitado
+</p>
+
+<a href="{{ url_for('admin.activar_trimestre_numero', numero=3) }}">
+<button style="background:#27ae60;color:white;">
+Habilitar
+</button>
+</a>
+
+{% endif %}
+
+</div>
+
+</div>
 
 <!-- ================= IMPORTAR ================= -->
 <h2>Importar base de datos</h2>
 
 <form action="/admin/importar_bd" method="POST" enctype="multipart/form-data">
+
 <input type="file" name="archivo" accept=".json" required>
+
 <button style="background:#2980b9;color:white;">
 📥 Importar datos
 </button>
+
 </form>
 
 <!-- ================= REGISTRO COMPLETO ================= -->
 <h2>Registro completo de alumno</h2>
 
-<!-- 🔥 IMPORTANTE: enctype agregado -->
 <form action="/admin/registro_completo_alumno" method="POST" enctype="multipart/form-data">
 
 <input name="nombre" placeholder="Nombre del alumno" required>
@@ -191,7 +332,6 @@
 
 <input name="grupo" placeholder="Grupo" required>
 
-<!-- 🔥 NUEVO -->
 <input type="file" name="foto">
 
 <br><br>
@@ -214,6 +354,7 @@
 </tr>
 
 {% for alumno in alumnos %}
+
 <tr>
 
 <td>{{ alumno.nombre }}</td>
@@ -222,22 +363,29 @@
 <td>
 
 <a href="/admin/kardex/{{ alumno.nombre }}">
-<button style="background:#8e44ad;color:white;">Kardex</button>
+<button style="background:#8e44ad;color:white;">
+Kardex
+</button>
 </a>
 
 <a href="/admin/boleta/{{ alumno.nombre }}">
-<button style="background:#16a085;color:white;">Boleta</button>
+<button style="background:#16a085;color:white;">
+Boleta
+</button>
 </a>
 
 <br><br>
 
 <a href="/admin/expediente/{{ alumno._id }}">
-<button style="background:#34495e;color:white;">📄 Expediente</button>
+<button style="background:#34495e;color:white;">
+📄 Expediente
+</button>
 </a>
 
 </td>
 
 </tr>
+
 {% endfor %}
 
 </table>
