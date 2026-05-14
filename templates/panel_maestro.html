@@ -84,6 +84,41 @@ max-width:700px;
 <!-- DASHBOARD -->
 <div id="inicio" class="seccion activa">
 <h2>Resumen</h2>
+
+{% if not config.captura_evaluaciones %}
+
+<div style="
+background:#c0392b;
+color:white;
+padding:15px;
+border-radius:10px;
+margin-bottom:20px;
+font-weight:bold;
+text-align:center;
+">
+
+🚫 Evaluaciones deshabilitadas para captura
+
+</div>
+
+{% else %}
+
+<div style="
+background:#27ae60;
+color:white;
+padding:15px;
+border-radius:10px;
+margin-bottom:20px;
+font-weight:bold;
+text-align:center;
+">
+
+✅ Captura de evaluaciones habilitada
+
+</div>
+
+{% endif %}
+
 <p>Alumnos: {{ alumnos|length }}</p>
 <p>Clases: {{ horarios|length }}</p>
 </div>
@@ -110,6 +145,40 @@ max-width:700px;
 <!-- EVALUACIONES -->
 <div id="evaluaciones" class="seccion">
 <h3>Evaluaciones</h3>
+
+{% if not config.captura_evaluaciones %}
+
+<div style="
+background:#c0392b;
+color:white;
+padding:15px;
+border-radius:10px;
+margin-bottom:20px;
+font-weight:bold;
+text-align:center;
+">
+
+🚫 Evaluaciones deshabilitadas para captura
+
+</div>
+
+{% else %}
+
+<div style="
+background:#27ae60;
+color:white;
+padding:15px;
+border-radius:10px;
+margin-bottom:20px;
+font-weight:bold;
+text-align:center;
+">
+
+✅ Captura de evaluaciones habilitada
+
+</div>
+
+{% endif %}
 
 {% set lista_materias = materias if materias else [] %}
 
@@ -139,15 +208,25 @@ max-width:700px;
 {% endif %}
 {% endfor %}
 
-<input class="input-cal"
+<input
+class="input-cal"
 type="number"
 id="cal_{{ alumno.nombre }}_{{ m }}"
 value="{{ cal if cal is not none else '' }}"
-min="0" max="10">
+min="0"
+max="10"
+{% if not config.captura_evaluaciones %}disabled{% endif %}
+>
 
 <br><br>
 
-<button class="btn-save" onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}')">💾</button>
+<button
+class="btn-save"
+onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}')"
+{% if not config.captura_evaluaciones %}disabled{% endif %}
+>
+💾
+</button>
 
 </td>
 {% endfor %}
@@ -234,7 +313,13 @@ cal1: input.value
 .then(r=>r.json())
 .then(d=>{
 if(d.status==="ok"){
+
 input.classList.add("guardado-ok")
+
+}else{
+
+alert(d.msg || "No se pudo guardar")
+
 }
 })
 }
