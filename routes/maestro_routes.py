@@ -32,7 +32,12 @@ def panel_maestro():
 
     lista_alumnos = list(alumnos.find({"grupo": {"$in": grupos}}))
     lista_horarios = list(horarios.find({"grupo": {"$in": grupos}}))
-    config = configuracion.find_one() or {"trimestre": "1", "estado": True}
+
+    config = configuracion.find_one() or {
+        "trimestre": "1",
+        "estado": True,
+        "captura_evaluaciones": True
+    }
 
     return render_template(
         "panel_maestro.html",
@@ -134,9 +139,8 @@ def guardar_calificaciones_ajax():
 
     config = configuracion.find_one() or {}
 
-    captura_habilitada = config.get("captura_evaluaciones", True)
-
-    if not captura_habilitada:
+    # 🔥 VALIDAR CAPTURA
+    if not config.get("captura_evaluaciones", True):
         return {
             "status": "error",
             "msg": "Captura deshabilitada"
@@ -157,15 +161,24 @@ def guardar_calificaciones_ajax():
 
     nombre_maestro = maestro_actual.get("nombre", "")
 
-    alumno_db = alumnos.find_one({"nombre": alumno})
+    alumno_db = alumnos.find_one({
+        "nombre": {
+            "$regex": f"^{alumno}$",
+            "$options": "i"
+        }
+    })
 
     if not alumno_db:
-        return {"status": "error"}
+        return {
+            "status": "error",
+            "msg": "Alumno no encontrado"
+        }
 
     grupo = alumno_db.get("grupo", "")
 
+    # 🔥 ELIMINAR CALIFICACIÓN ANTERIOR
     alumnos.update_one(
-        {"nombre": alumno},
+        {"_id": alumno_db["_id"]},
         {
             "$pull": {
                 "calificaciones": {
@@ -176,8 +189,9 @@ def guardar_calificaciones_ajax():
         }
     )
 
+    # 🔥 INSERTAR NUEVA CALIFICACIÓN
     alumnos.update_one(
-        {"nombre": alumno},
+        {"_id": alumno_db["_id"]},
         {
             "$push": {
                 "calificaciones": {
@@ -194,7 +208,8 @@ def guardar_calificaciones_ajax():
 
     return {"status": "ok"}
 
-# ================= ASISTENCIA (ARREGLADA REAL) =================
+
+# ================= ASISTENCIA =================
 @maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])
 def guardar_asistencia_ajax():
 
@@ -208,8 +223,12 @@ def guardar_asistencia_ajax():
     if not alumno or not estado or not fecha:
         return {"status": "error", "msg": "datos incompletos"}
 
-    # 🔥 BUSQUEDA FLEXIBLE (CLAVE)
-    alumno_db = alumnos.find_one({"nombre": {"$regex": f"^{alumno}$", "$options": "i"}})
+    alumno_db = alumnos.find_one({
+        "nombre": {
+            "$regex": f"^{alumno}$",
+            "$options": "i"
+        }
+    })
 
     if not alumno_db:
         return {"status": "error", "msg": "alumno no encontrado"}
@@ -228,6 +247,7 @@ def guardar_asistencia_ajax():
     )
 
     return {"status": "ok"}
+
 
 # ================= REPORTES =================
 @maestro_bp.route("/crear_reporte", methods=["POST"])
@@ -289,7 +309,10 @@ def horario_maestro():
 
     lista_horarios = list(horarios.find({"grupo": {"$in": grupos}}))
 
-    return render_template("horario_maestro.html", horarios=lista_horarios)
+    return render_template(
+        "horario_maestro.html",
+        horarios=lista_horarios
+    )
 
 
 # ================= PDF HORARIO =================
@@ -298,11 +321,6 @@ def descargar_horario():
 
     if not verificar_maestro():
         return redirect(url_for("auth.login"))
-
-    from io import BytesIO
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import letter
 
     maestro = maestros.find_one({"usuario": session.get("usuario")}) or {}
     grupos = maestro.get("grupos", [])
@@ -323,6 +341,7 @@ def descargar_horario():
         ])
 
     table = Table(data)
+
     table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
         ("GRID", (0, 0), (-1, -1), 1, colors.black)

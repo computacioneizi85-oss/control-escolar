@@ -496,47 +496,49 @@ def admin_evaluaciones():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    filtro_grupo = request.args.get("grupo", "")
-    filtro_maestro = request.args.get("maestro", "")
+    datos = []
 
-    lista = []
-
+    # 🔥 RECORRER TODOS LOS ALUMNOS
     for alumno in alumnos.find():
+
+        nombre_alumno = alumno.get("nombre", "")
+        grupo_alumno = alumno.get("grupo", "")
 
         for cal in alumno.get("calificaciones", []):
 
-            fila = {
-                "alumno": alumno.get("nombre", ""),
-                "grupo": cal.get("grupo", alumno.get("grupo", "")),
+            datos.append({
+
+                "alumno": nombre_alumno,
+
+                "grupo": cal.get("grupo", grupo_alumno),
+
                 "materia": cal.get("materia", ""),
+
                 "maestro": cal.get("maestro", ""),
+
+                "calificacion": cal.get("calificacion", 0),
+
                 "trimestre": cal.get("trimestre", ""),
-                "calificacion": cal.get("calificacion", "")
-            }
 
-            if filtro_grupo and fila["grupo"] != filtro_grupo:
-                continue
+                "enviado": True
 
-            if filtro_maestro and fila["maestro"] != filtro_maestro:
-                continue
+            })
 
-            lista.append(fila)
-
-    config = configuracion.find_one() or {}
-
-    captura_habilitada = config.get("captura_evaluaciones", True)
+    config = configuracion.find_one() or {
+        "trimestre": "1",
+        "estado": "true",
+        "captura_evaluaciones": True
+    }
 
     return render_template(
         "evaluaciones_admin.html",
-        evaluaciones=lista,
-        grupos=list(grupos.find()),
-        maestros=list(maestros.find()),
-        captura_habilitada=captura_habilitada,
-        filtro_grupo=filtro_grupo,
-        filtro_maestro=filtro_maestro
+        datos=datos,
+        config=config,
+        maestros=list(maestros.find())
     )
 
 
+# ================= HABILITAR CAPTURA =================
 @admin_bp.route("/habilitar_evaluaciones")
 def habilitar_evaluaciones():
 
@@ -556,6 +558,7 @@ def habilitar_evaluaciones():
     return redirect("/admin/evaluaciones")
 
 
+# ================= DESHABILITAR CAPTURA =================
 @admin_bp.route("/deshabilitar_evaluaciones")
 def deshabilitar_evaluaciones():
 
@@ -573,7 +576,6 @@ def deshabilitar_evaluaciones():
     )
 
     return redirect("/admin/evaluaciones")
-
 
 # ================= CONFIGURACION =================
 @admin_bp.route("/configuracion")
