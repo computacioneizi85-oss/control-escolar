@@ -1,4 +1,334 @@
 {% extends "layout.html" %}
+
+{% block content %}
+
+<style>
+.menu-panel{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+flex-wrap:wrap;
+}
+
+.menu-panel button{
+background:#2c3e50;
+color:white;
+border:none;
+padding:10px 15px;
+border-radius:8px;
+cursor:pointer;
+}
+
+.menu-panel button:hover{
+background:#34495e;
+}
+
+.seccion{
+display:none;
+}
+
+.seccion.activa{
+display:block;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:white;
+}
+
+th, td{
+padding:10px;
+border:1px solid #ddd;
+text-align:center;
+}
+
+th{
+background:#2c3e50;
+color:white;
+}
+
+.input-cal{
+width:70px;
+padding:5px;
+text-align:center;
+}
+
+.btn-save{
+background:#27ae60;
+color:white;
+border:none;
+padding:5px 10px;
+border-radius:5px;
+cursor:pointer;
+}
+</style>
+
+<h2>👨‍🏫 Panel Maestro</h2>
+
+<div class="menu-panel">
+
+<button onclick="mostrarSeccion('inicio')">
+🏠 Inicio
+</button>
+
+<button onclick="mostrarSeccion('evaluaciones')">
+📝 Evaluaciones
+</button>
+
+<button onclick="mostrarSeccion('horarios')">
+📅 Horario
+</button>
+
+<button onclick="mostrarSeccion('citatorios')">
+📋 Citatorios
+</button>
+
+<button onclick="mostrarSeccion('avisos')">
+📢 Avisos
+</button>
+
+</div>
+
+<!-- ================= INICIO ================= -->
+
+<div id="inicio" class="seccion activa">
+
+<h3>Bienvenido</h3>
+
+<p>
+Desde este panel puedes:
+</p>
+
+<ul>
+<li>Capturar evaluaciones</li>
+<li>Consultar tu horario</li>
+<li>Generar citatorios</li>
+<li>Enviar avisos</li>
+</ul>
+
+{% if not config.get("captura_evaluaciones", False) %}
+
+<div style="
+background:#c0392b;
+color:white;
+padding:15px;
+border-radius:10px;
+margin-bottom:20px;
+font-weight:bold;
+text-align:center;
+">
+🚫 Evaluaciones deshabilitadas para captura
+</div>
+
+{% endif %}
+
+</div>
+
+<!-- ================= EVALUACIONES ================= -->
+
+<div id="evaluaciones" class="seccion">
+
+<h3>📝 Evaluaciones</h3>
+
+<table>
+
+<tr>
+<th>Alumno</th>
+
+{% for m in materias %}
+
+<th>{{ m }} T1</th>
+<th>{{ m }} T2</th>
+<th>{{ m }} T3</th>
+{% endfor %}
+
+</tr>
+
+{% for alumno in alumnos %}
+
+<tr>
+
+<td>{{ alumno.nombre }}</td>
+
+{% for m in materias %}
+
+<!-- T1 -->
+
+<td>
+
+{% set cal1 = namespace(valor='') %}
+
+{% for c in alumno.get("calificaciones", []) %}
+{% if c.materia == m and c.trimestre == "1" %}
+{% set cal1.valor = c.calificacion %}
+{% endif %}
+{% endfor %}
+
+<input
+class="input-cal"
+type="number"
+min="0"
+max="10"
+id="cal_{{ alumno.nombre }}_{{ m }}_1"
+value="{{ cal1.valor }}"
+{% if not config.get("trimestre_1", False) or not config.get("captura_evaluaciones", False) %}disabled{% endif %}
+
+>
+
+<br><br>
+
+<button
+class="btn-save"
+onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','1')"
+{% if not config.get("trimestre_1", False) or not config.get("captura_evaluaciones", False) %}disabled{% endif %}
+
+>
+
+💾 </button>
+
+</td>
+
+<!-- T2 -->
+
+<td>
+
+{% set cal2 = namespace(valor='') %}
+
+{% for c in alumno.get("calificaciones", []) %}
+{% if c.materia == m and c.trimestre == "2" %}
+{% set cal2.valor = c.calificacion %}
+{% endif %}
+{% endfor %}
+
+<input
+class="input-cal"
+type="number"
+min="0"
+max="10"
+id="cal_{{ alumno.nombre }}_{{ m }}_2"
+value="{{ cal2.valor }}"
+{% if not config.get("trimestre_2", False) or not config.get("captura_evaluaciones", False) %}disabled{% endif %}
+
+>
+
+<br><br>
+
+<button
+class="btn-save"
+onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','2')"
+{% if not config.get("trimestre_2", False) or not config.get("captura_evaluaciones", False) %}disabled{% endif %}
+
+>
+
+💾 </button>
+
+</td>
+
+<!-- T3 -->
+
+<td>
+
+{% set cal3 = namespace(valor='') %}
+
+{% for c in alumno.get("calificaciones", []) %}
+{% if c.materia == m and c.trimestre == "3" %}
+{% set cal3.valor = c.calificacion %}
+{% endif %}
+{% endfor %}
+
+<input
+class="input-cal"
+type="number"
+min="0"
+max="10"
+id="cal_{{ alumno.nombre }}_{{ m }}_3"
+value="{{ cal3.valor }}"
+{% if not config.get("trimestre_3", False) or not config.get("captura_evaluaciones", False) %}disabled{% endif %}
+
+>
+
+<br><br>
+
+<button
+class="btn-save"
+onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','3')"
+{% if not config.get("trimestre_3", False) or not config.get("captura_evaluaciones", False) %}disabled{% endif %}
+
+>
+
+💾 </button>
+
+</td>
+
+{% endfor %}
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+<!-- ================= HORARIOS ================= -->
+
+<div id="horarios" class="seccion">
+
+<h3>📅 Mi Horario</h3>
+
+<a href="/horario">
+<button class="btn-save">
+Abrir horario
+</button>
+</a>
+
+<br><br>
+
+<table>
+
+<tr>
+<th>Día</th>
+<th>Hora</th>
+<th>Grupo</th>
+<th>Materia</th>
+</tr>
+
+{% for h in horarios %}
+
+<tr>
+<td>{{ h.dia }}</td>
+<td>{{ h.hora }}</td>
+<td>{{ h.grupo }}</td>
+<td>{{ h.materia }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</div>
+
+<!-- ================= CITATORIOS ================= -->
+
+<div id="citatorios" class="seccion">
+
+<h3>📋 Citatorios</h3>
+
+<a href="/citatorios">
+<button class="btn-save">
+Abrir citatorios
+</button>
+</a>
+
+</div>
+
+<!-- ================= AVISOS ================= -->
+
+<div id="avisos" class="seccion">
+
+<h3>📢 Avisos</h3>
+
+<a href="/avisos_maestro">
 <button class="btn-save">
 Abrir avisos
 </button>
