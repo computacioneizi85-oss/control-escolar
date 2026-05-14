@@ -191,7 +191,20 @@ def descargar_horario():
     if not verificar_maestro():
         return redirect(url_for("auth.login"))
 
-    return redirect("/horario")
+    maestro = maestros.find_one({
+        "usuario": session.get("usuario")
+    }) or {}
+
+    lista_horarios = list(
+        horarios.find({
+            "maestro": maestro.get("nombre", "")
+        })
+    )
+
+    return render_template(
+        "horario_maestro.html",
+        horarios=lista_horarios
+    )
 
 
 # ================= CITATORIOS =================
