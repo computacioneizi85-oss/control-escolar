@@ -44,11 +44,16 @@ def panel_maestro():
         })
     )
 
+    nombre_maestro = maestro.get("nombre", "")
+    usuario_maestro = maestro.get("usuario", "")
+
     lista_horarios = list(
         horarios.find({
-            "grupo": {
-                "$in": grupos
-            }
+            "$or": [
+                {"maestro": nombre_maestro},
+                {"maestro": usuario_maestro},
+                {"grupo": {"$in": grupos}}
+            ]
         })
     )
 
@@ -158,13 +163,21 @@ def horario_maestro():
     if not verificar_maestro():
         return redirect(url_for("auth.login"))
 
-    maestro = maestros.find_one({
+    maestro_actual = maestros.find_one({
         "usuario": session.get("usuario")
     }) or {}
 
+    nombre_maestro = maestro_actual.get("nombre", "")
+    usuario_maestro = maestro_actual.get("usuario", "")
+    grupos = maestro_actual.get("grupos", [])
+
     lista_horarios = list(
         horarios.find({
-            "maestro": maestro.get("nombre", "")
+            "$or": [
+                {"maestro": nombre_maestro},
+                {"maestro": usuario_maestro},
+                {"grupo": {"$in": grupos}}
+            ]
         })
     )
 
@@ -191,13 +204,21 @@ def descargar_horario():
     if not verificar_maestro():
         return redirect(url_for("auth.login"))
 
-    maestro = maestros.find_one({
+    maestro_actual = maestros.find_one({
         "usuario": session.get("usuario")
     }) or {}
 
+    nombre_maestro = maestro_actual.get("nombre", "")
+    usuario_maestro = maestro_actual.get("usuario", "")
+    grupos = maestro_actual.get("grupos", [])
+
     lista_horarios = list(
         horarios.find({
-            "maestro": maestro.get("nombre", "")
+            "$or": [
+                {"maestro": nombre_maestro},
+                {"maestro": usuario_maestro},
+                {"grupo": {"$in": grupos}}
+            ]
         })
     )
 
