@@ -371,7 +371,11 @@ margin-bottom:20px;
 
 {% for alumno in alumnos %}
 
-<div class="card-asistencia" data-grupo="{{ alumno.grupo }}">
+<div
+class="card-asistencia"
+id="card_{{ alumno._id }}"
+data-grupo="{{ alumno.grupo }}"
+>
 
 {% if alumno.foto %}
 
@@ -387,37 +391,31 @@ margin-bottom:20px;
 
 <p>{{ alumno.grupo }}</p>
 
-<form method="POST" action="/guardar_asistencia">
-
-<input type="hidden" name="alumno" value="{{ alumno._id }}">
-
-<input type="hidden" name="fecha" value="{{ fecha_actual }}">
+<input type="hidden" id="fecha_{{ alumno._id }}" value="{{ fecha_actual }}">
 
 <button
-name="estado"
-value="Asistencia"
+type="button"
 class="btn-asistencia"
+onclick="guardarAsistencia('{{ alumno._id }}','Asistencia', this)"
 >
 ✔ Asistencia
 </button>
 
 <button
-name="estado"
-value="Falta"
+type="button"
 class="btn-falta"
+onclick="guardarAsistencia('{{ alumno._id }}','Falta', this)"
 >
 ✖ Falta
 </button>
 
 <button
-name="estado"
-value="Retardo"
+type="button"
 class="btn-retardo"
+onclick="guardarAsistencia('{{ alumno._id }}','Retardo', this)"
 >
 ⏰ Retardo
 </button>
-
-</form>
 
 </div>
 
@@ -581,6 +579,53 @@ input.value = fecha
 
 })
 
+}
+
+function guardarAsistencia(alumno, estado, boton){
+
+let fecha = document.getElementById(
+"fecha_"+alumno
+).value
+
+fetch("/guardar_asistencia", {
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/x-www-form-urlencoded"
+},
+
+body:new URLSearchParams({
+
+alumno: alumno,
+fecha: fecha,
+estado: estado
+
+})
+
+})
+
+.then(()=>{
+
+let card = document.getElementById(
+"card_"+alumno
+)
+
+if(estado === "Asistencia"){
+
+card.style.background = "#d4efdf"
+
+}else if(estado === "Retardo"){
+
+card.style.background = "#fcf3cf"
+
+}else{
+
+card.style.background = "#f5b7b1"
+
+}
+
+})
 }
 
 </script>
