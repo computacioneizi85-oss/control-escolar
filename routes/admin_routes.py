@@ -805,3 +805,125 @@ def expediente_alumno(id):
         "expediente.html",
         alumno=alumno
     )
+
+# ================= REPORTES =================
+@admin_bp.route("/reportes")
+def admin_reportes():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template(
+        "reportes.html",
+        reportes=list(reportes.find())
+    )
+
+
+# ================= PDF REPORTE =================
+@admin_bp.route("/reporte_pdf/<id>")
+def reporte_pdf(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    from pdf.generador import generar_reporte_pdf
+
+    reporte = reportes.find_one({
+        "_id": ObjectId(id)
+    })
+
+    pdf = generar_reporte_pdf(reporte)
+
+    return send_file(
+        pdf,
+        as_attachment=False,
+        download_name="reporte.pdf",
+        mimetype="application/pdf"
+    )
+
+
+# ================= AVISOS =================
+@admin_bp.route("/avisos")
+def admin_avisos():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template(
+        "avisos.html",
+        avisos=list(
+            avisos.find().sort("fecha", -1)
+        )
+    )
+
+
+# ================= CREAR AVISO =================
+@admin_bp.route("/crear_aviso", methods=["POST"])
+def crear_aviso():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    avisos.insert_one({
+        "tipo": request.form.get("tipo"),
+        "titulo": request.form.get("titulo"),
+        "mensaje": request.form.get("mensaje"),
+        "fecha": datetime.now().strftime("%d/%m/%Y %H:%M")
+    })
+
+    bitacora.insert_one({
+        "usuario": session.get("usuario"),
+        "accion": "Creó aviso",
+        "detalle": request.form.get("titulo"),
+        "fecha": datetime.now()
+    })
+
+    return redirect("/admin/avisos")
+
+
+# ================= EDITAR AVISO =================
+@admin_bp.route("/editar_aviso/<id>", methods=["POST"])
+def editar_aviso(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    avisos.update_one(
+        {"_id": ObjectId(id)},
+        {
+            "$set": {
+                "titulo": request.form.get("titulo"),
+                "mensaje": request.form.get("mensaje")
+            }
+        }
+    )
+
+    bitacora.insert_one({
+        "usuario": session.get("usuario"),
+        "accion": "Editó aviso",
+        "detalle": id,
+        "fecha": datetime.now()
+    })
+
+    return redirect("/admin/avisos")
+
+
+# ================= ELIMINAR AVISO =================
+@admin_bp.route("/eliminar_aviso/<id>")
+def eliminar_aviso(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    avisos.delete_one({
+        "_id": ObjectId(id)
+    })
+
+    bitacora.insert_one({
+        "usuario": session.get("usuario"),
+        "accion": "Eliminó aviso",
+        "detalle": id,
+        "fecha": datetime.now()
+    })
+
+    return redirect("/admin/avisos")

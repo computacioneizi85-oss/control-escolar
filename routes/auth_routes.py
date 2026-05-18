@@ -168,3 +168,13 @@ def procesar_login():
         return redirect(url_for("padre.panel_padre"))
 
     return redirect(url_for("auth.login"))
+
+# =========================
+# LOGOUT
+# =========================
+@auth_bp.route("/logout")
+def logout():
+
+    session.clear()
+
+    return redirect(url_for("auth.login"))
