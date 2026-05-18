@@ -482,7 +482,7 @@ def guardar_asistencia():
     })
 
     if not alumno:
-        return redirect("/asistencias")
+        return redirect("/panel_maestro")
 
     alumnos.update_one(
         {
