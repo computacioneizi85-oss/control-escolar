@@ -154,6 +154,68 @@
 
             <p><b>Grupo:</b> {{ alumno.grupo or "—" }}</p>
 
+<hr>
+
+<h2>
+📋 Historial de asistencias
+</h2>
+
+{% if alumno.asistencias %}
+
+<table style="
+width:100%;
+margin-top:15px;
+border-collapse:collapse;
+">
+
+<tr style="background:#2c3e50;color:white;">
+
+<th style="padding:10px;">Fecha</th>
+<th>Estado</th>
+<th>Maestro</th>
+
+</tr>
+
+{% for a in alumno.asistencias %}
+
+<tr>
+
+<td style="padding:10px;border:1px solid #ddd;">
+{{ a.fecha }}
+</td>
+
+<td style="border:1px solid #ddd;">
+
+{% if a.estado == "Asistencia" %}
+✅ Asistencia
+
+{% elif a.estado == "Retardo" %}
+⏰ Retardo
+
+{% else %}
+❌ Falta
+{% endif %}
+
+</td>
+
+<td style="border:1px solid #ddd;">
+{{ a.maestro }}
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% else %}
+
+<p>
+Sin asistencias registradas
+</p>
+
+{% endif %}
+
             <p><b>Usuario:</b> {{ alumno.usuario or "—" }}</p>
 
         </div>

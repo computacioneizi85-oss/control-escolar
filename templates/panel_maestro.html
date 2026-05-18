@@ -340,11 +340,26 @@ onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','3')"
 
 <h3>📋 Registro de asistencias</h3>
 
+<select id="filtroGrupo" onchange="filtrarGrupo()"
+style="
+padding:10px;
+border-radius:8px;
+margin-bottom:20px;
+">
+
+<option value="todos">Todos los grupos</option>
+
+{% for g in grupos %}
+<option value="{{ g }}">{{ g }}</option>
+{% endfor %}
+
+</select>
+
 <div class="grid-asistencia">
 
 {% for alumno in alumnos %}
 
-<div class="card-asistencia">
+<div class="card-asistencia" data-grupo="{{ alumno.grupo }}">
 
 {% if alumno.foto %}
 
@@ -513,6 +528,31 @@ if(d.status==="ok"){
 alert("Guardado correctamente")
 }else{
 alert(d.msg || "Error")
+}
+
+})
+
+}
+
+function filtrarGrupo(){
+
+let grupo = document.getElementById("filtroGrupo").value
+
+let cards = document.querySelectorAll(".card-asistencia")
+
+cards.forEach(card=>{
+
+if(grupo === "todos"){
+
+card.style.display = "block"
+
+}else{
+
+card.style.display =
+card.dataset.grupo === grupo
+? "block"
+: "none"
+
 }
 
 })

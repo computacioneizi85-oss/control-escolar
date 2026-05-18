@@ -82,14 +82,15 @@ def panel_maestro():
         "trimestre_3": False
     }
 
-    return render_template(
-        "panel_maestro.html",
-        alumnos=lista_alumnos,
-        grupos=grupos,
-        materias=materias_maestro,
-        horarios=lista_horarios,
-        config=config
-    )
+return render_template(
+    "panel_maestro.html",
+    alumnos=lista_alumnos,
+    grupos=grupos,
+    materias=materias_maestro,
+    horarios=lista_horarios,
+    config=config,
+    fecha_actual=datetime.now().strftime("%d/%m/%Y")
+)
 
 
 # ================= GUARDAR CALIFICACIONES =================
