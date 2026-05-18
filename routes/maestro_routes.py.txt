@@ -12,7 +12,8 @@ from database.mongo import (
     configuracion,
     citatorios,
     avisos,
-    reportes
+    reportes,
+    grupos
 )
 
 from pdf.generador import generar_citatorio_pdf
@@ -430,3 +431,84 @@ def crear_aviso_maestro():
     })
 
     return redirect("/avisos_maestro")
+
+# ================= ASISTENCIAS =================
+@maestro_bp.route("/asistencias")
+def asistencias_maestro():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    maestro = maestros.find_one({
+        "usuario": session.get("usuario")
+    }) or {}
+
+    grupos_maestro = maestro.get("grupos", [])
+
+    lista_alumnos = list(
+        alumnos.find({
+            "grupo": {
+                "$in": grupos_maestro
+            }
+        })
+    )
+
+    fecha = datetime.now().strftime("%d/%m/%Y")
+
+    return render_template(
+        "asistencias.html",
+        alumnos=lista_alumnos,
+        fecha=fecha
+    )
+
+
+# ================= GUARDAR ASISTENCIA =================
+@maestro_bp.route("/guardar_asistencia", methods=["POST"])
+def guardar_asistencia():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    alumno_id = request.form.get("alumno")
+
+    fecha = request.form.get("fecha")
+
+    estado = request.form.get("estado")
+
+    alumno = alumnos.find_one({
+        "_id": ObjectId(alumno_id)
+    })
+
+    if not alumno:
+        return redirect("/asistencias")
+
+    # 🔥 evita duplicados mismo día
+    alumnos.update_one(
+        {
+            "_id": ObjectId(alumno_id)
+        },
+        {
+            "$pull": {
+                "asistencias": {
+                    "fecha": fecha
+                }
+            }
+        }
+    )
+
+    alumnos.update_one(
+        {
+            "_id": ObjectId(alumno_id)
+        },
+        {
+            "$push": {
+                "asistencias": {
+                    "fecha": fecha,
+                    "estado": estado,
+                    "maestro": session.get("usuario")
+                }
+            }
+        }
+    )
+
+    return redirect("/asistencias")

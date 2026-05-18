@@ -12,9 +12,13 @@
 <div class="foto">
 
 {% if alumno.foto %}
-<img src="/{{ alumno.foto }}">
+
+<img src="data:image/png;base64,{{ alumno.foto }}">
+
 {% else %}
+
 <img src="/static/img/user.png">
+
 {% endif %}
 
 </div>

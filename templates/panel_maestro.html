@@ -3,6 +3,7 @@
 {% block content %}
 
 <style>
+
 .menu-panel{
 display:flex;
 gap:10px;
@@ -17,10 +18,12 @@ border:none;
 padding:10px 15px;
 border-radius:8px;
 cursor:pointer;
+transition:0.2s;
 }
 
 .menu-panel button:hover{
 background:#34495e;
+transform:scale(1.03);
 }
 
 .seccion{
@@ -35,6 +38,8 @@ table{
 width:100%;
 border-collapse:collapse;
 background:white;
+border-radius:10px;
+overflow:hidden;
 }
 
 th, td{
@@ -52,16 +57,77 @@ color:white;
 width:70px;
 padding:5px;
 text-align:center;
+border-radius:5px;
+border:1px solid #ccc;
 }
 
 .btn-save{
 background:#27ae60;
 color:white;
 border:none;
-padding:5px 10px;
+padding:6px 12px;
 border-radius:5px;
 cursor:pointer;
 }
+
+.btn-save:hover{
+background:#229954;
+}
+
+.card-asistencia{
+background:white;
+padding:15px;
+border-radius:12px;
+box-shadow:0 2px 8px rgba(0,0,0,0.1);
+text-align:center;
+}
+
+.card-asistencia img{
+width:90px;
+height:90px;
+border-radius:50%;
+object-fit:cover;
+margin-bottom:10px;
+}
+
+.grid-asistencia{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+gap:20px;
+}
+
+.btn-asistencia{
+background:#2ecc71;
+color:white;
+border:none;
+padding:8px;
+border-radius:6px;
+cursor:pointer;
+width:100%;
+margin-bottom:5px;
+}
+
+.btn-falta{
+background:#e74c3c;
+color:white;
+border:none;
+padding:8px;
+border-radius:6px;
+cursor:pointer;
+width:100%;
+margin-bottom:5px;
+}
+
+.btn-retardo{
+background:#f39c12;
+color:white;
+border:none;
+padding:8px;
+border-radius:6px;
+cursor:pointer;
+width:100%;
+}
+
 </style>
 
 <h2>👨‍🏫 Panel Maestro</h2>
@@ -76,12 +142,16 @@ cursor:pointer;
 📝 Evaluaciones
 </button>
 
+<button onclick="mostrarSeccion('asistencias')">
+📋 Asistencias
+</button>
+
 <button onclick="mostrarSeccion('horarios')">
 📅 Horario
 </button>
 
 <button onclick="mostrarSeccion('citatorios')">
-📋 Citatorios
+📨 Citatorios
 </button>
 
 <button onclick="mostrarSeccion('avisos')">
@@ -102,6 +172,7 @@ Desde este panel puedes:
 
 <ul>
 <li>Capturar evaluaciones</li>
+<li>Registrar asistencias</li>
 <li>Consultar tu horario</li>
 <li>Generar citatorios</li>
 <li>Enviar avisos</li>
@@ -141,6 +212,7 @@ text-align:center;
 <th>{{ m }} T1</th>
 <th>{{ m }} T2</th>
 <th>{{ m }} T3</th>
+
 {% endfor %}
 
 </tr>
@@ -154,7 +226,6 @@ text-align:center;
 {% for m in materias %}
 
 <!-- T1 -->
-
 <td>
 
 {% set cal1 = namespace(valor='') %}
@@ -173,7 +244,6 @@ max="10"
 id="cal_{{ alumno.nombre }}_{{ m }}_1"
 value="{{ cal1.valor }}"
 {% if not config.get("trimestre_1", False) or not config.get("captura_evaluaciones", False) %}disabled{% endif %}
-
 >
 
 <br><br>
@@ -182,15 +252,13 @@ value="{{ cal1.valor }}"
 class="btn-save"
 onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','1')"
 {% if not config.get("trimestre_1", False) or not config.get("captura_evaluaciones", False) %}disabled{% endif %}
-
 >
-
-💾 </button>
+💾
+</button>
 
 </td>
 
 <!-- T2 -->
-
 <td>
 
 {% set cal2 = namespace(valor='') %}
@@ -209,7 +277,6 @@ max="10"
 id="cal_{{ alumno.nombre }}_{{ m }}_2"
 value="{{ cal2.valor }}"
 {% if not config.get("trimestre_2", False) or not config.get("captura_evaluaciones", False) %}disabled{% endif %}
-
 >
 
 <br><br>
@@ -218,15 +285,13 @@ value="{{ cal2.valor }}"
 class="btn-save"
 onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','2')"
 {% if not config.get("trimestre_2", False) or not config.get("captura_evaluaciones", False) %}disabled{% endif %}
-
 >
-
-💾 </button>
+💾
+</button>
 
 </td>
 
 <!-- T3 -->
-
 <td>
 
 {% set cal3 = namespace(valor='') %}
@@ -245,7 +310,6 @@ max="10"
 id="cal_{{ alumno.nombre }}_{{ m }}_3"
 value="{{ cal3.valor }}"
 {% if not config.get("trimestre_3", False) or not config.get("captura_evaluaciones", False) %}disabled{% endif %}
-
 >
 
 <br><br>
@@ -254,10 +318,9 @@ value="{{ cal3.valor }}"
 class="btn-save"
 onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','3')"
 {% if not config.get("trimestre_3", False) or not config.get("captura_evaluaciones", False) %}disabled{% endif %}
-
 >
-
-💾 </button>
+💾
+</button>
 
 </td>
 
@@ -268,6 +331,72 @@ onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','3')"
 {% endfor %}
 
 </table>
+
+</div>
+
+<!-- ================= ASISTENCIAS ================= -->
+
+<div id="asistencias" class="seccion">
+
+<h3>📋 Registro de asistencias</h3>
+
+<div class="grid-asistencia">
+
+{% for alumno in alumnos %}
+
+<div class="card-asistencia">
+
+{% if alumno.foto %}
+
+<img src="data:image/png;base64,{{ alumno.foto }}">
+
+{% else %}
+
+<img src="/static/img/user.png">
+
+{% endif %}
+
+<h4>{{ alumno.nombre }}</h4>
+
+<p>{{ alumno.grupo }}</p>
+
+<form method="POST" action="/guardar_asistencia">
+
+<input type="hidden" name="alumno" value="{{ alumno._id }}">
+
+<input type="hidden" name="fecha" value="{{ moment().format('DD/MM/YYYY') if moment else '' }}">
+
+<button
+name="estado"
+value="Asistencia"
+class="btn-asistencia"
+>
+✔ Asistencia
+</button>
+
+<button
+name="estado"
+value="Falta"
+class="btn-falta"
+>
+✖ Falta
+</button>
+
+<button
+name="estado"
+value="Retardo"
+class="btn-retardo"
+>
+⏰ Retardo
+</button>
+
+</form>
+
+</div>
+
+{% endfor %}
+
+</div>
 
 </div>
 
@@ -302,6 +431,7 @@ Abrir horario
 <td>{{ h.grupo }}</td>
 <td>{{ h.materia }}</td>
 </tr>
+
 {% endfor %}
 
 </table>
@@ -312,7 +442,7 @@ Abrir horario
 
 <div id="citatorios" class="seccion">
 
-<h3>📋 Citatorios</h3>
+<h3>📨 Citatorios</h3>
 
 <a href="/citatorios">
 <button class="btn-save">
