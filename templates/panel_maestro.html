@@ -340,6 +340,18 @@ onclick="guardarAjax('{{ alumno.nombre }}','{{ m }}','3')"
 
 <h3>📋 Registro de asistencias</h3>
 
+<input
+type="date"
+id="fechaGeneral"
+style="
+padding:10px;
+border-radius:8px;
+margin-bottom:20px;
+margin-left:10px;
+"
+onchange="actualizarFecha()"
+>
+
 <select id="filtroGrupo" onchange="filtrarGrupo()"
 style="
 padding:10px;
@@ -379,7 +391,7 @@ margin-bottom:20px;
 
 <input type="hidden" name="alumno" value="{{ alumno._id }}">
 
-<input type="hidden" name="fecha" value="{{ moment().format('DD/MM/YYYY') if moment else '' }}">
+<input type="hidden" name="fecha" value="{{ fecha_actual }}">
 
 <button
 name="estado"
@@ -554,6 +566,18 @@ card.dataset.grupo === grupo
 : "none"
 
 }
+
+})
+
+}
+
+function actualizarFecha(){
+
+let fecha = document.getElementById("fechaGeneral").value
+
+document.querySelectorAll("input[name='fecha']").forEach(input=>{
+
+input.value = fecha
 
 })
 
