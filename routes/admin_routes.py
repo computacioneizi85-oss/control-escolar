@@ -22,22 +22,42 @@ def verificar_admin():
 
 
 # ================= DASHBOARD =================
+# ================= DASHBOARD =================
 @admin_bp.route("/")
 def admin_dashboard():
+
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
+    # ================= CONFIG EVALUACIONES =================
+    config = configuracion.find_one()
+
+    if not config:
+
+        config = {
+            "trimestre_1": True,
+            "trimestre_2": False,
+            "trimestre_3": False,
+            "captura_evaluaciones": True
+        }
+
     return render_template(
         "admin.html",
+
         alumnos=list(alumnos.find()),
         grupos=list(grupos.find()),
         maestros=list(maestros.find()),
         reportes=list(reportes.find()),
         citatorios=list(citatorios.find()),
+
         alumnos_riesgo=[],
         ultimos_reportes=[],
+
         total_asistencias=0,
-        total_faltas=0
+        total_faltas=0,
+
+        # 🔥 IMPORTANTE
+        config=config
     )
 
 
