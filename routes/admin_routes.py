@@ -561,3 +561,84 @@ def activar_admin(id):
     })
 
     return redirect("/admin/admins")
+
+# ================= ACTIVAR TRIMESTRE =================
+@admin_bp.route("/activar_trimestre/<numero>")
+def activar_trimestre_numero(numero):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    configuracion.update_one(
+        {},
+        {
+            "$set": {
+                "trimestre_1": numero == "1",
+                "trimestre_2": numero == "2",
+                "trimestre_3": numero == "3",
+                "trimestre_activo": numero
+            }
+        },
+        upsert=True
+    )
+
+    bitacora.insert_one({
+        "usuario": session.get("usuario"),
+        "accion": "Activó trimestre",
+        "detalle": f"Trimestre {numero}",
+        "fecha": datetime.now()
+    })
+
+    return redirect("/admin")
+
+
+# ================= ACTIVAR CAPTURA =================
+@admin_bp.route("/activar_captura")
+def activar_captura():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    configuracion.update_one(
+        {},
+        {
+            "$set": {
+                "captura_evaluaciones": True
+            }
+        },
+        upsert=True
+    )
+
+    bitacora.insert_one({
+        "usuario": session.get("usuario"),
+        "accion": "Activó captura evaluaciones",
+        "fecha": datetime.now()
+    })
+
+    return redirect("/admin")
+
+
+# ================= DESACTIVAR CAPTURA =================
+@admin_bp.route("/desactivar_captura")
+def desactivar_captura():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    configuracion.update_one(
+        {},
+        {
+            "$set": {
+                "captura_evaluaciones": False
+            }
+        },
+        upsert=True
+    )
+
+    bitacora.insert_one({
+        "usuario": session.get("usuario"),
+        "accion": "Desactivó captura evaluaciones",
+        "fecha": datetime.now()
+    })
+
+    return redirect("/admin")
