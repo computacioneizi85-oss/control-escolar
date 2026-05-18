@@ -91,9 +91,35 @@ def crear_alumno():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
+    foto = request.files.get("foto")
+
+    foto_base64 = ""
+
+    if foto and foto.filename:
+
+        import base64
+
+        foto_base64 = base64.b64encode(
+            foto.read()
+        ).decode("utf-8")
+
+    usuario = request.form.get("usuario")
+    password = request.form.get("password")
+
+    existe = alumnos.find_one({
+        "usuario": usuario
+    })
+
+    if existe:
+        return "⚠️ Ya existe un alumno con ese usuario"
+
     alumnos.insert_one({
         "nombre": request.form.get("nombre"),
         "grupo": request.form.get("grupo"),
+        "usuario": usuario,
+        "password": password,
+        "foto": foto_base64,
+        "rol": "alumno",
         "calificaciones": [],
         "asistencias": []
     })
@@ -1013,3 +1039,54 @@ def bitacora_pdf():
         download_name="bitacora.pdf",
         mimetype="application/pdf"
     )
+
+# ================= EDITAR GRUPO ALUMNO =================
+@admin_bp.route("/editar_grupo", methods=["POST"])
+def editar_grupo():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    alumno_id = request.form.get("id")
+
+    grupo = request.form.get("grupo")
+
+    alumnos.update_one(
+        {"_id": ObjectId(alumno_id)},
+        {
+            "$set": {
+                "grupo": grupo
+            }
+        }
+    )
+
+    return redirect("/admin/alumnos")
+
+# ================= SUBIR FOTO ALUMNO =================
+@admin_bp.route("/subir_foto_alumno/<id>", methods=["POST"])
+def subir_foto_alumno(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    foto = request.files.get("foto")
+
+    if foto and foto.filename:
+
+        import base64
+
+        foto_base64 = base64.b64encode(
+            foto.read()
+        ).decode("utf-8")
+
+        alumnos.update_one(
+            {"_id": ObjectId(id)},
+            {
+                "$set": {
+                    "foto": foto_base64
+                }
+            }
+        )
+
+    return redirect("/admin/alumnos")
+
