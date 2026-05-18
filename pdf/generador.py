@@ -299,3 +299,95 @@ def generar_expediente_pdf(alumno):
     buffer.seek(0)
 
     return buffer
+
+# ================= AUDITORIA PDF =================
+def generar_auditoria_pdf(registros):
+
+    escuela, ciclo, director, direccion, escudo = obtener_config()
+
+    c, buffer = crear_pdf()
+
+    encabezado(
+        c,
+        escuela,
+        ciclo,
+        direccion,
+        escudo,
+        "AUDITORÍA DEL SISTEMA"
+    )
+
+    c.setFont("Helvetica", 9)
+
+    y = 660
+
+    for item in registros:
+
+        texto = (
+            f"{item.get('fecha','')} | "
+            f"{item.get('usuario','')} | "
+            f"{item.get('rol','')} | "
+            f"{item.get('evento','')} | "
+            f"{item.get('ip','')}"
+        )
+
+        c.drawString(40, y, texto[:110])
+
+        y -= 18
+
+        if y <= 120:
+            c.showPage()
+            y = 760
+
+    firma(c, director)
+
+    c.save()
+
+    buffer.seek(0)
+
+    return buffer
+
+
+# ================= BITACORA PDF =================
+def generar_bitacora_pdf(registros):
+
+    escuela, ciclo, director, direccion, escudo = obtener_config()
+
+    c, buffer = crear_pdf()
+
+    encabezado(
+        c,
+        escuela,
+        ciclo,
+        direccion,
+        escudo,
+        "BITÁCORA DEL SISTEMA"
+    )
+
+    c.setFont("Helvetica", 9)
+
+    y = 660
+
+    for item in registros:
+
+        texto = (
+            f"{item.get('fecha','')} | "
+            f"{item.get('usuario','')} | "
+            f"{item.get('accion','')} | "
+            f"{item.get('detalle','')}"
+        )
+
+        c.drawString(40, y, texto[:110])
+
+        y -= 18
+
+        if y <= 120:
+            c.showPage()
+            y = 760
+
+    firma(c, director)
+
+    c.save()
+
+    buffer.seek(0)
+
+    return buffer

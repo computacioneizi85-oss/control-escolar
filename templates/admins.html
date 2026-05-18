@@ -8,7 +8,9 @@
 
         <h1>👨‍💼 Administradores secundarios</h1>
 
-        <form action="/admin/crear_admin" method="POST">
+        <form action="/admin/crear_admin_secundario" method="POST">
+
+	    <input type="text" name="nombre" placeholder="Nombre" required>
 
             <input type="text" name="usuario" placeholder="Usuario" required>
 
@@ -95,6 +97,12 @@
 
         <h2>📜 Auditoría de accesos</h2>
 
+<a href="/admin/auditoria_pdf">
+    <button>
+        Descargar PDF Auditoría
+    </button>
+</a>
+
         <table>
 
             <tr>
@@ -125,6 +133,12 @@
     <div class="card">
 
         <h2>🧾 Bitácora del sistema</h2>
+
+<a href="/admin/bitacora_pdf">
+    <button>
+        Descargar PDF Bitácora
+    </button>
+</a>
 
         <table>
 

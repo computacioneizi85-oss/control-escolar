@@ -26,6 +26,11 @@ from pdf.generador import (
     generar_citatorio_pdf
 )
 
+from pdf.generador import (
+    generar_auditoria_pdf,
+    generar_bitacora_pdf
+)
+
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
@@ -950,5 +955,61 @@ def expediente_pdf(id):
         pdf,
         as_attachment=False,
         download_name=f"expediente_{alumno['nombre']}.pdf",
+        mimetype="application/pdf"
+    )
+
+# ================= PDF AUDITORIA =================
+@admin_bp.route("/auditoria_pdf")
+def auditoria_pdf():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    usuario = request.args.get("usuario", "")
+    fecha = request.args.get("fecha", "")
+
+    filtro = {}
+
+    if usuario:
+        filtro["usuario"] = usuario
+
+    registros = list(
+        auditoria.find(filtro).sort("fecha", -1)
+    )
+
+    pdf = generar_auditoria_pdf(registros)
+
+    return send_file(
+        pdf,
+        as_attachment=False,
+        download_name="auditoria.pdf",
+        mimetype="application/pdf"
+    )
+
+
+# ================= PDF BITACORA =================
+@admin_bp.route("/bitacora_pdf")
+def bitacora_pdf():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    usuario = request.args.get("usuario", "")
+
+    filtro = {}
+
+    if usuario:
+        filtro["usuario"] = usuario
+
+    registros = list(
+        bitacora.find(filtro).sort("fecha", -1)
+    )
+
+    pdf = generar_bitacora_pdf(registros)
+
+    return send_file(
+        pdf,
+        as_attachment=False,
+        download_name="bitacora.pdf",
         mimetype="application/pdf"
     )
