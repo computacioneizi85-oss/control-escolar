@@ -670,3 +670,138 @@ def deshabilitar_trimestre(numero):
     })
 
     return redirect("/admin")
+
+# ================= CITATORIOS =================
+@admin_bp.route("/citatorios")
+def admin_citatorios():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    return render_template(
+        "citatorios.html",
+        citatorios=list(citatorios.find()),
+        alumnos=list(alumnos.find())
+    )
+
+
+# ================= CREAR CITATORIO =================
+@admin_bp.route("/crear_citatorio", methods=["POST"])
+def crear_citatorio():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    citatorios.insert_one({
+        "alumno": request.form.get("alumno"),
+        "grupo": request.form.get("grupo"),
+        "motivo": request.form.get("motivo"),
+        "fecha_cita": request.form.get("fecha"),
+        "hora": request.form.get("hora"),
+        "estatus": "pendiente",
+        "enterado": False
+    })
+
+    bitacora.insert_one({
+        "usuario": session.get("usuario"),
+        "accion": "Creó citatorio",
+        "detalle": request.form.get("alumno"),
+        "fecha": datetime.now()
+    })
+
+    return redirect("/admin/citatorios")
+
+
+# ================= PDF CITATORIO =================
+@admin_bp.route("/citatorio_pdf/<id>")
+def citatorio_pdf(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    citatorio = citatorios.find_one({
+        "_id": ObjectId(id)
+    })
+
+    pdf = generar_citatorio_pdf(citatorio)
+
+    return send_file(
+        pdf,
+        as_attachment=False,
+        download_name="citatorio.pdf",
+        mimetype="application/pdf"
+    )
+
+
+# ================= CONFIRMAR ASISTENCIA =================
+@admin_bp.route("/confirmar_asistencia/<id>")
+def confirmar_asistencia(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    citatorios.update_one(
+        {"_id": ObjectId(id)},
+        {
+            "$set": {
+                "estatus": "asistio",
+                "enterado": True
+            }
+        }
+    )
+
+    return redirect("/admin/citatorios")
+
+
+# ================= KARDEX PDF =================
+@admin_bp.route("/kardex/<nombre>")
+def kardex_pdf(nombre):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    pdf = generar_kardex(nombre)
+
+    return send_file(
+        pdf,
+        as_attachment=False,
+        download_name=f"kardex_{nombre}.pdf",
+        mimetype="application/pdf"
+    )
+
+
+# ================= BOLETA PDF =================
+@admin_bp.route("/boleta/<nombre>")
+def boleta_pdf(nombre):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    pdf = generar_boleta(nombre)
+
+    return send_file(
+        pdf,
+        as_attachment=False,
+        download_name=f"boleta_{nombre}.pdf",
+        mimetype="application/pdf"
+    )
+
+
+# ================= EXPEDIENTE =================
+@admin_bp.route("/expediente/<id>")
+def expediente_alumno(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    alumno = alumnos.find_one({
+        "_id": ObjectId(id)
+    })
+
+    if not alumno:
+        return redirect("/admin")
+
+    return render_template(
+        "expediente.html",
+        alumno=alumno
+    )
