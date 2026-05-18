@@ -1,63 +1,189 @@
 {% extends "layout.html" %}
+
 {% block content %}
 
-<h2>Expediente del alumno</h2>
+<div class="card" style="max-width:1000px;margin:auto;">
 
-<!-- BOTONES -->
-<a href="/admin/editar_expediente/{{ alumno._id }}">
-<button style="background:#f39c12;color:white; margin-bottom:10px;">
-✏️ Editar expediente
-</button>
-</a>
+    <!-- HEADER -->
+    <div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:25px;
+    ">
 
-<a href="/admin/expediente_pdf/{{ alumno._id }}" target="_blank">
-<button style="background:#2c3e50;color:white; margin-bottom:15px;">
-📄 Descargar PDF
-</button>
-</a>
+        <div>
 
-<hr>
+            <h1 style="
+            margin:0;
+            color:#2c3e50;
+            ">
+            📁 Expediente del alumno
+            </h1>
 
-<!-- FOTO -->
-{% if alumno.foto %}
-<div style="margin-bottom:20px;">
-<img src="/{{ alumno.foto }}" width="150" style="border-radius:10px;">
+            <p style="
+            color:gray;
+            margin-top:5px;
+            ">
+            Información completa del estudiante
+            </p>
+
+        </div>
+
+        <div style="
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        ">
+
+            <a href="/admin/editar_expediente/{{ alumno._id }}">
+
+                <button style="
+                background:#f39c12;
+                color:white;
+                border:none;
+                padding:10px 15px;
+                border-radius:10px;
+                cursor:pointer;
+                ">
+                ✏️ Editar expediente
+                </button>
+
+            </a>
+
+            <a href="/admin/expediente_pdf/{{ alumno._id }}" target="_blank">
+
+                <button style="
+                background:#2c3e50;
+                color:white;
+                border:none;
+                padding:10px 15px;
+                border-radius:10px;
+                cursor:pointer;
+                ">
+                📄 Descargar PDF
+                </button>
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- FOTO -->
+    {% if alumno.foto %}
+
+    <div style="
+    display:flex;
+    justify-content:center;
+    margin-bottom:30px;
+    ">
+
+        <img
+        src="data:image/png;base64,{{ alumno.foto }}"
+        width="220"
+        height="220"
+        style="
+        border-radius:20px;
+        object-fit:cover;
+        border:5px solid #ecf0f1;
+        box-shadow:0 6px 18px rgba(0,0,0,0.25);
+        ">
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- GRID -->
+    <div style="
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:20px;
+    ">
+
+        <!-- DATOS ALUMNO -->
+        <div class="card" style="background:#f8f9fa;">
+
+            <h2 style="margin-top:0;">
+            📌 Datos del alumno
+            </h2>
+
+            <p><b>Nombre:</b> {{ alumno.nombre or "—" }}</p>
+
+            <p><b>CURP:</b> {{ alumno.curp or "—" }}</p>
+
+            <p><b>Sexo:</b> {{ alumno.sexo or "—" }}</p>
+
+            <p><b>Fecha de nacimiento:</b> {{ alumno.fecha_nacimiento or "—" }}</p>
+
+            <p><b>Teléfono:</b> {{ alumno.telefono or "—" }}</p>
+
+            <p><b>Dirección:</b> {{ alumno.direccion or "—" }}</p>
+
+            <p><b>Escuela de procedencia:</b> {{ alumno.escuela_procedencia or "—" }}</p>
+
+            <p><b>Promedio:</b> {{ alumno.promedio or "—" }}</p>
+
+            <p><b>Afecciones médicas:</b> {{ alumno.afecciones or "—" }}</p>
+
+        </div>
+
+
+        <!-- PADRES -->
+        <div class="card" style="background:#f8f9fa;">
+
+            <h2 style="margin-top:0;">
+            👨‍👩‍👧 Padre o tutor
+            </h2>
+
+            <p><b>Nombre:</b> {{ alumno.padre_nombre or "—" }}</p>
+
+            <p><b>Teléfono:</b> {{ alumno.padre_telefono or "—" }}</p>
+
+            <p><b>Correo:</b> {{ alumno.padre_correo or "—" }}</p>
+
+            <hr>
+
+            <h2>
+            🏫 Información escolar
+            </h2>
+
+            <p><b>Grupo:</b> {{ alumno.grupo or "—" }}</p>
+
+            <p><b>Usuario:</b> {{ alumno.usuario or "—" }}</p>
+
+        </div>
+
+    </div>
+
+
+    <!-- BOTÓN -->
+    <div style="
+    margin-top:30px;
+    text-align:center;
+    ">
+
+        <a href="/admin">
+
+            <button style="
+            background:#3498db;
+            color:white;
+            border:none;
+            padding:12px 20px;
+            border-radius:10px;
+            cursor:pointer;
+            ">
+            ⬅️ Volver al panel
+            </button>
+
+        </a>
+
+    </div>
+
 </div>
-{% endif %}
-
-<h3>📌 Datos del alumno</h3>
-
-<p><b>Nombre:</b> {{ alumno.nombre or "—" }}</p>
-<p><b>CURP:</b> {{ alumno.curp or "—" }}</p>
-<p><b>Sexo:</b> {{ alumno.sexo or "—" }}</p>
-<p><b>Fecha de nacimiento:</b> {{ alumno.fecha_nacimiento or "—" }}</p>
-<p><b>Teléfono:</b> {{ alumno.telefono or "—" }}</p>
-<p><b>Dirección:</b> {{ alumno.direccion or "—" }}</p>
-<p><b>Escuela de procedencia:</b> {{ alumno.escuela_procedencia or "—" }}</p>
-<p><b>Promedio:</b> {{ alumno.promedio or "—" }}</p>
-<p><b>Afecciones médicas:</b> {{ alumno.afecciones or "—" }}</p>
-
-<hr>
-
-<h3>👨‍👩‍👧 Datos del padre o tutor</h3>
-
-<p><b>Nombre:</b> {{ alumno.padre_nombre or "—" }}</p>
-<p><b>Teléfono:</b> {{ alumno.padre_telefono or "—" }}</p>
-<p><b>Correo:</b> {{ alumno.padre_correo or "—" }}</p>
-
-<hr>
-
-<h3>🏫 Información escolar</h3>
-
-<p><b>Grupo:</b> {{ alumno.grupo or "—" }}</p>
-
-<hr>
-
-<!-- BOTÓN REGRESAR -->
-<a href="/admin">
-<button style="background:#3498db;color:white;">
-⬅️ Volver al panel
-</button>
-</a>
 
 {% endblock %}

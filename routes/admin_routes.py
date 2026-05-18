@@ -1090,3 +1090,22 @@ def subir_foto_alumno(id):
 
     return redirect("/admin/alumnos")
 
+# ================= ELIMINAR ADMIN SECUNDARIO =================
+@admin_bp.route("/eliminar_admin/<id>")
+def eliminar_admin(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    admins_secundarios.delete_one({
+        "_id": ObjectId(id)
+    })
+
+    bitacora.insert_one({
+        "usuario": session.get("usuario"),
+        "accion": "Eliminó administrador",
+        "detalle": id,
+        "fecha": datetime.now()
+    })
+
+    return redirect("/admin/admins")
