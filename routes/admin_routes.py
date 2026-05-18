@@ -642,3 +642,31 @@ def desactivar_captura():
     })
 
     return redirect("/admin")
+
+# ================= DESHABILITAR TRIMESTRE =================
+@admin_bp.route("/deshabilitar_trimestre/<numero>")
+def deshabilitar_trimestre(numero):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    campo = f"trimestre_{numero}"
+
+    configuracion.update_one(
+        {},
+        {
+            "$set": {
+                campo: False
+            }
+        },
+        upsert=True
+    )
+
+    bitacora.insert_one({
+        "usuario": session.get("usuario"),
+        "accion": "Deshabilitó trimestre",
+        "detalle": f"Trimestre {numero}",
+        "fecha": datetime.now()
+    })
+
+    return redirect("/admin")
