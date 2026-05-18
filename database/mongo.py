@@ -41,6 +41,14 @@ citatorios = db["citatorios"]
 padres = db["padres"]
 
 # =========================
+# NUEVAS COLECCIONES
+# =========================
+
+admins_secundarios = db["admins_secundarios"]
+bitacora = db["bitacora"]
+auditoria = db["auditoria"]
+
+# =========================
 # ÍNDICES
 # =========================
 
@@ -61,5 +69,10 @@ except:
 
 try:
     padres.create_index("usuario", unique=True)
+except:
+    pass
+
+try:
+    admins_secundarios.create_index("usuario", unique=True)
 except:
     pass

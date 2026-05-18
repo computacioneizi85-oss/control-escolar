@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+</a>
+{% else %}
+<a href="/admin/activar_admin/{{ admin._id }}">
+<button style="background:green;color:white;">
+Activar
+</button>
+</a>
+{% endif %}
+
+</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+
+<div class="card">
+
+<h2>📜 Auditoría de accesos</h2>
+
+<table>
+
+<tr>
+<th>Usuario</th>
+<th>Rol</th>
+<th>Evento</th>
+<th>IP</th>
+<th>Fecha</th>
+</tr>
+
+{% for a in auditoria %}
+<tr>
+<td>{{ a.usuario }}</td>
+<td>{{ a.rol }}</td>
+<td>{{ a.evento }}</td>
+<td>{{ a.ip }}</td>
+<td>{{ a.fecha }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</div>
+
+
+<div class="card">
+
+<h2>🧾 Bitácora del sistema</h2>
+
+<table>
+
+<tr>
+<th>Usuario</th>
+<th>Acción</th>
+<th>Detalle</th>
+<th>Fecha</th>
+</tr>
+
+{% for b in bitacora %}
+<tr>
+<td>{{ b.usuario }}</td>
+<td>{{ b.accion }}</td>
+<td>{{ b.detalle }}</td>
+<td>{{ b.fecha }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</div>
+
+{% endblock %}
