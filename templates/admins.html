@@ -1,75 +1,154 @@
 {% extends "layout.html" %}
-</a>
-{% else %}
-<a href="/admin/activar_admin/{{ admin._id }}">
-<button style="background:green;color:white;">
-Activar
-</button>
-</a>
-{% endif %}
 
-</td>
-</tr>
+{% block content %}
 
-{% endfor %}
+<div class="container">
 
-</table>
+    <div class="card">
 
-</div>
+        <h1>👨‍💼 Administradores secundarios</h1>
 
+        <form action="/admin/crear_admin" method="POST">
 
-<div class="card">
+            <input type="text" name="usuario" placeholder="Usuario" required>
 
-<h2>📜 Auditoría de accesos</h2>
+            <input type="text" name="password" placeholder="Contraseña" required>
 
-<table>
+            <input type="text" name="escuela" placeholder="Escuela" required>
 
-<tr>
-<th>Usuario</th>
-<th>Rol</th>
-<th>Evento</th>
-<th>IP</th>
-<th>Fecha</th>
-</tr>
+            <button type="submit">
+                Crear administrador
+            </button>
 
-{% for a in auditoria %}
-<tr>
-<td>{{ a.usuario }}</td>
-<td>{{ a.rol }}</td>
-<td>{{ a.evento }}</td>
-<td>{{ a.ip }}</td>
-<td>{{ a.fecha }}</td>
-</tr>
-{% endfor %}
+        </form>
 
-</table>
-
-</div>
+    </div>
 
 
-<div class="card">
+    <div class="card">
 
-<h2>🧾 Bitácora del sistema</h2>
+        <h2>📋 Lista de administradores</h2>
 
-<table>
+        <table>
 
-<tr>
-<th>Usuario</th>
-<th>Acción</th>
-<th>Detalle</th>
-<th>Fecha</th>
-</tr>
+            <tr>
+                <th>Usuario</th>
+                <th>Escuela</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
 
-{% for b in bitacora %}
-<tr>
-<td>{{ b.usuario }}</td>
-<td>{{ b.accion }}</td>
-<td>{{ b.detalle }}</td>
-<td>{{ b.fecha }}</td>
-</tr>
-{% endfor %}
+            {% for admin in admins %}
 
-</table>
+            <tr>
+
+                <td>{{ admin.usuario }}</td>
+
+                <td>{{ admin.escuela }}</td>
+
+                <td>
+                    {% if admin.activo != False %}
+                        ✅ Activo
+                    {% else %}
+                        ❌ Desactivado
+                    {% endif %}
+                </td>
+
+                <td>
+
+                    <a href="/admin/eliminar_admin/{{ admin._id }}">
+                        <button style="background:red;color:white;">
+                            Eliminar
+                        </button>
+                    </a>
+
+                    {% if admin.activo != False %}
+
+                    <a href="/admin/desactivar_admin/{{ admin._id }}">
+                        <button style="background:orange;color:white;">
+                            Desactivar
+                        </button>
+                    </a>
+
+                    {% else %}
+
+                    <a href="/admin/activar_admin/{{ admin._id }}">
+                        <button style="background:green;color:white;">
+                            Activar
+                        </button>
+                    </a>
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>📜 Auditoría de accesos</h2>
+
+        <table>
+
+            <tr>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Evento</th>
+                <th>IP</th>
+                <th>Fecha</th>
+            </tr>
+
+            {% for a in auditoria %}
+
+            <tr>
+                <td>{{ a.usuario }}</td>
+                <td>{{ a.rol }}</td>
+                <td>{{ a.evento }}</td>
+                <td>{{ a.ip }}</td>
+                <td>{{ a.fecha }}</td>
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>🧾 Bitácora del sistema</h2>
+
+        <table>
+
+            <tr>
+                <th>Usuario</th>
+                <th>Acción</th>
+                <th>Detalle</th>
+                <th>Fecha</th>
+            </tr>
+
+            {% for b in bitacora %}
+
+            <tr>
+                <td>{{ b.usuario }}</td>
+                <td>{{ b.accion }}</td>
+                <td>{{ b.detalle }}</td>
+                <td>{{ b.fecha }}</td>
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
 
 </div>
 

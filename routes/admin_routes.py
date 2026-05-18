@@ -927,3 +927,28 @@ def eliminar_aviso(id):
     })
 
     return redirect("/admin/avisos")
+
+# ================= EXPEDIENTE PDF =================
+@admin_bp.route("/expediente_pdf/<id>")
+def expediente_pdf(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    alumno = alumnos.find_one({
+        "_id": ObjectId(id)
+    })
+
+    if not alumno:
+        return redirect("/admin")
+
+    from pdf.generador import generar_expediente_pdf
+
+    pdf = generar_expediente_pdf(alumno)
+
+    return send_file(
+        pdf,
+        as_attachment=False,
+        download_name=f"expediente_{alumno['nombre']}.pdf",
+        mimetype="application/pdf"
+    )

@@ -265,3 +265,37 @@ def generar_citatorio_pdf(citatorio):
     c.save()
     buffer.seek(0)
     return buffer
+
+# ================= EXPEDIENTE PDF =================
+def generar_expediente_pdf(alumno):
+
+    escuela, ciclo, director, direccion, escudo = obtener_config()
+
+    c, buffer = crear_pdf()
+
+    encabezado(
+        c,
+        escuela,
+        ciclo,
+        direccion,
+        escudo,
+        "EXPEDIENTE DEL ALUMNO"
+    )
+
+    c.setFont("Helvetica", 11)
+
+    c.drawString(50, 660, f"Nombre: {alumno.get('nombre', '')}")
+    c.drawString(50, 640, f"Grupo: {alumno.get('grupo', '')}")
+    c.drawString(50, 620, f"CURP: {alumno.get('curp', '')}")
+    c.drawString(50, 600, f"Teléfono: {alumno.get('telefono', '')}")
+    c.drawString(50, 580, f"Tutor: {alumno.get('tutor', '')}")
+
+    dibujar_foto(c, alumno.get("foto"))
+
+    firma(c, director)
+
+    c.save()
+
+    buffer.seek(0)
+
+    return buffer
