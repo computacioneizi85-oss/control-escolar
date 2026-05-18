@@ -82,15 +82,15 @@ def panel_maestro():
         "trimestre_3": False
     }
 
-return render_template(
-    "panel_maestro.html",
-    alumnos=lista_alumnos,
-    grupos=grupos,
-    materias=materias_maestro,
-    horarios=lista_horarios,
-    config=config,
-    fecha_actual=datetime.now().strftime("%d/%m/%Y")
-)
+    return render_template(
+        "panel_maestro.html",
+        alumnos=lista_alumnos,
+        grupos=grupos,
+        materias=materias_maestro,
+        horarios=lista_horarios,
+        config=config,
+        fecha_actual=datetime.now().strftime("%d/%m/%Y")
+    )
 
 
 # ================= GUARDAR CALIFICACIONES =================
@@ -433,6 +433,7 @@ def crear_aviso_maestro():
 
     return redirect("/avisos_maestro")
 
+
 # ================= ASISTENCIAS =================
 @maestro_bp.route("/asistencias")
 def asistencias_maestro():
@@ -483,7 +484,6 @@ def guardar_asistencia():
     if not alumno:
         return redirect("/asistencias")
 
-    # 🔥 evita duplicados mismo día
     alumnos.update_one(
         {
             "_id": ObjectId(alumno_id)
