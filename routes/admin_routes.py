@@ -1178,6 +1178,91 @@ def eliminar_admin(id):
 
     return redirect("/admin/admins")
 
+
+# ================= ELIMINAR CITATORIO =================
+@admin_bp.route("/eliminar_citatorio/<id>")
+def eliminar_citatorio(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    citatorios.delete_one({
+        "_id": ObjectId(id)
+    })
+
+    bitacora.insert_one({
+        "usuario": session.get("usuario"),
+        "accion": "Eliminó citatorio",
+        "detalle": id,
+        "fecha": datetime.now()
+    })
+
+    return redirect("/admin/citatorios")
+
+
+# ================= ELIMINAR REPORTE =================
+@admin_bp.route("/eliminar_reporte/<id>")
+def eliminar_reporte(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    reportes.delete_one({
+        "_id": ObjectId(id)
+    })
+
+    bitacora.insert_one({
+        "usuario": session.get("usuario"),
+        "accion": "Eliminó reporte",
+        "detalle": id,
+        "fecha": datetime.now()
+    })
+
+    return redirect("/admin/reportes")
+
+
+# ================= BACKUP =================
+@admin_bp.route("/backup/descargar")
+def descargar_backup():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    import json
+    from io import BytesIO
+
+    backup = {
+        "alumnos": list(alumnos.find({}, {"_id": 0})),
+        "maestros": list(maestros.find({}, {"_id": 0})),
+        "grupos": list(grupos.find({}, {"_id": 0})),
+        "materias": list(materias.find({}, {"_id": 0})),
+        "horarios": list(horarios.find({}, {"_id": 0})),
+        "reportes": list(reportes.find({}, {"_id": 0})),
+        "citatorios": list(citatorios.find({}, {"_id": 0})),
+        "avisos": list(avisos.find({}, {"_id": 0})),
+        "configuracion": list(configuracion.find({}, {"_id": 0}))
+    }
+
+    archivo = BytesIO()
+
+    archivo.write(
+        json.dumps(
+            backup,
+            indent=4,
+            default=str,
+            ensure_ascii=False
+        ).encode("utf-8")
+    )
+
+    archivo.seek(0)
+
+    return send_file(
+        archivo,
+        as_attachment=True,
+        download_name="backup_sistema.json",
+        mimetype="application/json"
+    )
+
 # ================= BACKUP =================
 @admin_bp.route("/backup/descargar")
 def descargar_backup():
