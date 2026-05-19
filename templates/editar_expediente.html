@@ -8,6 +8,27 @@
 ✏️ Editar expediente
 </h1>
 
+<a href="/admin/expediente/{{ alumno._id }}">
+
+<button
+type="button"
+style="
+background:#3498db;
+color:white;
+border:none;
+padding:10px 18px;
+border-radius:10px;
+margin-bottom:25px;
+cursor:pointer;
+"
+>
+
+⬅️ Volver al expediente
+
+</button>
+
+</a>
+
 <form
 method="POST"
 action="/admin/guardar_expediente/{{ alumno._id }}"
@@ -106,14 +127,31 @@ placeholder="Correo padre"
 
 {% if alumno.foto %}
 
+{% if "static/" in alumno.foto %}
+
+<img
+src="/{{ alumno.foto }}"
+width="180"
+style="
+border-radius:15px;
+margin-bottom:15px;
+object-fit:cover;
+"
+>
+
+{% else %}
+
 <img
 src="data:image/png;base64,{{ alumno.foto }}"
 width="180"
 style="
 border-radius:15px;
 margin-bottom:15px;
+object-fit:cover;
 "
 >
+
+{% endif %}
 
 {% endif %}
 
@@ -139,6 +177,28 @@ cursor:pointer;
 ">
 
 💾 Guardar cambios
+
+<a href="/admin/expediente/{{ alumno._id }}">
+
+<button
+type="button"
+style="
+background:#7f8c8d;
+color:white;
+border:none;
+padding:15px 25px;
+border-radius:10px;
+font-size:16px;
+cursor:pointer;
+margin-left:15px;
+"
+>
+
+Cancelar
+
+</button>
+
+</a>
 
 </button>
 
