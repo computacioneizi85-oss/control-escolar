@@ -156,10 +156,16 @@ def registro_completo_alumno():
     curp = request.form.get("curp")
     nombre = request.form.get("nombre")
 
-    # ================= USUARIO =================
+  # ================= USUARIO =================
+usuario = request.form.get("usuario")
+
+if not usuario:
     usuario = curp if curp else nombre.replace(" ", "").lower()
 
-    # ================= PASSWORD AUTOMÁTICO =================
+# ================= PASSWORD =================
+password_generado = request.form.get("password")
+
+if not password_generado:
     password_generado = curp[-4:] if curp else "1234"
 
     alumnos.insert_one({
