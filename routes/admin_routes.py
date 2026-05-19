@@ -145,6 +145,7 @@ def registro_completo_alumno():
     ruta_foto = ""
 
     if foto and foto.filename:
+
         carpeta = "static/fotos"
         os.makedirs(carpeta, exist_ok=True)
 
@@ -155,10 +156,81 @@ def registro_completo_alumno():
     curp = request.form.get("curp")
     nombre = request.form.get("nombre")
 
+    # ================= USUARIO =================
     usuario = curp if curp else nombre.replace(" ", "").lower()
-    password = curp[-4:] if curp else "1234"
+
+    # ================= PASSWORD AUTOMÁTICO =================
+    password_generado = curp[-4:] if curp else "1234"
 
     alumnos.insert_one({
+
+        "nombre": nombre,
+        "curp": curp,
+
+        "sexo": request.form.get("sexo"),
+        "fecha_nacimiento": request.form.get("fecha_nacimiento"),
+
+        "telefono": request.form.get("telefono"),
+        "direccion": request.form.get("direccion"),
+
+        "escuela_procedencia": request.form.get("escuela"),
+
+        "promedio": request.form.get("promedio"),
+
+        "afecciones": request.form.get("afecciones"),
+
+        # ================= PADRE =================
+        "padre_nombre": request.form.get("padre_nombre"),
+
+        "padre_telefono": request.form.get("padre_telefono"),
+
+        "padre_correo": request.form.get("padre_correo"),
+
+        # ================= LOGIN PADRE =================
+        "usuario_padre": request.form.get("padre_correo"),
+
+        "password_padre": password_generado,
+
+        # ================= ESCOLAR =================
+        "grupo": request.form.get("grupo"),
+
+        # ================= LOGIN ALUMNO =================
+        "usuario": usuario,
+
+        "password": password_generado,
+
+        # ================= VISIBLE ADMIN =================
+        "password_admin": password_generado,
+
+        # ================= SISTEMA =================
+        "rol": "alumno",
+
+        "foto": ruta_foto,
+
+        "calificaciones": [],
+
+        "asistencias": []
+
+    })
+
+    bitacora.insert_one({
+
+        "usuario": session.get("usuario"),
+
+        "accion": "Registro completo alumno",
+
+        "detalle": nombre,
+
+        "fecha": datetime.now()
+
+    })
+
+    return redirect("/admin")
+
+# ================= PASSWORD AUTOMÁTICO =================
+password_generado = curp[-4:] if curp else "1234"
+
+alumnos.insert_one({
         "nombre": nombre,
         "curp": curp,
         "sexo": request.form.get("sexo"),
@@ -174,10 +246,15 @@ def registro_completo_alumno():
 
 # 🔥 LOGIN PADRE
 "usuario_padre": request.form.get("padre_correo"),
-"password_padre": password,
+"password_padre": password_generado,
         "grupo": request.form.get("grupo"),
-        "usuario": usuario,
-        "password": password,
+"usuario": usuario,
+
+# 🔥 LOGIN ALUMNO
+"password": password_generado,
+
+# 🔥 ADMIN PUEDE VERLA
+"password_admin": password_generado,
         "rol": "alumno",
         "foto": ruta_foto,
         "calificaciones": [],
@@ -1347,8 +1424,8 @@ def descargar_backup():
 @admin_bp.route("/reset_total", methods=["POST"])
 def reset_total():
 
-   if session.get("usuario") != "admin":
-    return redirect("/admin")
+    if session.get("usuario") != "admin":
+        return redirect("/admin")
 
     confirmacion = request.form.get("confirmacion")
 
