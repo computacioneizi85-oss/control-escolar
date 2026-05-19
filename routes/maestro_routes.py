@@ -75,7 +75,9 @@ def panel_maestro():
         })
     )
 
-    config = configuracion.find_one() or {
+    config = configuracion.find_one(
+    sort=[("_id", -1)]
+) or {
         "captura_evaluaciones": True,
         "trimestre_1": True,
         "trimestre_2": False,
