@@ -600,7 +600,7 @@ def activar_trimestre_numero(numero):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    configuracion.update_one(
+    configuracion.update_many(
         {},
         {
             "$set": {
@@ -630,7 +630,7 @@ def activar_captura():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    configuracion.update_one(
+    configuracion.update_many(
         {},
         {
             "$set": {
@@ -656,7 +656,7 @@ def desactivar_captura():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    configuracion.update_one(
+    configuracion.update_many(
         {},
         {
             "$set": {
@@ -683,7 +683,7 @@ def deshabilitar_trimestre(numero):
 
     campo = f"trimestre_{numero}"
 
-    configuracion.update_one(
+    configuracion.update_many(
         {},
         {
             "$set": {
