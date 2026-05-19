@@ -23,12 +23,34 @@ REGISTRO
 {% endfor %}
 </select>
 
-<!-- 🔥 NUEVOS CAMPOS -->
-<input type="text" name="usuario" placeholder="Usuario" required>
-<input type="text" name="password" placeholder="Contraseña" required>
+<!-- 🔥 LOGIN ALUMNO -->
+<input type="text"
+name="usuario"
+placeholder="Usuario alumno"
+required>
+
+<input type="text"
+name="password"
+placeholder="Contraseña alumno"
+required>
+
+<hr>
+
+<h3>Padre o tutor</h3>
+
+<input type="text"
+name="padre_nombre"
+placeholder="Nombre del padre o tutor">
+
+<input type="text"
+name="padre_telefono"
+placeholder="Teléfono del padre">
+
+<input type="email"
+name="padre_correo"
+placeholder="Correo del padre">
 
 <input type="file" name="foto">
-
 <button type="submit">
 Registrar alumno
 </button>
