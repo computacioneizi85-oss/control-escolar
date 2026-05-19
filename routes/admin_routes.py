@@ -113,7 +113,7 @@ def crear_alumno():
 if existe:
     return "⚠️ Ya existe un alumno con ese usuario"
 
-    alumnos.insert_one({
+alumnos.insert_one({
 
         "nombre": request.form.get("nombre"),
 
@@ -192,7 +192,7 @@ def registro_completo_alumno():
     if not password_generado:
         password_generado = curp[-4:] if curp else "1234"
 
-    alumnos.insert_one({
+alumnos.insert_one({
 
         "nombre": nombre,
         "curp": curp,
@@ -243,14 +243,14 @@ def registro_completo_alumno():
 
     })
 
-    bitacora.insert_one({
+bitacora.insert_one({
         "usuario": session.get("usuario"),
         "accion": "Registro completo alumno",
         "detalle": nombre,
         "fecha": datetime.now()
     })
 
-    return redirect("/admin")
+return redirect("/admin/alumnos")
 
 @admin_bp.route("/eliminar_alumno/<id>")
 def eliminar_alumno(id):
