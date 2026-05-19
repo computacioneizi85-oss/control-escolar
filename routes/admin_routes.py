@@ -156,17 +156,17 @@ def registro_completo_alumno():
     curp = request.form.get("curp")
     nombre = request.form.get("nombre")
 
-  # ================= USUARIO =================
-usuario = request.form.get("usuario")
+    # ================= USUARIO =================
+    usuario = request.form.get("usuario")
 
-if not usuario:
-    usuario = curp if curp else nombre.replace(" ", "").lower()
+    if not usuario:
+        usuario = curp if curp else nombre.replace(" ", "").lower()
 
-# ================= PASSWORD =================
-password_generado = request.form.get("password")
+    # ================= PASSWORD =================
+    password_generado = request.form.get("password")
 
-if not password_generado:
-    password_generado = curp[-4:] if curp else "1234"
+    if not password_generado:
+        password_generado = curp[-4:] if curp else "1234"
 
     alumnos.insert_one({
 
@@ -973,19 +973,19 @@ def guardar_expediente(id):
 
                 "grupo": request.form.get("grupo"),
 
-	       "usuario": request.form.get("usuario"),
+                "usuario": request.form.get("usuario"),
 
-	       "password": request.form.get("password"),
+                "password": request.form.get("password"),
 
-# 🔥 VISIBLES EN ADMIN
-"password_admin": request.form.get("password"),
+                # 🔥 VISIBLES EN ADMIN
+                "password_admin": request.form.get("password"),
 
-# 🔥 LOGIN PADRE
-"usuario_padre": request.form.get("padre_correo"),
+                # 🔥 LOGIN PADRE
+                "usuario_padre": request.form.get("padre_correo"),
 
-"password_padre": request.form.get("password"),
+                "password_padre": request.form.get("password"),
 
-"foto": foto_base64
+                "foto": foto_base64
             }
         }
     )
