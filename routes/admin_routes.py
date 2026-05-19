@@ -169,8 +169,12 @@ def registro_completo_alumno():
         "promedio": request.form.get("promedio"),
         "afecciones": request.form.get("afecciones"),
         "padre_nombre": request.form.get("padre_nombre"),
-        "padre_telefono": request.form.get("padre_telefono"),
-        "padre_correo": request.form.get("padre_correo"),
+"padre_telefono": request.form.get("padre_telefono"),
+"padre_correo": request.form.get("padre_correo"),
+
+# 🔥 LOGIN PADRE
+"usuario_padre": request.form.get("padre_correo"),
+"password_padre": password,
         "grupo": request.form.get("grupo"),
         "usuario": usuario,
         "password": password,
