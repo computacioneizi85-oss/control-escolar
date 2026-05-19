@@ -1,82 +1,138 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Registrar Alumno</title>
 
-```
+<meta charset="UTF-8">
+
+<title>Registrar Alumno</title>
+
 <style>
-    body{
-        margin:0;
-        font-family:Arial;
-        background:#f3f4f6;
-    }
 
-    .container{
-        width:420px;
-        margin:80px auto;
-        background:white;
-        padding:30px;
-        border-radius:12px;
-        box-shadow:0 10px 25px rgba(0,0,0,.2);
-    }
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f3f4f6;
+}
 
-    h2{
-        text-align:center;
-        margin-bottom:25px;
-    }
+.container{
+    width:500px;
+    margin:40px auto;
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 10px 25px rgba(0,0,0,.2);
+}
 
-    input{
-        width:100%;
-        padding:12px;
-        margin:10px 0;
-        border-radius:8px;
-        border:1px solid #ccc;
-    }
+h2{
+    text-align:center;
+    margin-bottom:25px;
+}
 
-    button{
-        width:100%;
-        padding:12px;
-        background:#2563eb;
-        color:white;
-        border:none;
-        border-radius:8px;
-        font-size:16px;
-        cursor:pointer;
-    }
+input{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
 
-    button:hover{
-        background:#1d4ed8;
-    }
+button{
+    width:100%;
+    padding:12px;
+    background:#2563eb;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+}
 
-    .volver{
-        display:block;
-        text-align:center;
-        margin-top:15px;
-        text-decoration:none;
-        color:#374151;
-    }
+button:hover{
+    background:#1d4ed8;
+}
+
+.volver{
+    display:block;
+    text-align:center;
+    margin-top:15px;
+    text-decoration:none;
+    color:#374151;
+}
+
 </style>
-```
 
 </head>
+
 <body>
 
 <div class="container">
-    <h2>Registrar Nuevo Alumno</h2>
 
-```
-<form action="/guardar_alumno" method="POST">
-    <input type="text" name="nombre" placeholder="Nombre completo" required>
-    <input type="email" name="correo" placeholder="Correo electrónico" required>
-    <input type="text" name="grupo" placeholder="Grupo (Ej: 1A)" required>
+<h2>Registrar Nuevo Alumno</h2>
 
-    <button type="submit">Guardar Alumno</button>
+<form
+action="/admin/registro_completo_alumno"
+method="POST"
+enctype="multipart/form-data"
+>
+
+<input
+type="text"
+name="nombre"
+placeholder="Nombre completo"
+required
+>
+
+<input
+type="text"
+name="curp"
+placeholder="CURP"
+>
+
+<input
+type="text"
+name="grupo"
+placeholder="Grupo (Ej: 1A)"
+required
+>
+
+<hr>
+
+<h3>Padre o tutor</h3>
+
+<input
+type="text"
+name="padre_nombre"
+placeholder="Nombre del padre o tutor"
+>
+
+<input
+type="text"
+name="padre_telefono"
+placeholder="Teléfono"
+>
+
+<input
+type="email"
+name="padre_correo"
+placeholder="Correo"
+>
+
+<hr>
+
+<input
+type="file"
+name="foto"
+>
+
+<button type="submit">
+Guardar Alumno
+</button>
+
 </form>
 
-<a class="volver" href="/admin">← Volver al panel</a>
-```
+<a class="volver" href="/admin">
+← Volver al panel
+</a>
 
 </div>
 
