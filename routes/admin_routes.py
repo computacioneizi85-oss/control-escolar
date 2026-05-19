@@ -867,6 +867,91 @@ def boleta_pdf(nombre):
 
 
 # ================= EXPEDIENTE =================
+
+
+# ================= EDITAR EXPEDIENTE =================
+@admin_bp.route("/editar_expediente/<id>")
+def editar_expediente(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    alumno = alumnos.find_one({
+        "_id": ObjectId(id)
+    })
+
+    if not alumno:
+        return redirect("/admin")
+
+    return render_template(
+        "editar_expediente.html",
+        alumno=alumno
+    )
+
+
+# ================= GUARDAR EXPEDIENTE =================
+@admin_bp.route("/guardar_expediente/<id>", methods=["POST"])
+def guardar_expediente(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    alumno_actual = alumnos.find_one({
+        "_id": ObjectId(id)
+    })
+
+    foto_base64 = alumno_actual.get("foto", "")
+
+    foto = request.files.get("foto")
+
+    if foto and foto.filename:
+
+        import base64
+
+        foto_base64 = base64.b64encode(
+            foto.read()
+        ).decode("utf-8")
+
+    alumnos.update_one(
+        {
+            "_id": ObjectId(id)
+        },
+        {
+            "$set": {
+
+                "nombre": request.form.get("nombre"),
+                "curp": request.form.get("curp"),
+                "sexo": request.form.get("sexo"),
+                "fecha_nacimiento": request.form.get("fecha_nacimiento"),
+                "telefono": request.form.get("telefono"),
+                "direccion": request.form.get("direccion"),
+                "escuela_procedencia": request.form.get("escuela_procedencia"),
+                "promedio": request.form.get("promedio"),
+                "afecciones": request.form.get("afecciones"),
+
+                "padre_nombre": request.form.get("padre_nombre"),
+                "padre_telefono": request.form.get("padre_telefono"),
+                "padre_correo": request.form.get("padre_correo"),
+
+                "grupo": request.form.get("grupo"),
+
+                "usuario": request.form.get("usuario"),
+                "password": request.form.get("password"),
+
+                "foto": foto_base64
+            }
+        }
+    )
+
+    bitacora.insert_one({
+        "usuario": session.get("usuario"),
+        "accion": "Editó expediente",
+        "detalle": request.form.get("nombre"),
+        "fecha": datetime.now()
+    })
+
+    return redirect(f"/admin/expediente/{id}")
+
 @admin_bp.route("/expediente/<id>")
 def expediente_alumno(id):
 

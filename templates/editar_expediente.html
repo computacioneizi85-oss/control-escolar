@@ -1,59 +1,151 @@
 {% extends "layout.html" %}
+
 {% block content %}
 
-<h2>Editar expediente</h2>
+<div class="card" style="max-width:1000px;margin:auto;">
 
-<form action="/admin/actualizar_expediente/{{ alumno._id }}" method="POST" enctype="multipart/form-data">
+<h1 style="margin-bottom:30px;">
+✏️ Editar expediente
+</h1>
 
-<!-- FOTO ACTUAL -->
-{% if alumno.foto %}
-<div style="margin-bottom:15px;">
-<img src="/{{ alumno.foto }}" width="120" style="border-radius:10px;">
-</div>
-{% endif %}
+<form
+method="POST"
+action="/admin/guardar_expediente/{{ alumno._id }}"
+enctype="multipart/form-data"
+>
 
-<!-- CAMBIAR FOTO -->
-<input type="file" name="foto">
+<div style="
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+gap:20px;
+">
 
-<hr>
+<!-- DATOS -->
+<div class="card">
 
-<input name="nombre" value="{{ alumno.nombre }}">
-<input name="curp" value="{{ alumno.curp }}">
+<h2>📌 Datos del alumno</h2>
+
+<input name="nombre" value="{{ alumno.nombre }}" placeholder="Nombre">
+
+<input name="curp" value="{{ alumno.curp }}" placeholder="CURP">
 
 <select name="sexo">
-<option value="Masculino" {% if alumno.sexo=="Masculino" %}selected{% endif %}>Masculino</option>
-<option value="Femenino" {% if alumno.sexo=="Femenino" %}selected{% endif %}>Femenino</option>
+
+<option value="Masculino"
+{% if alumno.sexo == "Masculino" %}selected{% endif %}
+>
+Masculino
+</option>
+
+<option value="Femenino"
+{% if alumno.sexo == "Femenino" %}selected{% endif %}
+>
+Femenino
+</option>
+
 </select>
 
-<input type="date" name="fecha_nacimiento" value="{{ alumno.fecha_nacimiento }}">
+<input
+type="date"
+name="fecha_nacimiento"
+value="{{ alumno.fecha_nacimiento }}"
+>
 
-<input name="telefono" value="{{ alumno.telefono }}">
-<input name="direccion" value="{{ alumno.direccion }}">
-<input name="escuela" value="{{ alumno.escuela_procedencia }}">
-<input name="promedio" value="{{ alumno.promedio }}">
-<input name="afecciones" value="{{ alumno.afecciones }}">
+<input name="telefono" value="{{ alumno.telefono }}" placeholder="Teléfono">
 
-<input name="padre_nombre" value="{{ alumno.padre_nombre }}">
-<input name="padre_telefono" value="{{ alumno.padre_telefono }}">
-<input name="padre_correo" value="{{ alumno.padre_correo }}">
+<input name="direccion" value="{{ alumno.direccion }}" placeholder="Dirección">
 
-<input name="grupo" value="{{ alumno.grupo }}">
+<input
+name="escuela_procedencia"
+value="{{ alumno.escuela_procedencia }}"
+placeholder="Escuela"
+>
 
-<br><br>
+<input name="promedio" value="{{ alumno.promedio }}" placeholder="Promedio">
 
-<button style="background:#27ae60;color:white;">
+<input name="afecciones" value="{{ alumno.afecciones }}" placeholder="Afecciones">
+
+</div>
+
+<!-- PADRE -->
+<div class="card">
+
+<h2>👨‍👩‍👧 Padre o tutor</h2>
+
+<input
+name="padre_nombre"
+value="{{ alumno.padre_nombre }}"
+placeholder="Nombre padre"
+>
+
+<input
+name="padre_telefono"
+value="{{ alumno.padre_telefono }}"
+placeholder="Teléfono padre"
+>
+
+<input
+name="padre_correo"
+value="{{ alumno.padre_correo }}"
+placeholder="Correo padre"
+>
+
+<hr style="margin:20px 0;">
+
+<h2>🏫 Escolar</h2>
+
+<input name="grupo" value="{{ alumno.grupo }}" placeholder="Grupo">
+
+<input name="usuario" value="{{ alumno.usuario }}" placeholder="Usuario">
+
+<input name="password" value="{{ alumno.password }}" placeholder="Password">
+
+<hr style="margin:20px 0;">
+
+<h2>📷 Foto</h2>
+
+{% if alumno.foto %}
+
+<img
+src="data:image/png;base64,{{ alumno.foto }}"
+width="180"
+style="
+border-radius:15px;
+margin-bottom:15px;
+"
+>
+
+{% endif %}
+
+<input type="file" name="foto">
+
+</div>
+
+</div>
+
+<div style="
+margin-top:30px;
+text-align:center;
+">
+
+<button style="
+background:#27ae60;
+color:white;
+border:none;
+padding:15px 25px;
+border-radius:10px;
+font-size:16px;
+cursor:pointer;
+">
+
 💾 Guardar cambios
+
 </button>
+
+</div>
 
 </form>
 
-<br>
-
-<!-- VOLVER -->
-<a href="/admin/expediente/{{ alumno._id }}">
-<button style="background:#3498db;color:white;">
-⬅️ Volver al expediente
-</button>
-</a>
+</div>
 
 {% endblock %}
