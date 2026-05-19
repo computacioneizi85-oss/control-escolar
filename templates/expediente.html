@@ -152,6 +152,37 @@
             🏫 Información escolar
             </h2>
 
+	    <div class="card" style="
+margin-top:20px;
+background:#f8f9fa;
+">
+
+<h2>🔐 Accesos del alumno y tutor</h2>
+
+<p>
+<b>👨‍🎓 Usuario alumno:</b>
+{{ alumno.usuario }}
+</p>
+
+<p>
+<b>🔑 Contraseña alumno:</b>
+{{ alumno.password }}
+</p>
+
+<hr>
+
+<p>
+<b>👨‍👩‍👧 Usuario padre:</b>
+{{ alumno.usuario_padre }}
+</p>
+
+<p>
+<b>🔑 Contraseña padre:</b>
+{{ alumno.password_padre }}
+</p>
+
+</div>
+
             <p><b>Grupo:</b> {{ alumno.grupo or "—" }}</p>
 
 <hr>
