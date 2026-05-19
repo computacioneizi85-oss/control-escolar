@@ -101,24 +101,35 @@ LISTA DE CITATORIOS
 
 <td>
 
-<!-- 🔥 PDF CORREGIDO -->
 <a href="{{ url_for('admin.citatorio_pdf', id=c._id) }}" target="_blank">
+
 <button style="background:#3498db;color:white;">
 PDF
 </button>
+
 </a>
 
-<!-- CONFIRMAR -->
 {% if c.estatus != "asistio" %}
+
 <a href="{{ url_for('admin.confirmar_asistencia', id=c._id) }}">
+
 <button style="background:#27ae60;color:white;">
 ✔ Confirmar
 </button>
+
 </a>
+
 {% endif %}
 
-</td>
+<a href="{{ url_for('admin.eliminar_citatorio', id=c._id) }}">
 
+<button style="background:#c0392b;color:white;">
+🗑 Eliminar
+</button>
+
+</a>
+
+</td>
 </tr>
 
 {% endfor %}
