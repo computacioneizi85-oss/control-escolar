@@ -432,4 +432,114 @@ Boleta
 
 </table>
 
+
+<!-- ================= RESET TOTAL ================= -->
+
+{% if session.get("usuario") == "admin" %}
+
+<div style="
+margin-top:50px;
+padding:25px;
+border:3px solid #c0392b;
+border-radius:15px;
+background:#fdecea;
+">
+
+<h2 style="color:#c0392b;">
+⚠ Zona peligrosa
+</h2>
+
+<p style="
+font-weight:bold;
+color:#78281f;
+">
+
+Este proceso eliminará TODOS los datos del sistema.
+
+No se puede deshacer.
+
+</p>
+
+<button onclick="mostrarReset()" style="
+background:#c0392b;
+color:white;
+padding:15px 25px;
+border:none;
+border-radius:10px;
+font-size:16px;
+cursor:pointer;
+">
+
+🗑 Reset total del sistema
+
+</button>
+
+<div id="panelReset" style="
+display:none;
+margin-top:25px;
+">
+
+<form method="POST" action="/admin/reset_total">
+
+<p>
+Escribe:
+<b>ELIMINAR TODO</b>
+para confirmar
+</p>
+
+<input
+type="text"
+name="confirmacion"
+placeholder="ELIMINAR TODO"
+required
+style="
+padding:10px;
+width:300px;
+border-radius:8px;
+border:1px solid #ccc;
+">
+
+<br><br>
+
+<button style="
+background:#922b21;
+color:white;
+padding:12px 20px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+">
+
+⚠ Confirmar eliminación
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+<script>
+
+function mostrarReset(){
+
+let panel = document.getElementById("panelReset")
+
+if(panel.style.display === "none"){
+
+panel.style.display = "block"
+
+}else{
+
+panel.style.display = "none"
+
+}
+
+}
+
+</script>
+
+{% endif %}
+
 {% endblock %}

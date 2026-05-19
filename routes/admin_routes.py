@@ -1219,3 +1219,36 @@ def descargar_backup():
         download_name="backup_sistema.json",
         mimetype="application/json"
     )
+
+
+# ================= RESET TOTAL =================
+@admin_bp.route("/reset_total", methods=["POST"])
+def reset_total():
+
+   if session.get("usuario") != "admin":
+    return redirect("/admin")
+
+    confirmacion = request.form.get("confirmacion")
+
+    if confirmacion != "ELIMINAR TODO":
+        return redirect("/admin")
+
+    # ================= BACKUP AUTOMÁTICO =================
+    bitacora.insert_one({
+        "usuario": session.get("usuario"),
+        "accion": "RESET TOTAL DEL SISTEMA",
+        "fecha": datetime.now()
+    })
+
+    # ================= LIMPIAR COLECCIONES =================
+    alumnos.delete_many({})
+    grupos.delete_many({})
+    materias.delete_many({})
+    horarios.delete_many({})
+    reportes.delete_many({})
+    citatorios.delete_many({})
+    avisos.delete_many({})
+    auditoria.delete_many({})
+    bitacora.delete_many({})
+
+    return redirect("/admin")
