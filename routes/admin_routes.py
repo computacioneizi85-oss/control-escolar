@@ -222,50 +222,6 @@ def registro_completo_alumno():
 
     return redirect("/admin")
 
-# ================= PASSWORD AUTOMÁTICO =================
-password_generado = curp[-4:] if curp else "1234"
-
-alumnos.insert_one({
-        "nombre": nombre,
-        "curp": curp,
-        "sexo": request.form.get("sexo"),
-        "fecha_nacimiento": request.form.get("fecha_nacimiento"),
-        "telefono": request.form.get("telefono"),
-        "direccion": request.form.get("direccion"),
-        "escuela_procedencia": request.form.get("escuela"),
-        "promedio": request.form.get("promedio"),
-        "afecciones": request.form.get("afecciones"),
-        "padre_nombre": request.form.get("padre_nombre"),
-"padre_telefono": request.form.get("padre_telefono"),
-"padre_correo": request.form.get("padre_correo"),
-
-# 🔥 LOGIN PADRE
-"usuario_padre": request.form.get("padre_correo"),
-"password_padre": password_generado,
-        "grupo": request.form.get("grupo"),
-"usuario": usuario,
-
-# 🔥 LOGIN ALUMNO
-"password": password_generado,
-
-# 🔥 ADMIN PUEDE VERLA
-"password_admin": password_generado,
-        "rol": "alumno",
-        "foto": ruta_foto,
-        "calificaciones": [],
-        "asistencias": []
-    })
-
-    bitacora.insert_one({
-        "usuario": session.get("usuario"),
-        "accion": "Registro completo alumno",
-        "detalle": nombre,
-        "fecha": datetime.now()
-    })
-
-    return redirect("/admin")
-
-
 @admin_bp.route("/eliminar_alumno/<id>")
 def eliminar_alumno(id):
 
