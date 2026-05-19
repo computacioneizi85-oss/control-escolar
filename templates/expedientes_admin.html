@@ -1,0 +1,227 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>📁 Expedientes escolares</h1>
+
+<!-- FILTROS -->
+
+<div class="card" style="
+margin-bottom:25px;
+">
+
+<form method="GET" action="/admin/expedientes" style="
+display:flex;
+gap:15px;
+flex-wrap:wrap;
+align-items:center;
+">
+
+<select name="grupo">
+
+<option value="">Todos los grupos</option>
+
+{% for grupo in grupos %}
+
+<option
+value="{{ grupo.nombre }}"
+{% if grupo_actual == grupo.nombre %}selected{% endif %}
+>
+
+{{ grupo.nombre }}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+<input
+type="text"
+name="buscar"
+placeholder="Buscar alumno"
+value="{{ buscar_actual }}"
+>
+
+<button style="
+background:#3498db;
+color:white;
+border:none;
+padding:10px 18px;
+border-radius:8px;
+cursor:pointer;
+">
+
+🔎 Buscar
+
+</button>
+
+</form>
+
+</div>
+
+<!-- TABLA -->
+
+<div class="card">
+
+<table>
+
+<tr>
+<th>Foto</th>
+<th>Alumno</th>
+<th>Grupo</th>
+<th>Usuario</th>
+<th>Expediente</th>
+<th>PDF</th>
+<th>Editar</th>
+<th>Eliminar</th>
+</tr>
+
+{% for alumno in alumnos %}
+
+<tr>
+
+<td>
+
+{% if alumno.foto %}
+
+{% if "static/" in alumno.foto %}
+
+<img
+src="/{{ alumno.foto }}"
+width="55"
+height="55"
+style="
+border-radius:50%;
+object-fit:cover;
+"
+>
+
+{% else %}
+
+<img
+src="data:image/png;base64,{{ alumno.foto }}"
+width="55"
+height="55"
+style="
+border-radius:50%;
+object-fit:cover;
+"
+>
+
+{% endif %}
+
+{% else %}
+
+Sin foto
+
+{% endif %}
+
+</td>
+
+<td>{{ alumno.nombre }}</td>
+
+<td>{{ alumno.grupo }}</td>
+
+<td>{{ alumno.usuario }}</td>
+
+<!-- EXPEDIENTE -->
+<td>
+
+<a href="/admin/expediente/{{ alumno._id }}">
+
+<button style="
+background:#3498db;
+color:white;
+border:none;
+padding:8px 12px;
+border-radius:8px;
+cursor:pointer;
+">
+
+📂 Abrir
+
+</button>
+
+</a>
+
+</td>
+
+<!-- PDF -->
+<td>
+
+<a href="/admin/expediente_pdf/{{ alumno._id }}" target="_blank">
+
+<button style="
+background:#27ae60;
+color:white;
+border:none;
+padding:8px 12px;
+border-radius:8px;
+cursor:pointer;
+">
+
+📄 PDF
+
+</button>
+
+</a>
+
+</td>
+
+<!-- EDITAR -->
+<td>
+
+<a href="/admin/editar_expediente/{{ alumno._id }}">
+
+<button style="
+background:#f39c12;
+color:white;
+border:none;
+padding:8px 12px;
+border-radius:8px;
+cursor:pointer;
+">
+
+✏️ Editar
+
+</button>
+
+</a>
+
+</td>
+
+<!-- ELIMINAR -->
+<td>
+
+<a
+href="/admin/eliminar_alumno/{{ alumno._id }}"
+onclick="return confirm('¿Eliminar alumno?')"
+>
+
+<button style="
+background:#c0392b;
+color:white;
+border:none;
+padding:8px 12px;
+border-radius:8px;
+cursor:pointer;
+">
+
+🗑 Eliminar
+
+</button>
+
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+{% endblock %}

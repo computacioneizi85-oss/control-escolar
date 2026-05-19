@@ -970,6 +970,39 @@ def expediente_alumno(id):
         alumno=alumno
     )
 
+# ================= EXPEDIENTES =================
+@admin_bp.route("/expedientes")
+def admin_expedientes():
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    grupo = request.args.get("grupo", "")
+    buscar = request.args.get("buscar", "")
+
+    filtro = {}
+
+    if grupo:
+        filtro["grupo"] = grupo
+
+    if buscar:
+        filtro["nombre"] = {
+            "$regex": buscar,
+            "$options": "i"
+        }
+
+    lista_alumnos = list(
+        alumnos.find(filtro)
+    )
+
+    return render_template(
+        "expedientes_admin.html",
+        alumnos=lista_alumnos,
+        grupos=list(grupos.find()),
+        grupo_actual=grupo,
+        buscar_actual=buscar
+    )
+
 # ================= REPORTES =================
 @admin_bp.route("/reportes")
 def admin_reportes():
