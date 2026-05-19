@@ -214,15 +214,10 @@ def registro_completo_alumno():
     })
 
     bitacora.insert_one({
-
         "usuario": session.get("usuario"),
-
         "accion": "Registro completo alumno",
-
         "detalle": nombre,
-
         "fecha": datetime.now()
-
     })
 
     return redirect("/admin")
