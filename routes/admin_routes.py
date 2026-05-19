@@ -1179,27 +1179,6 @@ def eliminar_admin(id):
     return redirect("/admin/admins")
 
 
-# ================= ELIMINAR CITATORIO =================
-@admin_bp.route("/eliminar_citatorio/<id>")
-def eliminar_citatorio(id):
-
-    if not verificar_admin():
-        return redirect(url_for("auth.login"))
-
-    citatorios.delete_one({
-        "_id": ObjectId(id)
-    })
-
-    bitacora.insert_one({
-        "usuario": session.get("usuario"),
-        "accion": "Eliminó citatorio",
-        "detalle": id,
-        "fecha": datetime.now()
-    })
-
-    return redirect("/admin/citatorios")
-
-
 # ================= ELIMINAR REPORTE =================
 @admin_bp.route("/eliminar_reporte/<id>")
 def eliminar_reporte(id):
