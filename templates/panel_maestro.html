@@ -132,6 +132,42 @@ width:100%;
 
 <h2>👨‍🏫 Panel Maestro</h2>
 
+{% if config.get("captura_evaluaciones", False) %}
+
+<div style="
+background:#d4efdf;
+color:#145a32;
+padding:15px;
+border-radius:12px;
+margin-bottom:20px;
+font-weight:bold;
+text-align:center;
+border:2px solid #27ae60;
+">
+
+✅ La captura de evaluaciones está HABILITADA
+
+</div>
+
+{% else %}
+
+<div style="
+background:#f5b7b1;
+color:#78281f;
+padding:15px;
+border-radius:12px;
+margin-bottom:20px;
+font-weight:bold;
+text-align:center;
+border:2px solid #c0392b;
+">
+
+🚫 La captura de evaluaciones está DESHABILITADA por dirección
+
+</div>
+
+{% endif %}
+
 <div class="menu-panel">
 
 <button onclick="mostrarSeccion('inicio')">
@@ -631,3 +667,5 @@ card.style.background = "#f5b7b1"
 </script>
 
 {% endblock %}
+
+
