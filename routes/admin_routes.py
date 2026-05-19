@@ -967,10 +967,19 @@ def guardar_expediente(id):
 
                 "grupo": request.form.get("grupo"),
 
-                "usuario": request.form.get("usuario"),
-                "password": request.form.get("password"),
+	       "usuario": request.form.get("usuario"),
 
-                "foto": foto_base64
+	       "password": request.form.get("password"),
+
+# 🔥 VISIBLES EN ADMIN
+"password_admin": request.form.get("password"),
+
+# 🔥 LOGIN PADRE
+"usuario_padre": request.form.get("padre_correo"),
+
+"password_padre": request.form.get("password"),
+
+"foto": foto_base64
             }
         }
     )
