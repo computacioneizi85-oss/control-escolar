@@ -110,44 +110,44 @@ def crear_alumno():
         "usuario": usuario
     })
 
-    if existe:
-        return "⚠️ Ya existe un alumno con ese usuario"
+if existe:
+    return "⚠️ Ya existe un alumno con ese usuario"
 
-alumnos.insert_one({
+    alumnos.insert_one({
 
-    "nombre": request.form.get("nombre"),
+        "nombre": request.form.get("nombre"),
 
-    "grupo": request.form.get("grupo"),
+        "grupo": request.form.get("grupo"),
 
-    # ================= LOGIN ALUMNO =================
-    "usuario": usuario,
+        # ================= LOGIN ALUMNO =================
+        "usuario": usuario,
 
-    "password": password,
+        "password": password,
 
-    "password_admin": password,
+        "password_admin": password,
 
-    # ================= PADRE =================
-    "padre_nombre": request.form.get("padre_nombre"),
+        # ================= PADRE =================
+        "padre_nombre": request.form.get("padre_nombre"),
 
-    "padre_telefono": request.form.get("padre_telefono"),
+        "padre_telefono": request.form.get("padre_telefono"),
 
-    "padre_correo": request.form.get("padre_correo"),
+        "padre_correo": request.form.get("padre_correo"),
 
-    # ================= LOGIN PADRE =================
-    "usuario_padre": request.form.get("padre_correo"),
+        # ================= LOGIN PADRE =================
+        "usuario_padre": request.form.get("padre_correo"),
 
-    "password_padre": password,
+        "password_padre": password,
 
-    # ================= SISTEMA =================
-    "foto": foto_base64,
+        # ================= SISTEMA =================
+        "foto": foto_base64,
 
-    "rol": "alumno",
+        "rol": "alumno",
 
-    "calificaciones": [],
+        "calificaciones": [],
 
-    "asistencias": []
+        "asistencias": []
 
-})
+    })
 
     bitacora.insert_one({
         "usuario": session.get("usuario"),
@@ -157,7 +157,6 @@ alumnos.insert_one({
     })
 
     return redirect("/admin/alumnos")
-
 
 # ================= REGISTRO COMPLETO ALUMNO =================
 @admin_bp.route("/registro_completo_alumno", methods=["POST"])
