@@ -145,32 +145,32 @@ def procesar_login():
 
         return redirect(url_for("alumno.panel_alumno"))
 
-# =========================
-# PADRE
-# =========================
+    # =========================
+    # PADRE
+    # =========================
 
-padre = alumnos.find_one({
-    "usuario_padre": usuario
-})
-
-if padre and validar_password(
-    padre.get("password_padre"),
-    password
-):
-
-    session["usuario"] = usuario
-    session["rol"] = "padre"
-    session["alumno"] = padre["nombre"]
-
-    auditoria.insert_one({
-        "usuario": usuario,
-        "rol": "padre",
-        "evento": "login",
-        "ip": ip,
-        "fecha": datetime.now()
+    padre = alumnos.find_one({
+        "usuario_padre": usuario
     })
 
-    return redirect(url_for("padre.panel_padre"))
+    if padre and validar_password(
+        padre.get("password_padre"),
+        password
+    ):
+
+        session["usuario"] = usuario
+        session["rol"] = "padre"
+        session["alumno"] = padre["nombre"]
+
+        auditoria.insert_one({
+            "usuario": usuario,
+            "rol": "padre",
+            "evento": "login",
+            "ip": ip,
+            "fecha": datetime.now()
+        })
+
+        return redirect(url_for("padre.panel_padre"))
 
     return redirect(url_for("auth.login"))
 
