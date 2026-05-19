@@ -113,16 +113,41 @@ def crear_alumno():
     if existe:
         return "⚠️ Ya existe un alumno con ese usuario"
 
-    alumnos.insert_one({
-        "nombre": request.form.get("nombre"),
-        "grupo": request.form.get("grupo"),
-        "usuario": usuario,
-        "password": password,
-        "foto": foto_base64,
-        "rol": "alumno",
-        "calificaciones": [],
-        "asistencias": []
-    })
+alumnos.insert_one({
+
+    "nombre": request.form.get("nombre"),
+
+    "grupo": request.form.get("grupo"),
+
+    # ================= LOGIN ALUMNO =================
+    "usuario": usuario,
+
+    "password": password,
+
+    "password_admin": password,
+
+    # ================= PADRE =================
+    "padre_nombre": request.form.get("padre_nombre"),
+
+    "padre_telefono": request.form.get("padre_telefono"),
+
+    "padre_correo": request.form.get("padre_correo"),
+
+    # ================= LOGIN PADRE =================
+    "usuario_padre": request.form.get("padre_correo"),
+
+    "password_padre": password,
+
+    # ================= SISTEMA =================
+    "foto": foto_base64,
+
+    "rol": "alumno",
+
+    "calificaciones": [],
+
+    "asistencias": []
+
+})
 
     bitacora.insert_one({
         "usuario": session.get("usuario"),
