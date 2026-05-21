@@ -46,30 +46,32 @@ def admin_dashboard():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
+config = configuracion.find_one()
+
+if not config:
+
+    configuracion.insert_one({
+        "captura_evaluaciones": True,
+        "trimestre_1": True,
+        "trimestre_2": False,
+        "trimestre_3": False
+    })
+
     config = configuracion.find_one()
 
-    if not config:
-        config = {
-            "trimestre_1": True,
-            "trimestre_2": False,
-            "trimestre_3": False,
-            "captura_evaluaciones": True
-        }
-
-    return render_template(
-        "admin.html",
-        alumnos=list(alumnos.find()),
-        grupos=list(grupos.find()),
-        maestros=list(maestros.find()),
-        reportes=list(reportes.find()),
-        citatorios=list(citatorios.find()),
-        alumnos_riesgo=[],
-        ultimos_reportes=[],
-        total_asistencias=0,
-        total_faltas=0,
-        config=config
-    )
-
+return render_template(
+    "admin.html",
+    alumnos=list(alumnos.find()),
+    grupos=list(grupos.find()),
+    maestros=list(maestros.find()),
+    reportes=list(reportes.find()),
+    citatorios=list(citatorios.find()),
+    alumnos_riesgo=[],
+    ultimos_reportes=[],
+    total_asistencias=0,
+    total_faltas=0,
+    config=config
+)
 
 # ================= ALUMNOS =================
 @admin_bp.route("/alumnos")
@@ -1414,7 +1416,7 @@ def descargar_backup():
 @admin_bp.route("/reset_total", methods=["POST"])
 def reset_total():
 
-    if session.get("usuario") != "admin":
+    if session.get("rol") != "admin":
         return redirect("/admin")
 
     confirmacion = request.form.get("confirmacion")

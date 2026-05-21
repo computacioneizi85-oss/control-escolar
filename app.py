@@ -102,7 +102,7 @@ def proteger_rutas():
         request.path.startswith("/descargar_horario") or
         request.path.startswith("/citatorios") or
         request.path.startswith("/avisos_maestro") or
-        request.path.startswith("/guardar_asistencia_ajax") or
+        request.path.startswith("/guardar_asistencia") or
         request.path.startswith("/guardar_calificaciones_ajax") or
         request.path.startswith("/crear_reporte") or
         request.path.startswith("/enviar_reportes_maestro") or
