@@ -12,7 +12,7 @@ app = Flask(__name__)
 # =========================
 # CONFIGURACIÓN
 # =========================
-app.secret_key = os.environ.get("SECRET_KEY") or "control_escolar_2026_seguro_fijo"
+app.secret_key = os.environ.get("SECRET_KEY")
 
 app.permanent_session_lifetime = timedelta(minutes=30)
 
@@ -91,7 +91,7 @@ def proteger_rutas():
     # ================= ADMIN =================
 
     if request.path.startswith("/admin"):
-        if rol != "admin":
+        if rol not in ["admin", "superadmin"]:
             return redirect(url_for("auth.login"))
 
     # ================= MAESTRO =================
