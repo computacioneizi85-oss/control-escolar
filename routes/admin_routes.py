@@ -293,13 +293,32 @@ def crear_maestro():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    maestros.insert_one({
-        "nombre": request.form.get("nombre"),
-        "usuario": request.form.get("usuario"),
-        "password": request.form.get("password"),
-        "grupos": [],
-        "materias": []
-    })
+grupo = request.form.get("grupo")
+
+materias_grupo = list(
+    set(
+        m.get("nombre")
+        for m in materias.find({
+            "grupo": grupo
+        })
+    )
+)
+
+maestros.insert_one({
+
+    "nombre": request.form.get("nombre"),
+
+    "usuario": request.form.get("usuario"),
+
+    "password": request.form.get("password"),
+
+    # 🔥 ASIGNAR GRUPO
+    "grupos": [grupo],
+
+    # 🔥 ASIGNAR MATERIAS AUTOMÁTICAS
+    "materias": materias_grupo
+
+})
 
     bitacora.insert_one({
         "usuario": session.get("usuario"),
