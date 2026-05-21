@@ -552,7 +552,7 @@ let input = document.getElementById(
 "cal_"+alumno+"_"+materia+"_"+trimestre
 )
 
-fetch("/guardar_calificaciones_ajax",{
+fetch("{{ url_for('maestro.guardar_calificaciones_ajax') }}",{
 
 method:"POST",
 
@@ -628,7 +628,7 @@ let fecha = document.getElementById(
 "fecha_"+alumno
 ).value
 
-fetch("/guardar_asistencia_ajax", {
+fetch("{{ url_for('maestro.guardar_asistencia_ajax') }}", {
 
 method:"POST",
 
