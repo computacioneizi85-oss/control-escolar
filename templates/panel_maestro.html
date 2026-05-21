@@ -427,7 +427,12 @@ data-grupo="{{ alumno.grupo }}"
 
 <p>{{ alumno.grupo }}</p>
 
-<input type="hidden" id="fecha_{{ alumno._id }}" value="{{ fecha_actual }}">
+<input
+type="hidden"
+name="fecha"
+id="fecha_{{ alumno._id }}"
+value="{{ fecha_actual }}"
+>
 
 <button
 type="button"
@@ -641,7 +646,14 @@ estado: estado
 
 })
 
-.then(()=>{
+.then(response=>{
+
+if(!response.ok){
+
+alert("Error guardando asistencia")
+return
+
+}
 
 let card = document.getElementById(
 "card_"+alumno
@@ -662,7 +674,6 @@ card.style.background = "#f5b7b1"
 }
 
 })
-}
 
 </script>
 

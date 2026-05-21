@@ -40,6 +40,20 @@ def panel_maestro():
     grupos = maestro.get("grupos", [])
     materias_maestro = maestro.get("materias", [])
 
+if not materias_maestro:
+
+    materias_maestro = list(
+        set(
+            h.get("materia", "")
+            for h in horarios.find({
+                "grupo": {
+                    "$in": grupos
+                }
+            })
+            if h.get("materia")
+        )
+    )
+
     lista_alumnos = list(
         alumnos.find({
             "grupo": {
