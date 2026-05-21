@@ -320,7 +320,7 @@ maestros.insert_one({
 
 })
 
-    bitacora.insert_one({
+bitacora.insert_one({
         "usuario": session.get("usuario"),
         "accion": "Creó maestro",
         "detalle": request.form.get("nombre"),
