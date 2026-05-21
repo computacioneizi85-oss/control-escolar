@@ -37,10 +37,24 @@ def panel_maestro():
         "usuario": session.get("usuario")
     }) or {}
 
-    grupos = maestro.get("grupos", [])
-    materias_maestro = maestro.get("materias", [])
+grupos = maestro.get("grupos", [])
+materias_maestro = maestro.get("materias", [])
 
-if not materias_maestro:
+    # 🔥 SI NO TIENE MATERIAS
+    # TOMARLAS DEL HORARIO
+    if not materias_maestro:
+
+        materias_maestro = list(
+            set(
+                h.get("materia", "")
+                for h in horarios.find({
+                    "grupo": {
+                        "$in": grupos
+                    }
+                })
+                if h.get("materia")
+            )
+        )
 
     materias_maestro = list(
         set(
