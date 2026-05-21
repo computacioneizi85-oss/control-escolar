@@ -533,3 +533,67 @@ def guardar_asistencia():
     )
 
     return redirect("/asistencias")
+
+# ================= AJAX ASISTENCIAS =================
+@maestro_bp.route("/guardar_asistencia_ajax", methods=["POST"])
+def guardar_asistencia_ajax():
+
+    if not verificar_maestro():
+        return {"status": "error"}
+
+    alumno_id = request.form.get("alumno")
+    fecha = request.form.get("fecha")
+    estado = request.form.get("estado")
+
+    try:
+
+        alumno = alumnos.find_one({
+            "_id": ObjectId(alumno_id)
+        })
+
+        if not alumno:
+            return {
+                "status": "error",
+                "msg": "Alumno no encontrado"
+            }
+
+        # ELIMINAR REGISTRO PREVIO DEL MISMO DÍA
+        alumnos.update_one(
+            {
+                "_id": ObjectId(alumno_id)
+            },
+            {
+                "$pull": {
+                    "asistencias": {
+                        "fecha": fecha
+                    }
+                }
+            }
+        )
+
+        # INSERTAR NUEVA ASISTENCIA
+        alumnos.update_one(
+            {
+                "_id": ObjectId(alumno_id)
+            },
+            {
+                "$push": {
+                    "asistencias": {
+                        "fecha": fecha,
+                        "estado": estado,
+                        "maestro": session.get("usuario")
+                    }
+                }
+            }
+        )
+
+        return {
+            "status": "ok"
+        }
+
+    except Exception as e:
+
+        return {
+            "status": "error",
+            "msg": str(e)
+        }
