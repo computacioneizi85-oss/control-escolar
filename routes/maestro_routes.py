@@ -37,11 +37,12 @@ def panel_maestro():
         "usuario": session.get("usuario")
     }) or {}
 
-grupos = maestro.get("grupos", [])
-materias_maestro = maestro.get("materias", [])
+    grupos = maestro.get("grupos", [])
+
+    materias_maestro = maestro.get("materias", [])
 
     # 🔥 SI NO TIENE MATERIAS
-    # TOMARLAS DEL HORARIO
+    # TOMARLAS AUTOMÁTICAMENTE DEL HORARIO
     if not materias_maestro:
 
         materias_maestro = list(
@@ -56,18 +57,6 @@ materias_maestro = maestro.get("materias", [])
             )
         )
 
-    materias_maestro = list(
-        set(
-            h.get("materia", "")
-            for h in horarios.find({
-                "grupo": {
-                    "$in": grupos
-                }
-            })
-            if h.get("materia")
-        )
-    )
-
     lista_alumnos = list(
         alumnos.find({
             "grupo": {
@@ -77,6 +66,7 @@ materias_maestro = maestro.get("materias", [])
     )
 
     nombre_maestro = maestro.get("nombre", "")
+
     usuario_maestro = maestro.get("usuario", "")
 
     lista_horarios = list(
@@ -104,8 +94,8 @@ materias_maestro = maestro.get("materias", [])
     )
 
     config = configuracion.find_one(
-    sort=[("_id", -1)]
-) or {
+        sort=[("_id", -1)]
+    ) or {
         "captura_evaluaciones": True,
         "trimestre_1": True,
         "trimestre_2": False,
