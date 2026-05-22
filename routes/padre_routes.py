@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, session, redirect, request
 from bson.objectid import ObjectId
+from datetime import datetime
 
 from database.mongo import (
     alumnos,
@@ -28,22 +29,25 @@ def panel_padre():
     alumno = alumnos.find_one({"nombre": alumno_nombre})
 
     lista_citatorios = list(
-        citatorios.find({"alumno": alumno_nombre})
+        citatorios.find({
+            "alumno": alumno_nombre,
+            "visible_padre": True
+        })
     )
 
-lista_reportes = list(
-    reportes.find({
-        "alumno": alumno_nombre,
-        "visible_padre": True
-    })
-)
+    lista_reportes = list(
+        reportes.find({
+            "alumno": alumno_nombre,
+            "visible_padre": True
+        })
+    )
 
-return render_template(
-    "panel_padre.html",
-    alumno=alumno,
-    citatorios=lista_citatorios,
-    reportes=lista_reportes
-)
+    return render_template(
+        "panel_padre.html",
+        alumno=alumno,
+        citatorios=lista_citatorios,
+        reportes=lista_reportes
+    )
 
 
 # ================= AVISOS PADRE =================
