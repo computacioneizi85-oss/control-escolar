@@ -93,15 +93,15 @@ def proteger_rutas():
     # VALIDAR SESIÓN
     # =========================
 
-if "usuario" not in session:
+    if "usuario" not in session:
 
-    rutas_permitidas = [
-        "/",
-        "/login"
-    ]
+        rutas_permitidas = [
+            "/",
+            "/login"
+        ]
 
-    if request.path not in rutas_permitidas:
-        return redirect(url_for("auth.login"))
+        if request.path not in rutas_permitidas:
+            return redirect(url_for("auth.login"))
 
     session.permanent = True
 
@@ -150,7 +150,6 @@ if "usuario" not in session:
             return redirect(url_for("auth.login"))
 
     return
-
 
 # =========================
 # NO CACHE
