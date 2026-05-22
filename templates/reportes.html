@@ -33,6 +33,18 @@
 PDF
 </button>
 
+{% if r.estatus == "aprobado" %}
+
+<button style="
+background:#27ae60;
+color:white;
+cursor:default;
+">
+✔ APROBADO
+</button>
+
+{% else %}
+
 <a href="/admin/aprobar_reporte/{{ r._id }}">
 
 <button style="
@@ -43,6 +55,8 @@ color:white;
 </button>
 
 </a>
+
+{% endif %}
 
 <a href="/admin/eliminar_reporte/{{ r._id }}">
 
