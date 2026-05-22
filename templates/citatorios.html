@@ -53,6 +53,7 @@ LISTA DE CITATORIOS
 <th>Motivo</th>
 <th>Fecha</th>
 <th>Hora</th>
+<th>Enviado por</th>
 <th>Estado</th>
 <th>Enterado</th>
 <th>Acciones</th>
@@ -72,6 +73,10 @@ LISTA DE CITATORIOS
 <td>{{ c.fecha_cita or c.fecha or "—" }}</td>
 
 <td>{{ c.hora }}</td>
+
+<td>
+{{ c.maestro or "Dirección" }}
+</td>
 
 <!-- ESTADO -->
 <td>

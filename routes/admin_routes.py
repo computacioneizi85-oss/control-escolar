@@ -806,15 +806,28 @@ def crear_citatorio():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    citatorios.insert_one({
-        "alumno": request.form.get("alumno"),
-        "grupo": request.form.get("grupo"),
-        "motivo": request.form.get("motivo"),
-        "fecha_cita": request.form.get("fecha"),
-        "hora": request.form.get("hora"),
-        "estatus": "pendiente",
-        "enterado": False
-    })
+citatorios.insert_one({
+
+    "alumno": request.form.get("alumno"),
+
+    "grupo": request.form.get("grupo"),
+
+    "motivo": request.form.get("motivo"),
+
+    "fecha_cita": request.form.get("fecha"),
+
+    "hora": request.form.get("hora"),
+
+    "estatus": "pendiente",
+
+    "enterado": False,
+
+    # 🔥 NUEVO
+    "maestro": session.get("usuario"),
+
+    "fecha_creacion": datetime.now()
+
+})
 
     bitacora.insert_one({
         "usuario": session.get("usuario"),
@@ -1173,12 +1186,19 @@ def crear_aviso():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    avisos.insert_one({
-        "tipo": request.form.get("tipo"),
-        "titulo": request.form.get("titulo"),
-        "mensaje": request.form.get("mensaje"),
-        "fecha": datetime.now().strftime("%d/%m/%Y %H:%M")
-    })
+avisos.insert_one({
+
+    "tipo": request.form.get("tipo"),
+
+    "titulo": request.form.get("titulo"),
+
+    "mensaje": request.form.get("mensaje"),
+
+    "autor": session.get("usuario"),
+
+    "fecha": datetime.now()
+
+})
 
     bitacora.insert_one({
         "usuario": session.get("usuario"),

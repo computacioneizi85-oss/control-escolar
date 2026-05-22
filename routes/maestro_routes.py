@@ -349,7 +349,9 @@ def citatorios_maestro():
         })
     )
 
-    lista_citatorios = list(citatorios.find())
+    lista_citatorios = list(
+    citatorios.find().sort("fecha_creacion", -1)
+)
 
     return render_template(
         "citatorios_maestro.html",
@@ -365,15 +367,28 @@ def crear_citatorio_maestro():
     if not verificar_maestro():
         return redirect(url_for("auth.login"))
 
-    citatorios.insert_one({
-        "alumno": request.form.get("alumno"),
-        "grupo": request.form.get("grupo"),
-        "motivo": request.form.get("motivo"),
-        "fecha_cita": request.form.get("fecha"),
-        "hora": request.form.get("hora"),
-        "estatus": "pendiente",
-        "enterado": False
-    })
+citatorios.insert_one({
+
+    "alumno": request.form.get("alumno"),
+
+    "grupo": request.form.get("grupo"),
+
+    "motivo": request.form.get("motivo"),
+
+    "fecha_cita": request.form.get("fecha"),
+
+    "hora": request.form.get("hora"),
+
+    "estatus": "pendiente",
+
+    "enterado": False,
+
+    # 🔥 NUEVO
+    "maestro": session.get("usuario"),
+
+    "fecha_creacion": datetime.now()
+
+})
 
     return redirect("/citatorios")
 
@@ -431,10 +446,15 @@ def avisos_maestro():
         "usuario": session.get("usuario")
     }) or {}
 
-    return render_template(
-        "avisos_maestro.html",
-        grupos=maestro.get("grupos", [])
+return render_template(
+    "avisos_maestro.html",
+
+    grupos=maestro.get("grupos", []),
+
+    avisos=list(
+        avisos.find().sort("fecha", -1)
     )
+)
 
 
 # ================= CREAR AVISO =================
@@ -444,12 +464,19 @@ def crear_aviso_maestro():
     if not verificar_maestro():
         return redirect(url_for("auth.login"))
 
-    avisos.insert_one({
-        "grupo": request.form.get("grupo"),
-        "mensaje": request.form.get("mensaje"),
-        "autor": session.get("usuario"),
-        "fecha": datetime.now()
-    })
+avisos.insert_one({
+
+    "grupo": request.form.get("grupo"),
+
+    "mensaje": request.form.get("mensaje"),
+
+    "autor": session.get("usuario"),
+
+    "tipo": "maestro",
+
+    "fecha": datetime.now()
+
+})
 
     return redirect("/avisos_maestro")
 
