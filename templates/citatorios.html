@@ -56,6 +56,7 @@ LISTA DE CITATORIOS
 <th>Enviado por</th>
 <th>Estado</th>
 <th>Enterado</th>
+<th>Asistencia</th>
 <th>Acciones</th>
 </tr>
 
@@ -122,9 +123,51 @@ Pendiente
 
 </td>
 
+<!-- ASISTENCIA -->
+
+<td>
+
+{% if c.asistencia_confirmada %}
+
+<span style="
+color:green;
+font-weight:bold;
+">
+✔ Asistió
+</span>
+
+{% if c.fecha_asistencia %}
+
+<br>
+
+<small>
+{{ c.fecha_asistencia.strftime('%d/%m/%Y - %H:%M') }}
+</small>
+
+{% endif %}
+
+{% else %}
+
+<span style="
+color:red;
+font-weight:bold;
+">
+Pendiente
+</span>
+
+{% endif %}
+
+</td>
+
 <td>
 
 <a href="{{ url_for('admin.citatorio_pdf', id=c._id) }}" target="_blank">
+
+<button style="background:#3498db;color:white;">
+PDF
+</button>
+
+</a>
 
 <button style="background:#3498db;color:white;">
 PDF
@@ -140,6 +183,33 @@ cursor:default;
 ✔ APROBADO
 </button>
 
+<br><br>
+
+{% if c.asistencia_confirmada %}
+
+<button style="
+background:#27ae60;
+color:white;
+cursor:default;
+">
+✔ Asistencia confirmada
+</button>
+
+{% else %}
+
+<a href="/admin/confirmar_asistencia/{{ c._id }}">
+
+<button style="
+background:#8e44ad;
+color:white;
+">
+📅 Confirmar asistencia
+</button>
+
+</a>
+
+{% endif %}
+
 {% else %}
 
 <a href="/admin/aprobar_citatorio/{{ c._id }}">
@@ -149,34 +219,6 @@ background:#2980b9;
 color:white;
 ">
 ✔ Aprobar
-</button>
-
-</a>
-
-{% endif %}
-
-</a>
-
-{% if c.estatus != "asistio" %}
-
-<a href="{{ url_for('admin.confirmar_asistencia', id=c._id) }}">
-
-<button style="background:#27ae60;color:white;">
-✔ Confirmar
-
-</a>
-
-<a href="/admin/eliminar_citatorio/{{ c._id }}">
-
-<button style="
-background:#c0392b;
-color:white;
-">
-🗑 Eliminar
-</button>
-
-</a>
-
 </button>
 
 </a>
