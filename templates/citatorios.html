@@ -97,9 +97,27 @@ LISTA DE CITATORIOS
 <td>
 
 {% if c.enterado %}
-<span style="color:green; font-weight:bold;">✔ Sí</span>
+
+<span style="color:green; font-weight:bold;">
+✔ Enterado
+</span>
+
+{% if c.fecha_enterado %}
+
+<br>
+
+<small>
+{{ c.fecha_enterado }}
+</small>
+
+{% endif %}
+
 {% else %}
-<span style="color:red;">No</span>
+
+<span style="color:red;">
+Pendiente
+</span>
+
 {% endif %}
 
 </td>
@@ -112,16 +130,30 @@ LISTA DE CITATORIOS
 PDF
 </button>
 
-<a href="/admin/aprobar_citatorio/{{ c._id }}">
+{% if c.estatus == "aprobado" %}
 
 <button style="
 background:#27ae60;
+color:white;
+cursor:default;
+">
+✔ APROBADO
+</button>
+
+{% else %}
+
+<a href="/admin/aprobar_citatorio/{{ c._id }}">
+
+<button style="
+background:#2980b9;
 color:white;
 ">
 ✔ Aprobar
 </button>
 
 </a>
+
+{% endif %}
 
 </a>
 
