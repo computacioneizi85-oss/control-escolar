@@ -872,7 +872,9 @@ def confirmar_asistencia(id):
         {
             "$set": {
                 "estatus": "asistio",
-                "enterado": True
+                "enterado": True,
+                "asistencia_confirmada": True,
+                "fecha_asistencia": datetime.now()
             }
         }
     )
@@ -1526,21 +1528,3 @@ def reset_total():
     bitacora.delete_many({})
 
     return redirect("/admin")
-
-# =========================
-# CONFIRMAR ASISTENCIA PADRE
-# =========================
-@admin_bp.route("/admin/confirmar_asistencia/<id>")
-def confirmar_asistencia(id):
-
-    citatorios.update_one(
-        {"_id": ObjectId(id)},
-        {
-            "$set": {
-                "asistencia_confirmada": True,
-                "fecha_asistencia": datetime.now()
-            }
-        }
-    )
-
-    return redirect("/admin/citatorios")
