@@ -99,15 +99,15 @@ def enterado_citatorio(id):
     if not verificar_padre():
         return redirect("/")
 
-citatorios.update_one(
-    {"_id": ObjectId(id)},
-    {
-        "$set": {
-            "enterado": True,
-            "fecha_enterado": datetime.now()
+    citatorios.update_one(
+        {"_id": ObjectId(id)},
+        {
+            "$set": {
+                "enterado": True,
+                "fecha_enterado": datetime.now()
+            }
         }
-    }
-)
+    )
 
     return redirect("/panel_padre")
 
