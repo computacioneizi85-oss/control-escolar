@@ -14,7 +14,19 @@ app = Flask(__name__)
 # =========================
 app.secret_key = os.environ.get("SECRET_KEY")
 
-app.permanent_session_lifetime = timedelta(minutes=30)
+# =========================
+# SESIONES
+# =========================
+
+app.config["SESSION_PERMANENT"] = True
+
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
+
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+app.config["SESSION_COOKIE_SECURE"] = True
 
 # =========================
 # IMPORTAR BLUEPRINTS
@@ -81,7 +93,14 @@ def proteger_rutas():
     # VALIDAR SESIÓN
     # =========================
 
-    if "usuario" not in session:
+if "usuario" not in session:
+
+    rutas_permitidas = [
+        "/",
+        "/login"
+    ]
+
+    if request.path not in rutas_permitidas:
         return redirect(url_for("auth.login"))
 
     session.permanent = True
@@ -139,14 +158,13 @@ def proteger_rutas():
 @app.after_request
 def no_cache(response):
 
-    response.headers["Cache-Control"] = "no-store"
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
 
     response.headers["Pragma"] = "no-cache"
 
     response.headers["Expires"] = "0"
 
     return response
-
 
 # =========================
 # RUN

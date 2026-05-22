@@ -62,9 +62,11 @@ def procesar_login():
 
     if admin and validar_password(admin.get("password"), password):
 
-        session["usuario"] = admin["usuario"]
-        session["rol"] = admin.get("rol", "superadmin")
-        session["escuela"] = admin.get("escuela", "GLOBAL")
+session["usuario"] = admin["usuario"]
+session["rol"] = admin.get("rol", "superadmin")
+session["escuela"] = admin.get("escuela", "GLOBAL")
+
+session.permanent = True
 
         auditoria.insert_one({
             "usuario": usuario,
@@ -87,10 +89,12 @@ def procesar_login():
 
     if admin_sec and validar_password(admin_sec.get("password"), password):
 
-        session["usuario"] = admin_sec["usuario"]
-        session["rol"] = "admin"
-        session["escuela"] = admin_sec.get("escuela", "")
-        session["admin_secundario"] = True
+session["usuario"] = admin_sec["usuario"]
+session["rol"] = "admin"
+session["escuela"] = admin_sec.get("escuela", "")
+session["admin_secundario"] = True
+
+session.permanent = True
 
         auditoria.insert_one({
             "usuario": usuario,
@@ -110,8 +114,10 @@ def procesar_login():
 
     if maestro and validar_password(maestro.get("password"), password):
 
-        session["usuario"] = maestro["usuario"]
-        session["rol"] = "maestro"
+session["usuario"] = maestro["usuario"]
+session["rol"] = "maestro"
+
+session.permanent = True
 
         auditoria.insert_one({
             "usuario": usuario,
@@ -131,9 +137,11 @@ def procesar_login():
 
     if alumno and validar_password(alumno.get("password"), password):
 
-        session["usuario"] = alumno["usuario"]
-        session["rol"] = "alumno"
-        session["alumno"] = alumno["nombre"]
+session["usuario"] = alumno["usuario"]
+session["rol"] = "alumno"
+session["alumno"] = alumno["nombre"]
+
+session.permanent = True
 
         auditoria.insert_one({
             "usuario": usuario,
@@ -158,9 +166,11 @@ def procesar_login():
         password
     ):
 
-        session["usuario"] = usuario
-        session["rol"] = "padre"
-        session["alumno"] = padre["nombre"]
+session["usuario"] = usuario
+session["rol"] = "padre"
+session["alumno"] = padre["nombre"]
+
+session.permanent = True
 
         auditoria.insert_one({
             "usuario": usuario,

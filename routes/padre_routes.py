@@ -22,7 +22,7 @@ def verificar_padre():
 def panel_padre():
 
     if not verificar_padre():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
     alumno_nombre = session.get("alumno")
 
@@ -55,7 +55,7 @@ def panel_padre():
 def ver_avisos_padre():
 
     if not verificar_padre():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
     alumno = alumnos.find_one({"nombre": session.get("alumno")})
 
@@ -77,7 +77,7 @@ def ver_avisos_padre():
 def marcar_enterado():
 
     if not verificar_padre():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
     alumnos.update_one(
         {
@@ -97,7 +97,7 @@ def marcar_enterado():
 def enterado_citatorio(id):
 
     if not verificar_padre():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
     citatorios.update_one(
         {"_id": ObjectId(id)},
@@ -116,7 +116,7 @@ def enterado_citatorio(id):
 def enterado_reporte(id):
 
     if not verificar_padre():
-        return redirect("/")
+        return redirect(url_for("auth.login"))
 
     reportes.update_one(
         {
