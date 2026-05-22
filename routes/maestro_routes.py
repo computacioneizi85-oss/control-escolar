@@ -621,3 +621,84 @@ def guardar_asistencia_ajax():
             "status": "error",
             "msg": str(e)
         }
+
+# ================= REPORTES =================
+@maestro_bp.route("/reportes_maestro")
+def reportes_maestro():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    maestro = maestros.find_one({
+        "usuario": session.get("usuario")
+    }) or {}
+
+    grupos_maestro = maestro.get("grupos", [])
+
+    lista_alumnos = list(
+        alumnos.find({
+            "grupo": {
+                "$in": grupos_maestro
+            }
+        })
+    )
+
+    lista_reportes = list(
+        reportes.find({
+            "maestro": session.get("usuario")
+        }).sort("fecha", -1)
+    )
+
+    return render_template(
+        "reportes_maestro.html",
+        alumnos=lista_alumnos,
+        reportes=lista_reportes
+    )
+
+
+# ================= CREAR REPORTE =================
+@maestro_bp.route("/crear_reporte", methods=["POST"])
+def crear_reporte():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    reportes.insert_one({
+
+        "alumno": request.form.get("alumno"),
+
+        "grupo": request.form.get("grupo"),
+
+        "comentario": request.form.get("comentario"),
+
+        "fecha": request.form.get("fecha"),
+
+        "estado": "pendiente",
+
+        "maestro": session.get("usuario")
+
+    })
+
+    return redirect("/reportes_maestro")
+
+
+# ================= ENVIAR REPORTES =================
+@maestro_bp.route("/enviar_reportes_maestro", methods=["POST"])
+def enviar_reportes_maestro():
+
+    if not verificar_maestro():
+        return redirect(url_for("auth.login"))
+
+    reportes.update_many(
+        {
+            "maestro": session.get("usuario"),
+            "estado": "pendiente"
+        },
+        {
+            "$set": {
+                "estado": "enviado"
+            }
+        }
+    )
+
+    return redirect("/reportes_maestro")
