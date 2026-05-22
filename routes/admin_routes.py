@@ -574,6 +574,9 @@ def guardar_configuracion():
 @admin_bp.route("/admins")
 def admins_panel():
 
+    if session.get("rol") != "superadmin":
+        return redirect("/admin")
+
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -1332,6 +1335,9 @@ def expediente_pdf(id):
 @admin_bp.route("/auditoria_pdf")
 def auditoria_pdf():
 
+    if session.get("rol") != "superadmin":
+        return redirect("/admin")
+
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -1360,6 +1366,9 @@ def auditoria_pdf():
 # ================= PDF BITACORA =================
 @admin_bp.route("/bitacora_pdf")
 def bitacora_pdf():
+
+    if session.get("rol") != "superadmin":
+        return redirect("/admin")
 
     if not verificar_admin():
         return redirect(url_for("auth.login"))
@@ -1501,8 +1510,34 @@ def descargar_backup():
 @admin_bp.route("/reset_total", methods=["POST"])
 def reset_total():
 
-    if session.get("rol") != "admin":
+    # SOLO SUPERADMIN
+    if session.get("rol") != "superadmin":
         return redirect("/admin")
+
+    confirmacion = request.form.get("confirmacion")
+
+    if confirmacion != "ELIMINAR TODO":
+        return redirect("/admin")
+
+    # ================= BACKUP AUTOMÁTICO =================
+    bitacora.insert_one({
+        "usuario": session.get("usuario"),
+        "accion": "RESET TOTAL DEL SISTEMA",
+        "fecha": datetime.now()
+    })
+
+    # ================= LIMPIAR COLECCIONES =================
+    alumnos.delete_many({})
+    grupos.delete_many({})
+    materias.delete_many({})
+    horarios.delete_many({})
+    reportes.delete_many({})
+    citatorios.delete_many({})
+    avisos.delete_many({})
+    auditoria.delete_many({})
+    bitacora.delete_many({})
+
+    return redirect("/admin")
 
     confirmacion = request.form.get("confirmacion")
 
