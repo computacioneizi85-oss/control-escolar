@@ -42,7 +42,7 @@ font-weight:bold;
 <br>
 
 <small>
-{{ r.fecha_enterado }}
+{{ r.fecha_enterado.strftime('%d/%m/%Y - %H:%M') }}
 </small>
 
 {% endif %}
