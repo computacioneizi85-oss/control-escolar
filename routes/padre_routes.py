@@ -1,7 +1,12 @@
 from flask import Blueprint, render_template, session, redirect, request
 from bson.objectid import ObjectId
 
-from database.mongo import alumnos, citatorios, avisos
+from database.mongo import (
+    alumnos,
+    citatorios,
+    avisos,
+    reportes
+)
 
 padre_bp = Blueprint("padre", __name__)
 
@@ -26,11 +31,19 @@ def panel_padre():
         citatorios.find({"alumno": alumno_nombre})
     )
 
-    return render_template(
-        "panel_padre.html",
-        alumno=alumno,
-        citatorios=lista_citatorios
-    )
+lista_reportes = list(
+    reportes.find({
+        "alumno": alumno_nombre,
+        "visible_padre": True
+    })
+)
+
+return render_template(
+    "panel_padre.html",
+    alumno=alumno,
+    citatorios=lista_citatorios,
+    reportes=lista_reportes
+)
 
 
 # ================= AVISOS PADRE =================
@@ -85,6 +98,27 @@ def enterado_citatorio(id):
     citatorios.update_one(
         {"_id": ObjectId(id)},
         {"$set": {"enterado": True}}
+    )
+
+    return redirect("/panel_padre")
+
+# ================= ENTERADO REPORTE =================
+@padre_bp.route("/enterado_reporte/<id>")
+def enterado_reporte(id):
+
+    if not verificar_padre():
+        return redirect("/")
+
+    reportes.update_one(
+        {
+            "_id": ObjectId(id)
+        },
+        {
+            "$set": {
+                "enterado": True,
+                "fecha_enterado": datetime.now()
+            }
+        }
     )
 
     return redirect("/panel_padre")

@@ -879,6 +879,28 @@ def confirmar_asistencia(id):
 
     return redirect("/admin/citatorios")
 
+# ================= APROBAR CITATORIO =================
+@admin_bp.route("/aprobar_citatorio/<id>")
+def aprobar_citatorio(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    citatorios.update_one(
+        {
+            "_id": ObjectId(id)
+        },
+        {
+            "$set": {
+                "estatus": "aprobado",
+                "visible_padre": True,
+                "fecha_aprobacion": datetime.now()
+            }
+        }
+    )
+
+    return redirect("/admin/citatorios")
+
 # ================= ELIMINAR CITATORIO =================
 @admin_bp.route("/eliminar_citatorio/<id>")
 def eliminar_citatorio(id):
@@ -1119,6 +1141,28 @@ def admin_reportes():
         "reportes.html",
         reportes=list(reportes.find())
     )
+
+# ================= APROBAR REPORTE =================
+@admin_bp.route("/aprobar_reporte/<id>")
+def aprobar_reporte(id):
+
+    if not verificar_admin():
+        return redirect(url_for("auth.login"))
+
+    reportes.update_one(
+        {
+            "_id": ObjectId(id)
+        },
+        {
+            "$set": {
+                "estatus": "aprobado",
+                "visible_padre": True,
+                "fecha_aprobacion": datetime.now()
+            }
+        }
+    )
+
+    return redirect("/admin/reportes")
 
 # ================= ELIMINAR REPORTE =================
 @admin_bp.route("/eliminar_reporte/<id>")

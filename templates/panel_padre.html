@@ -109,4 +109,58 @@ No hay citatorios
 
 </table>
 
+<hr>
+
+<h3>📄 Reportes disciplinarios</h3>
+
+{% if reportes %}
+
+{% for r in reportes %}
+
+<div style="
+background:white;
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+">
+
+<b>Alumno:</b> {{ r.alumno }}<br>
+<b>Grupo:</b> {{ r.grupo }}<br>
+<b>Comentario:</b> {{ r.comentario }}<br>
+<b>Maestro:</b> {{ r.maestro }}<br>
+
+{% if r.enterado %}
+
+<p style="color:green; font-weight:bold;">
+✔ Enterado
+</p>
+
+{% else %}
+
+<a href="/enterado_reporte/{{ r._id }}">
+
+<button style="
+background:#27ae60;
+color:white;
+">
+✔ ENTERADO
+</button>
+
+</a>
+
+{% endif %}
+
+</div>
+
+{% endfor %}
+
+{% else %}
+
+<p style="color:#777;">
+No hay reportes disciplinarios
+</p>
+
+{% endif %}
+
 {% endblock %}
