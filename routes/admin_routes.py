@@ -36,7 +36,7 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 # ================= VERIFICAR ADMIN =================
 def verificar_admin():
-    return session.get("rol") in ["admin", "superadmin"]
+    return session.get("rol") in ["admin", "superadmin"] or not session.get("admin_secundario")
 
 
 # ================= DASHBOARD =================
@@ -580,10 +580,21 @@ def admins_panel():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    return render_template(
-        "admins.html",
-        admins=list(admins_secundarios.find())
+return render_template(
+    "admins.html",
+
+    admins=list(
+        admins_secundarios.find()
+    ),
+
+    auditoria=list(
+        auditoria.find().sort("fecha", -1).limit(100)
+    ),
+
+    bitacora=list(
+        bitacora.find().sort("fecha", -1).limit(100)
     )
+)
 
 
 # ================= CREAR ADMIN =================
@@ -592,6 +603,10 @@ def crear_admin_secundario():
 
     if not verificar_admin():
         return redirect(url_for("auth.login"))
+
+    # 🔒 BLOQUEAR ADMIN SECUNDARIO
+    if session.get("admin_secundario"):
+        return redirect("/admin")
 
     usuario = request.form.get("usuario")
 
@@ -629,6 +644,10 @@ def desactivar_admin(id):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
+    # 🔒 SOLO SUPERUSUARIO
+    if session.get("admin_secundario"):
+        return redirect("/admin")
+
     admins_secundarios.update_one(
         {"_id": ObjectId(id)},
         {
@@ -654,6 +673,10 @@ def activar_admin(id):
 
     if not verificar_admin():
         return redirect(url_for("auth.login"))
+
+    # 🔒 SOLO SUPERUSUARIO
+    if session.get("admin_secundario"):
+        return redirect("/admin")
 
     admins_secundarios.update_one(
         {"_id": ObjectId(id)},
@@ -1332,6 +1355,10 @@ def auditoria_pdf():
     if session.get("rol") != "superadmin":
         return redirect("/admin")
 
+    # 🔒 BLOQUEAR ADMIN SECUNDARIO
+    if session.get("admin_secundario"):
+        return redirect("/admin")
+
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
@@ -1362,6 +1389,10 @@ def auditoria_pdf():
 def bitacora_pdf():
 
     if session.get("rol") != "superadmin":
+        return redirect("/admin")
+
+    # 🔒 BLOQUEAR ADMIN SECUNDARIO
+    if session.get("admin_secundario"):
         return redirect("/admin")
 
     if not verificar_admin():
@@ -1444,6 +1475,10 @@ def eliminar_admin(id):
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
+    # 🔒 SOLO SUPERUSUARIO
+    if session.get("admin_secundario"):
+        return redirect("/admin")
+
     admins_secundarios.delete_one({
         "_id": ObjectId(id)
     })
@@ -1463,6 +1498,10 @@ def descargar_backup():
 
     if not verificar_admin():
         return redirect(url_for("auth.login"))
+
+    # 🔒 SOLO SUPERUSUARIO
+    if session.get("admin_secundario"):
+        return redirect("/admin")
 
     import json
     from io import BytesIO
@@ -1504,13 +1543,11 @@ def descargar_backup():
 @admin_bp.route("/reset_total", methods=["POST"])
 def reset_total():
 
-    # SOLO SUPERADMIN
-    if session.get("rol") != "superadmin":
+    # 🔒 SOLO SUPERUSUARIO
+    if session.get("admin_secundario"):
         return redirect("/admin")
-    
-    confirmacion = request.form.get("confirmacion")
 
-    if confirmacion != "ELIMINAR TODO":
+    if session.get("rol") != "superadmin":
         return redirect("/admin")
 
     # ================= BACKUP AUTOMÁTICO =================
