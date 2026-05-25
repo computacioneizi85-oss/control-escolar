@@ -177,6 +177,31 @@
 
 {% endif %}
 
+{% if session.get("rol") == "superadmin" %}
+
+<div class="card">
+
+    <h2>⚠ Zona peligrosa</h2>
+
+    <form action="/admin/reset_total" method="POST">
+
+        <button style="
+        background:red;
+        color:white;
+        font-weight:bold;
+        padding:12px;
+        border:none;
+        border-radius:10px;
+        ">
+            ⚠ RESET TOTAL DEL SISTEMA
+        </button>
+
+    </form>
+
+</div>
+
+{% endif %}
+
 </div>
 
 {% endblock %}
