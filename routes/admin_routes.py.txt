@@ -36,8 +36,10 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 # ================= VERIFICAR ADMIN =================
 def verificar_admin():
-    return session.get("rol") in ["admin", "superadmin"] or not session.get("admin_secundario")
 
+    rol = session.get("rol")
+
+    return rol in ["admin", "superadmin"]
 
 # ================= DASHBOARD =================
 @admin_bp.route("/")
