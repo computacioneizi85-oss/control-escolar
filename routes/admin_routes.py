@@ -580,21 +580,21 @@ def admins_panel():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-return render_template(
-    "admins.html",
+    return render_template(
+        "admins.html",
 
-    admins=list(
-        admins_secundarios.find()
-    ),
+        admins=list(
+            admins_secundarios.find()
+        ),
 
-    auditoria=list(
-        auditoria.find().sort("fecha", -1).limit(100)
-    ),
+        auditoria=list(
+            auditoria.find().sort("fecha", -1).limit(100)
+        ),
 
-    bitacora=list(
-        bitacora.find().sort("fecha", -1).limit(100)
+        bitacora=list(
+            bitacora.find().sort("fecha", -1).limit(100)
+        )
     )
-)
 
 
 # ================= CREAR ADMIN =================
