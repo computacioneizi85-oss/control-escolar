@@ -163,73 +163,86 @@ def generar_kardex(nombre):
 
     c.line(50, 630, 550, 630)
 
-data = [["Materia", "Calificación"]]
+    data = [["Materia", "Calificación"]]
 
-suma = 0
-total = 0
+    suma = 0
+    total = 0
 
-calificaciones = alumno.get("calificaciones", [])
+    calificaciones = alumno.get("calificaciones", [])
 
-if calificaciones:
+    if calificaciones:
 
-    for cal in calificaciones:
+        for cal in calificaciones:
 
-        materia = cal.get("materia", "")
+            materia = cal.get("materia", "")
 
-        try:
-            valor = float(cal.get("calificacion", 0) or 0)
-        except:
-            valor = 0
+            try:
+                valor = float(cal.get("calificacion", 0) or 0)
+
+            except:
+                valor = 0
+
+            data.append([
+                materia,
+                str(valor)
+            ])
+
+            suma += valor
+            total += 1
+
+    else:
 
         data.append([
-            materia,
-            str(valor)
+            "Sin registros",
+            "-"
         ])
 
-        suma += valor
-        total += 1
+    tabla = Table(
+        data,
+        colWidths=[350, 120]
+    )
 
-else:
+    tabla.setStyle(TableStyle([
 
-    data.append([
-        "Sin registros",
-        "-"
-    ])
+        ("BACKGROUND", (0,0), (-1,0),
+            colors.HexColor("#1f4e79")),
 
-tabla = Table(
-    data,
-    colWidths=[350, 120]
-)
+        ("TEXTCOLOR", (0,0), (-1,0),
+            colors.white),
 
-tabla.setStyle(TableStyle([
+        ("FONTNAME", (0,0), (-1,0),
+            "Helvetica-Bold"),
 
-    ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#1f4e79")),
+        ("FONTSIZE", (0,0), (-1,-1),
+            10),
 
-    ("TEXTCOLOR", (0,0), (-1,0), colors.white),
+        ("GRID", (0,0), (-1,-1),
+            1,
+            colors.grey),
 
-    ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+        ("ROWBACKGROUNDS", (0,1), (-1,-1),
+            [colors.whitesmoke, colors.beige]),
 
-    ("FONTSIZE", (0,0), (-1,-1), 10),
+        ("BOTTOMPADDING", (0,0), (-1,0),
+            10),
 
-    ("GRID", (0,0), (-1,-1), 1, colors.grey),
+    ]))
 
-    ("ROWBACKGROUNDS", (0,1), (-1,-1),
-        [colors.whitesmoke, colors.beige]),
+    tabla.wrapOn(c, 50, 400)
 
-    ("BOTTOMPADDING", (0,0), (-1,0), 10),
-
-]))
-
-tabla.wrapOn(c, 50, 400)
-
-tabla.drawOn(c, 50, 430)
+    tabla.drawOn(c, 50, 430)
 
     promedio = round(suma / total, 2) if total else 0
 
     c.setFillColor(colors.HexColor("#1f4e79"))
 
-c.setFont("Helvetica-Bold", 14)
-    c.drawString(50, y - 20, f"Promedio general: {promedio}")
+    c.setFont("Helvetica-Bold", 14)
+
+    c.drawString(
+        50,
+        390,
+        f"Promedio general: {promedio}"
+    )
 
     firma(c, director)
 
@@ -310,17 +323,17 @@ def generar_reporte_pdf(reporte):
 
     texto = reporte.get("comentario", "")
 
-c.setFillColor(colors.HexColor("#2c3e50"))
+    c.setFillColor(colors.HexColor("#2c3e50"))
 
-c.roundRect(
-    45,
-    420,
-    500,
-    140,
-    10,
-    stroke=1,
-    fill=0
-)
+    c.roundRect(
+        45,
+        420,
+        500,
+        140,
+        10,
+        stroke=1,
+        fill=0
+    )
 
     y = 580
     for linea in texto.split("\n"):
@@ -351,15 +364,15 @@ def generar_citatorio_pdf(citatorio):
 
     texto = str(citatorio.get("motivo", ""))
 
-c.roundRect(
-    45,
-    420,
-    500,
-    140,
-    10,
-    stroke=1,
-    fill=0
-)
+    c.roundRect(
+        45,
+        420,
+        500,
+        140,
+        10,
+        stroke=1,
+        fill=0
+    )
 
     y = 580
     for linea in texto.split("\n"):
