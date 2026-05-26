@@ -4,7 +4,7 @@ import time
 import requests
 
 from datetime import datetime, timedelta
-
+from requests.exceptions import RequestException
 
 LICENSE_SERVER = os.getenv("LICENSE_SERVER")
 
@@ -12,7 +12,7 @@ LICENSE_KEY = os.getenv("LICENSE_KEY")
 
 INSTALL_ID = os.getenv("INSTALL_ID")
 
-CACHE_FILE = "licencia_cache.json"
+CACHE_FILE = "/tmp/licencia_cache.json"
 
 
 # =========================
@@ -54,7 +54,7 @@ def validar_online():
         return False, "Servidor de licencias no configurado"
 
     # 🔥 REINTENTOS PARA RENDER SLEEP
-    for intento in range(5):
+    for intento in range(2):
 
         try:
 
@@ -67,7 +67,7 @@ def validar_online():
                     "install_id": INSTALL_ID
                 },
 
-                timeout=15
+                timeout=5
             )
 
             data = response.json()
@@ -85,7 +85,7 @@ def validar_online():
 
             return False, data.get("mensaje")
 
-        except Exception:
+        except RequestException:
 
             # 🔥 Espera entre reintentos
             time.sleep(3)
@@ -138,7 +138,7 @@ def licencia_activa():
             )
 
             # 🔥 24 HORAS SIN CONSULTAR
-            if datetime.now() - ultima < timedelta(hours=24):
+            if datetime.now() - ultima < timedelta(hours=6):
 
                 return cache.get("valida", False)
 
