@@ -404,7 +404,9 @@ for linea in texto.split("\n"):
     firma(c, director)
 
     c.save()
+
     buffer.seek(0)
+
     return buffer
 
 # ================= EXPEDIENTE PDF =================
