@@ -435,7 +435,7 @@ Boleta
 
 <!-- ================= RESET TOTAL ================= -->
 
-{% if session.get("rol") == "admin" %}
+{% if not session.get("admin_secundario") %}
 
 <div style="
 margin-top:50px;
