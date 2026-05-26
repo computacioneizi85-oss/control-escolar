@@ -1,4 +1,6 @@
 from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import Table, TableStyle
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 
@@ -62,31 +64,74 @@ def dibujar_escudo(c, escudo):
 # ================= ENCABEZADO =================
 def encabezado(c, escuela, ciclo, direccion, escudo, titulo):
 
+    # Fondo encabezado
+    c.setFillColorRGB(0.12, 0.24, 0.45)
+    c.rect(0, 735, 612, 60, fill=1)
+
+    # Escudo
     dibujar_escudo(c, escudo)
 
-    c.setFont("Helvetica-Bold", 14)
-    c.drawCentredString(300, 770, escuela)
+    # Texto principal
+    c.setFillColor(colors.white)
+
+    c.setFont("Helvetica-Bold", 18)
+    c.drawCentredString(300, 775, escuela)
 
     c.setFont("Helvetica", 10)
-    c.drawCentredString(300, 755, f"Ciclo Escolar: {ciclo}")
-    c.drawCentredString(300, 740, direccion)
+    c.drawCentredString(
+        300,
+        758,
+        f"Ciclo Escolar: {ciclo}"
+    )
 
-    c.line(40, 730, 550, 730)
+    c.setFont("Helvetica-Bold", 15)
+    c.drawCentredString(300, 710, titulo)
 
-    c.setFont("Helvetica-Bold", 13)
-    c.drawCentredString(300, 705, titulo)
+    # Línea elegante
+    c.setStrokeColor(colors.HexColor("#1f4e79"))
+    c.setLineWidth(2)
+    c.line(40, 700, 550, 700)
+
+    # Folio y fecha
+    c.setFillColor(colors.black)
 
     c.setFont("Helvetica", 9)
-    c.drawString(40, 715, f"Folio: {generar_folio()}")
-    c.drawRightString(550, 715, f"Fecha: {fecha_actual()}")
+
+    c.drawString(
+        45,
+        685,
+        f"Folio: {generar_folio()}"
+    )
+
+    c.drawRightString(
+        550,
+        685,
+        f"Fecha: {fecha_actual()}"
+    )
 
 
 # ================= FIRMA =================
 def firma(c, director):
-    c.line(200, 140, 400, 140)
-    c.drawCentredString(300, 120, director)
-    c.drawCentredString(300, 105, "Director")
 
+    c.setStrokeColor(colors.HexColor("#2c3e50"))
+
+    c.line(180, 120, 420, 120)
+
+    c.setFont("Helvetica-Bold", 11)
+
+    c.drawCentredString(
+        300,
+        100,
+        director
+    )
+
+    c.setFont("Helvetica", 9)
+
+    c.drawCentredString(
+        300,
+        85,
+        "Dirección Escolar"
+    )
 
 # ================= FOTO =================
 def dibujar_foto(c, foto):
@@ -118,33 +163,72 @@ def generar_kardex(nombre):
 
     c.line(50, 630, 550, 630)
 
-    y = 590
-    suma = 0
-    total = 0
+data = [["Materia", "Calificación"]]
 
-    calificaciones = alumno.get("calificaciones", [])
+suma = 0
+total = 0
 
-    if calificaciones:
-        for cal in calificaciones:
-            materia = cal.get("materia", "")
+calificaciones = alumno.get("calificaciones", [])
 
-            try:
-                valor = float(cal.get("calificacion", 0) or 0)
-            except:
-                valor = 0
+if calificaciones:
 
-            c.drawString(50, y, materia)
-            c.drawString(320, y, str(valor))
+    for cal in calificaciones:
 
-            suma += valor
-            total += 1
-            y -= 25
-    else:
-        c.drawString(50, y, "Sin calificaciones registradas")
+        materia = cal.get("materia", "")
+
+        try:
+            valor = float(cal.get("calificacion", 0) or 0)
+        except:
+            valor = 0
+
+        data.append([
+            materia,
+            str(valor)
+        ])
+
+        suma += valor
+        total += 1
+
+else:
+
+    data.append([
+        "Sin registros",
+        "-"
+    ])
+
+tabla = Table(
+    data,
+    colWidths=[350, 120]
+)
+
+tabla.setStyle(TableStyle([
+
+    ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#1f4e79")),
+
+    ("TEXTCOLOR", (0,0), (-1,0), colors.white),
+
+    ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+
+    ("FONTSIZE", (0,0), (-1,-1), 10),
+
+    ("GRID", (0,0), (-1,-1), 1, colors.grey),
+
+    ("ROWBACKGROUNDS", (0,1), (-1,-1),
+        [colors.whitesmoke, colors.beige]),
+
+    ("BOTTOMPADDING", (0,0), (-1,0), 10),
+
+]))
+
+tabla.wrapOn(c, 50, 400)
+
+tabla.drawOn(c, 50, 430)
 
     promedio = round(suma / total, 2) if total else 0
 
-    c.setFont("Helvetica-Bold", 12)
+    c.setFillColor(colors.HexColor("#1f4e79"))
+
+c.setFont("Helvetica-Bold", 14)
     c.drawString(50, y - 20, f"Promedio general: {promedio}")
 
     firma(c, director)
@@ -226,6 +310,18 @@ def generar_reporte_pdf(reporte):
 
     texto = reporte.get("comentario", "")
 
+c.setFillColor(colors.HexColor("#2c3e50"))
+
+c.roundRect(
+    45,
+    420,
+    500,
+    140,
+    10,
+    stroke=1,
+    fill=0
+)
+
     y = 580
     for linea in texto.split("\n"):
         c.drawString(50, y, linea[:90])
@@ -254,6 +350,16 @@ def generar_citatorio_pdf(citatorio):
     c.drawString(50, 600, "Se solicita su presencia por el siguiente motivo:")
 
     texto = str(citatorio.get("motivo", ""))
+
+c.roundRect(
+    45,
+    420,
+    500,
+    140,
+    10,
+    stroke=1,
+    fill=0
+)
 
     y = 580
     for linea in texto.split("\n"):
