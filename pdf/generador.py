@@ -399,7 +399,9 @@ def generar_citatorio_pdf(citatorio):
         50,
         590,
         "Se solicita su presencia por el siguiente motivo:"
-    )    texto = str(citatorio.get("motivo", ""))
+    )
+
+    texto = str(citatorio.get("motivo", ""))
 
     c.roundRect(
         45,
