@@ -335,25 +335,29 @@ def generar_reporte_pdf(reporte):
         fill=0
     )
 
-# TEXTO DENTRO DEL RECUADRO
-y = 530
+    # TEXTO DENTRO DEL RECUADRO
+    y = 530
 
-c.setFont("Helvetica", 11)
+    c.setFont("Helvetica", 11)
 
-for linea in texto.split("\n"):
+    c.setFillColor(colors.HexColor("#2c3e50"))
 
-    c.drawString(
-        65,
-        y,
-        linea[:80]
-    )
+    for linea in texto.split("\n"):
 
-    y -= 18
+        c.drawString(
+            65,
+            y,
+            linea[:80]
+        )
+
+        y -= 18
 
     firma(c, director)
 
     c.save()
+
     buffer.seek(0)
+
     return buffer
 
 
@@ -384,22 +388,22 @@ def generar_citatorio_pdf(citatorio):
         fill=0
     )
 
-# TEXTO DENTRO DEL RECUADRO
-y = 530
+    # TEXTO DENTRO DEL RECUADRO
+    y = 530
 
-c.setFont("Helvetica", 11)
+    c.setFont("Helvetica", 11)
 
-c.setFillColor(colors.HexColor("#2c3e50"))
+    c.setFillColor(colors.HexColor("#2c3e50"))
 
-for linea in texto.split("\n"):
+    for linea in texto.split("\n"):
 
-    c.drawString(
-        65,
-        y,
-        linea[:80]
-    )
+        c.drawString(
+            65,
+            y,
+            linea[:80]
+        )
 
-    y -= 18
+        y -= 18
 
     firma(c, director)
 
