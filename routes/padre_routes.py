@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, session, redirect, request
 from bson.objectid import ObjectId
 from datetime import datetime
+from flask import send_file
+from pdf.generador import generar_citatorio_pdf
 
 from database.mongo import (
     alumnos,
@@ -131,3 +133,26 @@ def enterado_reporte(id):
     )
 
     return redirect("/panel_padre")
+
+# ================= PDF CITATORIO =================
+@padre_bp.route("/citatorio_pdf_padre/<id>")
+def citatorio_pdf_padre(id):
+
+    if not verificar_padre():
+        return redirect(url_for("auth.login"))
+
+    citatorio = citatorios.find_one({
+        "_id": ObjectId(id)
+    })
+
+    if not citatorio:
+        return redirect("/panel_padre")
+
+    pdf = generar_citatorio_pdf(citatorio)
+
+    return send_file(
+        pdf,
+        download_name="citatorio.pdf",
+        as_attachment=False,
+        mimetype="application/pdf"
+    )

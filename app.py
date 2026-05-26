@@ -28,7 +28,11 @@ app.config["SESSION_COOKIE_HTTPONLY"] = True
 
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
-app.config["SESSION_COOKIE_SECURE"] = True
+app.config["SESSION_COOKIE_SECURE"] = False
+
+app.config["SESSION_COOKIE_NAME"] = "control_escolar_session"
+
+app.config["SESSION_REFRESH_EACH_REQUEST"] = True
 
 # =========================
 # IMPORTAR BLUEPRINTS
