@@ -63,7 +63,7 @@ def procesar_login():
     if admin and validar_password(admin.get("password"), password):
 
         session["usuario"] = admin["usuario"]
-        session["rol"] = admin.get("rol", "superadmin")
+        session["rol"] = "superadmin"
         session["escuela"] = admin.get("escuela", "GLOBAL")
 
         session.permanent = True

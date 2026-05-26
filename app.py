@@ -9,6 +9,8 @@ from licencia import licencia_activa
 # =========================
 app = Flask(__name__)
 
+app.permanent_session_lifetime = timedelta(days=7)
+
 # =========================
 # CONFIGURACIÓN
 # =========================
