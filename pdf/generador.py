@@ -371,27 +371,35 @@ def generar_citatorio_pdf(citatorio):
 
     c.setFont("Helvetica", 11)
 
-    c.drawString(50, 660, f"Alumno: {citatorio.get('alumno','')}")
-c.drawString(50, 640, f"Grupo: {citatorio.get('grupo','')}")
+    c.drawString(
+        50,
+        660,
+        f"Alumno: {citatorio.get('alumno','')}"
+    )
 
-c.drawString(
-    50,
-    620,
-    f"Fecha de citatorio: {citatorio.get('fecha_cita') or citatorio.get('fecha', '')}"
-)
+    c.drawString(
+        50,
+        640,
+        f"Grupo: {citatorio.get('grupo','')}"
+    )
 
-c.drawString(
-    320,
-    620,
-    f"Hora: {citatorio.get('hora', '')}"
-)
+    c.drawString(
+        50,
+        620,
+        f"Fecha del citatorio: {citatorio.get('fecha_cita') or citatorio.get('fecha') or ''}"
+    )
 
-c.drawString(
-    50,
-    590,
-    "Se solicita su presencia por el siguiente motivo:"
-)
-    texto = str(citatorio.get("motivo", ""))
+    c.drawString(
+        320,
+        620,
+        f"Hora: {citatorio.get('hora') or ''}"
+    )
+
+    c.drawString(
+        50,
+        590,
+        "Se solicita su presencia por el siguiente motivo:"
+    )    texto = str(citatorio.get("motivo", ""))
 
     c.roundRect(
         45,
