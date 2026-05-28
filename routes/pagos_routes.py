@@ -1,20 +1,38 @@
-from flask import Blueprint, render_template
-
-from flask import request, redirect, url_for, flash
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash
+)
 
 from bson.objectid import ObjectId
 
 from database.mongo import pagos, alumnos
+
 
 pagos_bp = Blueprint(
     "pagos",
     __name__
 )
 
+
 @pagos_bp.route("/admin/pagos")
 def pagos_admin():
 
-@pagos_bp.route("/admin/nuevo_pago", methods=["GET", "POST"])
+    lista_pagos = pagos.find()
+
+    return render_template(
+        "pagos_admin.html",
+        pagos_db=lista_pagos
+    )
+
+
+@pagos_bp.route(
+    "/admin/nuevo_pago",
+    methods=["GET", "POST"]
+)
 def nuevo_pago():
 
     if request.method == "POST":
@@ -75,10 +93,3 @@ def nuevo_pago():
         "nuevo_pago.html",
         alumnos=lista_alumnos
     )
-
-lista_pagos = pagos.find()
-
-return render_template(
-    "pagos_admin.html",
-    pagos_db=lista_pagos
-)
