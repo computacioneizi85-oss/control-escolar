@@ -4,6 +4,56 @@
 
 <h2>Pagos escolares</h2>
 
-<p>Módulo en construcción</p>
+<a href="/admin/nuevo_pago">
+
+<button>
+Nuevo control
+</button>
+
+</a>
+
+<br><br>
+
+<table border="1" width="100%">
+
+<tr>
+
+<th>Alumno</th>
+<th>Grupo</th>
+<th>Mensualidad</th>
+<th>Meses</th>
+<th>Pagado</th>
+<th>Restante</th>
+<th>Estado</th>
+
+</tr>
+
+{% for p in pagos_db %}
+
+<tr>
+
+<td>{{ p.alumno }}</td>
+
+<td>{{ p.grupo }}</td>
+
+<td>${{ p.mensualidad }}</td>
+
+<td>
+{{ p.meses_pagados }}
+/
+{{ p.meses_totales }}
+</td>
+
+<td>${{ p.total_pagado }}</td>
+
+<td>${{ p.saldo_restante }}</td>
+
+<td>{{ p.estatus }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
 
 {% endblock %}
