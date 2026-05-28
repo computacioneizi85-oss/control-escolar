@@ -25,6 +25,7 @@ Nuevo control
 <th>Pagado</th>
 <th>Restante</th>
 <th>Estado</th>
+<th>Acciones</th>
 
 </tr>
 
@@ -49,6 +50,18 @@ Nuevo control
 <td>${{ p.saldo_restante }}</td>
 
 <td>{{ p.estatus }}</td>
+
+<td>
+
+<a href="/admin/abonar/{{ p._id }}">
+
+<button>
+Abonar
+</button>
+
+</a>
+
+</td>
 
 </tr>
 

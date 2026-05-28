@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>Registrar abono</h2>
+
+<h3>{{ pago.alumno }}</h3>
+
+<p>
+Saldo restante:
+<b>
+${{ pago.saldo_restante }}
+</b>
+</p>
+
+<form method="POST">
+
+<label>Monto</label>
+
+<input
+type="number"
+step="0.01"
+name="monto"
+required
+>
+
+<br><br>
+
+<label>Mes cubierto</label>
+
+<input
+type="text"
+name="mes_cubierto"
+placeholder="Ejemplo: Septiembre"
+required
+>
+
+<br><br>
+
+<label>Método</label>
+
+<select name="metodo">
+
+<option value="efectivo">
+Efectivo
+</option>
+
+<option value="transferencia">
+Transferencia
+</option>
+
+<option value="tarjeta">
+Tarjeta
+</option>
+
+</select>
+
+<br><br>
+
+<button type="submit">
+Registrar abono
+</button>
+
+</form>
+
+{% endblock %}

@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import (
     Blueprint,
     render_template,
@@ -92,4 +93,106 @@ def nuevo_pago():
     return render_template(
         "nuevo_pago.html",
         alumnos=lista_alumnos
+    )
+
+@pagos_bp.route(
+    "/admin/abonar/<id>",
+    methods=["GET", "POST"]
+)
+def registrar_abono(id):
+
+    pago = pagos.find_one({
+        "_id": ObjectId(id)
+    })
+
+    if not pago:
+
+        flash("Pago no encontrado")
+
+        return redirect(
+            url_for("pagos.pagos_admin")
+        )
+
+    if request.method == "POST":
+
+        monto = float(
+            request.form["monto"]
+        )
+
+        metodo = request.form["metodo"]
+
+        mes_cubierto = request.form["mes_cubierto"]
+
+        nuevo_total_pagado = (
+            pago["total_pagado"] + monto
+        )
+
+        nuevo_saldo = (
+            pago["saldo_restante"] - monto
+        )
+
+        nuevos_meses_pagados = (
+            pago["meses_pagados"] + 1
+        )
+
+        historial = pago.get(
+            "historial",
+            []
+        )
+
+        historial.append({
+
+            "monto": monto,
+
+            "metodo": metodo,
+
+            "mes_cubierto": mes_cubierto,
+
+            "fecha": datetime.now()
+
+        })
+
+        if nuevo_saldo <= 0:
+
+            estatus = "pagado"
+
+            nuevo_saldo = 0
+
+        else:
+
+            estatus = "parcial"
+
+        pagos.update_one(
+
+            {
+                "_id": ObjectId(id)
+            },
+
+            {
+                "$set": {
+
+                    "total_pagado": nuevo_total_pagado,
+
+                    "saldo_restante": nuevo_saldo,
+
+                    "meses_pagados": nuevos_meses_pagados,
+
+                    "estatus": estatus,
+
+                    "historial": historial
+
+                }
+            }
+
+        )
+
+        flash("Abono registrado")
+
+        return redirect(
+            url_for("pagos.pagos_admin")
+        )
+
+    return render_template(
+        "registrar_abono.html",
+        pago=pago
     )
