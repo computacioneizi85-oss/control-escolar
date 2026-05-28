@@ -38,6 +38,8 @@ configuracion = db["configuracion"]
 horarios = db["horarios"]
 citatorios = db["citatorios"]
 
+pagos = db["pagos"]
+
 padres = db["padres"]
 
 # =========================

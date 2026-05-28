@@ -42,6 +42,7 @@ from routes.admin_routes import admin_bp
 from routes.maestro_routes import maestro_bp
 from routes.alumno_routes import alumno_bp
 from routes.padre_routes import padre_bp
+from routes.pagos_routes import pagos_bp
 from routes.backup_routes import backup_bp
 
 # =========================
@@ -52,6 +53,7 @@ app.register_blueprint(admin_bp)
 app.register_blueprint(maestro_bp)
 app.register_blueprint(alumno_bp)
 app.register_blueprint(padre_bp)
+app.register_blueprint(pagos_bp)
 app.register_blueprint(backup_bp)
 
 # =========================
