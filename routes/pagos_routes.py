@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from flask import (
     Blueprint,
     render_template,
@@ -10,7 +11,11 @@ from flask import (
 
 from bson.objectid import ObjectId
 
-from database.mongo import pagos, alumnos
+from database.mongo import (
+    pagos,
+    alumnos,
+    movimientos_pagos
+)
 
 
 pagos_bp = Blueprint(
@@ -19,6 +24,9 @@ pagos_bp = Blueprint(
 )
 
 
+# =========================
+# PANEL PAGOS
+# =========================
 @pagos_bp.route("/admin/pagos")
 def pagos_admin():
 
@@ -30,6 +38,9 @@ def pagos_admin():
     )
 
 
+# =========================
+# NUEVO CONTROL
+# =========================
 @pagos_bp.route(
     "/admin/nuevo_pago",
     methods=["GET", "POST"]
@@ -76,9 +87,7 @@ def nuevo_pago():
 
             "saldo_restante": total_debe,
 
-            "estatus": "pendiente",
-
-            "historial": []
+            "estatus": "pendiente"
 
         })
 
@@ -95,6 +104,10 @@ def nuevo_pago():
         alumnos=lista_alumnos
     )
 
+
+# =========================
+# REGISTRAR ABONO
+# =========================
 @pagos_bp.route(
     "/admin/abonar/<id>",
     methods=["GET", "POST"]
@@ -135,12 +148,16 @@ def registrar_abono(id):
             pago["meses_pagados"] + 1
         )
 
-        historial = pago.get(
-            "historial",
-            []
-        )
+        # =========================
+        # MOVIMIENTO FINANCIERO
+        # =========================
+        movimientos_pagos.insert_one({
 
-        historial.append({
+            "pago_id": str(pago["_id"]),
+
+            "alumno": pago["alumno"],
+
+            "grupo": pago.get("grupo", ""),
 
             "monto": monto,
 
@@ -148,10 +165,23 @@ def registrar_abono(id):
 
             "mes_cubierto": mes_cubierto,
 
-            "fecha": datetime.now()
+            "fecha": datetime.now().strftime(
+                "%d/%m/%Y"
+            ),
+
+            "hora": datetime.now().strftime(
+                "%H:%M"
+            ),
+
+            "capturado_por": "admin",
+
+            "estatus": "activo"
 
         })
 
+        # =========================
+        # ESTATUS
+        # =========================
         if nuevo_saldo <= 0:
 
             estatus = "pagado"
@@ -162,6 +192,9 @@ def registrar_abono(id):
 
             estatus = "parcial"
 
+        # =========================
+        # ACTUALIZAR CONTROL
+        # =========================
         pagos.update_one(
 
             {
@@ -177,9 +210,7 @@ def registrar_abono(id):
 
                     "meses_pagados": nuevos_meses_pagados,
 
-                    "estatus": estatus,
-
-                    "historial": historial
+                    "estatus": estatus
 
                 }
             }
@@ -195,4 +226,31 @@ def registrar_abono(id):
     return render_template(
         "registrar_abono.html",
         pago=pago
+    )
+
+
+# =========================
+# EXPEDIENTE FINANCIERO
+# =========================
+@pagos_bp.route("/admin/expediente_pago/<id>")
+def expediente_pago(id):
+
+    pago = pagos.find_one({
+        "_id": ObjectId(id)
+    })
+
+    movimientos = movimientos_pagos.find({
+
+        "pago_id": str(id)
+
+    })
+
+    return render_template(
+
+        "expediente_pago.html",
+
+        pago=pago,
+
+        movimientos=movimientos
+
     )

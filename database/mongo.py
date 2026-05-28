@@ -40,6 +40,8 @@ citatorios = db["citatorios"]
 
 pagos = db["pagos"]
 
+movimientos_pagos = db["movimientos_pagos"]
+
 padres = db["padres"]
 
 # =========================

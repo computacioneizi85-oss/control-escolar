@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>Expediente financiero</h2>
+
+<h3>{{ pago.alumno }}</h3>
+
+<p>
+Grupo:
+<b>{{ pago.grupo }}</b>
+</p>
+
+<p>
+Mensualidad:
+<b>${{ pago.mensualidad }}</b>
+</p>
+
+<p>
+Pagado:
+<b>${{ pago.total_pagado }}</b>
+</p>
+
+<p>
+Restante:
+<b>${{ pago.saldo_restante }}</b>
+</p>
+
+<hr>
+
+<h3>Historial de movimientos</h3>
+
+<table border="1" width="100%">
+
+<tr>
+
+<th>Fecha</th>
+<th>Hora</th>
+<th>Mes</th>
+<th>Monto</th>
+<th>Método</th>
+<th>Estado</th>
+
+</tr>
+
+{% for m in movimientos %}
+
+<tr>
+
+<td>{{ m.fecha }}</td>
+
+<td>{{ m.hora }}</td>
+
+<td>{{ m.mes_cubierto }}</td>
+
+<td>${{ m.monto }}</td>
+
+<td>{{ m.metodo }}</td>
+
+<td>{{ m.estatus }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}
