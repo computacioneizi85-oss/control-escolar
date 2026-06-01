@@ -1,0 +1,237 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="card shadow mb-4">
+
+        <div class="card-header py-3">
+
+            <h3 class="m-0">
+                Expediente Financiero
+            </h3>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-6">
+
+                    <p>
+                        <strong>Alumno:</strong>
+                        {{ pago.alumno }}
+                    </p>
+
+                    <p>
+                        <strong>Grupo:</strong>
+                        {{ pago.grupo }}
+                    </p>
+
+                    <p>
+                        <strong>Mensualidad:</strong>
+                        ${{ pago.mensualidad }}
+                    </p>
+
+                    <p>
+                        <strong>Meses contratados:</strong>
+                        {{ pago.meses_totales }}
+                    </p>
+
+                    <p>
+                        <strong>Meses cubiertos:</strong>
+                        {{ pago.meses_pagados }}
+                    </p>
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <p>
+                        <strong>Total contratado:</strong>
+                        ${{ pago.total_debe }}
+                    </p>
+
+                    <p>
+                        <strong>Total pagado:</strong>
+                        ${{ pago.total_pagado }}
+                    </p>
+
+                    <p>
+                        <strong>Saldo pendiente:</strong>
+                        ${{ pago.saldo_restante }}
+                    </p>
+
+                    <p>
+                        <strong>Estado:</strong>
+
+                        {% if pago.estatus == "pagado" %}
+
+                            <span class="badge bg-success">
+                                Pagado
+                            </span>
+
+                        {% elif pago.estatus == "parcial" %}
+
+                            <span class="badge bg-warning text-dark">
+                                Parcial
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-danger">
+                                Pendiente
+                            </span>
+
+                        {% endif %}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card shadow">
+
+        <div class="card-header py-3">
+
+            <h4 class="m-0">
+                Historial de Movimientos
+            </h4>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-striped">
+
+                    <thead class="table-dark">
+
+                        <tr>
+
+                            <th>Fecha</th>
+
+                            <th>Hora</th>
+
+                            <th>Ciclo Escolar</th>
+
+                            <th>Mes Cubierto</th>
+
+                            <th>Monto</th>
+
+                            <th>Método</th>
+
+                            <th>Usuario</th>
+
+                            <th>Estado</th>
+
+                            <th>Acciones</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for m in movimientos %}
+
+                        <tr>
+
+                            <td>
+                                {{ m.fecha_pago }}
+                            </td>
+
+                            <td>
+                                {{ m.hora_pago }}
+                            </td>
+
+                            <td>
+                                {{ m.ciclo_escolar }}
+                            </td>
+
+                            <td>
+                                {{ m.mes_cubierto }}
+                            </td>
+
+                            <td>
+                                ${{ m.monto }}
+                            </td>
+
+                            <td>
+                                {{ m.metodo }}
+                            </td>
+
+                            <td>
+                                {{ m.capturado_por }}
+                            </td>
+
+                            <td>
+
+                                {% if m.estatus == "activo" %}
+
+                                    <span class="badge bg-success">
+                                        Activo
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-danger">
+                                        Cancelado
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                <a
+                                    href="/admin/editar_movimiento/{{ m._id }}"
+                                    class="btn btn-warning btn-sm"
+                                >
+                                    Editar
+                                </a>
+
+                                <form
+                                    method="POST"
+                                    action="/admin/eliminar_movimiento/{{ m._id }}"
+                                    style="display:inline;"
+                                >
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-danger btn-sm"
+                                        onclick="return confirm('¿Cancelar movimiento?')"
+                                    >
+                                        Cancelar
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
