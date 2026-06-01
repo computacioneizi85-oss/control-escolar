@@ -7,6 +7,7 @@ from flask import (
     redirect,
     url_for,
     flash
+    session
 )
 
 from bson.objectid import ObjectId
@@ -151,33 +152,48 @@ def registrar_abono(id):
         # =========================
         # MOVIMIENTO FINANCIERO
         # =========================
-        movimientos_pagos.insert_one({
+movimientos_pagos.insert_one({
 
-            "pago_id": str(pago["_id"]),
+    "pago_id": str(pago["_id"]),
 
-            "alumno": pago["alumno"],
+    "alumno": pago["alumno"],
 
-            "grupo": pago.get("grupo", ""),
+    "grupo": pago.get("grupo", ""),
 
-            "monto": monto,
+    "monto": monto,
 
-            "metodo": metodo,
+    "metodo": metodo,
 
-            "mes_cubierto": mes_cubierto,
+    "mes_cubierto": mes_cubierto,
 
-            "fecha": datetime.now().strftime(
-                "%d/%m/%Y"
-            ),
+    "ciclo_escolar": session.get(
+        "ciclo_escolar",
+        "2025-2026"
+    ),
 
-            "hora": datetime.now().strftime(
-                "%H:%M"
-            ),
+    "fecha_pago": datetime.now().strftime("%d/%m/%Y"),
 
-            "capturado_por": "admin",
+    "hora_pago": datetime.now().strftime("%H:%M"),
 
-            "estatus": "activo"
+    "capturado_por": session.get(
+        "usuario",
+        "admin"
+    ),
 
-        })
+    "estatus": "activo"
+
+}),
+
+    "hora_pago": datetime.now().strftime("%H:%M"),
+
+    "capturado_por": session.get(
+        "usuario",
+        "admin"
+    ),
+
+    "estatus": "activo"
+
+})
 
         # =========================
         # ESTATUS

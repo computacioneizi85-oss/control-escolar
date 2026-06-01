@@ -34,9 +34,10 @@ Restante:
 
 <tr>
 
-<th>Fecha</th>
+<th>Fecha de pago</th>
 <th>Hora</th>
-<th>Mes</th>
+<th>Ciclo escolar</th>
+<th>Mes cubierto</th>
 <th>Monto</th>
 <th>Método</th>
 <th>Estado</th>
@@ -55,9 +56,11 @@ Editar
 
 <tr>
 
-<td>{{ m.fecha }}</td>
+<td>{{ m.fecha_pago }}</td>
 
-<td>{{ m.hora }}</td>
+<td>{{ m.hora_pago }}</td>
+
+<td>{{ m.ciclo_escolar }}</td>
 
 <td>{{ m.mes_cubierto }}</td>
 
