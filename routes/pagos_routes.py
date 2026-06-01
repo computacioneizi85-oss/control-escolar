@@ -1,5 +1,11 @@
 from datetime import datetime
 
+from flask import send_file
+
+from pdf.generador import (
+    generar_recibo_pago_pdf
+)
+
 from flask import (
     Blueprint,
     render_template,
@@ -538,4 +544,44 @@ def eliminar_pago(id):
 
     return redirect(
         url_for("pagos.pagos_admin")
+    )
+
+@pagos_bp.route(
+    "/admin/recibo_pago/<id>"
+)
+def recibo_pago(id):
+
+    movimiento = movimientos_pagos.find_one({
+
+        "_id": ObjectId(id)
+
+    })
+
+    if not movimiento:
+
+        flash("Movimiento no encontrado")
+
+        return redirect(
+            url_for("pagos.pagos_admin")
+        )
+
+    pdf = generar_recibo_pago_pdf(
+        movimiento
+    )
+
+    return send_file(
+
+        pdf,
+
+        as_attachment=False,
+
+        download_name=(
+            movimiento.get(
+                "folio",
+                "recibo"
+            ) + ".pdf"
+        ),
+
+        mimetype="application/pdf"
+
     )

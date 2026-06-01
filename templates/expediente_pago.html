@@ -194,11 +194,20 @@
                             <td>
 
                                 <a
-                                    href="/admin/editar_movimiento/{{ m._id }}"
-                                    class="btn btn-warning btn-sm"
-                                >
-                                    Editar
-                                </a>
+                                    <a
+    href="/admin/editar_movimiento/{{ m._id }}"
+   		 class="btn btn-warning btn-sm"
+>
+    Editar
+</a>
+
+<a
+    href="/admin/recibo_pago/{{ m._id }}"
+    target="_blank"
+    class="btn btn-info btn-sm"
+>
+    Recibo
+</a>
 
                                 <form
                                     method="POST"

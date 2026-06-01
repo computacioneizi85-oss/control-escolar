@@ -3,6 +3,7 @@ from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
+from bson.objectid import ObjectId
 
 from io import BytesIO
 import base64
@@ -10,8 +11,12 @@ import os
 from datetime import datetime
 import uuid
 
-from database.mongo import configuracion, alumnos
-
+from database.mongo import (
+    configuracion,
+    alumnos,
+    movimientos_pagos,
+    pagos
+)
 
 # ================= CONFIG =================
 def obtener_config():
@@ -557,6 +562,152 @@ def generar_bitacora_pdf(registros):
             y = 760
 
     firma(c, director)
+
+    c.save()
+
+    buffer.seek(0)
+
+    return buffer
+
+# ================= RECIBO DE PAGO =================
+def generar_recibo_pago_pdf(movimiento):
+
+    escuela, ciclo, director, direccion, escudo = obtener_config()
+
+    c, buffer = crear_pdf()
+
+    encabezado(
+        c,
+        escuela,
+        ciclo,
+        direccion,
+        escudo,
+        "RECIBO OFICIAL DE PAGO"
+    )
+
+    pago = pagos.find_one({
+        "_id": ObjectId(
+            movimiento["pago_id"]
+        )
+    })
+
+    c.setFont("Helvetica", 11)
+
+    y = 650
+
+    c.drawString(
+        50,
+        y,
+        f"Folio: {movimiento.get('folio','')}"
+    )
+
+    y -= 30
+
+    c.drawString(
+        50,
+        y,
+        f"Alumno: {movimiento.get('alumno','')}"
+    )
+
+    y -= 25
+
+    c.drawString(
+        50,
+        y,
+        f"Grupo: {movimiento.get('grupo','')}"
+    )
+
+    y -= 25
+
+    c.drawString(
+        50,
+        y,
+        f"Concepto: {movimiento.get('concepto','Colegiatura')}"
+    )
+
+    y -= 25
+
+    c.drawString(
+        50,
+        y,
+        f"Mes cubierto: {movimiento.get('mes_cubierto','')}"
+    )
+
+    y -= 25
+
+    c.drawString(
+        50,
+        y,
+        f"Monto recibido: ${movimiento.get('monto',0)}"
+    )
+
+    y -= 25
+
+    c.drawString(
+        50,
+        y,
+        f"Método: {movimiento.get('metodo','')}"
+    )
+
+    y -= 25
+
+    c.drawString(
+        50,
+        y,
+        f"Fecha: {movimiento.get('fecha_pago','')}"
+    )
+
+    y -= 25
+
+    c.drawString(
+        50,
+        y,
+        f"Hora: {movimiento.get('hora_pago','')}"
+    )
+
+    y -= 25
+
+    c.drawString(
+        50,
+        y,
+        f"Capturado por: {movimiento.get('capturado_por','')}"
+    )
+
+    y -= 40
+
+    c.setFont(
+        "Helvetica-Bold",
+        12
+    )
+
+    c.drawString(
+        50,
+        y,
+        f"Saldo pendiente: ${pago.get('saldo_restante',0)}"
+    )
+
+    try:
+
+        sello = ImageReader(
+            "static/img/director.png"
+        )
+
+        c.drawImage(
+            sello,
+            380,
+            140,
+            width=120,
+            height=120,
+            mask="auto"
+        )
+
+    except:
+        pass
+
+    firma(
+        c,
+        director
+    )
 
     c.save()
 
