@@ -101,17 +101,16 @@ def recalcular_pago(pago_id):
 @pagos_bp.route("/admin/pagos")
 def pagos_admin():
 
-lista_pagos = pagos.find({
-    "activo": {
-        "$ne": False
-    }
-})
+    lista_pagos = pagos.find({
+        "activo": {
+            "$ne": False
+        }
+    })
 
     return render_template(
         "pagos_admin.html",
         pagos_db=lista_pagos
     )
-
 
 # =========================
 # NUEVO CONTROL
