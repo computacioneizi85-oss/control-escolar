@@ -6,7 +6,7 @@ from flask import (
     request,
     redirect,
     url_for,
-    flash
+    flash,
     session
 )
 
@@ -23,6 +23,76 @@ pagos_bp = Blueprint(
     "pagos",
     __name__
 )
+
+def recalcular_pago(pago_id):
+
+    movimientos = list(
+
+        movimientos_pagos.find({
+
+            "pago_id": str(pago_id),
+
+            "estatus": "activo"
+
+        })
+
+    )
+
+    pago = pagos.find_one({
+
+        "_id": ObjectId(pago_id)
+
+    })
+
+    if not pago:
+        return
+
+    total_pagado = sum(
+        m.get("monto", 0)
+        for m in movimientos
+    )
+
+    meses_pagados = len(movimientos)
+
+    saldo_restante = max(
+        pago["total_debe"] - total_pagado,
+        0
+    )
+
+    if saldo_restante == 0:
+
+        estatus = "pagado"
+
+    elif total_pagado > 0:
+
+        estatus = "parcial"
+
+    else:
+
+        estatus = "pendiente"
+
+    pagos.update_one(
+
+        {
+            "_id": ObjectId(pago_id)
+        },
+
+        {
+            "$set": {
+
+                "total_pagado": total_pagado,
+
+                "saldo_restante": saldo_restante,
+
+                "meses_pagados": meses_pagados,
+
+                "estatus": estatus
+
+            }
+
+        }
+
+    )
 
 
 # =========================
@@ -152,37 +222,45 @@ def registrar_abono(id):
         # =========================
         # MOVIMIENTO FINANCIERO
         # =========================
-movimientos_pagos.insert_one({
+        movimientos_pagos.insert_one({
 
-    "pago_id": str(pago["_id"]),
+            "pago_id": str(pago["_id"]),
 
-    "alumno": pago["alumno"],
+            "alumno": pago["alumno"],
 
-    "grupo": pago.get("grupo", ""),
+            "grupo": pago.get("grupo", ""),
 
-    "monto": monto,
+            "monto": monto,
 
-    "metodo": metodo,
+            "metodo": metodo,
 
-    "mes_cubierto": mes_cubierto,
+            "mes_cubierto": mes_cubierto,
 
-    "ciclo_escolar": session.get(
-        "ciclo_escolar",
-        "2025-2026"
-    ),
+            "ciclo_escolar": session.get(
+                "ciclo_escolar",
+                "2025-2026"
+            ),
 
-    "fecha_pago": datetime.now().strftime("%d/%m/%Y"),
+            "fecha_pago": datetime.now().strftime(
+                "%d/%m/%Y"
+            ),
 
-    "hora_pago": datetime.now().strftime("%H:%M"),
+            "hora_pago": datetime.now().strftime(
+                "%H:%M"
+            ),
 
-    "capturado_por": session.get(
-        "usuario",
-        "admin"
-    ),
+            "capturado_por": session.get(
+                "usuario",
+                "admin"
+            ),
 
-    "estatus": "activo"
+            "estatus": "activo"
 
-}),
+        })
+
+        recalcular_pago(
+            pago["_id"]
+        ),
 
     "hora_pago": datetime.now().strftime("%H:%M"),
 
@@ -307,6 +385,10 @@ def editar_movimiento(id):
 
         )
 
+        recalcular_pago(
+            movimiento["pago_id"]
+        )
+
         flash("Movimiento actualizado")
 
         return redirect(
@@ -333,9 +415,23 @@ def eliminar_movimiento(id):
 
     if movimiento:
 
-        movimientos_pagos.delete_one({
-            "_id": ObjectId(id)
-        })
+        movimientos_pagos.update_one(
+
+            {
+                "_id": ObjectId(id)
+            },
+
+            {
+                "$set": {
+                    "estatus": "cancelado"
+                }
+            }
+
+        )
+
+        recalcular_pago(
+            movimiento["pago_id"]
+        )
 
     flash("Movimiento eliminado")
 
@@ -383,6 +479,25 @@ def editar_pago(id):
             }
 
         )
+
+        pago_actualizado = pagos.find_one({
+            "_id": ObjectId(id)
+        })
+
+        pagos.update_one(
+            {
+                "_id": ObjectId(id)
+            },
+            {
+                "$set": {
+                    "total_debe":
+                    pago_actualizado["mensualidad"] *
+                    pago_actualizado["meses_totales"]
+                }
+            }
+        )
+
+        recalcular_pago(id)
 
         flash("Pago actualizado")
 
