@@ -210,6 +210,15 @@ def registrar_abono(id):
 
         mes_cubierto = request.form["mes_cubierto"]
 
+        concepto = request.form["concepto"]
+
+        folio_recibo = (
+            "REC-" +
+            datetime.now().strftime(
+                "%Y%m%d%H%M%S"
+            )
+        )
+
         nuevo_total_pagado = (
             pago["total_pagado"] + monto
         )
@@ -227,39 +236,39 @@ def registrar_abono(id):
         # =========================
         movimientos_pagos.insert_one({
 
-            "pago_id": str(pago["_id"]),
+    	 "folio": folio_recibo,
 
-            "alumno": pago["alumno"],
+    	 "concepto": concepto,
 
-            "grupo": pago.get("grupo", ""),
+   	 "pago_id": str(pago["_id"]),
 
-            "monto": monto,
+  	  "alumno": pago["alumno"],
 
-            "metodo": metodo,
+   	 "grupo": pago.get("grupo", ""),
 
-            "mes_cubierto": mes_cubierto,
+   	 "monto": monto,
 
-            "ciclo_escolar": session.get(
-                "ciclo_escolar",
-                "2025-2026"
-            ),
+  	  "metodo": metodo,
+	
+   	 "mes_cubierto": mes_cubierto,
 
-            "fecha_pago": datetime.now().strftime(
-                "%d/%m/%Y"
-            ),
+    	"ciclo_escolar": session.get(
+        "ciclo_escolar",
+        "2025-2026"
+    ),
 
-            "hora_pago": datetime.now().strftime(
-                "%H:%M"
-            ),
+    "fecha_pago": datetime.now().strftime("%d/%m/%Y"),
 
-            "capturado_por": session.get(
-                "usuario",
-                "admin"
-            ),
+    "hora_pago": datetime.now().strftime("%H:%M"),
 
-            "estatus": "activo"
+    "capturado_por": session.get(
+        "usuario",
+        "admin"
+    ),
 
-        })
+    "estatus": "activo"
+
+})
 
         recalcular_pago(
             pago["_id"]
