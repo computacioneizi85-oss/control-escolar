@@ -45,6 +45,14 @@ Restante:
 
 {% for m in movimientos %}
 
+<td>
+
+<a href="/admin/editar_movimiento/{{ m._id }}">
+Editar
+</a>
+
+</td>
+
 <tr>
 
 <td>{{ m.fecha }}</td>
