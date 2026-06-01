@@ -54,23 +54,31 @@ Nuevo control
 <td>
 
 <a href="/admin/abonar/{{ p._id }}">
-
-<button>
-Abonar
-</button>
+    <button>Abonar</button>
+</a>
 
 <a href="/admin/expediente_pago/{{ p._id }}">
-
-<button>
-Expediente
-</button>
-
+    <button>Expediente</button>
 </a>
 
+<a href="/admin/editar_pago/{{ p._id }}">
+    <button>Editar</button>
 </a>
+
+<form
+    method="POST"
+    action="/admin/eliminar_pago/{{ p._id }}"
+    style="display:inline;"
+>
+    <button
+        type="submit"
+        onclick="return confirm('¿Eliminar este control de pago?')"
+    >
+        Eliminar
+    </button>
+</form>
 
 </td>
-
 </tr>
 
 {% endfor %}

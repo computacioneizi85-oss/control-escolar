@@ -329,3 +329,72 @@ def eliminar_movimiento(id):
             id=movimiento["pago_id"]
         )
     )
+
+@pagos_bp.route(
+    "/admin/editar_pago/<id>",
+    methods=["GET", "POST"]
+)
+def editar_pago(id):
+
+    pago = pagos.find_one({
+        "_id": ObjectId(id)
+    })
+
+    if not pago:
+        flash("Pago no encontrado")
+        return redirect(url_for("pagos.pagos_admin"))
+
+    if request.method == "POST":
+
+        pagos.update_one(
+
+            {
+                "_id": ObjectId(id)
+            },
+
+            {
+                "$set": {
+
+                    "mensualidad": float(
+                        request.form["mensualidad"]
+                    ),
+
+                    "meses_totales": int(
+                        request.form["meses_totales"]
+                    )
+
+                }
+            }
+
+        )
+
+        flash("Pago actualizado")
+
+        return redirect(
+            url_for("pagos.pagos_admin")
+        )
+
+    return render_template(
+        "editar_pago.html",
+        pago=pago
+    )
+
+@pagos_bp.route(
+    "/admin/eliminar_pago/<id>",
+    methods=["POST"]
+)
+def eliminar_pago(id):
+
+    pagos.delete_one({
+        "_id": ObjectId(id)
+    })
+
+    movimientos_pagos.delete_many({
+        "pago_id": str(id)
+    })
+
+    flash("Pago eliminado")
+
+    return redirect(
+        url_for("pagos.pagos_admin")
+    )
