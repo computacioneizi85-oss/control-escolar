@@ -101,7 +101,11 @@ def recalcular_pago(pago_id):
 @pagos_bp.route("/admin/pagos")
 def pagos_admin():
 
-    lista_pagos = pagos.find()
+lista_pagos = pagos.find({
+    "activo": {
+        "$ne": False
+    }
+})
 
     return render_template(
         "pagos_admin.html",
@@ -260,18 +264,8 @@ def registrar_abono(id):
 
         recalcular_pago(
             pago["_id"]
-        ),
+        )
 
-    "hora_pago": datetime.now().strftime("%H:%M"),
-
-    "capturado_por": session.get(
-        "usuario",
-        "admin"
-    ),
-
-    "estatus": "activo"
-
-})
 
         # =========================
         # ESTATUS
@@ -497,7 +491,9 @@ def editar_pago(id):
             }
         )
 
-        recalcular_pago(id)
+        recalcular_pago(
+    		pago_actualizado["_id"]
+)
 
         flash("Pago actualizado")
 
@@ -516,15 +512,21 @@ def editar_pago(id):
 )
 def eliminar_pago(id):
 
-    pagos.delete_one({
-        "_id": ObjectId(id)
-    })
+    pagos.update_one(
 
-    movimientos_pagos.delete_many({
-        "pago_id": str(id)
-    })
+        {
+            "_id": ObjectId(id)
+        },
 
-    flash("Pago eliminado")
+        {
+            "$set": {
+                "activo": False
+            }
+        }
+
+    )
+
+    flash("Pago desactivado")
 
     return redirect(
         url_for("pagos.pagos_admin")
