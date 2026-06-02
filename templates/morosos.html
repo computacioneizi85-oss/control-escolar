@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>Alumnos con Adeudo</h2>
+
+<a href="/admin/pagos">
+    <button>Regresar</button>
+</a>
+
+<br><br>
+
+<table border="1" width="100%">
+
+    <tr>
+
+        <th>Alumno</th>
+        <th>Grupo</th>
+        <th>Total Contratado</th>
+        <th>Total Pagado</th>
+        <th>Saldo Pendiente</th>
+        <th>Estado</th>
+
+    </tr>
+
+    {% for p in pagos_db %}
+
+    <tr>
+
+        <td>{{ p.alumno }}</td>
+
+        <td>{{ p.grupo }}</td>
+
+        <td>${{ p.total_debe }}</td>
+
+        <td>${{ p.total_pagado }}</td>
+
+        <td>${{ p.saldo_restante }}</td>
+
+        <td>
+
+            {% if p.estatus == "parcial" %}
+
+                <span style="color:orange;">
+                    Parcial
+                </span>
+
+            {% else %}
+
+                <span style="color:red;">
+                    Pendiente
+                </span>
+
+            {% endif %}
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

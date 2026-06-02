@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>Corte de Caja</h2>
+
+<p>
+
+<strong>Fecha:</strong>
+
+{{ fecha }}
+
+</p>
+
+<a href="/admin/pagos">
+    <button>Regresar</button>
+</a>
+
+<br><br>
+
+<table border="1" width="100%">
+
+    <tr>
+
+        <th>Alumno</th>
+        <th>Monto</th>
+        <th>Método</th>
+        <th>Hora</th>
+        <th>Usuario</th>
+
+    </tr>
+
+    {% for m in movimientos %}
+
+    <tr>
+
+        <td>{{ m.alumno }}</td>
+
+        <td>${{ m.monto }}</td>
+
+        <td>{{ m.metodo }}</td>
+
+        <td>{{ m.hora_pago }}</td>
+
+        <td>{{ m.capturado_por }}</td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+<br>
+
+<h3>
+
+Total del día:
+
+${{ total }}
+
+</h3>
+
+{% endblock %}
