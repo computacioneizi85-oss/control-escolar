@@ -147,35 +147,35 @@ def nuevo_pago():
 
         pagos.insert_one({
 
-   	"alumno_id": str(alumno["_id"]),
+            "alumno_id": str(alumno["_id"]),
 
-    	"alumno": alumno["nombre"],
+            "alumno": alumno["nombre"],
 
-        "grupo": alumno.get("grupo", ""),
+            "grupo": alumno.get("grupo", ""),
 
-        "concepto": "Colegiatura",
+            "concepto": "Colegiatura",
 
-        "mensualidad": mensualidad,
+            "mensualidad": mensualidad,
 
-        "meses_totales": meses_totales,
+            "meses_totales": meses_totales,
 
-        "meses_pagados": 0,
+            "meses_pagados": 0,
 
-        "total_debe": total_debe,
+            "total_debe": total_debe,
 
-        "total_pagado": 0,
+            "total_pagado": 0,
 
-        "saldo_restante": total_debe,
+            "saldo_restante": total_debe,
 
-        "estatus": "pendiente",
+            "estatus": "pendiente",
 
-        "observaciones": "",
+            "observaciones": "",
 
-        "beca": 0,
+            "beca": 0,
 
-        "descuento": 0
+            "descuento": 0
 
-})
+        })
 
         flash("Pago creado correctamente")
 
@@ -261,39 +261,43 @@ def registrar_abono(id):
         # =========================
         movimientos_pagos.insert_one({
 
-    	 "folio": folio_recibo,
+            "folio": folio_recibo,
 
-    	 "concepto": concepto,
+            "concepto": concepto,
 
-   	 "pago_id": str(pago["_id"]),
+            "pago_id": str(pago["_id"]),
 
-  	  "alumno": pago["alumno"],
+            "alumno": pago["alumno"],
 
-   	 "grupo": pago.get("grupo", ""),
+            "grupo": pago.get("grupo", ""),
 
-   	 "monto": monto,
+            "monto": monto,
 
-  	  "metodo": metodo,
-	
-   	 "mes_cubierto": mes_cubierto,
+            "metodo": metodo,
 
-    	"ciclo_escolar": session.get(
-        "ciclo_escolar",
-        "2025-2026"
-    ),
+            "mes_cubierto": mes_cubierto,
 
-    "fecha_pago": datetime.now().strftime("%d/%m/%Y"),
+            "ciclo_escolar": session.get(
+                "ciclo_escolar",
+                "2025-2026"
+            ),
 
-    "hora_pago": datetime.now().strftime("%H:%M"),
+            "fecha_pago": datetime.now().strftime(
+                "%d/%m/%Y"
+            ),
 
-    "capturado_por": session.get(
-        "usuario",
-        "admin"
-    ),
+            "hora_pago": datetime.now().strftime(
+                "%H:%M"
+            ),
 
-    "estatus": "activo"
+            "capturado_por": session.get(
+                "usuario",
+                "admin"
+            ),
 
-})
+            "estatus": "activo"
+
+        })
 
         recalcular_pago(
             pago["_id"]
@@ -492,42 +496,40 @@ def editar_pago(id):
             },
 
             {
-"$set": {
+                "$set": {
 
-    "mensualidad": float(
-        request.form["mensualidad"]
-    ),
+                    "mensualidad": float(
+                        request.form["mensualidad"]
+                    ),
 
-    "meses_totales": int(
-        request.form["meses_totales"]
-    ),
+                    "meses_totales": int(
+                        request.form["meses_totales"]
+                    ),
 
-    "beca": float(
-        request.form.get(
-            "beca",
-            0
+                    "beca": float(
+                        request.form.get(
+                            "beca",
+                            0
+                        )
+                    ),
+
+                    "descuento": float(
+                        request.form.get(
+                            "descuento",
+                            0
+                        )
+                    ),
+
+                    "observaciones": request.form.get(
+                        "observaciones",
+                        ""
+                    )
+
+                }
+            }
+
+
         )
-    ),
-
-    "descuento": float(
-        request.form.get(
-            "descuento",
-            0
-        )
-    ),
-
-    "observaciones": request.form.get(
-        "observaciones",
-        ""
-    )
-
-}            }
-
-        )
-
-        pago_actualizado = pagos.find_one({
-            "_id": ObjectId(id)
-        })
 
         pago_actualizado = pagos.find_one({
             "_id": ObjectId(id)
@@ -577,8 +579,8 @@ def editar_pago(id):
 
         )
         recalcular_pago(
-    		pago_actualizado["_id"]
-)
+            pago_actualizado["_id"]
+        )
 
         flash("Pago actualizado")
 
