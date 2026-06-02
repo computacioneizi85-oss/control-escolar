@@ -3,7 +3,8 @@ from datetime import datetime
 from flask import send_file
 
 from pdf.generador import (
-    generar_recibo_pago_pdf
+    generar_recibo_pago_pdf,
+    generar_corte_caja_pdf
 )
 
 from flask import (
@@ -715,5 +716,58 @@ def corte_caja():
         total=total,
 
         fecha=hoy
+
+    )
+
+@pagos_bp.route(
+    "/admin/corte_caja_pdf"
+)
+def corte_caja_pdf():
+
+    hoy = datetime.now().strftime(
+        "%d/%m/%Y"
+    )
+
+    movimientos = list(
+
+        movimientos_pagos.find({
+
+            "fecha_pago": hoy,
+
+            "estatus": "activo"
+
+        })
+
+    )
+
+    total = sum(
+
+        m.get("monto", 0)
+
+        for m in movimientos
+
+    )
+
+    pdf = generar_corte_caja_pdf(
+
+        movimientos,
+
+        hoy,
+
+        total
+
+    )
+
+    return send_file(
+
+        pdf,
+
+        mimetype="application/pdf",
+
+        as_attachment=False,
+
+        download_name=(
+            f"corte_caja_{hoy}.pdf"
+        )
 
     )

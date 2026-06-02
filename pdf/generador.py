@@ -714,3 +714,113 @@ def generar_recibo_pago_pdf(movimiento):
     buffer.seek(0)
 
     return buffer
+
+# =========================
+# CORTE DE CAJA PDF
+# =========================
+def generar_corte_caja_pdf(
+    movimientos,
+    fecha,
+    total
+):
+
+    escuela, ciclo, director, direccion, escudo = obtener_config()
+
+    c, buffer = crear_pdf()
+
+    encabezado(
+        c,
+        escuela,
+        ciclo,
+        direccion,
+        escudo,
+        "CORTE DE CAJA"
+    )
+
+    c.setFont(
+        "Helvetica",
+        11
+    )
+
+    c.drawString(
+        50,
+        670,
+        f"Fecha: {fecha}"
+    )
+
+    y = 630
+
+    c.setFont(
+        "Helvetica-Bold",
+        10
+    )
+
+    c.drawString(50, y, "Alumno")
+    c.drawString(250, y, "Monto")
+    c.drawString(350, y, "Metodo")
+    c.drawString(450, y, "Hora")
+
+    y -= 20
+
+    c.setFont(
+        "Helvetica",
+        10
+    )
+
+    for m in movimientos:
+
+        if y < 120:
+
+            c.showPage()
+
+            y = 700
+
+        c.drawString(
+            50,
+            y,
+            str(m.get("alumno", ""))
+        )
+
+        c.drawString(
+            250,
+            y,
+            f"${m.get('monto',0)}"
+        )
+
+        c.drawString(
+            350,
+            y,
+            str(m.get("metodo", ""))
+        )
+
+        c.drawString(
+            450,
+            y,
+            str(m.get("hora_pago", ""))
+        )
+
+        y -= 20
+
+    y -= 20
+
+    c.setFont(
+        "Helvetica-Bold",
+        12
+    )
+
+    c.drawString(
+        50,
+        y,
+        f"TOTAL DEL DIA: ${total}"
+    )
+
+    firma(
+        c,
+        director
+    )
+
+    c.save()
+
+    buffer.seek(0)
+
+    return buffer
