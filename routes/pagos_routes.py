@@ -147,29 +147,35 @@ def nuevo_pago():
 
         pagos.insert_one({
 
-            "alumno_id": str(alumno["_id"]),
+   	"alumno_id": str(alumno["_id"]),
 
-            "alumno": alumno["nombre"],
+    	"alumno": alumno["nombre"],
 
-            "grupo": alumno.get("grupo", ""),
+        "grupo": alumno.get("grupo", ""),
 
-            "concepto": "Colegiatura",
+        "concepto": "Colegiatura",
 
-            "mensualidad": mensualidad,
+        "mensualidad": mensualidad,
 
-            "meses_totales": meses_totales,
+        "meses_totales": meses_totales,
 
-            "meses_pagados": 0,
+        "meses_pagados": 0,
 
-            "total_debe": total_debe,
+        "total_debe": total_debe,
 
-            "total_pagado": 0,
+        "total_pagado": 0,
 
-            "saldo_restante": total_debe,
+        "saldo_restante": total_debe,
 
-            "estatus": "pendiente"
+        "estatus": "pendiente",
 
-        })
+        "observaciones": "",
+
+        "beca": 0,
+
+        "descuento": 0
+
+})
 
         flash("Pago creado correctamente")
 
@@ -215,6 +221,19 @@ def registrar_abono(id):
         metodo = request.form["metodo"]
 
         mes_cubierto = request.form["mes_cubierto"]
+
+        if monto > pago["saldo_restante"]:
+
+            flash(
+                "El monto excede el saldo pendiente"
+            )
+
+            return redirect(
+                url_for(
+                    "pagos.registrar_abono",
+                    id=id
+                )
+            )
 
         concepto = request.form["concepto"]
 
@@ -345,7 +364,7 @@ def expediente_pago(id):
 
         "pago_id": str(id)
 
-    })
+    }).sort("_id", -1)
 
     return render_template(
 
@@ -473,18 +492,36 @@ def editar_pago(id):
             },
 
             {
-                "$set": {
+"$set": {
 
-                    "mensualidad": float(
-                        request.form["mensualidad"]
-                    ),
+    "mensualidad": float(
+        request.form["mensualidad"]
+    ),
 
-                    "meses_totales": int(
-                        request.form["meses_totales"]
-                    )
+    "meses_totales": int(
+        request.form["meses_totales"]
+    ),
 
-                }
-            }
+    "beca": float(
+        request.form.get(
+            "beca",
+            0
+        )
+    ),
+
+    "descuento": float(
+        request.form.get(
+            "descuento",
+            0
+        )
+    ),
+
+    "observaciones": request.form.get(
+        "observaciones",
+        ""
+    )
+
+}            }
 
         )
 
@@ -492,19 +529,53 @@ def editar_pago(id):
             "_id": ObjectId(id)
         })
 
+        pago_actualizado = pagos.find_one({
+            "_id": ObjectId(id)
+        })
+
+        mensualidad = pago_actualizado["mensualidad"]
+
+        meses = pago_actualizado["meses_totales"]
+
+        beca = pago_actualizado.get(
+            "beca",
+            0
+        )
+
+        descuento = pago_actualizado.get(
+            "descuento",
+            0
+        )
+
+        total = mensualidad * meses
+
+        if beca > 0:
+
+            total = total - (
+                total * (beca / 100)
+            )
+
+        total = total - descuento
+
+        if total < 0:
+            total = 0
+
         pagos.update_one(
+
             {
                 "_id": ObjectId(id)
             },
+
             {
                 "$set": {
-                    "total_debe":
-                    pago_actualizado["mensualidad"] *
-                    pago_actualizado["meses_totales"]
-                }
-            }
-        )
 
+                    "total_debe": total
+
+                }
+
+            }
+
+        )
         recalcular_pago(
     		pago_actualizado["_id"]
 )
@@ -583,5 +654,64 @@ def recibo_pago(id):
         ),
 
         mimetype="application/pdf"
+
+    )
+
+@pagos_bp.route("/admin/morosos")
+def morosos():
+
+    lista = pagos.find({
+
+        "saldo_restante": {
+            "$gt": 0
+        },
+
+        "activo": {
+            "$ne": False
+        }
+
+    })
+
+    return render_template(
+
+        "morosos.html",
+
+        pagos_db=lista
+
+    )
+
+@pagos_bp.route("/admin/corte_caja")
+def corte_caja():
+
+    hoy = datetime.now().strftime(
+        "%d/%m/%Y"
+    )
+
+    movimientos = list(
+
+        movimientos_pagos.find({
+
+            "fecha_pago": hoy,
+
+            "estatus": "activo"
+
+        })
+
+    )
+
+    total = sum(
+        m.get("monto",0)
+        for m in movimientos
+    )
+
+    return render_template(
+
+        "corte_caja.html",
+
+        movimientos=movimientos,
+
+        total=total,
+
+        fecha=hoy
 
     )

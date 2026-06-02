@@ -5,10 +5,44 @@
 <h2>Pagos escolares</h2>
 
 <a href="/admin/nuevo_pago">
+    <button>Nuevo control</button>
+</a>
+
+<a href="/admin/morosos">
+    <button>Morosos</button>
+</a>
+
+<a href="/admin/corte_caja">
+    <button>Corte de Caja</button>
+</a>
 
 <button>
-Nuevo control
+
+Morosos
+
 </button>
+
+</a>
+
+<a href="/admin/corte_caja">
+
+<button>
+
+Corte de Caja
+
+</button>
+
+</a>
+
+<a href="/admin/corte_caja_pdf">
+
+<button>
+
+PDF Caja
+
+</button>
+
+</a>
 
 </a>
 
@@ -25,6 +59,7 @@ Nuevo control
 <th>Pagado</th>
 <th>Restante</th>
 <th>Estado</th>
+<th>Adeudo %</th>
 <th>Acciones</th>
 
 </tr>
@@ -49,7 +84,49 @@ Nuevo control
 
 <td>${{ p.saldo_restante }}</td>
 
-<td>{{ p.estatus }}</td>
+<td>
+
+{% if p.estatus == "pagado" %}
+
+<span style="color:green;">
+Pagado
+</span>
+
+{% elif p.estatus == "parcial" %}
+
+<span style="color:orange;">
+Parcial
+</span>
+
+{% else %}
+
+<span style="color:red;">
+Pendiente
+</span>
+
+{% endif %}
+
+</td>
+
+<td>
+
+{% if p.total_debe > 0 %}
+
+{% set porcentaje = (
+    (p.saldo_restante / p.total_debe) * 100
+) | round(0) %}
+
+{% else %}
+
+{% set porcentaje = 0 %}
+
+{% endif %}
+
+{{ porcentaje }} %
+
+{{ porcentaje }} %
+
+</td>
 
 <td>
 
@@ -63,6 +140,13 @@ Nuevo control
 
 <a href="/admin/editar_pago/{{ p._id }}">
     <button>Editar</button>
+</a>
+
+<a
+href="/admin/editar_pago/{{ p._id }}"
+class="btn btn-warning btn-sm"
+>
+Editar Control
 </a>
 
 <form
