@@ -989,71 +989,71 @@ def aplicar_recargos():
             )
         )
 
-    recargo = (
+        recargo = (
 
-        saldo_actual
-        * porcentaje
+            saldo_actual
+            * porcentaje
 
-    ) / 100
+        ) / 100
 
-    movimientos_pagos.insert_one({
+        movimientos_pagos.insert_one({
 
-        "folio":
-            "RECARGO-" +
-            datetime.now().strftime(
-                "%Y%m%d%H%M%S"
-            ),
+            "folio":
+                "RECARGO-" +
+                datetime.now().strftime(
+                    "%Y%m%d%H%M%S"
+                ),
 
-        "concepto":
-            "Recargo por mora",
+            "concepto":
+                "Recargo por mora",
 
-        "pago_id":
-            str(pago["_id"]),
+            "pago_id":
+                str(pago["_id"]),
 
-        "alumno":
-            pago["alumno"],
+            "alumno":
+                pago["alumno"],
 
-        "grupo":
-            pago.get("grupo", ""),
+            "grupo":
+                pago.get("grupo", ""),
 
-        "monto":
-            recargo,
+            "monto":
+                recargo,
 
-        "metodo":
-            "recargo",
+            "metodo":
+                "recargo",
 
-        "mes_cubierto":
-            "",
+            "mes_cubierto":
+                "",
 
-        "fecha_pago":
-            datetime.now().strftime(
-                "%d/%m/%Y"
-            ),
+            "fecha_pago":
+                datetime.now().strftime(
+                    "%d/%m/%Y"
+                ),
 
-        "hora_pago":
-            datetime.now().strftime(
-                "%H:%M"
-            ),
+            "hora_pago":
+                datetime.now().strftime(
+                    "%H:%M"
+                ),
 
-        "capturado_por":
-            "Sistema",
+            "capturado_por":
+                "Sistema",
 
-        "estatus":
-            "activo"
+            "estatus":
+                "activo"
 
-    })
+        })
 
-    nuevo_saldo = (
+        nuevo_saldo = (
 
-        saldo_actual
-        + recargo
+            saldo_actual
+            + recargo
 
-    )
+        )
+
         pagos.update_one(
 
             {
-                "_id":
-                pago["_id"]
+                "_id": pago["_id"]
             },
 
             {
