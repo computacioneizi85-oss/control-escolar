@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>Dashboard Financiero</h2>
+
+<div style="display:flex;gap:20px;flex-wrap:wrap;">
+
+<div class="card p-3">
+<h4>Total Contratado</h4>
+<h2>${{ total_contratado }}</h2>
+</div>
+
+<div class="card p-3">
+<h4>Total Cobrado</h4>
+<h2>${{ total_cobrado }}</h2>
+</div>
+
+<div class="card p-3">
+<h4>Total Pendiente</h4>
+<h2>${{ total_pendiente }}</h2>
+</div>
+
+<div class="card p-3">
+<h4>Morosos</h4>
+<h2>{{ morosos }}</h2>
+</div>
+
+<div class="card p-3">
+<h4>Ingresos Hoy</h4>
+<h2>${{ ingresos_hoy }}</h2>
+</div>
+
+</div>
+
+<br>
+
+<a href="/admin/pagos">
+    <button>Regresar</button>
+</a>
+
+{% endblock %}

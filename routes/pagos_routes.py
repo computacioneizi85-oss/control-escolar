@@ -809,3 +809,80 @@ def morosos_pdf():
         download_name="morosos.pdf"
 
     )
+
+@pagos_bp.route("/admin/dashboard_financiero")
+def dashboard_financiero():
+
+    total_contratado = 0
+    total_cobrado = 0
+    total_pendiente = 0
+
+    for p in pagos.find({
+
+        "activo": {
+            "$ne": False
+        }
+
+    }):
+
+        total_contratado += p.get(
+            "total_debe",
+            0
+        )
+
+        total_cobrado += p.get(
+            "total_pagado",
+            0
+        )
+
+        total_pendiente += p.get(
+            "saldo_restante",
+            0
+        )
+
+    morosos = pagos.count_documents({
+
+        "saldo_restante": {
+            "$gt": 0
+        },
+
+        "activo": {
+            "$ne": False
+        }
+
+    })
+
+    hoy = datetime.now().strftime(
+        "%d/%m/%Y"
+    )
+
+    ingresos_hoy = 0
+
+    for m in movimientos_pagos.find({
+
+        "fecha_pago": hoy,
+
+        "estatus": "activo"
+
+    }):
+
+        ingresos_hoy += m.get(
+            "monto",
+            0
+        )
+
+    return render_template(
+
+        "dashboard_financiero.html",
+
+        total_contratado=total_contratado,
+
+        total_cobrado=total_cobrado,
+
+        total_pendiente=total_pendiente,
+
+        morosos=morosos,
+
+        ingresos_hoy=ingresos_hoy
+
+    )
