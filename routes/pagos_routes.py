@@ -956,3 +956,99 @@ def config_recargos_admin():
         config=config
 
     )
+
+@pagos_bp.route(
+    "/admin/aplicar_recargos"
+)
+def aplicar_recargos():
+
+    config = config_recargos.find_one()
+
+    if not config:
+
+        flash(
+            "No existe configuración de recargos"
+        )
+
+        return redirect(
+            "/admin/config_recargos"
+        )
+
+    porcentaje = config.get(
+        "porcentaje",
+        0
+    )
+
+    modificados = 0
+
+    for pago in pagos.find({
+
+        "saldo_restante": {
+            "$gt": 0
+        }
+
+    }):
+
+        saldo_actual = pago.get(
+            "saldo_con_recargo",
+            pago.get(
+                "saldo_restante",
+                0
+            )
+        )
+
+        recargo = (
+
+            saldo_actual
+            * porcentaje
+        ) / 100
+
+        nuevo_saldo = (
+
+            saldo_actual
+            + recargo
+
+        )
+
+        pagos.update_one(
+
+            {
+                "_id":
+                pago["_id"]
+            },
+
+            {
+                "$set": {
+
+                    "recargos_acumulados":
+
+                    pago.get(
+                        "recargos_acumulados",
+                        0
+                    ) + recargo,
+
+                    "saldo_con_recargo":
+                    nuevo_saldo,
+
+                    "ultimo_recargo":
+                    datetime.now().strftime(
+                        "%d/%m/%Y"
+                    )
+
+                }
+
+            }
+
+        )
+
+        modificados += 1
+
+    flash(
+
+        f"Recargos aplicados a {modificados} alumnos"
+
+    )
+
+    return redirect(
+        "/admin/config_recargos"
+    )
