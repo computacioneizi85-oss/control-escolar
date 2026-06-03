@@ -4,7 +4,7 @@ from flask import send_file
 
 from pdf.generador import (
     generar_recibo_pago_pdf,
-    generar_corte_caja_pdf
+    generar_corte_caja_pdf,
     generar_morosos_pdf
 )
 
