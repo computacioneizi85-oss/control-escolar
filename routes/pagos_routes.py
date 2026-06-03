@@ -894,44 +894,44 @@ def dashboard_financiero():
 )
 def config_recargos_admin():
 
-if request.method == "POST":
+    if request.method == "POST":
 
-    config_recargos.delete_many({})
+        config_recargos.delete_many({})
 
-    config_recargos.insert_one({
+        config_recargos.insert_one({
 
-        "activo":
-            "activo" in request.form,
+            "activo":
+                "activo" in request.form,
 
-        "dia_limite":
-            int(
-                request.form["dia_limite"]
-            ),
+            "dia_limite":
+                int(
+                    request.form["dia_limite"]
+                ),
 
-        "porcentaje":
-            float(
-                request.form["porcentaje"]
-            ),
+            "porcentaje":
+                float(
+                    request.form["porcentaje"]
+                ),
 
-        "aplicar_mensual":
-            "aplicar_mensual"
-            in request.form,
+            "aplicar_mensual":
+                "aplicar_mensual"
+                in request.form,
 
-        "fecha_creacion":
-            datetime.now(),
+            "fecha_creacion":
+                datetime.now(),
 
-        "fecha_actualizacion":
-            datetime.now()
+            "fecha_actualizacion":
+                datetime.now()
 
-    })
+        })
 
-    flash(
-        "Configuración guardada"
-    )
+        flash(
+            "Configuración guardada"
+        )
 
-    return redirect(
-        "/admin/config_recargos"
-    )
+        return redirect(
+            "/admin/config_recargos"
+        )
 
     config = config_recargos.find_one()
 
