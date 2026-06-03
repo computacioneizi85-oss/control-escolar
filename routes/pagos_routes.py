@@ -182,12 +182,6 @@ def nuevo_pago():
             "ultimo_recargo":
    		 None,
 
-            "recargos_acumulados": 0,
-
-           "saldo_con_recargo": total_debe,
-
-           "ultimo_recargo": None,
-
             "beca": 0,
 
             "descuento": 0
@@ -1002,6 +996,53 @@ def aplicar_recargos():
             saldo_actual
             * porcentaje
         ) / 100
+
+movimientos_pagos.insert_one({
+
+    "folio":
+        "RECARGO-" +
+        datetime.now().strftime(
+            "%Y%m%d%H%M%S"
+        ),
+
+    "concepto":
+        "Recargo por mora",
+
+    "pago_id":
+        str(pago["_id"]),
+
+    "alumno":
+        pago["alumno"],
+
+    "grupo":
+        pago.get("grupo",""),
+
+    "monto":
+        recargo,
+
+    "metodo":
+        "recargo",
+
+    "mes_cubierto":
+        "",
+
+    "fecha_pago":
+        datetime.now().strftime(
+            "%d/%m/%Y"
+        ),
+
+    "hora_pago":
+        datetime.now().strftime(
+            "%H:%M"
+        ),
+
+    "capturado_por":
+        "Sistema",
+
+    "estatus":
+        "activo"
+
+})
 
         nuevo_saldo = (
 
