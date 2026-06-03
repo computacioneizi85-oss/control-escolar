@@ -174,6 +174,14 @@ def nuevo_pago():
 
             "observaciones": "",
 
+            "recargos_acumulados": 0,
+
+            "saldo_con_recargo":
+   		 total_debe,
+
+            "ultimo_recargo":
+   		 None,
+
             "beca": 0,
 
             "descuento": 0
