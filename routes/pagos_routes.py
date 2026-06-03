@@ -23,7 +23,7 @@ from bson.objectid import ObjectId
 from database.mongo import (
     pagos,
     alumnos,
-    movimientos_pagos
+    movimientos_pagos,
     config_recargos
 )
 
@@ -894,38 +894,44 @@ def dashboard_financiero():
 )
 def config_recargos_admin():
 
-    if request.method == "POST":
+if request.method == "POST":
 
-        config_recargos.delete_many({})
+    config_recargos.delete_many({})
 
-        config_recargos.insert_one({
+    config_recargos.insert_one({
 
-            "activo":
-                "activo" in request.form,
+        "activo":
+            "activo" in request.form,
 
-            "dia_limite":
-                int(
-                    request.form["dia_limite"]
-                ),
+        "dia_limite":
+            int(
+                request.form["dia_limite"]
+            ),
 
-            "porcentaje":
-                float(
-                    request.form["porcentaje"]
-                ),
+        "porcentaje":
+            float(
+                request.form["porcentaje"]
+            ),
 
-            "aplicar_mensual":
-                "aplicar_mensual"
-                in request.form
+        "aplicar_mensual":
+            "aplicar_mensual"
+            in request.form,
 
-        })
+        "fecha_creacion":
+            datetime.now(),
 
-        flash(
-            "Configuración guardada"
-        )
+        "fecha_actualizacion":
+            datetime.now()
 
-        return redirect(
-            "/admin/config_recargos"
-        )
+    })
+
+    flash(
+        "Configuración guardada"
+    )
+
+    return redirect(
+        "/admin/config_recargos"
+    )
 
     config = config_recargos.find_one()
 

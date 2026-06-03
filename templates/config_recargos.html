@@ -75,12 +75,40 @@
 
     <br><br>
 
-    <button type="submit">
+<button type="submit">
 
-        Guardar
+    Guardar
 
-    </button>
+</button>
 
 </form>
+
+<hr>
+
+<h4>Configuración actual</h4>
+
+{% if config %}
+
+<p>
+<strong>Día límite:</strong>
+{{ config.dia_limite }}
+</p>
+
+<p>
+<strong>Porcentaje:</strong>
+{{ config.porcentaje }} %
+</p>
+
+<p>
+<strong>Recargos activos:</strong>
+{{ "Sí" if config.activo else "No" }}
+</p>
+
+<p>
+<strong>Aplicación mensual:</strong>
+{{ "Sí" if config.aplicar_mensual else "No" }}
+</p>
+
+{% endif %}
 
 {% endblock %}
