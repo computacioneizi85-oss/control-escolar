@@ -5,6 +5,7 @@ from flask import send_file
 from pdf.generador import (
     generar_recibo_pago_pdf,
     generar_corte_caja_pdf
+    generar_morosos_pdf
 )
 
 from flask import (
@@ -769,5 +770,42 @@ def corte_caja_pdf():
         download_name=(
             f"corte_caja_{hoy}.pdf"
         )
+
+    )
+
+@pagos_bp.route(
+    "/admin/morosos_pdf"
+)
+def morosos_pdf():
+
+    lista = list(
+
+        pagos.find({
+
+            "saldo_restante": {
+                "$gt": 0
+            },
+
+            "activo": {
+                "$ne": False
+            }
+
+        })
+
+    )
+
+    pdf = generar_morosos_pdf(
+        lista
+    )
+
+    return send_file(
+
+        pdf,
+
+        mimetype="application/pdf",
+
+        as_attachment=False,
+
+        download_name="morosos.pdf"
 
     )

@@ -824,3 +824,78 @@ def generar_corte_caja_pdf(
     buffer.seek(0)
 
     return buffer
+
+# =========================
+# MOROSOS PDF
+# =========================
+def generar_morosos_pdf(lista):
+
+    escuela, ciclo, director, direccion, escudo = obtener_config()
+
+    c, buffer = crear_pdf()
+
+    encabezado(
+        c,
+        escuela,
+        ciclo,
+        direccion,
+        escudo,
+        "REPORTE DE MOROSOS"
+    )
+
+    y = 680
+
+    c.setFont(
+        "Helvetica-Bold",
+        10
+    )
+
+    c.drawString(50, y, "Alumno")
+    c.drawString(220, y, "Grupo")
+    c.drawString(320, y, "Adeudo")
+
+    y -= 25
+
+    c.setFont(
+        "Helvetica",
+        10
+    )
+
+    for p in lista:
+
+        if y < 120:
+
+            c.showPage()
+
+            y = 700
+
+        c.drawString(
+            50,
+            y,
+            str(p.get("alumno", ""))
+        )
+
+        c.drawString(
+            220,
+            y,
+            str(p.get("grupo", ""))
+        )
+
+        c.drawString(
+            320,
+            y,
+            f"${p.get('saldo_restante',0)}"
+        )
+
+        y -= 20
+
+    firma(
+        c,
+        director
+    )
+
+    c.save()
+
+    buffer.seek(0)
+
+    return buffer

@@ -4,6 +4,16 @@
 
 <h2>Alumnos con Adeudo</h2>
 
+<a href="/admin/morosos_pdf">
+
+    <button>
+
+        PDF Morosos
+
+    </button>
+
+</a>
+
 <a href="/admin/pagos">
     <button>Regresar</button>
 </a>
@@ -12,16 +22,17 @@
 
 <table border="1" width="100%">
 
-    <tr>
+   <tr>
 
-        <th>Alumno</th>
-        <th>Grupo</th>
-        <th>Total Contratado</th>
-        <th>Total Pagado</th>
-        <th>Saldo Pendiente</th>
-        <th>Estado</th>
+    <th>Alumno</th>
+    <th>Grupo</th>
+    <th>Total Contratado</th>
+    <th>Total Pagado</th>
+    <th>Saldo Pendiente</th>
+    <th>Estado</th>
+    <th>Acciones</th>
 
-    </tr>
+</tr>
 
     {% for p in pagos_db %}
 
@@ -54,6 +65,22 @@
             {% endif %}
 
         </td>
+
+<td>
+
+    <a
+        href="/admin/expediente_pago/{{ p._id }}"
+    >
+
+        <button>
+
+            Expediente
+
+        </button>
+
+    </a>
+
+</td>
 
     </tr>
 
