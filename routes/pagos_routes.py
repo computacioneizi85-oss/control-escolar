@@ -182,6 +182,12 @@ def nuevo_pago():
             "ultimo_recargo":
    		 None,
 
+            "recargos_acumulados": 0,
+
+           "saldo_con_recargo": total_debe,
+
+           "ultimo_recargo": None,
+
             "beca": 0,
 
             "descuento": 0

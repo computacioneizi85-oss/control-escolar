@@ -92,6 +92,34 @@
 
                     </p>
 
+                    <p>
+
+                    <strong>Último recargo:</strong>
+
+                    {{ pago.ultimo_recargo|default(
+  			  "Sin recargos"
+                    ) }}
+
+                    </p>
+
+                    <p>
+
+                    <strong>Recargos acumulados:</strong>
+
+                    ${{ pago.recargos_acumulados|default(0) }}
+
+                    </p>
+
+                    <p>
+
+                    <strong>Saldo con recargos:</strong>
+
+                    ${{ pago.saldo_con_recargo|default(
+   			 pago.saldo_restante
+                    ) }}
+
+                    </p>
+
 <p>
     <strong>Estado:</strong>
 
