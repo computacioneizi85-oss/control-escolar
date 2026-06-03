@@ -42,6 +42,8 @@ pagos = db["pagos"]
 
 movimientos_pagos = db["movimientos_pagos"]
 
+config_recargos = db["config_recargos"]
+
 padres = db["padres"]
 
 # =========================

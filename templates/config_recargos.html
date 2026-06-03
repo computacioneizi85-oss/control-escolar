@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>Configuración de Recargos</h2>
+
+<form method="POST">
+
+    <label>
+
+        Día límite de pago
+
+    </label>
+
+    <br>
+
+    <input
+        type="number"
+        name="dia_limite"
+        value="{{ config.dia_limite if config else 10 }}"
+        required
+    >
+
+    <br><br>
+
+    <label>
+
+        Porcentaje de recargo
+
+    </label>
+
+    <br>
+
+    <input
+        type="number"
+        step="0.01"
+        name="porcentaje"
+        value="{{ config.porcentaje if config else 10 }}"
+        required
+    >
+
+    <br><br>
+
+    <label>
+
+        <input
+            type="checkbox"
+            name="activo"
+
+            {% if config and config.activo %}
+            checked
+            {% endif %}
+        >
+
+        Activar recargos
+
+    </label>
+
+    <br><br>
+
+    <label>
+
+        <input
+            type="checkbox"
+            name="aplicar_mensual"
+
+            {% if config and config.aplicar_mensual %}
+            checked
+            {% endif %}
+        >
+
+        Aplicar cada mes mientras exista adeudo
+
+    </label>
+
+    <br><br>
+
+    <button type="submit">
+
+        Guardar
+
+    </button>
+
+</form>
+
+{% endblock %}

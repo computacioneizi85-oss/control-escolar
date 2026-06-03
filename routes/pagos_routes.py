@@ -24,6 +24,7 @@ from database.mongo import (
     pagos,
     alumnos,
     movimientos_pagos
+    config_recargos
 )
 
 
@@ -884,5 +885,54 @@ def dashboard_financiero():
         morosos=morosos,
 
         ingresos_hoy=ingresos_hoy
+
+    )
+
+@pagos_bp.route(
+    "/admin/config_recargos",
+    methods=["GET", "POST"]
+)
+def config_recargos_admin():
+
+    if request.method == "POST":
+
+        config_recargos.delete_many({})
+
+        config_recargos.insert_one({
+
+            "activo":
+                "activo" in request.form,
+
+            "dia_limite":
+                int(
+                    request.form["dia_limite"]
+                ),
+
+            "porcentaje":
+                float(
+                    request.form["porcentaje"]
+                ),
+
+            "aplicar_mensual":
+                "aplicar_mensual"
+                in request.form
+
+        })
+
+        flash(
+            "Configuración guardada"
+        )
+
+        return redirect(
+            "/admin/config_recargos"
+        )
+
+    config = config_recargos.find_one()
+
+    return render_template(
+
+        "config_recargos.html",
+
+        config=config
 
     )
