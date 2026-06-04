@@ -989,15 +989,15 @@ def aplicar_recargos():
             )
         )
 
-fecha_hoy = datetime.now().strftime(
-    "%d/%m/%Y"
-)
+        fecha_hoy = datetime.now().strftime(
+            "%d/%m/%Y"
+        )
 
-if pago.get(
-    "ultimo_recargo"
-) == fecha_hoy:
+        if pago.get(
+            "ultimo_recargo"
+        ) == fecha_hoy:
 
-    continue
+            continue
 
         recargo = (
 
@@ -1080,9 +1080,7 @@ if pago.get(
                     nuevo_saldo,
 
                     "ultimo_recargo":
-                    datetime.now().strftime(
-                        "%d/%m/%Y"
-                    )
+                    fecha_hoy
 
                 }
 
