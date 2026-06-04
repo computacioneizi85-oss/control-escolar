@@ -142,6 +142,10 @@ def nuevo_pago():
             request.form["meses_totales"]
         )
 
+        tipo_cobro = request.form[
+         "tipo_cobro"
+        ]
+
         alumno = alumnos.find_one({
             "_id": ObjectId(alumno_id)
         })
@@ -157,6 +161,8 @@ def nuevo_pago():
             "grupo": alumno.get("grupo", ""),
 
             "concepto": "Colegiatura",
+
+            "tipo_cobro": tipo_cobro,
 
             "mensualidad": mensualidad,
 

@@ -58,6 +58,7 @@ PDF Caja
 <th>Grupo</th>
 <th>Mensualidad</th>
 <th>Meses</th>
+<th>Tipo</th>
 <th>Pagado</th>
 <th>Restante</th>
 <th>Estado</th>
@@ -80,6 +81,12 @@ PDF Caja
 {{ p.meses_pagados }}
 /
 {{ p.meses_totales }}
+</td>
+
+<td>
+
+{{ p.tipo_cobro|default("global") }}
+
 </td>
 
 <td>${{ p.total_pagado }}</td>
