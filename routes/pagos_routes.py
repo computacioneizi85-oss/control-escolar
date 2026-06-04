@@ -989,6 +989,16 @@ def aplicar_recargos():
             )
         )
 
+fecha_hoy = datetime.now().strftime(
+    "%d/%m/%Y"
+)
+
+if pago.get(
+    "ultimo_recargo"
+) == fecha_hoy:
+
+    continue
+
         recargo = (
 
             saldo_actual

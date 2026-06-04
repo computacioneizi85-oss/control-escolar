@@ -76,6 +76,16 @@
 
                     <p>
 
+                        <strong>Deuda actual:</strong>
+                        ${{pago.saldo_con_recargo | default(
+                        pago.saldo_restante
+                    )
+                    }}
+
+                    </p>
+
+                    <p>
+
                     <strong>Recargos acumulados:</strong>
 
                     ${{ pago.recargos_acumulados|default(0) }}
