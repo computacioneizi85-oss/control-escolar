@@ -153,7 +153,7 @@ def nuevo_pago():
 
         total_debe = mensualidad * meses_totales
 
-        pagos.insert_one({
+        resultado = pagos.insert_one({
 
             "alumno_id": str(alumno["_id"]),
 
@@ -196,6 +196,61 @@ def nuevo_pago():
             "beca": 0,
 
             "descuento": 0
+
+        })
+
+if tipo_cobro == "mensual":
+
+    meses_nombres = [
+
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre"
+
+    ]
+
+    mes_actual = datetime.now().month - 1
+
+    for i in range(meses_totales):
+
+        nombre_mes = meses_nombres[
+            (mes_actual + i) % 12
+        ]
+
+        mensualidades.insert_one({
+
+            "pago_id":
+                str(resultado.inserted_id),
+
+            "alumno_id":
+                str(alumno["_id"]),
+
+            "alumno":
+                alumno["nombre"],
+
+            "mes":
+                nombre_mes,
+
+            "monto":
+                mensualidad,
+
+            "pagado":
+                False,
+
+            "recargo":
+                0,
+
+            "fecha_creacion":
+                datetime.now()
 
         })
 
