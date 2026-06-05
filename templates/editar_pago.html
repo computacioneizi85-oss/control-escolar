@@ -20,6 +20,34 @@
 
 <label>Meses Totales</label>
 
+<br><br>
+
+<label>Tipo de cobro</label>
+
+<select name="tipo_cobro">
+
+    <option
+        value="global"
+        {% if pago.tipo_cobro == "global" %}
+        selected
+        {% endif %}
+    >
+        Global
+    </option>
+
+    <option
+        value="mensual"
+        {% if pago.tipo_cobro == "mensual" %}
+        selected
+        {% endif %}
+    >
+        Mensual
+    </option>
+
+</select>
+
+<br><br>
+
 <input
     type="number"
     name="meses_totales"

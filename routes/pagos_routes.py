@@ -24,7 +24,8 @@ from database.mongo import (
     pagos,
     alumnos,
     movimientos_pagos,
-    config_recargos
+    config_recargos,
+    mensualidades
 )
 
 
@@ -163,6 +164,12 @@ def nuevo_pago():
             "concepto": "Colegiatura",
 
             "tipo_cobro": tipo_cobro,
+
+            "usar_calendario_mensual": False,
+
+            "fecha_inicio": datetime.now(),
+
+            "mensualidades": [],
 
             "mensualidad": mensualidad,
 
@@ -520,6 +527,9 @@ def editar_pago(id):
                     "meses_totales": int(
                         request.form["meses_totales"]
                     ),
+
+                     "tipo_cobro":
+                     request.form["tipo_cobro"],
 
                     "beca": float(
                         request.form.get(

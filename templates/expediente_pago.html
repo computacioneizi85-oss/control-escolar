@@ -55,11 +55,29 @@
                         {{ pago.meses_pagados }}
                     </p>
 
-                    <p>
+                   <p>
 
-                       <strong>Tipo de cobro:</strong>
+    <strong>Tipo de cobro:</strong>
 
-                      {{ pago.tipo_cobro|default("global") }}
+    {{ pago.tipo_cobro|default("global") }}
+
+</p>
+
+<p>
+
+    <strong>Manejo de recargos:</strong>
+
+    {% if pago.tipo_cobro == "mensual" %}
+
+        Por mensualidad vencida
+
+    {% else %}
+
+        Por saldo global
+
+    {% endif %}
+
+</p>
 
                    </p>
 
