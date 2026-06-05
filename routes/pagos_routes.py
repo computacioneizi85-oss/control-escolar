@@ -634,82 +634,93 @@ def editar_pago(id):
             "_id": ObjectId(id)
         })
 
-if pago_actualizado.get("tipo_cobro") == "mensual":
+        if pago_actualizado.get(
+            "tipo_cobro"
+        ) == "mensual":
 
-    existentes = mensualidades.count_documents({
-
-        "pago_id": str(pago_actualizado["_id"])
-
-    })
-
-    if existentes == 0:
-
-        meses_nombres = [
-
-            "Enero",
-            "Febrero",
-            "Marzo",
-            "Abril",
-            "Mayo",
-            "Junio",
-            "Julio",
-            "Agosto",
-            "Septiembre",
-            "Octubre",
-            "Noviembre",
-            "Diciembre"
-
-        ]
-
-        mes_actual = datetime.now().month - 1
-
-        for i in range(
-            pago_actualizado["meses_totales"]
-        ):
-
-            nombre_mes = meses_nombres[
-                (mes_actual + i) % 12
-            ]
-
-            mensualidades.insert_one({
+            existentes = mensualidades.count_documents({
 
                 "pago_id":
                     str(
                         pago_actualizado["_id"]
-                    ),
-
-                "alumno_id":
-                    pago_actualizado[
-                        "alumno_id"
-                    ],
-
-                "alumno":
-                    pago_actualizado[
-                        "alumno"
-                    ],
-
-                "mes":
-                    nombre_mes,
-
-                "monto":
-                    pago_actualizado[
-                        "mensualidad"
-                    ],
-
-                "pagado":
-                    False,
-
-                "recargo":
-                    0,
-
-                "fecha_creacion":
-                    datetime.now()
+                    )
 
             })
 
-        mensualidad = pago_actualizado["mensualidad"]
+            if existentes == 0:
 
-        meses = pago_actualizado["meses_totales"]
+                meses_nombres = [
+
+                    "Enero",
+                    "Febrero",
+                    "Marzo",
+                    "Abril",
+                    "Mayo",
+                    "Junio",
+                    "Julio",
+                    "Agosto",
+                    "Septiembre",
+                    "Octubre",
+                    "Noviembre",
+                    "Diciembre"
+
+                ]
+
+                mes_actual = datetime.now().month - 1
+
+                for i in range(
+                    pago_actualizado[
+                        "meses_totales"
+                    ]
+                ):
+
+                    nombre_mes = meses_nombres[
+                        (mes_actual + i) % 12
+                    ]
+
+                    mensualidades.insert_one({
+
+                        "pago_id":
+                            str(
+                                pago_actualizado["_id"]
+                            ),
+
+                        "alumno_id":
+                            pago_actualizado[
+                                "alumno_id"
+                            ],
+
+                        "alumno":
+                            pago_actualizado[
+                                "alumno"
+                            ],
+
+                        "mes":
+                            nombre_mes,
+
+                        "monto":
+                            pago_actualizado[
+                                "mensualidad"
+                            ],
+
+                        "pagado":
+                            False,
+
+                        "recargo":
+                            0,
+
+                        "fecha_creacion":
+                            datetime.now()
+
+                    })
+
+        mensualidad = pago_actualizado[
+            "mensualidad"
+        ]
+
+        meses = pago_actualizado[
+            "meses_totales"
+        ]
 
         beca = pago_actualizado.get(
             "beca",
@@ -732,6 +743,7 @@ if pago_actualizado.get("tipo_cobro") == "mensual":
         total = total - descuento
 
         if total < 0:
+
             total = 0
 
         pagos.update_one(
@@ -743,22 +755,29 @@ if pago_actualizado.get("tipo_cobro") == "mensual":
             {
                 "$set": {
 
-                    "total_debe": total
+                    "total_debe":
+                        total
 
                 }
 
             }
 
         )
+
         recalcular_pago(
             pago_actualizado["_id"]
         )
 
-        flash("Pago actualizado")
+        flash(
+            "Pago actualizado"
+        )
 
         return redirect(
-            url_for("pagos.pagos_admin")
+            url_for(
+                "pagos.pagos_admin"
+            )
         )
+
 
     return render_template(
         "editar_pago.html",
