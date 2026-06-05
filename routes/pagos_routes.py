@@ -674,16 +674,57 @@ def editar_pago(id):
                 mes_actual = datetime.now().month - 1
 
                 for i in range(
-                    pago_actualizado[
-                        "meses_totales"
-                    ]
-                ):
+for i in range(
+    pago_actualizado[
+        "meses_totales"
+    ]
+):
 
-                    nombre_mes = meses_nombres[
-                        (mes_actual + i) % 12
-                    ]
+    nombre_mes = meses_nombres[
+        (mes_actual + i) % 12
+    ]
 
-mensualidades.insert_one({
+    mensualidades.insert_one({
+
+        "pago_id":
+            str(
+                pago_actualizado["_id"]
+            ),
+
+        "alumno_id":
+            pago_actualizado[
+                "alumno_id"
+            ],
+
+        "alumno":
+            pago_actualizado[
+                "alumno"
+            ],
+
+        "mes":
+            nombre_mes,
+
+        "numero_mes":
+            ((mes_actual + i) % 12) + 1,
+
+        "anio":
+            datetime.now().year,
+
+        "monto":
+            pago_actualizado[
+                "mensualidad"
+            ],
+
+        "pagado":
+            False,
+
+        "recargo":
+            0,
+
+        "fecha_creacion":
+            datetime.now()
+
+    })
 
     "pago_id":
         str(
