@@ -683,42 +683,47 @@ def editar_pago(id):
                         (mes_actual + i) % 12
                     ]
 
-                    mensualidades.insert_one({
+mensualidades.insert_one({
 
-                        "pago_id":
-                            str(
-                                pago_actualizado["_id"]
-                            ),
+    "pago_id":
+        str(
+            pago_actualizado["_id"]
+        ),
 
-                        "alumno_id":
-                            pago_actualizado[
-                                "alumno_id"
-                            ],
+    "alumno_id":
+        pago_actualizado[
+            "alumno_id"
+        ],
 
-                        "alumno":
-                            pago_actualizado[
-                                "alumno"
-                            ],
+    "alumno":
+        pago_actualizado[
+            "alumno"
+        ],
 
-                        "mes":
-                            nombre_mes,
+    "mes":
+        nombre_mes,
 
-                        "monto":
-                            pago_actualizado[
-                                "mensualidad"
-                            ],
+    "numero_mes":
+        ((mes_actual + i) % 12) + 1,
 
-                        "pagado":
-                            False,
+    "anio":
+        datetime.now().year,
 
-                        "recargo":
-                            0,
+    "monto":
+        pago_actualizado[
+            "mensualidad"
+        ],
 
-                        "fecha_creacion":
-                            datetime.now()
+    "pagado":
+        False,
 
-                    })
+    "recargo":
+        0,
 
+    "fecha_creacion":
+        datetime.now()
+
+})
         mensualidad = pago_actualizado[
             "mensualidad"
         ]
@@ -1276,13 +1281,6 @@ def aplicar_recargos():
                 "activo"
 
         })
-
-        nuevo_saldo = (
-
-            saldo_actual
-            + recargo
-
-        )
 
         mensualidades.update_one(
 
