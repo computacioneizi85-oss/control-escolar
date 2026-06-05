@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>
+
+Mensualidades de
+
+{{ pago.alumno }}
+
+</h2>
+
+<table
+    border="1"
+    width="100%"
+>
+
+<tr>
+
+<th>Mes</th>
+
+<th>Monto</th>
+
+<th>Recargo</th>
+
+<th>Estado</th>
+
+</tr>
+
+{% for m in mensualidades_db %}
+
+<tr>
+
+<td>
+
+{{ m.mes }}
+
+</td>
+
+<td>
+
+${{ m.monto }}
+
+</td>
+
+<td>
+
+${{ m.recargo|default(0) }}
+
+</td>
+
+<td>
+
+{% if m.pagado %}
+
+Pagado
+
+{% else %}
+
+Pendiente
+
+{% endif %}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}

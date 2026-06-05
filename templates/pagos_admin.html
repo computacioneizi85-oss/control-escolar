@@ -145,6 +145,10 @@ Pendiente
     <button>Expediente</button>
 </a>
 
+<a href="/admin/mensualidades/{{ p._id }}">
+    <button>Mensualidades</button>
+</a>
+
 <a
 href="/admin/editar_pago/{{ p._id }}"
 class="btn btn-warning btn-sm"
@@ -173,3 +177,24 @@ Editar Control
 </table>
 
 {% endblock %}
+
+@pagos_bp.route(
+    "/admin/mensualidades/<id>"
+)
+def ver_mensualidades(id):
+
+    pago = pagos.find_one({
+        "_id": ObjectId(id)
+    })
+
+    lista = list(
+        mensualidades.find({
+            "pago_id": id
+        })
+    )
+
+    return render_template(
+        "mensualidades.html",
+        pago=pago,
+        mensualidades_db=lista
+    )
