@@ -1149,3 +1149,46 @@ def aplicar_recargos():
     return redirect(
         "/admin/config_recargos"
     )
+
+# =========================
+# MENSUALIDADES
+# =========================
+
+@pagos_bp.route(
+    "/admin/mensualidades/<id>"
+)
+def ver_mensualidades(id):
+
+    pago = pagos.find_one({
+
+        "_id": ObjectId(id)
+
+    })
+
+    if not pago:
+
+        flash("Control no encontrado")
+
+        return redirect(
+            url_for("pagos.pagos_admin")
+        )
+
+    lista = list(
+
+        mensualidades.find({
+
+            "pago_id": id
+
+        })
+
+    )
+
+    return render_template(
+
+        "mensualidades.html",
+
+        pago=pago,
+
+        mensualidades_db=lista
+
+    )
