@@ -1158,29 +1158,66 @@ def aplicar_recargos():
         0
     )
 
+    dia_limite = config.get(
+        "dia_limite",
+        10
+    )
+
+    hoy = datetime.now()
+
+    if hoy.day < dia_limite:
+
+        flash(
+            "Aún no llega la fecha límite para aplicar recargos"
+        )
+
+        return redirect(
+            "/admin/config_recargos"
+        )
+
     modificados = 0
 
-    for pago in pagos.find({
+    for mensualidad in mensualidades.find({
 
-        "saldo_restante": {
-            "$gt": 0
-        }
+        "pagado": False
 
     }):
 
-        saldo_actual = pago.get(
-            "saldo_con_recargo",
-            pago.get(
-                "saldo_restante",
-                0
-            )
+        numero_mes = mensualidad.get(
+            "numero_mes"
         )
 
+        anio = mensualidad.get(
+            "anio"
+        )
+
+        if not numero_mes or not anio:
+
+            continue
+
+        hoy = datetime.now()
+
+        if (
+            anio > hoy.year
+            or (
+                anio == hoy.year
+                and numero_mes >= hoy.month
+            )
+        ):
+
+            continue
+        saldo_actual = mensualidad.get(
+            "monto",
+            0
+        ) + mensualidad.get(
+            "recargo",
+            0
+        )
         fecha_hoy = datetime.now().strftime(
             "%d/%m/%Y"
         )
 
-        if pago.get(
+        if mensualidad.get(
             "ultimo_recargo"
         ) == fecha_hoy:
 
@@ -1205,13 +1242,13 @@ def aplicar_recargos():
                 "Recargo por mora",
 
             "pago_id":
-                str(pago["_id"]),
+                mensualidad["pago_id"],
 
             "alumno":
-                pago["alumno"],
+                mensualidad["alumno"],
 
             "grupo":
-                pago.get("grupo", ""),
+                "",
 
             "monto":
                 recargo,
@@ -1247,34 +1284,30 @@ def aplicar_recargos():
 
         )
 
-        pagos.update_one(
+        mensualidades.update_one(
 
             {
-                "_id": pago["_id"]
+                "_id":
+                    mensualidad["_id"]
             },
 
             {
                 "$set": {
 
-                    "recargos_acumulados":
-
-                    pago.get(
-                        "recargos_acumulados",
-                        0
-                    ) + recargo,
-
-                    "saldo_con_recargo":
-                    nuevo_saldo,
+                    "recargo":
+                        mensualidad.get(
+                            "recargo",
+                            0
+                        ) + recargo,
 
                     "ultimo_recargo":
-                    fecha_hoy
+                        fecha_hoy
 
                 }
 
             }
 
         )
-
         modificados += 1
 
     flash(
