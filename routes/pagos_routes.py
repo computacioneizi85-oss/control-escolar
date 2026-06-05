@@ -156,103 +156,83 @@ def nuevo_pago():
         resultado = pagos.insert_one({
 
             "alumno_id": str(alumno["_id"]),
-
             "alumno": alumno["nombre"],
-
             "grupo": alumno.get("grupo", ""),
-
             "concepto": "Colegiatura",
-
             "tipo_cobro": tipo_cobro,
-
             "usar_calendario_mensual": False,
-
             "fecha_inicio": datetime.now(),
-
             "mensualidades": [],
-
             "mensualidad": mensualidad,
-
             "meses_totales": meses_totales,
-
             "meses_pagados": 0,
-
             "total_debe": total_debe,
-
             "total_pagado": 0,
-
             "saldo_restante": total_debe,
-
             "estatus": "pendiente",
-
             "observaciones": "",
-
             "recargos_acumulados": 0,
-
             "saldo_con_recargo": total_debe,
-
             "ultimo_recargo": None,
-
             "beca": 0,
-
             "descuento": 0
 
         })
 
-if tipo_cobro == "mensual":
+        if tipo_cobro == "mensual":
 
-    meses_nombres = [
+            meses_nombres = [
 
-        "Enero",
-        "Febrero",
-        "Marzo",
-        "Abril",
-        "Mayo",
-        "Junio",
-        "Julio",
-        "Agosto",
-        "Septiembre",
-        "Octubre",
-        "Noviembre",
-        "Diciembre"
+                "Enero",
+                "Febrero",
+                "Marzo",
+                "Abril",
+                "Mayo",
+                "Junio",
+                "Julio",
+                "Agosto",
+                "Septiembre",
+                "Octubre",
+                "Noviembre",
+                "Diciembre"
 
-    ]
+            ]
 
-    mes_actual = datetime.now().month - 1
+            mes_actual = datetime.now().month - 1
 
-    for i in range(meses_totales):
+            for i in range(meses_totales):
 
-        nombre_mes = meses_nombres[
-            (mes_actual + i) % 12
-        ]
+                nombre_mes = meses_nombres[
+                    (mes_actual + i) % 12
+                ]
 
-        mensualidades.insert_one({
+                mensualidades.insert_one({
 
-            "pago_id":
-                str(resultado.inserted_id),
+                    "pago_id":
+                        str(resultado.inserted_id),
 
-            "alumno_id":
-                str(alumno["_id"]),
+                    "alumno_id":
+                        str(alumno["_id"]),
 
-            "alumno":
-                alumno["nombre"],
+                    "alumno":
+                        alumno["nombre"],
 
-            "mes":
-                nombre_mes,
+                    "mes":
+                        nombre_mes,
 
-            "monto":
-                mensualidad,
+                    "monto":
+                        mensualidad,
 
-            "pagado":
-                False,
+                    "pagado":
+                        False,
 
-            "recargo":
-                0,
+                    "recargo":
+                        0,
 
-            "fecha_creacion":
-                datetime.now()
+                    "fecha_creacion":
+                        datetime.now()
 
-        })
+                })
 
         flash("Pago creado correctamente")
 
@@ -266,7 +246,6 @@ if tipo_cobro == "mensual":
         "nuevo_pago.html",
         alumnos=lista_alumnos
     )
-
 
 # =========================
 # REGISTRAR ABONO
