@@ -355,48 +355,44 @@ def registrar_abono(id):
 
         })
 
-# =========================
-# MARCAR MENSUALIDAD PAGADA
-# =========================
+        # =========================
+        # MARCAR MENSUALIDAD PAGADA
+        # =========================
 
-if pago.get(
-    "tipo_cobro",
-    "global"
-) == "mensual":
+        if pago.get(
+            "tipo_cobro",
+            "global"
+        ) == "mensual":
 
-    mensualidades.update_one(
+            mensualidades.update_one(
 
-        {
+                {
 
-            "pago_id":
-                str(pago["_id"]),
+                    "pago_id":
+                        str(pago["_id"]),
 
-            "mes":
-                mes_cubierto,
+                    "mes":
+                        mes_cubierto,
 
-            "pagado":
-                False
+                    "pagado":
+                        False
 
-        },
+                },
 
-        {
+                {
 
-            "$set": {
+                    "$set": {
 
-                "pagado": True,
+                        "pagado": True,
 
-                "fecha_pago":
-                    datetime.now()
+                        "fecha_pago":
+                            datetime.now()
 
-            }
+                    }
 
-        }
+                }
 
-    )
-
-        recalcular_pago(
-            pago["_id"]
-        )
+            )
 
 
         # =========================
@@ -436,6 +432,11 @@ if pago.get(
             }
 
         )
+
+        recalcular_pago(
+            pago["_id"]
+        )
+
 
         flash("Abono registrado")
 
