@@ -206,40 +206,39 @@ def nuevo_pago():
                     (mes_actual + i) % 12
                 ]
 
-           mensualidades.insert_one({
+                mensualidades.insert_one({
 
-   		 "pago_id":
-       			 str(resultado.inserted_id),
+                    "pago_id":
+                        str(resultado.inserted_id),
 
-         "alumno_id":
-       		 str(alumno["_id"]),
+                    "alumno_id":
+                        str(alumno["_id"]),
 
-         "alumno":
-       		 alumno["nombre"],
+                    "alumno":
+                        alumno["nombre"],
 
-         "mes":
-       		 nombre_mes,
+                    "mes":
+                        nombre_mes,
 
-        "numero_mes":
-        	((mes_actual + i) % 12) + 1,
+                    "numero_mes":
+                        ((mes_actual + i) % 12) + 1,
 
-        "anio":
-      		  datetime.now().year,
+                    "anio":
+                        datetime.now().year,
 
-        "monto":
-       		 mensualidad,
+                    "monto":
+                        mensualidad,
 
-        "pagado":
-       		 False,
+                    "pagado":
+                        False,
 
-        "recargo":
-     		   0,
+                    "recargo":
+                        0,
 
-       "fecha_creacion":
-       		 datetime.now()
+                    "fecha_creacion":
+                        datetime.now()
 
-        })
-
+                })
         flash("Pago creado correctamente")
 
         return redirect(
