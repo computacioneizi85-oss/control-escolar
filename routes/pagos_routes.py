@@ -880,17 +880,71 @@ def recibo_pago(id):
 @pagos_bp.route("/admin/morosos")
 def morosos():
 
-    lista = pagos.find({
+    ids_morosos = set()
 
-        "saldo_restante": {
-            "$gt": 0
-        },
+    hoy = datetime.now()
 
-        "activo": {
-            "$ne": False
-        }
+    for mensualidad in mensualidades.find({
 
-    })
+        "pagado": False
+
+    }):
+
+        numero_mes = mensualidad.get(
+            "numero_mes"
+        )
+
+        anio = mensualidad.get(
+            "anio"
+        )
+
+        if not numero_mes or not anio:
+
+            continue
+
+        if (
+
+            anio < hoy.year
+
+            or (
+
+                anio == hoy.year
+
+                and numero_mes < hoy.month
+
+            )
+
+        ):
+
+            ids_morosos.add(
+
+                mensualidad[
+                    "pago_id"
+                ]
+
+            )
+
+    lista = []
+
+    for pago_id in ids_morosos:
+
+        pago = pagos.find_one({
+
+            "_id": ObjectId(
+                pago_id
+            ),
+
+            "activo": {
+                "$ne": False
+            }
+
+        })
+
+        if pago:
+
+            lista.append(
+                pago
+            )
 
     return render_template(
 
