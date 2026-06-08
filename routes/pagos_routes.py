@@ -725,7 +725,9 @@ def editar_pago(id):
                         "fecha_creacion":
                             datetime.now()
 
-                    })        mensualidad = pago_actualizado[
+                    })
+
+        mensualidad = pago_actualizado[
             "mensualidad"
         ]
 
