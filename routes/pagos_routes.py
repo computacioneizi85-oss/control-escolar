@@ -674,98 +674,58 @@ def editar_pago(id):
                 mes_actual = datetime.now().month - 1
 
                 for i in range(
-for i in range(
-    pago_actualizado[
-        "meses_totales"
-    ]
-):
 
-    nombre_mes = meses_nombres[
-        (mes_actual + i) % 12
-    ]
+                    pago_actualizado[
+                        "meses_totales"
+                    ]
 
-    mensualidades.insert_one({
+                ):
 
-        "pago_id":
-            str(
-                pago_actualizado["_id"]
-            ),
+                    nombre_mes = meses_nombres[
+                        (mes_actual + i) % 12
+                    ]
 
-        "alumno_id":
-            pago_actualizado[
-                "alumno_id"
-            ],
+                    mensualidades.insert_one({
 
-        "alumno":
-            pago_actualizado[
-                "alumno"
-            ],
+                        "pago_id":
+                            str(
+                                pago_actualizado["_id"]
+                            ),
 
-        "mes":
-            nombre_mes,
+                        "alumno_id":
+                            pago_actualizado[
+                                "alumno_id"
+                            ],
 
-        "numero_mes":
-            ((mes_actual + i) % 12) + 1,
+                        "alumno":
+                            pago_actualizado[
+                                "alumno"
+                            ],
 
-        "anio":
-            datetime.now().year,
+                        "mes":
+                            nombre_mes,
 
-        "monto":
-            pago_actualizado[
-                "mensualidad"
-            ],
+                        "numero_mes":
+                            ((mes_actual + i) % 12) + 1,
 
-        "pagado":
-            False,
+                        "anio":
+                            datetime.now().year,
 
-        "recargo":
-            0,
+                        "monto":
+                            pago_actualizado[
+                                "mensualidad"
+                            ],
 
-        "fecha_creacion":
-            datetime.now()
+                        "pagado":
+                            False,
 
-    })
+                        "recargo":
+                            0,
 
-    "pago_id":
-        str(
-            pago_actualizado["_id"]
-        ),
+                        "fecha_creacion":
+                            datetime.now()
 
-    "alumno_id":
-        pago_actualizado[
-            "alumno_id"
-        ],
-
-    "alumno":
-        pago_actualizado[
-            "alumno"
-        ],
-
-    "mes":
-        nombre_mes,
-
-    "numero_mes":
-        ((mes_actual + i) % 12) + 1,
-
-    "anio":
-        datetime.now().year,
-
-    "monto":
-        pago_actualizado[
-            "mensualidad"
-        ],
-
-    "pagado":
-        False,
-
-    "recargo":
-        0,
-
-    "fecha_creacion":
-        datetime.now()
-
-})
-        mensualidad = pago_actualizado[
+                    })        mensualidad = pago_actualizado[
             "mensualidad"
         ]
 
