@@ -62,7 +62,21 @@ def recalcular_pago(pago_id):
         for m in movimientos
     )
 
-    meses_pagados = len(movimientos)
+    meses_pagados = len(
+
+    [
+
+        m
+
+        for m in movimientos
+
+        if m.get(
+            "metodo"
+        ) != "recargo"
+
+    ]
+
+)
 
     saldo_restante = max(
         pago["total_debe"] - total_pagado,
