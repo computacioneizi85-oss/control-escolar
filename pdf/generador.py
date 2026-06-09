@@ -899,3 +899,149 @@ def generar_morosos_pdf(lista):
     buffer.seek(0)
 
     return buffer
+
+# =========================
+# ESTADO DE CUENTA PDF
+# =========================
+def generar_estado_cuenta_pdf(
+    pago,
+    mensualidades_db
+):
+
+    escuela, ciclo, director, direccion, escudo = obtener_config()
+
+    c, buffer = crear_pdf()
+
+    encabezado(
+
+        c,
+        escuela,
+        ciclo,
+        direccion,
+        escudo,
+        "ESTADO DE CUENTA"
+
+    )
+
+    c.setFont(
+        "Helvetica",
+        11
+    )
+
+    y = 660
+
+    c.drawString(
+        50,
+        y,
+        f"Alumno: {pago.get('alumno','')}"
+    )
+
+    y -= 20
+
+    c.drawString(
+        50,
+        y,
+        f"Grupo: {pago.get('grupo','')}"
+    )
+
+    y -= 20
+
+    c.drawString(
+        50,
+        y,
+        f"Tipo de cobro: {pago.get('tipo_cobro','global')}"
+    )
+
+    y -= 20
+
+    c.drawString(
+        50,
+        y,
+        f"Total contratado: ${pago.get('total_debe',0)}"
+    )
+
+    y -= 20
+
+    c.drawString(
+        50,
+        y,
+        f"Total pagado: ${pago.get('total_pagado',0)}"
+    )
+
+    y -= 20
+
+    c.drawString(
+        50,
+        y,
+        f"Saldo pendiente: ${pago.get('saldo_restante',0)}"
+    )
+
+    y -= 40
+
+    c.setFont(
+        "Helvetica-Bold",
+        10
+    )
+
+    c.drawString(50, y, "Mes")
+    c.drawString(170, y, "Monto")
+    c.drawString(270, y, "Recargo")
+    c.drawString(380, y, "Estado")
+
+    y -= 25
+
+    c.setFont(
+        "Helvetica",
+        10
+    )
+
+    for m in mensualidades_db:
+
+        if y < 120:
+
+            c.showPage()
+
+            y = 700
+
+        c.drawString(
+            50,
+            y,
+            str(m.get("mes",""))
+        )
+
+        c.drawString(
+            170,
+            y,
+            f"${m.get('monto',0)}"
+        )
+
+        c.drawString(
+            270,
+            y,
+            f"${m.get('recargo',0)}"
+        )
+
+        estado = (
+            "Pagado"
+            if m.get("pagado")
+            else "Pendiente"
+        )
+
+        c.drawString(
+            380,
+            y,
+            estado
+        )
+
+        y -= 20
+
+    firma(
+        c,
+        director
+    )
+
+    c.save()
+
+    buffer.seek(0)
+
+    return buffer

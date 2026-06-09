@@ -5,7 +5,8 @@ from flask import send_file
 from pdf.generador import (
     generar_recibo_pago_pdf,
     generar_corte_caja_pdf,
-    generar_morosos_pdf
+    generar_morosos_pdf,
+    generar_estado_cuenta_pdf
 )
 
 from flask import (
@@ -507,6 +508,62 @@ def expediente_pago(id):
             lista_mensualidades
 
     )
+
+@pagos_bp.route(
+    "/admin/estado_cuenta_pdf/<id>"
+)
+def estado_cuenta_pdf(id):
+
+    pago = pagos.find_one({
+
+        "_id": ObjectId(id)
+
+    })
+
+    if not pago:
+
+        flash(
+            "Control no encontrado"
+        )
+
+        return redirect(
+            url_for(
+                "pagos.pagos_admin"
+            )
+        )
+
+    lista_mensualidades = list(
+
+        mensualidades.find({
+
+            "pago_id": id
+
+        })
+
+    )
+
+    pdf = generar_estado_cuenta_pdf(
+
+        pago,
+
+        lista_mensualidades
+
+    )
+
+    return send_file(
+
+        pdf,
+
+        mimetype="application/pdf",
+
+        as_attachment=False,
+
+        download_name=(
+            f"estado_cuenta_{id}.pdf"
+        )
+
+    )
+
 @pagos_bp.route(
     "/admin/editar_movimiento/<id>",
     methods=["GET","POST"]
