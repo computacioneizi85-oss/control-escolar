@@ -336,4 +336,104 @@
 
 </div>
 
+<div class="card shadow mt-4">
+
+    <div class="card-header py-3">
+
+        <h4 class="m-0">
+
+            Estado de Cuenta Mensual
+
+        </h4>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="table-responsive">
+
+            <table
+                class="table table-bordered table-striped"
+            >
+
+                <thead class="table-dark">
+
+                    <tr>
+
+                        <th>Mes</th>
+
+                        <th>Monto</th>
+
+                        <th>Recargo</th>
+
+                        <th>Estado</th>
+
+                        <th>Fecha Pago</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for m in mensualidades_db %}
+
+                    <tr>
+
+                        <td>
+                            {{ m.mes }}
+                        </td>
+
+                        <td>
+                            ${{ m.monto }}
+                        </td>
+
+                        <td>
+                            ${{ m.recargo|default(0) }}
+                        </td>
+
+                        <td>
+
+                            {% if m.pagado %}
+
+                                <span
+                                    class="badge bg-success"
+                                >
+                                    Pagado
+                                </span>
+
+                            {% else %}
+
+                                <span
+                                    class="badge bg-danger"
+                                >
+                                    Pendiente
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {{ m.fecha_pago|default(
+                                "-"
+                            ) }}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
 {% endblock %}

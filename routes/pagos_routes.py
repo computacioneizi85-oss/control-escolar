@@ -485,16 +485,28 @@ def expediente_pago(id):
 
     }).sort("_id", -1)
 
+    lista_mensualidades = list(
+
+        mensualidades.find({
+
+            "pago_id": str(id)
+
+        })
+
+    )
+
     return render_template(
 
         "expediente_pago.html",
 
         pago=pago,
 
-        movimientos=movimientos
+        movimientos=movimientos,
+
+        mensualidades_db=
+            lista_mensualidades
 
     )
-
 @pagos_bp.route(
     "/admin/editar_movimiento/<id>",
     methods=["GET","POST"]
