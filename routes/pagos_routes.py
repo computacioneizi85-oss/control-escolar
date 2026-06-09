@@ -85,8 +85,6 @@ def recalcular_pago(pago_id):
     saldo_restante = max(
         pago["total_debe"] - total_pagado,
         0
-    )        pago["total_debe"] - total_pagado,
-        0
     )
 
     if saldo_restante == 0:
@@ -1206,21 +1204,21 @@ def morosos_pdf():
                 pago
             )
 
-pdf = generar_morosos_pdf(
-    lista
-)
+    pdf = generar_morosos_pdf(
+        lista
+    )
 
-return send_file(
+    return send_file(
 
-    pdf,
+        pdf,
 
-    mimetype="application/pdf",
+        mimetype="application/pdf",
 
-    as_attachment=False,
+        as_attachment=False,
 
-    download_name="morosos.pdf"
+        download_name="morosos.pdf"
 
-)
+    )
 
 @pagos_bp.route("/admin/dashboard_financiero")
 def dashboard_financiero():
