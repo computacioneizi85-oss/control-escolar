@@ -984,9 +984,10 @@ def generar_estado_cuenta_pdf(
     )
 
     c.drawString(50, y, "Mes")
-    c.drawString(170, y, "Monto")
-    c.drawString(270, y, "Recargo")
-    c.drawString(380, y, "Estado")
+    c.drawString(140, y, "Monto")
+    c.drawString(230, y, "Recargo")
+    c.drawString(330, y, "Estado")
+    c.drawString(430, y, "Fecha Pago")
 
     y -= 25
 
@@ -1010,22 +1011,48 @@ def generar_estado_cuenta_pdf(
         )
 
         c.drawString(
-            170,
+            50,
+            y,
+            str(m.get("mes",""))
+        )
+
+        c.drawString(
+            140,
             y,
             f"${m.get('monto',0)}"
         )
 
         c.drawString(
-            270,
+            230,
             y,
             f"${m.get('recargo',0)}"
         )
 
+        c.drawString(
+            330,
+            y,
+            estado
+        )
+
+        c.drawString(
+            430,
+            y,
+            fecha_pago[:20]
+        )
         estado = (
             "Pagado"
             if m.get("pagado")
             else "Pendiente"
         )
+
+fecha_pago = str(
+
+    m.get(
+        "fecha_pago",
+        "-"
+    )
+
+)
 
         c.drawString(
             380,
@@ -1034,6 +1061,44 @@ def generar_estado_cuenta_pdf(
         )
 
         y -= 20
+
+    y -= 30
+
+    total_recargos = sum(
+
+        m.get(
+            "recargo",
+            0
+        )
+
+        for m in mensualidades_db
+
+    )
+
+    c.setFont(
+        "Helvetica-Bold",
+        11
+    )
+
+    c.drawString(
+
+        50,
+        y,
+
+        f"Total Recargos: ${total_recargos}"
+
+    )
+
+    y -= 20
+
+    c.drawString(
+
+        50,
+        y,
+
+        f"Saldo Pendiente: ${pago.get('saldo_restante',0)}"
+
+    )
 
     firma(
         c,
