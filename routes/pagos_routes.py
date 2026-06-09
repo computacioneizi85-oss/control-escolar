@@ -940,30 +940,31 @@ def morosos():
 
         })
 
-if pago:
+        if pago:
 
-    total_recargos = 0
+            total_recargos = 0
 
-    for m in mensualidades.find({
+            for m in mensualidades.find({
 
-        "pago_id": str(
-            pago["_id"]
-        )
+                "pago_id": str(
+                    pago["_id"]
+                )
 
-    }):
+            }):
 
-        total_recargos += m.get(
-            "recargo",
-            0
-        )
+                total_recargos += m.get(
+                    "recargo",
+                    0
+                )
 
-    pago["recargos_reales"] = (
-        total_recargos
-    )
+            pago["recargos_reales"] = (
+                total_recargos
+            )
 
-    lista.append(
-        pago
-    )
+            lista.append(
+                pago
+            )
+
     return render_template(
 
         "morosos.html",
@@ -971,7 +972,6 @@ if pago:
         pagos_db=lista
 
     )
-
 @pagos_bp.route("/admin/corte_caja")
 def corte_caja():
 
