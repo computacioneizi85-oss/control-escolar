@@ -1066,13 +1066,59 @@ def corte_caja_pdf():
 )
 def morosos_pdf():
 
-    lista = list(
+    ids_morosos = set()
 
-        pagos.find({
+    hoy = datetime.now()
 
-            "saldo_restante": {
-                "$gt": 0
-            },
+    for mensualidad in mensualidades.find({
+
+        "pagado": False
+
+    }):
+
+        numero_mes = mensualidad.get(
+            "numero_mes"
+        )
+
+        anio = mensualidad.get(
+            "anio"
+        )
+
+        if not numero_mes or not anio:
+
+            continue
+
+        if (
+
+            anio < hoy.year
+
+            or (
+
+                anio == hoy.year
+
+                and numero_mes < hoy.month
+
+            )
+
+        ):
+
+            ids_morosos.add(
+
+                mensualidad[
+                    "pago_id"
+                ]
+
+            )
+
+    lista = []
+
+    for pago_id in ids_morosos:
+
+        pago = pagos.find_one({
+
+            "_id": ObjectId(
+                pago_id
+            ),
 
             "activo": {
                 "$ne": False
@@ -1080,12 +1126,27 @@ def morosos_pdf():
 
         })
 
-    )
+        if pago:
+
+            lista.append(
+                pago
+            )
 
     pdf = generar_morosos_pdf(
         lista
     )
 
+    return send_file(
+
+        pdf,
+
+        mimetype="application/pdf",
+
+        as_attachment=False,
+
+        download_name="morosos.pdf"
+
+    )
     return send_file(
 
         pdf,
