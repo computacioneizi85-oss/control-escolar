@@ -63,26 +63,29 @@ def recalcular_pago(pago_id):
         for m in movimientos
     )
 
-meses_pagados = len(
+    meses_pagados = len(
 
-    set(
+        set(
 
-        m.get(
-            "mes_cubierto"
-        )
+            m.get(
+                "mes_cubierto"
+            )
 
-        for m in movimientos
+            for m in movimientos
 
-        if (
-            m.get("metodo") != "recargo"
-            and m.get("mes_cubierto")
+            if (
+                m.get("metodo") != "recargo"
+                and m.get("mes_cubierto")
+            )
+
         )
 
     )
 
-)
     saldo_restante = max(
         pago["total_debe"] - total_pagado,
+        0
+    )        pago["total_debe"] - total_pagado,
         0
     )
 
@@ -1203,32 +1206,21 @@ def morosos_pdf():
                 pago
             )
 
-    pdf = generar_morosos_pdf(
-        lista
-    )
+pdf = generar_morosos_pdf(
+    lista
+)
 
-    return send_file(
+return send_file(
 
-        pdf,
+    pdf,
 
-        mimetype="application/pdf",
+    mimetype="application/pdf",
 
-        as_attachment=False,
+    as_attachment=False,
 
-        download_name="morosos.pdf"
+    download_name="morosos.pdf"
 
-    )
-    return send_file(
-
-        pdf,
-
-        mimetype="application/pdf",
-
-        as_attachment=False,
-
-        download_name="morosos.pdf"
-
-    )
+)
 
 @pagos_bp.route("/admin/dashboard_financiero")
 def dashboard_financiero():
