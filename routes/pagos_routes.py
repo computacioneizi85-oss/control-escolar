@@ -1189,17 +1189,53 @@ def dashboard_financiero():
             0
         )
 
-    morosos = pagos.count_documents({
+    ids_morosos = set()
 
-        "saldo_restante": {
-            "$gt": 0
-        },
+    hoy = datetime.now()
 
-        "activo": {
-            "$ne": False
-        }
+    for mensualidad in mensualidades.find({
 
-    })
+        "pagado": False
+
+    }):
+
+        numero_mes = mensualidad.get(
+            "numero_mes"
+        )
+
+        anio = mensualidad.get(
+            "anio"
+        )
+
+        if not numero_mes or not anio:
+
+            continue
+
+        if (
+
+            anio < hoy.year
+
+            or (
+
+                anio == hoy.year
+
+                and numero_mes < hoy.month
+
+            )
+
+        ):
+
+            ids_morosos.add(
+
+                mensualidad[
+                    "pago_id"
+                ]
+
+            )
+
+    morosos = len(
+        ids_morosos
+    )
 
     hoy = datetime.now().strftime(
         "%d/%m/%Y"
