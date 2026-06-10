@@ -1675,6 +1675,29 @@ def ver_mensualidades(id):
 )
 def reporte_deudores_grupo():
 
+    grupo_filtro = request.args.get(
+        "grupo",
+        ""
+    )
+
+    grupos = {}
+
+    consulta = {
+
+        "saldo_restante": {
+            "$gt": 0
+        }
+
+    }
+
+    if grupo_filtro:
+
+        consulta["grupo"] = grupo_filtro
+
+    deudores = pagos.find(
+        consulta
+    )
+
     grupos = {}
 
     deudores = pagos.find({
@@ -1711,10 +1734,35 @@ def reporte_deudores_grupo():
             0
         )
 
-    return render_template(
+grupos_disponibles = sorted(
 
-        "reporte_deudores_grupo.html",
-
-        grupos=grupos
-
+    pagos.distinct(
+        "grupo"
     )
+
+)
+
+return render_template(
+
+    "reporte_deudores_grupo.html",
+
+    grupos=grupos,
+
+    grupos_disponibles=
+        grupos_disponibles,
+
+    grupo_filtro=
+        grupo_filtro
+
+)
+
+# =========================
+# PDF DEUDORES POR GRUPO
+# =========================
+
+@pagos_bp.route(
+    "/admin/reporte_deudores_grupo_pdf"
+)
+def reporte_deudores_grupo_pdf():
+
+    return "PDF funcionando"
