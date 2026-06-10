@@ -1698,15 +1698,11 @@ def reporte_deudores_grupo():
         consulta
     )
 
-    grupos = {}
+grupos = {}
 
-    deudores = pagos.find({
-
-        "saldo_restante": {
-            "$gt": 0
-        }
-
-    })
+deudores = pagos.find(
+    consulta
+)
 
     for pago in deudores:
 
@@ -1734,28 +1730,27 @@ def reporte_deudores_grupo():
             0
         )
 
-grupos_disponibles = sorted(
+    grupos_disponibles = sorted(
 
-    pagos.distinct(
-        "grupo"
+        pagos.distinct(
+            "grupo"
+        )
+
     )
 
-)
+    return render_template(
 
-return render_template(
+        "reporte_deudores_grupo.html",
 
-    "reporte_deudores_grupo.html",
+        grupos=grupos,
 
-    grupos=grupos,
+        grupos_disponibles=
+            grupos_disponibles,
 
-    grupos_disponibles=
-        grupos_disponibles,
+        grupo_filtro=
+            grupo_filtro
 
-    grupo_filtro=
-        grupo_filtro
-
-)
-
+    )
 # =========================
 # PDF DEUDORES POR GRUPO
 # =========================
