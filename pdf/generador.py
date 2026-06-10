@@ -1010,14 +1010,6 @@ def generar_estado_cuenta_pdf(
             else "Pendiente"
         )
 
-        fecha_pago = str(
-
-            m.get(
-                "fecha_pago",
-                "-"
-            )
-
-        )
 
         c.drawString(
             50,
@@ -1094,6 +1086,96 @@ def generar_estado_cuenta_pdf(
     )
 
     c.save()
+
+    buffer.seek(0)
+
+    return buffer
+
+from io import BytesIO
+from reportlab.lib import colors
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Table,
+    TableStyle,
+    Paragraph,
+    Spacer
+)
+from reportlab.lib.styles import getSampleStyleSheet
+
+
+def generar_deudores_grupo_pdf(grupos):
+
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(buffer)
+
+    elementos = []
+
+    estilos = getSampleStyleSheet()
+
+    elementos.append(
+        Paragraph(
+            "Reporte de Deudores por Grupo",
+            estilos["Title"]
+        )
+    )
+
+    elementos.append(
+        Spacer(1, 20)
+    )
+
+    for grupo, datos in grupos.items():
+
+        elementos.append(
+            Paragraph(
+                f"Grupo {grupo}",
+                estilos["Heading2"]
+            )
+        )
+
+        elementos.append(
+            Paragraph(
+                f"Total adeudado: ${datos['total']:,.2f}",
+                estilos["Normal"]
+            )
+        )
+
+        tabla = [
+            [
+                "Alumno",
+                "Total Debe",
+                "Pagado",
+                "Saldo"
+            ]
+        ]
+
+        for alumno in datos["alumnos"]:
+
+            tabla.append([
+                alumno.get("alumno", ""),
+                f"${alumno.get('total_debe',0):,.2f}",
+                f"${alumno.get('total_pagado',0):,.2f}",
+                f"${alumno.get('saldo_restante',0):,.2f}"
+            ])
+
+        t = Table(tabla)
+
+        t.setStyle(
+            TableStyle([
+                ('BACKGROUND',(0,0),(-1,0),colors.grey),
+                ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
+                ('GRID',(0,0),(-1,-1),1,colors.black),
+                ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold')
+            ])
+        )
+
+        elementos.append(t)
+
+        elementos.append(
+            Spacer(1, 15)
+        )
+
+    doc.build(elementos)
 
     buffer.seek(0)
 
