@@ -75,52 +75,48 @@ Filtrar
 
         <tr>
 
-            <th>Alumno</th>
-
-            <th>Total Debe</th>
-
-            <th>Pagado</th>
-
-            <th>Saldo</th>
+		<th>Alumno</th>
+		<th>Saldo</th>
+		<th>Meses Adeudados</th>
+		<th>Recargos</th>
 
         </tr>
 
-        {% for alumno in datos.alumnos %}
+{% for alumno in datos.alumnos %}
 
-        <tr>
+<tr>
 
-            <td>
+    <td>
 
-                {{ alumno.alumno }}
+        {{ alumno.alumno }}
 
-            </td>
+    </td>
 
-            <td>
+    <td>
 
-                ${{ alumno.total_debe }}
+        <strong>
 
-            </td>
+            ${{ alumno.saldo_restante }}
 
-            <td>
+        </strong>
 
-                ${{ alumno.total_pagado }}
+    </td>
 
-            </td>
+    <td>
 
-            <td>
+        {{ alumno.meses_debe | join(', ') }}
 
-                <strong>
+    </td>
 
-                    ${{ alumno.saldo_restante }}
+    <td>
 
-                </strong>
+        ${{ alumno.recargos }}
 
-            </td>
+    </td>
 
-        </tr>
+</tr>
 
-        {% endfor %}
-
+{% endfor %}
     </table>
 
 </div>

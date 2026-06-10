@@ -1143,19 +1143,40 @@ def generar_deudores_grupo_pdf(grupos):
         tabla = [
             [
                 "Alumno",
-                "Total Debe",
-                "Pagado",
-                "Saldo"
+                "Saldo",
+                "Meses Adeudados",
+                "Recargos"
             ]
         ]
 
         for alumno in datos["alumnos"]:
 
             tabla.append([
-                alumno.get("alumno", ""),
-                f"${alumno.get('total_debe',0):,.2f}",
-                f"${alumno.get('total_pagado',0):,.2f}",
-                f"${alumno.get('saldo_restante',0):,.2f}"
+
+                alumno.get(
+                    "alumno",
+                    ""
+                ),
+
+                f"${alumno.get(
+                    'saldo_restante',
+                    0
+                ):,.2f}",
+
+                ", ".join(
+
+                    alumno.get(
+                        "meses_debe",
+                        []
+                    )
+
+                ),
+
+                f"${alumno.get(
+                    'recargos',
+                    0
+                ):,.2f}"
+
             ])
 
         t = Table(tabla)
