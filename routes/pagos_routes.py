@@ -1298,6 +1298,58 @@ def dashboard_financiero():
         ids_morosos
     )
 
+    mensualidades_vencidas = 0
+
+    total_recargos = 0
+
+    for m in mensualidades.find({}):
+
+        if not m.get(
+            "pagado",
+            False
+        ):
+
+            numero_mes = m.get(
+                "numero_mes"
+            )
+
+            anio = m.get(
+                "anio"
+            )
+
+            if (
+
+                numero_mes
+
+                and
+
+                anio
+
+                and
+
+                (
+
+                    anio < hoy.year
+
+                    or (
+
+                        anio == hoy.year
+
+                        and numero_mes < hoy.month
+
+                    )
+
+                )
+
+            ):
+
+                mensualidades_vencidas += 1
+
+        total_recargos += m.get(
+            "recargo",
+            0
+        )
+
     hoy = datetime.now().strftime(
         "%d/%m/%Y"
     )
@@ -1317,21 +1369,27 @@ def dashboard_financiero():
             0
         )
 
-    return render_template(
+return render_template(
 
-        "dashboard_financiero.html",
+    "dashboard_financiero.html",
 
-        total_contratado=total_contratado,
+    total_contratado=total_contratado,
 
-        total_cobrado=total_cobrado,
+    total_cobrado=total_cobrado,
 
-        total_pendiente=total_pendiente,
+    total_pendiente=total_pendiente,
 
-        morosos=morosos,
+    morosos=morosos,
 
-        ingresos_hoy=ingresos_hoy
+    ingresos_hoy=ingresos_hoy,
 
-    )
+    mensualidades_vencidas=
+        mensualidades_vencidas,
+
+    total_recargos=
+        total_recargos
+
+)
 
 @pagos_bp.route(
     "/admin/config_recargos",
