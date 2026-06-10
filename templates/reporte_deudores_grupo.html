@@ -1,46 +1,81 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Deudores por Grupo</title>
-</head>
-<body>
+{% extends "layout.html" %}
+
+{% block content %}
 
 <h2>Reporte de Deudores por Grupo</h2>
 
 {% for grupo, datos in grupos.items() %}
 
-<h3>Grupo {{ grupo }}</h3>
+<div class="card p-3 mb-4">
 
-<p>
-Total adeudado:
-<strong>${{ datos.total }}</strong>
-</p>
+    <h4>Grupo {{ grupo }}</h4>
 
-<table border="1">
+    <p>
 
-<tr>
-    <th>Alumno</th>
-    <th>Total Debe</th>
-    <th>Pagado</th>
-    <th>Saldo</th>
-</tr>
+        Total adeudado:
 
-{% for alumno in datos.alumnos %}
+        <strong>
 
-<tr>
-    <td>{{ alumno.alumno }}</td>
-    <td>${{ alumno.total_debe }}</td>
-    <td>${{ alumno.total_pagado }}</td>
-    <td>${{ alumno.saldo_restante }}</td>
-</tr>
+            ${{ datos.total }}
+
+        </strong>
+
+    </p>
+
+    <table border="1" width="100%">
+
+        <tr>
+
+            <th>Alumno</th>
+
+            <th>Total Debe</th>
+
+            <th>Pagado</th>
+
+            <th>Saldo</th>
+
+        </tr>
+
+        {% for alumno in datos.alumnos %}
+
+        <tr>
+
+            <td>
+
+                {{ alumno.alumno }}
+
+            </td>
+
+            <td>
+
+                ${{ alumno.total_debe }}
+
+            </td>
+
+            <td>
+
+                ${{ alumno.total_pagado }}
+
+            </td>
+
+            <td>
+
+                <strong>
+
+                    ${{ alumno.saldo_restante }}
+
+                </strong>
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
 
 {% endfor %}
 
-</table>
-
-<hr>
-
-{% endfor %}
-
-</body>
-</html>
+{% endblock %}
