@@ -1369,27 +1369,27 @@ def dashboard_financiero():
             0
         )
 
-return render_template(
+    return render_template(
 
-    "dashboard_financiero.html",
+        "dashboard_financiero.html",
 
-    total_contratado=total_contratado,
+        total_contratado=total_contratado,
 
-    total_cobrado=total_cobrado,
+        total_cobrado=total_cobrado,
 
-    total_pendiente=total_pendiente,
+        total_pendiente=total_pendiente,
 
-    morosos=morosos,
+        morosos=morosos,
 
-    ingresos_hoy=ingresos_hoy,
+        ingresos_hoy=ingresos_hoy,
 
-    mensualidades_vencidas=
-        mensualidades_vencidas,
+        mensualidades_vencidas=
+            mensualidades_vencidas,
 
-    total_recargos=
-        total_recargos
+        total_recargos=
+            total_recargos
 
-)
+    )
 
 @pagos_bp.route(
     "/admin/config_recargos",
