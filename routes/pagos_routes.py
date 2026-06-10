@@ -1665,3 +1665,56 @@ def ver_mensualidades(id):
         mensualidades_db=lista
 
     )
+
+# =========================
+# REPORTE DEUDORES POR GRUPO
+# =========================
+
+@pagos_bp.route(
+    "/admin/reporte_deudores_grupo"
+)
+def reporte_deudores_grupo():
+
+    grupos = {}
+
+    deudores = pagos.find({
+
+        "saldo_restante": {
+            "$gt": 0
+        }
+
+    })
+
+    for pago in deudores:
+
+        grupo = pago.get(
+            "grupo",
+            "Sin grupo"
+        )
+
+        if grupo not in grupos:
+
+            grupos[grupo] = {
+
+                "alumnos": [],
+
+                "total": 0
+
+            }
+
+        grupos[grupo]["alumnos"].append(
+            pago
+        )
+
+        grupos[grupo]["total"] += pago.get(
+            "saldo_restante",
+            0
+        )
+
+    return render_template(
+
+        "reporte_deudores_grupo.html",
+
+        grupos=grupos
+
+    )

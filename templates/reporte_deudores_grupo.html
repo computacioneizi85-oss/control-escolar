@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Reporte de Deudores por Grupo</h2>
+
+{% for grupo, datos in grupos.items() %}
+
+<div class="card p-3 mb-4">
+
+    <h4>Grupo {{ grupo }}</h4>
+
+    <p>
+
+        Total adeudado:
+
+        <strong>
+
+            ${{ datos.total }}
+
+        </strong>
+
+    </p>
+
+    <table class="table">
+
+        <thead>
+
+            <tr>
+
+                <th>Alumno</th>
+
+                <th>Total Debe</th>
+
+                <th>Pagado</th>
+
+                <th>Saldo</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for alumno in datos.alumnos %}
+
+            <tr>
+
+                <td>
+
+                    {{ alumno.alumno }}
+
+                </td>
+
+                <td>
+
+                    ${{ alumno.total_debe }}
+
+                </td>
+
+                <td>
+
+                    ${{ alumno.total_pagado }}
+
+                </td>
+
+                <td>
+
+                    ${{ alumno.saldo_restante }}
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endfor %}
+
+{% endblock %}
