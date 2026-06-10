@@ -1716,23 +1716,36 @@ def reporte_deudores_grupo():
 
             }
 
-meses_debe = []
-recargos = 0
+        meses_debe = []
 
-for m in mensualidades.find({
-    "pago_id": str(pago["_id"])
-}):
+        recargos = 0
 
-    if not m.get("pagado", False):
+        for m in mensualidades.find({
 
-        meses_debe.append(
-            m.get("mes", "")
-        )
+            "pago_id": str(
+                pago["_id"]
+            )
 
-    recargos += m.get(
-        "recargo",
-        0
-    )
+        }):
+
+            if not m.get(
+                "pagado",
+                False
+            ):
+
+                meses_debe.append(
+
+                    m.get(
+                        "mes",
+                        ""
+                    )
+
+                )
+
+            recargos += m.get(
+                "recargo",
+                0
+            )
 
         pago["meses_debe"] = meses_debe
 
@@ -1856,13 +1869,6 @@ def reporte_deudores_grupo_pdf():
 
     pdf = generar_deudores_grupo_pdf(
         grupos
-    )
-
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        as_attachment=False,
-        download_name="deudores_por_grupo.pdf"
     )
 
     return send_file(
