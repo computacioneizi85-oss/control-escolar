@@ -1698,12 +1698,6 @@ def reporte_deudores_grupo():
         consulta
     )
 
-grupos = {}
-
-deudores = pagos.find(
-    consulta
-)
-
     for pago in deudores:
 
         grupo = pago.get(
@@ -1744,13 +1738,12 @@ deudores = pagos.find(
 
         grupos=grupos,
 
-        grupos_disponibles=
-            grupos_disponibles,
+        grupos_disponibles=grupos_disponibles,
 
-        grupo_filtro=
-            grupo_filtro
+        grupo_filtro=grupo_filtro
 
     )
+
 # =========================
 # PDF DEUDORES POR GRUPO
 # =========================
