@@ -6,7 +6,8 @@ from pdf.generador import (
     generar_recibo_pago_pdf,
     generar_corte_caja_pdf,
     generar_morosos_pdf,
-    generar_estado_cuenta_pdf
+    generar_estado_cuenta_pdf,
+    generar_deudores_grupo_pdf
 )
 
 from flask import (
@@ -1753,4 +1754,56 @@ def reporte_deudores_grupo():
 )
 def reporte_deudores_grupo_pdf():
 
-    return "PDF funcionando"
+    grupo_filtro = request.args.get(
+        "grupo",
+        ""
+    )
+
+    consulta = {
+        "saldo_restante": {
+            "$gt": 0
+        }
+    }
+
+    if grupo_filtro:
+        consulta["grupo"] = grupo_filtro
+
+    grupos = {}
+
+    deudores = pagos.find(
+        consulta
+    )
+
+    for pago in deudores:
+
+        grupo = pago.get(
+            "grupo",
+            "Sin grupo"
+        )
+
+        if grupo not in grupos:
+
+            grupos[grupo] = {
+                "alumnos": [],
+                "total": 0
+            }
+
+        grupos[grupo]["alumnos"].append(
+            pago
+        )
+
+        grupos[grupo]["total"] += pago.get(
+            "saldo_restante",
+            0
+        )
+
+    pdf = generar_deudores_grupo_pdf(
+        grupos
+    )
+
+    return send_file(
+        pdf,
+        mimetype="application/pdf",
+        as_attachment=False,
+        download_name="deudores_por_grupo.pdf"
+    )
