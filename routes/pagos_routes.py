@@ -1734,12 +1734,13 @@ for m in mensualidades.find({
         0
     )
 
-pago["meses_debe"] = meses_debe
-pago["recargos"] = recargos
+        pago["meses_debe"] = meses_debe
 
-grupos[grupo]["alumnos"].append(
-    pago
-)
+        pago["recargos"] = recargos
+
+        grupos[grupo]["alumnos"].append(
+            pago
+        )
 
         grupos[grupo]["total"] += pago.get(
             "saldo_restante",
@@ -1795,7 +1796,7 @@ def reporte_deudores_grupo_pdf():
         consulta
     )
 
-       for pago in deudores:
+    for pago in deudores:
 
         grupo = pago.get(
             "grupo",
@@ -1805,11 +1806,8 @@ def reporte_deudores_grupo_pdf():
         if grupo not in grupos:
 
             grupos[grupo] = {
-
                 "alumnos": [],
-
                 "total": 0
-
             }
 
         meses_debe = []
@@ -1839,39 +1837,32 @@ def reporte_deudores_grupo_pdf():
                 )
 
             recargos += m.get(
-
                 "recargo",
                 0
-
             )
 
-        pago["meses_debe"] = (
+        pago["meses_debe"] = meses_debe
 
-            meses_debe
-
-        )
-
-        pago["recargos"] = (
-
-            recargos
-
-        )
+        pago["recargos"] = recargos
 
         grupos[grupo]["alumnos"].append(
-
             pago
-
         )
 
         grupos[grupo]["total"] += pago.get(
-
             "saldo_restante",
             0
-
         )
 
     pdf = generar_deudores_grupo_pdf(
         grupos
+    )
+
+    return send_file(
+        pdf,
+        mimetype="application/pdf",
+        as_attachment=False,
+        download_name="deudores_por_grupo.pdf"
     )
 
     return send_file(
