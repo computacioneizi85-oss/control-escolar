@@ -388,36 +388,44 @@ def registrar_abono(id):
             "global"
         ) == "mensual":
 
-            mensualidades.update_one(
+mensualidades.update_one(
 
-                {
+    {
 
-                    "pago_id":
-                        str(pago["_id"]),
+        "pago_id":
+            str(pago["_id"]),
 
-                    "mes":
-                        mes_cubierto,
+        "mes":
+            mes_cubierto,
 
-                    "pagado":
-                        False
+        "pagado":
+            False
 
-                },
+    },
 
-                {
+    {
 
-                    "$set": {
+        "$set": {
 
-                        "pagado": True,
+            "pagado": True,
 
-                        "fecha_pago":
-                            datetime.now()
+            "fecha_pago":
+                datetime.now(),
 
-                    }
+            "monto_pagado":
+                monto,
 
-                }
+            "folio_pago":
+                folio_recibo,
 
-            )
+            "metodo_pago":
+                metodo
 
+        }
+
+    }
+
+)
 
         # =========================
         # ESTATUS

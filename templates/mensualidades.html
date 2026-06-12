@@ -17,13 +17,21 @@ Mensualidades de
 
 <tr>
 
-<th>Mes</th>
+    <th>Mes</th>
 
-<th>Monto</th>
+    <th>Monto</th>
 
-<th>Recargo</th>
+    <th>Recargo</th>
 
-<th>Estado</th>
+    <th>Estado</th>
+
+    <th>Monto Pagado</th>
+
+    <th>Fecha Pago</th>
+
+    <th>Recibo</th>
+
+    <th>Método</th>
 
 </tr>
 
@@ -60,6 +68,30 @@ Pagado
 Pendiente
 
 {% endif %}
+
+</td>
+
+<td>
+
+    ${{ m.get('monto_pagado', 0) }}
+
+</td>
+
+<td>
+
+    {{ m.get('fecha_pago', '-') }}
+
+</td>
+
+<td>
+
+    {{ m.get('folio_pago', '-') }}
+
+</td>
+
+<td>
+
+    {{ m.get('metodo_pago', '-') }}
 
 </td>
 
