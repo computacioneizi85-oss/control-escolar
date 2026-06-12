@@ -130,15 +130,63 @@ def recalcular_pago(pago_id):
 @pagos_bp.route("/admin/pagos")
 def pagos_admin():
 
-    lista_pagos = pagos.find({
+    busqueda = request.args.get(
+        "buscar",
+        ""
+    )
+
+    consulta = {
+
         "activo": {
             "$ne": False
         }
-    })
+
+    }
+
+    if busqueda:
+
+        consulta["$or"] = [
+
+            {
+                "alumno": {
+
+                    "$regex":
+                        busqueda,
+
+                    "$options":
+                        "i"
+
+                }
+
+            },
+
+            {
+                "grupo": {
+
+                    "$regex":
+                        busqueda,
+
+                    "$options":
+                        "i"
+
+                }
+
+            }
+
+        ]
+
+    lista_pagos = pagos.find(
+        consulta
+    )
 
     return render_template(
+
         "pagos_admin.html",
-        pagos_db=lista_pagos
+
+        pagos_db=lista_pagos,
+
+        busqueda=busqueda
+
     )
 
 # =========================

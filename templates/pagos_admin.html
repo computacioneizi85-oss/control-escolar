@@ -58,6 +58,52 @@ PDF Caja
 
 <br><br>
 
+<form method="GET">
+
+    <div class="row mb-3">
+
+        <div class="col-md-6">
+
+            <input
+                type="text"
+                name="buscar"
+                class="form-control"
+                placeholder="Buscar alumno o grupo..."
+                value="{{ busqueda or '' }}"
+            >
+
+        </div>
+
+        <div class="col-md-2">
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+
+                Buscar
+
+            </button>
+
+        </div>
+
+        <div class="col-md-2">
+
+            <a
+                href="/admin/pagos"
+                class="btn btn-secondary"
+            >
+
+                Limpiar
+
+            </a>
+
+        </div>
+
+    </div>
+
+</form>
+
 <table border="1" width="100%">
 
 <tr>
