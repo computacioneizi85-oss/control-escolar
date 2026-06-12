@@ -1,9 +1,13 @@
-from reportlab.lib.pagesizes import letter
+from reportlab.lib.pagesizes import (
+    letter,
+    landscape
+)
 from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from bson.objectid import ObjectId
+
 
 from io import BytesIO
 import base64
@@ -42,6 +46,23 @@ def fecha_actual():
 # ================= BASE PDF =================
 def crear_pdf():
     buffer = BytesIO()
+
+doc = SimpleDocTemplate(
+
+    buffer,
+
+    pagesize=landscape(letter),
+
+    leftMargin=20,
+
+    rightMargin=20,
+
+    topMargin=20,
+
+    bottomMargin=20
+
+)
+
     c = canvas.Canvas(buffer, pagesize=letter)
     return c, buffer
 
@@ -1208,7 +1229,7 @@ def generar_deudores_grupo_pdf(grupos):
 
     buffer = BytesIO()
 
-    doc = SimpleDocTemplate(buffer)
+    from reportlab.lib.pagesizes import landscape, letter
 
     elementos = []
 
@@ -1242,45 +1263,89 @@ def generar_deudores_grupo_pdf(grupos):
         )
 
         tabla = [
-            [
-                "Alumno",
-                "Saldo",
-                "Meses Adeudados",
-                "Recargos"
-            ]
-        ]
+    [
+        "Alumno",
+        "Saldo",
+        "Cantidad",
+        "Meses Adeudados",
+        "Recargos"
+    ]
+]
 
         for alumno in datos["alumnos"]:
 
-            tabla.append([
+tabla.append([
 
-                alumno.get(
-                    "alumno",
-                    ""
-                ),
+    alumno.get(
+        "alumno",
+        ""
+    ),
 
-                f"${alumno.get(
-                    'saldo_restante',
-                    0
-                ):,.2f}",
+    f"${alumno.get(
+        'saldo_restante',
+        0
+    ):,.2f}",
 
-                ", ".join(
+    len(
+        alumno.get(
+            "meses_debe",
+            []
+        )
+    ),
 
-                    alumno.get(
-                        "meses_debe",
-                        []
-                    )
+    "\n".join(
+        alumno.get(
+            "meses_debe",
+            []
+        )
+    ),
 
-                ),
+    f"${alumno.get(
+        'recargos',
+        0
+    ):,.2f}"
 
-                f"${alumno.get(
-                    'recargos',
-                    0
-                ):,.2f}"
+])
 
-            ])
+        t = Table(
 
-        t = Table(tabla)
+    tabla,
+
+    repeatRows=1,
+
+    colWidths=[
+
+        90,
+
+        70,
+
+        50,
+
+        230,
+
+        70
+
+    ]
+
+)
+
+    tabla,
+
+    colWidths=[
+
+    90,
+
+    70,
+
+    50,
+
+    230,
+
+    70
+
+]
+
+)
 
         t.setStyle(
             TableStyle([

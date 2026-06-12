@@ -1798,9 +1798,9 @@ def reporte_deudores_grupo():
             "Sin grupo"
         )
 
-        if grupo not in grupos:
+        if nombre_grupo not in grupos:
 
-            grupos[grupo] = {
+            grupos[nombre_grupo] = {
 
                 "alumnos": [],
 
@@ -1847,7 +1847,7 @@ def reporte_deudores_grupo():
             pago
         )
 
-        grupos[grupo]["total"] += pago.get(
+        grupos[nombre_grupo]["total"] += pago.get(
             "saldo_restante",
             0
         )
@@ -1877,24 +1877,24 @@ def reporte_deudores_grupo():
 # =========================
 
 @pagos_bp.route(
-    "/admin/reporte_deudores_grupo_pdf"
+    "/admin/reporte_deudores_grupo_pdf/<grupo>"
 )
-def reporte_deudores_grupo_pdf():
 
-    grupo_filtro = request.args.get(
-        "grupo",
-        ""
-    )
+def reporte_deudores_grupo_pdf(
+    grupo
+):
 
-    consulta = {
-        "saldo_restante": {
-            "$gt": 0
-        }
+consulta = {
+
+    "grupo": grupo,
+
+    "saldo_restante": {
+
+        "$gt": 0
+
     }
 
-    if grupo_filtro:
-        consulta["grupo"] = grupo_filtro
-
+}
     grupos = {}
 
     deudores = pagos.find(
@@ -1903,14 +1903,13 @@ def reporte_deudores_grupo_pdf():
 
     for pago in deudores:
 
-        grupo = pago.get(
-            "grupo",
-            "Sin grupo"
-        )
+nombre_grupo = pago.get(
+    "grupo",
+    "Sin grupo"
+)
+        if nombre_grupo not in grupos:
 
-        if grupo not in grupos:
-
-            grupos[grupo] = {
+            grupos[nombre_grupo] = {
                 "alumnos": [],
                 "total": 0
             }
@@ -1954,7 +1953,7 @@ def reporte_deudores_grupo_pdf():
             pago
         )
 
-        grupos[grupo]["total"] += pago.get(
+        grupos[nombre_grupo]["total"] += pago.get(
             "saldo_restante",
             0
         )

@@ -4,18 +4,6 @@
 
 <h2>Reporte de Deudores por Grupo</h2>
 
-<a
-    href="/admin/reporte_deudores_grupo_pdf"
->
-
-    <button>
-
-        PDF Deudores
-
-    </button>
-
-</a>
-
 <br><br>
 
 <form method="GET">
@@ -58,6 +46,20 @@ Filtrar
 <div class="card p-3 mb-4">
 
     <h4>Grupo {{ grupo }}</h4>
+
+    <a
+
+    href="/admin/reporte_deudores_grupo_pdf/{{ grupo }}"
+
+    class="btn btn-danger btn-sm"
+
+>
+
+    PDF del Grupo
+
+</a>
+
+<br><br>
 
     <p>
 
