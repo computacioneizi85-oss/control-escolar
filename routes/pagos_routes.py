@@ -1879,7 +1879,6 @@ def reporte_deudores_grupo():
 @pagos_bp.route(
     "/admin/reporte_deudores_grupo_pdf/<grupo>"
 )
-
 def reporte_deudores_grupo_pdf(grupo):
 
     consulta = {
@@ -1900,66 +1899,66 @@ def reporte_deudores_grupo_pdf(grupo):
         consulta
     )
 
-		for pago in deudores:
+    for pago in deudores:
 
-    nombre_grupo = pago.get(
-        "grupo",
-        "Sin grupo"
-    )
-
-    if nombre_grupo not in grupos:
-
-        grupos[nombre_grupo] = {
-
-            "alumnos": [],
-
-            "total": 0
-
-        }
-
-    meses_debe = []
-
-    recargos = 0
-
-    for m in mensualidades.find({
-
-        "pago_id": str(
-            pago["_id"]
+        nombre_grupo = pago.get(
+            "grupo",
+            "Sin grupo"
         )
 
-    }):
+        if nombre_grupo not in grupos:
 
-        if not m.get(
-            "pagado",
-            False
-        ):
+            grupos[nombre_grupo] = {
 
-            meses_debe.append(
+                "alumnos": [],
 
-                m.get(
-                    "mes",
-                    ""
-                )
+                "total": 0
 
+            }
+
+        meses_debe = []
+
+        recargos = 0
+
+        for m in mensualidades.find({
+
+            "pago_id": str(
+                pago["_id"]
             )
 
-        recargos += m.get(
-            "recargo",
-            0
+        }):
+
+            if not m.get(
+                "pagado",
+                False
+            ):
+
+                meses_debe.append(
+
+                    m.get(
+                        "mes",
+                        ""
+                    )
+
+                )
+
+            recargos += m.get(
+                "recargo",
+                0
+            )
+
+        pago["meses_debe"] = meses_debe
+
+        pago["recargos"] = recargos
+
+        grupos[nombre_grupo]["alumnos"].append(
+            pago
         )
 
-    pago["meses_debe"] = meses_debe
-
-    pago["recargos"] = recargos
-
-    grupos[nombre_grupo]["alumnos"].append(
-        pago
-    )
-
-    grupos[nombre_grupo]["total"] += pago.get(
-        "saldo_restante",
-        0
-    )
+        grupos[nombre_grupo]["total"] += pago.get(
+            "saldo_restante",
+            0
+        )
 
     pdf = generar_deudores_grupo_pdf(
         grupos
