@@ -263,8 +263,11 @@ def nuevo_pago():
 		   "fecha_pago":
     			None,
 
+		   "hora_pago":
+    			"",
+
 		   "recargo":
-   			 0,
+    			0,
 
                    "fecha_creacion":
                         datetime.now()
@@ -418,23 +421,28 @@ def registrar_abono(id):
 
                 {
 
-                    "$set": {
+"$set": {
 
-                        "pagado": True,
+    "pagado": True,
 
-                        "fecha_pago":
-                            datetime.now(),
+    "fecha_pago":
+        datetime.now(),
 
-                        "monto_pagado":
-                            monto,
+    "hora_pago":
+        datetime.now().strftime(
+            "%H:%M"
+        ),
 
-                        "folio_pago":
-                            folio_recibo,
+    "monto_pagado":
+        monto,
 
-                        "metodo_pago":
-                            metodo
+    "folio_pago":
+        folio_recibo,
 
-                    }
+    "metodo_pago":
+        metodo
+
+}
 
                 }
 
@@ -824,14 +832,29 @@ def editar_pago(id):
                                 "mensualidad"
                             ],
 
-                        "pagado":
-                            False,
+			"pagado":
+    				False,
 
-                        "recargo":
-                            0,
+			"monto_pagado":
+  				  0,
 
-                        "fecha_creacion":
-                            datetime.now()
+			"folio_pago":
+   				 "",
+
+			"metodo_pago":
+  				  "",
+
+			"fecha_pago":
+   				 None,
+
+			"hora_pago":
+  				  "",
+
+			"recargo":
+   				 0,
+
+			"fecha_creacion":
+  				  datetime.now()
 
                     })
 

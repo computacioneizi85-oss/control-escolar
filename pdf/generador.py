@@ -983,11 +983,53 @@ def generar_estado_cuenta_pdf(
         10
     )
 
-    c.drawString(50, y, "Mes")
-    c.drawString(140, y, "Monto")
-    c.drawString(230, y, "Recargo")
-    c.drawString(330, y, "Estado")
-    c.drawString(430, y, "Fecha Pago")
+    c.drawString(
+        40,
+        y,
+        "Mes"
+    )
+
+    c.drawString(
+        100,
+        y,
+        "Monto"
+    )
+
+    c.drawString(
+        170,
+        y,
+        "Pagado"
+    )
+
+    c.drawString(
+        250,
+        y,
+        "Recargo"
+    )
+
+    c.drawString(
+        320,
+        y,
+        "Estado"
+    )
+
+    c.drawString(
+        390,
+        y,
+        "Fecha"
+    )
+
+    c.drawString(
+        470,
+        y,
+        "Hora"
+    )
+
+    c.drawString(
+        530,
+        y,
+        "Método"
+    )
 
     y -= 25
 
@@ -1005,66 +1047,103 @@ def generar_estado_cuenta_pdf(
             y = 700
 
         estado = (
+
             "Pagado"
-            if m.get("pagado")
+
+            if m.get(
+                "pagado"
+            )
+
             else "Pendiente"
-        )
 
-
-        c.drawString(
-            50,
-            y,
-            str(m.get("mes", ""))
-        )
-
-        c.drawString(
-            140,
-            y,
-            f"${m.get('monto',0)}"
-        )
-
-        c.drawString(
-            230,
-            y,
-            f"${m.get('recargo',0)}"
-        )
-
-        c.drawString(
-            330,
-            y,
-            estado
         )
 
         fecha_pago = m.get(
             "fecha_pago"
         )
 
+        fecha_texto = "-"
+
+        hora_texto = m.get(
+            "hora_pago",
+            "-"
+        )
+
         if fecha_pago:
 
             try:
 
-                fecha_pago = fecha_pago.strftime(
+                fecha_texto = fecha_pago.strftime(
                     "%d/%m/%Y"
                 )
 
             except:
 
-                fecha_pago = str(
+                fecha_texto = str(
                     fecha_pago
                 )[:10]
 
-        else:
-
-            fecha_pago = "-"
+        c.drawString(
+            40,
+            y,
+            str(
+                m.get(
+                    "mes",
+                    ""
+                )
+            )
+        )
 
         c.drawString(
-            430,
+            100,
             y,
-            fecha_pago
+            f"${m.get('monto',0):,.2f}"
+        )
+
+        c.drawString(
+            170,
+            y,
+            f"${m.get('monto_pagado',0):,.2f}"
+        )
+
+        c.drawString(
+            250,
+            y,
+            f"${m.get('recargo',0):,.2f}"
+        )
+
+        c.drawString(
+            320,
+            y,
+            estado
+        )
+
+        c.drawString(
+            390,
+            y,
+            fecha_texto
+        )
+
+        c.drawString(
+            470,
+            y,
+            str(
+                hora_texto
+            )
+        )
+
+        c.drawString(
+            530,
+            y,
+            str(
+                m.get(
+                    "metodo_pago",
+                    "-"
+                )
+            )
         )
 
         y -= 20
-    y -= 30
 
     total_recargos = sum(
 
