@@ -1794,6 +1794,126 @@ def reporte_deudores_grupo():
     for pago in deudores:
 
         grupo = pago.get(
+    "grupo",
+    "Sin grupo"
+)
+
+if grupo not in grupos:
+
+    grupos[grupo] = {
+
+        "alumnos": [],
+
+        "total": 0
+
+    }
+
+            grupos[nombre_grupo] = {
+
+                "alumnos": [],
+
+                "total": 0
+
+            }
+
+        meses_debe = []
+
+        recargos = 0
+
+        for m in mensualidades.find({
+
+            "pago_id": str(
+                pago["_id"]
+            )
+
+        }):
+
+            if not m.get(
+                "pagado",
+                False
+            ):
+
+                meses_debe.append(
+
+                    m.get(
+                        "mes",
+                        ""
+                    )
+
+                )
+
+            recargos += m.get(
+                "recargo",
+                0
+            )
+
+        pago["meses_debe"] = meses_debe
+
+        pago["recargos"] = recargos
+
+        grupos[grupo]["alumnos"].append(
+            pago
+        )
+
+        grupos[grupo]["total"] += pago.get(
+    "saldo_restante",
+    0
+)
+
+    grupos_disponibles = sorted(
+
+        pagos.distinct(
+            "grupo"
+        )
+
+    )
+
+    return render_template(
+
+        "reporte_deudores_grupo.html",
+
+        grupos=grupos,
+
+        grupos_disponibles=grupos_disponibles,
+
+        grupo_filtro=grupo_filtro
+
+    )
+
+# =========================
+# PDF DEUDORES POR GRUPO
+# =========================
+
+@pagos_bp.route(
+    "/admin/reporte_deudores_grupo_pdf/<grupo>"
+)
+
+@pagos_bp.route(
+    "/admin/reporte_deudores_grupo_pdf/<grupo>"
+)
+def reporte_deudores_grupo_pdf(grupo):
+
+    consulta = {
+
+        "grupo": grupo,
+
+        "saldo_restante": {
+
+            "$gt": 0
+
+        }
+
+    }
+
+    grupos = {}
+
+    deudores = pagos.find(
+        consulta
+    )
+
+    for pago in deudores:
+
+        nombre_grupo = pago.get(
             "grupo",
             "Sin grupo"
         )
@@ -1843,113 +1963,7 @@ def reporte_deudores_grupo():
 
         pago["recargos"] = recargos
 
-        grupos[grupo]["alumnos"].append(
-            pago
-        )
-
-        grupos[nombre_grupo]["total"] += pago.get(
-            "saldo_restante",
-            0
-        )
-
-    grupos_disponibles = sorted(
-
-        pagos.distinct(
-            "grupo"
-        )
-
-    )
-
-    return render_template(
-
-        "reporte_deudores_grupo.html",
-
-        grupos=grupos,
-
-        grupos_disponibles=grupos_disponibles,
-
-        grupo_filtro=grupo_filtro
-
-    )
-
-# =========================
-# PDF DEUDORES POR GRUPO
-# =========================
-
-@pagos_bp.route(
-    "/admin/reporte_deudores_grupo_pdf/<grupo>"
-)
-
-def reporte_deudores_grupo_pdf(
-    grupo
-):
-
-consulta = {
-
-    "grupo": grupo,
-
-    "saldo_restante": {
-
-        "$gt": 0
-
-    }
-
-}
-    grupos = {}
-
-    deudores = pagos.find(
-        consulta
-    )
-
-    for pago in deudores:
-
-nombre_grupo = pago.get(
-    "grupo",
-    "Sin grupo"
-)
-        if nombre_grupo not in grupos:
-
-            grupos[nombre_grupo] = {
-                "alumnos": [],
-                "total": 0
-            }
-
-        meses_debe = []
-
-        recargos = 0
-
-        for m in mensualidades.find({
-
-            "pago_id": str(
-                pago["_id"]
-            )
-
-        }):
-
-            if not m.get(
-                "pagado",
-                False
-            ):
-
-                meses_debe.append(
-
-                    m.get(
-                        "mes",
-                        ""
-                    )
-
-                )
-
-            recargos += m.get(
-                "recargo",
-                0
-            )
-
-        pago["meses_debe"] = meses_debe
-
-        pago["recargos"] = recargos
-
-        grupos[grupo]["alumnos"].append(
+        grupos[nombre_grupo]["alumnos"].append(
             pago
         )
 
@@ -1963,8 +1977,13 @@ nombre_grupo = pago.get(
     )
 
     return send_file(
+
         pdf,
+
         mimetype="application/pdf",
+
         as_attachment=False,
-        download_name="deudores_por_grupo.pdf"
+
+        download_name=f"deudores_{grupo}.pdf"
+
     )
