@@ -1793,20 +1793,20 @@ def reporte_deudores_grupo():
 
     for pago in deudores:
 
-        grupo = pago.get(
-    "grupo",
-    "Sin grupo"
-)
+    nombre_grupo = pago.get(
+        "grupo",
+        "Sin grupo"
+    )
 
-if grupo not in grupos:
+    if nombre_grupo not in grupos:
 
-    grupos[grupo] = {
+        grupos[nombre_grupo] = {
 
-        "alumnos": [],
+            "alumnos": [],
 
-        "total": 0
+            "total": 0
 
-    }
+        }
 
             grupos[nombre_grupo] = {
 
@@ -1913,24 +1913,24 @@ def reporte_deudores_grupo_pdf(grupo):
 
     for pago in deudores:
 
-        nombre_grupo = pago.get(
-            "grupo",
-            "Sin grupo"
-        )
+    nombre_grupo = pago.get(
+        "grupo",
+        "Sin grupo"
+    )
 
-        if nombre_grupo not in grupos:
+    if nombre_grupo not in grupos:
 
-            grupos[nombre_grupo] = {
+        grupos[nombre_grupo] = {
 
-                "alumnos": [],
+            "alumnos": [],
 
-                "total": 0
+            "total": 0
 
-            }
+        }
 
-        meses_debe = []
+    meses_debe = []
 
-        recargos = 0
+    recargos = 0
 
         for m in mensualidades.find({
 
