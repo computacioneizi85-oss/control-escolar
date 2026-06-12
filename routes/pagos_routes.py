@@ -248,16 +248,29 @@ def nuevo_pago():
                     "monto":
                         mensualidad,
 
-                    "pagado":
-                        False,
+	           "pagado":
+    			False,
 
-                    "recargo":
-                        0,
+		   "monto_pagado":
+    			0,
 
-                    "fecha_creacion":
+		   "folio_pago":
+    			"",
+
+		   "metodo_pago":
+    			"",
+
+		   "fecha_pago":
+    			None,
+
+		   "recargo":
+   			 0,
+
+                   "fecha_creacion":
                         datetime.now()
 
                 })
+
         flash("Pago creado correctamente")
 
         return redirect(
@@ -388,44 +401,44 @@ def registrar_abono(id):
             "global"
         ) == "mensual":
 
-mensualidades.update_one(
+            mensualidades.update_one(
 
-    {
+                {
 
-        "pago_id":
-            str(pago["_id"]),
+                    "pago_id":
+                        str(pago["_id"]),
 
-        "mes":
-            mes_cubierto,
+                    "mes":
+                        mes_cubierto,
 
-        "pagado":
-            False
+                    "pagado":
+                        False
 
-    },
+                },
 
-    {
+                {
 
-        "$set": {
+                    "$set": {
 
-            "pagado": True,
+                        "pagado": True,
 
-            "fecha_pago":
-                datetime.now(),
+                        "fecha_pago":
+                            datetime.now(),
 
-            "monto_pagado":
-                monto,
+                        "monto_pagado":
+                            monto,
 
-            "folio_pago":
-                folio_recibo,
+                        "folio_pago":
+                            folio_recibo,
 
-            "metodo_pago":
-                metodo
+                        "metodo_pago":
+                            metodo
 
-        }
+                    }
 
-    }
+                }
 
-)
+            )
 
         # =========================
         # ESTATUS
