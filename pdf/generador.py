@@ -1035,10 +1035,32 @@ def generar_estado_cuenta_pdf(
             estado
         )
 
+        fecha_pago = m.get(
+            "fecha_pago"
+        )
+
+        if fecha_pago:
+
+            try:
+
+                fecha_pago = fecha_pago.strftime(
+                    "%d/%m/%Y"
+                )
+
+            except:
+
+                fecha_pago = str(
+                    fecha_pago
+                )[:10]
+
+        else:
+
+            fecha_pago = "-"
+
         c.drawString(
             430,
             y,
-            fecha_pago[:20]
+            fecha_pago
         )
 
         y -= 20
