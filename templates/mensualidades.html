@@ -79,7 +79,15 @@ Pendiente
 
 <td>
 
-    {{ m.get('fecha_pago', '-') }}
+{% if m.get('fecha_pago') %}
+
+    {{ m.get('fecha_pago').strftime('%d/%m/%Y %H:%M') }}
+
+{% else %}
+
+    -
+
+{% endif %}
 
 </td>
 
