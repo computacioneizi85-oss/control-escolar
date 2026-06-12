@@ -55,9 +55,6 @@ def crear_pdf():
 
     return c, buffer
 
-    c = canvas.Canvas(buffer, pagesize=letter)
-    return c, buffer
-
 
 # ================= ESCUDO =================
 def dibujar_escudo(c, escudo):
@@ -1223,6 +1220,15 @@ def generar_deudores_grupo_pdf(grupos):
 
     from reportlab.lib.pagesizes import landscape, letter
 
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(letter),
+        leftMargin=20,
+        rightMargin=20,
+        topMargin=20,
+        bottomMargin=20
+    )
+
     elementos = []
 
     estilos = getSampleStyleSheet()
@@ -1256,113 +1262,109 @@ def generar_deudores_grupo_pdf(grupos):
 
         tabla = [
 
-    [
+            [
+                "Alumno",
+                "Saldo",
+                "Cantidad",
+                "Meses Adeudados",
+                "Recargos"
+            ]
 
-        "Alumno",
+        ]
 
-        "Saldo",
+        for alumno in datos["alumnos"]:
 
-        "Cantidad",
+            tabla.append(
 
-        "Meses Adeudados",
+                [
 
-        "Recargos"
+                    alumno.get(
+                        "alumno",
+                        ""
+                    ),
 
-    ]
+                    f"${alumno.get('saldo_restante',0):,.2f}",
 
-]
+                    len(
+                        alumno.get(
+                            "meses_debe",
+                            []
+                        )
+                    ),
 
-for alumno in datos["alumnos"]:
+                    "\n".join(
+                        alumno.get(
+                            "meses_debe",
+                            []
+                        )
+                    ),
 
-    tabla.append([
+                    f"${alumno.get('recargos',0):,.2f}"
 
-        alumno.get(
-            "alumno",
-            ""
-        ),
+                ]
 
-        f"${alumno.get(
-            'saldo_restante',
-            0
-        ):,.2f}",
-
-        len(
-            alumno.get(
-                "meses_debe",
-                []
             )
-        ),
-
-        "\n".join(
-            alumno.get(
-                "meses_debe",
-                []
-            )
-        ),
-
-        f"${alumno.get(
-            'recargos',
-            0
-        ):,.2f}"
-
-    ])
 
         t = Table(
 
-    tabla,
+            tabla,
 
-    repeatRows=1,
+            repeatRows=1,
 
-    colWidths=[
+            colWidths=[
+                90,
+                70,
+                50,
+                230,
+                70
+            ]
 
-        90,
+        )
 
-        70,
-
-        50,
-
-        230,
-
-        70
-
-    ]
-
-)
-
-t = Table(
-
-    tabla,
-
-    repeatRows=1,
-
-    colWidths=[
-
-        90,
-
-        70,
-
-        50,
-
-        230,
-
-        70
-
-    ]
-
-)
         t.setStyle(
+
             TableStyle([
-                ('BACKGROUND',(0,0),(-1,0),colors.grey),
-                ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
-                ('GRID',(0,0),(-1,-1),1,colors.black),
-                ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold')
+
+                (
+                    'BACKGROUND',
+                    (0,0),
+                    (-1,0),
+                    colors.grey
+                ),
+
+                (
+                    'TEXTCOLOR',
+                    (0,0),
+                    (-1,0),
+                    colors.whitesmoke
+                ),
+
+                (
+                    'GRID',
+                    (0,0),
+                    (-1,-1),
+                    1,
+                    colors.black
+                ),
+
+                (
+                    'FONTNAME',
+                    (0,0),
+                    (-1,0),
+                    'Helvetica-Bold'
+                )
+
             ])
+
         )
 
         elementos.append(t)
 
         elementos.append(
-            Spacer(1, 15)
+            Spacer(
+                1,
+                15
+            )
         )
 
     doc.build(elementos)
