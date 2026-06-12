@@ -45,23 +45,15 @@ def fecha_actual():
 
 # ================= BASE PDF =================
 def crear_pdf():
+
     buffer = BytesIO()
 
-doc = SimpleDocTemplate(
+    c = canvas.Canvas(
+        buffer,
+        pagesize=letter
+    )
 
-    buffer,
-
-    pagesize=landscape(letter),
-
-    leftMargin=20,
-
-    rightMargin=20,
-
-    topMargin=20,
-
-    bottomMargin=20
-
-)
+    return c, buffer
 
     c = canvas.Canvas(buffer, pagesize=letter)
     return c, buffer
@@ -1263,49 +1255,57 @@ def generar_deudores_grupo_pdf(grupos):
         )
 
         tabla = [
+
     [
+
         "Alumno",
+
         "Saldo",
+
         "Cantidad",
+
         "Meses Adeudados",
+
         "Recargos"
+
     ]
+
 ]
 
-        for alumno in datos["alumnos"]:
+for alumno in datos["alumnos"]:
 
-tabla.append([
+    tabla.append([
 
-    alumno.get(
-        "alumno",
-        ""
-    ),
-
-    f"${alumno.get(
-        'saldo_restante',
-        0
-    ):,.2f}",
-
-    len(
         alumno.get(
-            "meses_debe",
-            []
-        )
-    ),
+            "alumno",
+            ""
+        ),
 
-    "\n".join(
-        alumno.get(
-            "meses_debe",
-            []
-        )
-    ),
+        f"${alumno.get(
+            'saldo_restante',
+            0
+        ):,.2f}",
 
-    f"${alumno.get(
-        'recargos',
-        0
-    ):,.2f}"
+        len(
+            alumno.get(
+                "meses_debe",
+                []
+            )
+        ),
 
-])
+        "\n".join(
+            alumno.get(
+                "meses_debe",
+                []
+            )
+        ),
+
+        f"${alumno.get(
+            'recargos',
+            0
+        ):,.2f}"
+
+    ])
 
         t = Table(
 
@@ -1329,24 +1329,27 @@ tabla.append([
 
 )
 
+t = Table(
+
     tabla,
+
+    repeatRows=1,
 
     colWidths=[
 
-    90,
+        90,
 
-    70,
+        70,
 
-    50,
+        50,
 
-    230,
+        230,
 
-    70
+        70
 
-]
+    ]
 
 )
-
         t.setStyle(
             TableStyle([
                 ('BACKGROUND',(0,0),(-1,0),colors.grey),
