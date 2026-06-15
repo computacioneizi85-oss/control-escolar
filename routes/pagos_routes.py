@@ -246,81 +246,82 @@ def nuevo_pago():
 
         })
 
-        if tipo_cobro == "mensual":
+if tipo_cobro == "mensual":
 
-            meses_nombres = [
+    meses_nombres = [
 
-                "Enero",
-                "Febrero",
-                "Marzo",
-                "Abril",
-                "Mayo",
-                "Junio",
-                "Julio",
-                "Agosto",
-                "Septiembre",
-                "Octubre",
-                "Noviembre",
-                "Diciembre"
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre"
 
-            ]
-
-            mes_actual = datetime.now().month - 1
-
-for i in range(meses_totales):
-
-    nombre_mes = meses_nombres[
-        (mes_actual + i) % 12
     ]
 
-    mensualidades.insert_one({
+    mes_actual = datetime.now().month - 1
 
-        "pago_id":
-            str(resultado.inserted_id),
+    for i in range(meses_totales):
 
-        "alumno_id":
-            str(alumno["_id"]),
+        nombre_mes = meses_nombres[
+            (mes_actual + i) % 12
+        ]
 
-        "alumno":
-            alumno["nombre"],
+        mensualidades.insert_one({
 
-        "mes":
-            nombre_mes,
+            "pago_id":
+                str(resultado.inserted_id),
 
-        "numero_mes":
-            ((mes_actual + i) % 12) + 1,
+            "alumno_id":
+                str(alumno["_id"]),
 
-        "anio":
-            datetime.now().year,
+            "alumno":
+                alumno["nombre"],
 
-        "monto":
-            mensualidad,
+            "mes":
+                nombre_mes,
 
-        "pagado":
-            False,
+            "numero_mes":
+                ((mes_actual + i) % 12) + 1,
 
-        "monto_pagado":
-            0,
+            "anio":
+                datetime.now().year,
 
-        "folio_pago":
-            "",
+            "monto":
+                mensualidad,
 
-        "metodo_pago":
-            "",
+            "pagado":
+                False,
 
-        "fecha_pago":
-            None,
+            "monto_pagado":
+                0,
 
-        "hora_pago":
-            "",
+            "folio_pago":
+                "",
 
-        "recargo":
-            0,
+            "metodo_pago":
+                "",
 
-        "fecha_creacion":
-            datetime.now()
+            "fecha_pago":
+                None,
 
-    })
+            "hora_pago":
+                "",
+
+            "recargo":
+                0,
+
+            "fecha_creacion":
+                datetime.now()
+
+        })
+
         flash("Pago creado correctamente")
 
         return redirect(
@@ -956,7 +957,7 @@ def editar_pago(id):
         )
 
         recalcular_pago(
-           str(pago_actualizado["_id"])
+            str(pago_actualizado["_id"])
         )
 
         flash(
