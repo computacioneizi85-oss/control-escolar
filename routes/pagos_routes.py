@@ -72,10 +72,6 @@ def registrar_bitacora_pago(
 
     })
 
-    "pagos",
-    __name__
-)
-
 def recalcular_pago(pago_id):
 
     movimientos = list(
@@ -684,30 +680,30 @@ def registrar_abono(id):
 
                 {
 
-"$set": {
+{
+    "$set": {
 
-    "pagado": True,
+        "pagado": True,
 
-    "fecha_pago":
-        datetime.now(),
+        "fecha_pago":
+            datetime.now(),
 
-    "hora_pago":
-        datetime.now().strftime(
-            "%H:%M"
-        ),
+        "hora_pago":
+            datetime.now().strftime(
+                "%H:%M"
+            ),
 
-    "monto_pagado":
-        monto,
+        "monto_pagado":
+            monto,
 
-    "folio_pago":
-        folio_recibo,
+        "folio_pago":
+            folio_recibo,
 
-    "metodo_pago":
-        metodo
+        "metodo_pago":
+            metodo
 
+    }
 }
-
-                }
 
             )
 
