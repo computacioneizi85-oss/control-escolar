@@ -143,37 +143,81 @@ def pagos_admin():
 
     }
 
-    if busqueda:
+if busqueda:
 
-        consulta["$or"] = [
+    ids_encontrados = []
 
-            {
-                "alumno": {
+    for movimiento in movimientos_pagos.find({
 
-                    "$regex":
-                        busqueda,
+        "folio": {
 
-                    "$options":
-                        "i"
+            "$regex":
+                busqueda,
 
-                }
+            "$options":
+                "i"
 
-            },
+        }
 
-            {
-                "grupo": {
+    }):
 
-                    "$regex":
-                        busqueda,
+        ids_encontrados.append(
 
-                    "$options":
-                        "i"
+            movimiento.get(
+                "pago_id"
+            )
 
-                }
+        )
+
+    consulta["$or"] = [
+
+        {
+
+            "alumno": {
+
+                "$regex":
+                    busqueda,
+
+                "$options":
+                    "i"
 
             }
 
-        ]
+        },
+
+        {
+
+            "grupo": {
+
+                "$regex":
+                    busqueda,
+
+                "$options":
+                    "i"
+
+            }
+
+        },
+
+        {
+
+            "_id": {
+
+                "$in": [
+
+                    ObjectId(x)
+
+                    for x in ids_encontrados
+
+                    if ObjectId.is_valid(x)
+
+                ]
+
+            }
+
+        }
+
+    ]
 
     lista_pagos = pagos.find(
         consulta
