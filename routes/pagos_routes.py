@@ -448,12 +448,35 @@ def registrar_abono(id):
 
         concepto = request.form["concepto"]
 
-        folio_recibo = (
-            "REC-" +
-            datetime.now().strftime(
-                "%Y%m%d%H%M%S"
-            )
-        )
+ultimo = movimientos_pagos.find_one(
+
+    sort=[("_id", -1)]
+
+)
+
+if ultimo:
+
+    consecutivo = (
+
+        ultimo.get(
+
+            "consecutivo",
+
+            0
+
+        ) + 1
+
+    )
+
+else:
+
+    consecutivo = 1
+
+folio_recibo = (
+
+    f"REC-{consecutivo:06d}"
+
+)
 
         nuevo_total_pagado = (
             pago["total_pagado"] + monto
@@ -472,9 +495,17 @@ def registrar_abono(id):
         # =========================
         movimientos_pagos.insert_one({
 
-            "folio": folio_recibo,
+            "consecutivo":
 
-            "concepto": concepto,
+                consecutivo,
+
+            "folio":
+
+                folio_recibo,
+
+            "concepto":
+
+                concepto,
 
             "pago_id": str(pago["_id"]),
 
