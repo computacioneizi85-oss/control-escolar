@@ -14,6 +14,7 @@ import base64
 import os
 from datetime import datetime
 import uuid
+import qrcode
 
 from database.mongo import (
     configuracion,
@@ -681,6 +682,40 @@ def generar_recibo_pago_pdf(movimiento):
         50,
         y,
         f"Capturado por: {movimiento.get('capturado_por','')}"
+    )
+
+    y -= 50
+
+    datos_qr = (
+        f"Folio: {movimiento.get('folio','')}\n"
+        f"Alumno: {movimiento.get('alumno','')}\n"
+        f"Monto: ${movimiento.get('monto',0)}\n"
+        f"Fecha: {movimiento.get('fecha_pago','')}"
+    )
+
+    qr = qrcode.make(
+        datos_qr
+    )
+
+    qr_buffer = BytesIO()
+
+    qr.save(
+        qr_buffer,
+        format="PNG"
+    )
+
+    qr_buffer.seek(0)
+
+    qr_img = ImageReader(
+        qr_buffer
+    )
+
+    c.drawImage(
+        qr_img,
+        420,
+        420,
+        width=100,
+        height=100
     )
 
     y -= 40
