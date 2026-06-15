@@ -64,22 +64,23 @@ def proteger_rutas():
 
     rutas_publicas = [
 
-    "/",
+        "/",
 
-    "/login",
+        "/login",
 
-    "/validar"
+        "/validar"
 
-]
+    ]
 
     if request.path.startswith("/static"):
+
         return
 
     for ruta in rutas_publicas:
 
-    if request.path.startswith(ruta):
+        if request.path.startswith(ruta):
 
-        return
+            return
 
     # 🔐 VALIDAR LICENCIA
     licencia_ok = licencia_activa()
