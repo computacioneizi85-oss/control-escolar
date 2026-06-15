@@ -267,59 +267,60 @@ def nuevo_pago():
 
             mes_actual = datetime.now().month - 1
 
-            for i in range(meses_totales):
+for i in range(meses_totales):
 
-                nombre_mes = meses_nombres[
-                    (mes_actual + i) % 12
-                ]
+    nombre_mes = meses_nombres[
+        (mes_actual + i) % 12
+    ]
 
-mensualidades.insert_one({
+    mensualidades.insert_one({
 
-    "pago_id":
-        str(resultado.inserted_id),
+        "pago_id":
+            str(resultado.inserted_id),
 
-    "alumno_id":
-        str(alumno["_id"]),
+        "alumno_id":
+            str(alumno["_id"]),
 
-    "alumno":
-        alumno["nombre"],
+        "alumno":
+            alumno["nombre"],
 
-    "mes":
-        nombre_mes,
+        "mes":
+            nombre_mes,
 
-    "numero_mes":
-        ((mes_actual + i) % 12) + 1,
-"anio":
-    datetime.now().year,
+        "numero_mes":
+            ((mes_actual + i) % 12) + 1,
 
-"monto":
-    mensualidad,
+        "anio":
+            datetime.now().year,
 
-"pagado":
-    False,
+        "monto":
+            mensualidad,
 
-"monto_pagado":
-    0,
+        "pagado":
+            False,
 
-"folio_pago":
-    "",
+        "monto_pagado":
+            0,
 
-"metodo_pago":
-    "",
+        "folio_pago":
+            "",
 
-"fecha_pago":
-    None,
+        "metodo_pago":
+            "",
 
-"hora_pago":
-    "",
+        "fecha_pago":
+            None,
 
-"recargo":
-    0,
+        "hora_pago":
+            "",
 
-"fecha_creacion":
-    datetime.now()
-                     })
+        "recargo":
+            0,
 
+        "fecha_creacion":
+            datetime.now()
+
+    })
         flash("Pago creado correctamente")
 
         return redirect(
@@ -533,7 +534,7 @@ def registrar_abono(id):
         )
 
         recalcular_pago(
-          pago_actualizado["_id"]
+            str(pago["_id"])
         )
 
 
@@ -809,8 +810,8 @@ def editar_pago(id):
 
                 "pago_id":
                     str(
-                        pago_actualizado["_id"]
-                    )
+                pago_actualizado["_id"]
+                )
 
             })
 
@@ -1786,7 +1787,7 @@ def reporte_deudores_grupo():
         consulta["grupo"] = grupo_filtro
 
     deudores = pagos.find(
-    consulta
+        consulta
     )
 
     for pago in deudores:
