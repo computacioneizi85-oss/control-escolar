@@ -33,51 +33,41 @@ from database.mongo import (
 
 
 pagos_bp = Blueprint(
+    "pagos",
+    __name__
+)
 
 def registrar_bitacora_pago(
-
     accion,
-
     detalle="",
-
     folio="",
-
     alumno="",
-
     monto=0
-
 ):
 
     bitacora_pagos.insert_one({
 
         "usuario":
-
             session.get(
                 "usuario"
             ),
 
         "accion":
-
             accion,
 
         "detalle":
-
             detalle,
 
         "folio":
-
             folio,
 
         "alumno":
-
             alumno,
 
         "monto":
-
             monto,
 
         "fecha":
-
             datetime.now()
 
     })
@@ -997,7 +987,7 @@ def editar_pago(id):
                     ),
 
                      "tipo_cobro":
-                     request.form["tipo_cobro"],
+                        request.form["tipo_cobro"],
 
                     "beca": float(
                         request.form.get(
