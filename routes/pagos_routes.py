@@ -666,47 +666,37 @@ def registrar_abono(id):
             mensualidades.update_one(
 
                 {
-
-                    "pago_id":
-                        str(pago["_id"]),
-
-                    "mes":
-                        mes_cubierto,
-
-                    "pagado":
-                        False
-
+                    "pago_id": str(pago["_id"]),
+                    "mes": mes_cubierto,
+                    "pagado": False
                 },
 
                 {
+                    "$set": {
 
-{
-    "$set": {
+                        "pagado": True,
 
-        "pagado": True,
+                        "fecha_pago":
+                            datetime.now(),
 
-        "fecha_pago":
-            datetime.now(),
+                        "hora_pago":
+                            datetime.now().strftime(
+                                "%H:%M"
+                            ),
 
-        "hora_pago":
-            datetime.now().strftime(
-                "%H:%M"
-            ),
+                        "monto_pagado":
+                            monto,
 
-        "monto_pagado":
-            monto,
+                        "folio_pago":
+                            folio_recibo,
 
-        "folio_pago":
-            folio_recibo,
+                        "metodo_pago":
+                            metodo
 
-        "metodo_pago":
-            metodo
-
-    }
-}
+                    }
+                }
 
             )
-
         # =========================
         # ESTATUS
         # =========================
