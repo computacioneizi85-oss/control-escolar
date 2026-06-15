@@ -131,96 +131,99 @@ def recalcular_pago(pago_id):
 def pagos_admin():
 
     busqueda = request.args.get(
+
         "buscar",
+
         ""
+
     )
 
     consulta = {
 
         "activo": {
+
             "$ne": False
+
         }
 
     }
 
-if busqueda:
+    if busqueda:
 
-    ids_encontrados = []
+        ids_encontrados = []
 
-    for movimiento in movimientos_pagos.find({
+        for movimiento in movimientos_pagos.find({
 
-        "folio": {
+            "folio": {
 
-            "$regex":
-                busqueda,
+                "$regex": busqueda,
 
-            "$options":
-                "i"
+                "$options": "i"
 
-        }
+            }
 
-    }):
+        }):
 
-        ids_encontrados.append(
+            ids_encontrados.append(
 
-            movimiento.get(
-                "pago_id"
+                movimiento.get(
+
+                    "pago_id"
+
+                )
+
             )
 
-        )
+        consulta["$or"] = [
 
-    consulta["$or"] = [
+            {
 
-        {
+                "alumno": {
 
-            "alumno": {
+                    "$regex": busqueda,
 
-                "$regex":
-                    busqueda,
+                    "$options": "i"
 
-                "$options":
-                    "i"
+                }
 
-            }
+            },
 
-        },
+            {
 
-        {
+                "grupo": {
 
-            "grupo": {
+                    "$regex": busqueda,
 
-                "$regex":
-                    busqueda,
+                    "$options": "i"
 
-                "$options":
-                    "i"
+                }
 
-            }
+            },
 
-        },
+            {
 
-        {
+                "_id": {
 
-            "_id": {
+                    "$in": [
 
-                "$in": [
+                        ObjectId(x)
 
-                    ObjectId(x)
+                        for x in ids_encontrados
 
-                    for x in ids_encontrados
+                        if ObjectId.is_valid(x)
 
-                    if ObjectId.is_valid(x)
+                    ]
 
-                ]
+                }
 
             }
 
-        }
-
-    ]
+        ]
 
     lista_pagos = pagos.find(
+
         consulta
+
     )
 
     return render_template(
