@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>
+
+Validación de Recibo
+
+</h2>
+
+{% if movimiento %}
+
+<div class="alert alert-success">
+
+    <h3>
+
+        RECIBO VÁLIDO
+
+    </h3>
+
+    <p>
+
+        <strong>Folio:</strong>
+
+        {{ movimiento.folio }}
+
+    </p>
+
+    <p>
+
+        <strong>Alumno:</strong>
+
+        {{ movimiento.alumno }}
+
+    </p>
+
+    <p>
+
+        <strong>Monto:</strong>
+
+        ${{ movimiento.monto }}
+
+    </p>
+
+    <p>
+
+        <strong>Fecha:</strong>
+
+        {{ movimiento.fecha_pago }}
+
+    </p>
+
+</div>
+
+{% else %}
+
+<div class="alert alert-danger">
+
+    <h3>
+
+        RECIBO NO ENCONTRADO
+
+    </h3>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

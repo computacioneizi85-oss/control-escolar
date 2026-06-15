@@ -62,12 +62,23 @@ app.register_blueprint(backup_bp)
 @app.before_request
 def proteger_rutas():
 
-    rutas_publicas = ["/", "/login"]
+    rutas_publicas = [
+
+    "/",
+
+    "/login",
+
+    "/validar"
+
+]
 
     if request.path.startswith("/static"):
         return
 
-    if request.path in rutas_publicas:
+    for ruta in rutas_publicas:
+
+    if request.path.startswith(ruta):
+
         return
 
     # 🔐 VALIDAR LICENCIA

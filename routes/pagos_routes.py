@@ -2119,3 +2119,24 @@ def reporte_deudores_grupo_pdf(grupo):
         download_name=f"deudores_{grupo}.pdf"
 
     )
+
+@pagos_bp.route(
+    "/validar/<folio>"
+)
+def validar_recibo(folio):
+
+    movimiento = movimientos_pagos.find_one({
+
+        "folio": folio,
+
+        "estatus": "activo"
+
+    })
+
+    return render_template(
+
+        "validar_recibo.html",
+
+        movimiento=movimiento
+
+    )

@@ -687,6 +687,20 @@ def generar_recibo_pago_pdf(movimiento):
     y -= 50
 
     datos_qr = (
+
+    "https://https://control-escolar-i0yw.onrender.com/validar/"
+
+    + str(
+
+        movimiento.get(
+            "folio",
+            ""
+        )
+
+    )
+
+)
+
         f"Folio: {movimiento.get('folio','')}\n"
         f"Alumno: {movimiento.get('alumno','')}\n"
         f"Monto: ${movimiento.get('monto',0)}\n"
