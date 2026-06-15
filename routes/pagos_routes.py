@@ -296,31 +296,31 @@ def nuevo_pago():
                     "monto":
                         mensualidad,
 
-	           "pagado":
-    			False,
+                              "pagado":
+                               False,
 
-		   "monto_pagado":
-    			0,
+                    "monto_pagado":
+                        0,
 
-		   "folio_pago":
-    			"",
+                    "folio_pago":
+                        "",
 
-		   "metodo_pago":
-    			"",
+                    "metodo_pago":
+                        "",
 
-		   "fecha_pago":
-    			None,
+                    "fecha_pago":
+                        None,
 
-		   "hora_pago":
-    			"",
+                    "hora_pago":
+                        "",
 
-		   "recargo":
-    			0,
+                    "recargo":
+                        0,
 
-                   "fecha_creacion":
-                        datetime.now()
+                    "fecha_creacion":
+                       datetime.now()
 
-                })
+                     })
 
         flash("Pago creado correctamente")
 
@@ -876,36 +876,37 @@ def editar_pago(id):
                             datetime.now().year,
 
                         "monto":
+                            "monto":
                             pago_actualizado[
                                 "mensualidad"
                             ],
 
-			"pagado":
-    				False,
+                        "pagado":
+                             False,
 
-			"monto_pagado":
-  				  0,
+                        "monto_pagado":
+                             0,
 
-			"folio_pago":
-   				 "",
+                        "folio_pago":
+                             "",
 
-			"metodo_pago":
-  				  "",
+                        "metodo_pago":
+                             "",
 
-			"fecha_pago":
-   				 None,
+                        "fecha_pago":
+                             None,
 
-			"hora_pago":
-  				  "",
+                        "hora_pago":
+                             "",
 
-			"recargo":
-   				 0,
+                        "recargo":
+                             0,
 
-			"fecha_creacion":
-  				  datetime.now()
+                        "fecha_creacion":
+                           datetime.now()
 
-                    })
-
+                        })
+  
         mensualidad = pago_actualizado[
             "mensualidad"
         ]
