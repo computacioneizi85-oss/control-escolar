@@ -211,72 +211,20 @@ def nuevo_pago():
         )
 
         tipo_cobro = request.form[
-         "tipo_cobro"
+            "tipo_cobro"
         ]
 
         alumno = alumnos.find_one({
+
             "_id": ObjectId(alumno_id)
+
         })
 
-        total_debe = mensualidad * meses_totales
+        total_debe = (
+            mensualidad * meses_totales
+        )
 
         resultado = pagos.insert_one({
-
-            "alumno_id": str(alumno["_id"]),
-            "alumno": alumno["nombre"],
-            "grupo": alumno.get("grupo", ""),
-            "concepto": "Colegiatura",
-            "tipo_cobro": tipo_cobro,
-            "usar_calendario_mensual": False,
-            "fecha_inicio": datetime.now(),
-            "mensualidades": [],
-            "mensualidad": mensualidad,
-            "meses_totales": meses_totales,
-            "meses_pagados": 0,
-            "total_debe": total_debe,
-            "total_pagado": 0,
-            "saldo_restante": total_debe,
-            "estatus": "pendiente",
-            "observaciones": "",
-            "recargos_acumulados": 0,
-            "saldo_con_recargo": total_debe,
-            "ultimo_recargo": None,
-            "beca": 0,
-            "descuento": 0
-
-        })
-
-if tipo_cobro == "mensual":
-
-    meses_nombres = [
-
-        "Enero",
-        "Febrero",
-        "Marzo",
-        "Abril",
-        "Mayo",
-        "Junio",
-        "Julio",
-        "Agosto",
-        "Septiembre",
-        "Octubre",
-        "Noviembre",
-        "Diciembre"
-
-    ]
-
-    mes_actual = datetime.now().month - 1
-
-    for i in range(meses_totales):
-
-        nombre_mes = meses_nombres[
-            (mes_actual + i) % 12
-        ]
-
-        mensualidades.insert_one({
-
-            "pago_id":
-                str(resultado.inserted_id),
 
             "alumno_id":
                 str(alumno["_id"]),
@@ -284,55 +232,174 @@ if tipo_cobro == "mensual":
             "alumno":
                 alumno["nombre"],
 
-            "mes":
-                nombre_mes,
+            "grupo":
+                alumno.get(
+                    "grupo",
+                    ""
+                ),
 
-            "numero_mes":
-                ((mes_actual + i) % 12) + 1,
+            "concepto":
+                "Colegiatura",
 
-            "anio":
-                datetime.now().year,
+            "tipo_cobro":
+                tipo_cobro,
 
-            "monto":
-                mensualidad,
-
-            "pagado":
+            "usar_calendario_mensual":
                 False,
 
-            "monto_pagado":
+            "fecha_inicio":
+                datetime.now(),
+
+            "mensualidades":
+                [],
+
+            "mensualidad":
+                mensualidad,
+
+            "meses_totales":
+                meses_totales,
+
+            "meses_pagados":
                 0,
 
-            "folio_pago":
+            "total_debe":
+                total_debe,
+
+            "total_pagado":
+                0,
+
+            "saldo_restante":
+                total_debe,
+
+            "estatus":
+                "pendiente",
+
+            "observaciones":
                 "",
 
-            "metodo_pago":
-                "",
+            "recargos_acumulados":
+                0,
 
-            "fecha_pago":
+            "saldo_con_recargo":
+                total_debe,
+
+            "ultimo_recargo":
                 None,
 
-            "hora_pago":
-                "",
-
-            "recargo":
+            "beca":
                 0,
 
-            "fecha_creacion":
-                datetime.now()
+            "descuento":
+                0
 
         })
 
-        flash("Pago creado correctamente")
+        if tipo_cobro == "mensual":
+
+            meses_nombres = [
+
+                "Enero",
+                "Febrero",
+                "Marzo",
+                "Abril",
+                "Mayo",
+                "Junio",
+                "Julio",
+                "Agosto",
+                "Septiembre",
+                "Octubre",
+                "Noviembre",
+                "Diciembre"
+
+            ]
+
+            mes_actual = (
+                datetime.now().month - 1
+            )
+
+            for i in range(
+                meses_totales
+            ):
+
+                nombre_mes = meses_nombres[
+                    (mes_actual + i) % 12
+                ]
+
+                mensualidades.insert_one({
+
+                    "pago_id":
+                        str(
+                            resultado.inserted_id
+                        ),
+
+                    "alumno_id":
+                        str(
+                            alumno["_id"]
+                        ),
+
+                    "alumno":
+                        alumno["nombre"],
+
+                    "mes":
+                        nombre_mes,
+
+                    "numero_mes":
+                        (
+                            (
+                                mes_actual + i
+                            ) % 12
+                        ) + 1,
+
+                    "anio":
+                        datetime.now().year,
+
+                    "monto":
+                        mensualidad,
+
+                    "pagado":
+                        False,
+
+                    "monto_pagado":
+                        0,
+
+                    "folio_pago":
+                        "",
+
+                    "metodo_pago":
+                        "",
+
+                    "fecha_pago":
+                        None,
+
+                    "hora_pago":
+                        "",
+
+                    "recargo":
+                        0,
+
+                    "fecha_creacion":
+                        datetime.now()
+
+                })
+
+        flash(
+            "Pago creado correctamente"
+        )
 
         return redirect(
-            url_for("pagos.pagos_admin")
+            url_for(
+                "pagos.pagos_admin"
+            )
         )
 
     lista_alumnos = alumnos.find()
 
     return render_template(
+
         "nuevo_pago.html",
+
         alumnos=lista_alumnos
+
     )
 
 # =========================
@@ -872,40 +939,39 @@ def editar_pago(id):
                         "numero_mes":
                             ((mes_actual + i) % 12) + 1,
 
- "anio":
-    datetime.now().year,
+                        "anio":
+                            datetime.now().year,
 
-"monto":
-    pago_actualizado[
-        "mensualidad"
-    ],
+                        "monto":
+                            pago_actualizado[
+                                "mensualidad"
+                            ],
 
-"pagado":
-    False,
+                        "pagado":
+                            False,
 
-"monto_pagado":
-    0,
+                        "monto_pagado":
+                            0,
 
-"folio_pago":
-    "",
+                        "folio_pago":
+                            "",
 
-"metodo_pago":
-    "",
+                        "metodo_pago":
+                            "",
 
-"fecha_pago":
-    None,
+                        "fecha_pago":
+                            None,
 
-"hora_pago":
-    "",
+                        "hora_pago":
+                            "",
 
-"recargo":
-    0,
+                        "recargo":
+                            0,
 
-"fecha_creacion":
-    datetime.now()
+                        "fecha_creacion":
+                            datetime.now()
 
-})
-  
+                    })  
         mensualidad = pago_actualizado[
             "mensualidad"
         ]
