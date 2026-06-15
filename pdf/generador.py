@@ -688,7 +688,7 @@ def generar_recibo_pago_pdf(movimiento):
 
     datos_qr = (
 
-    "https://https://control-escolar-i0yw.onrender.com/validar/"
+    "https://control-escolar-i0yw.onrender.com/validar/"
 
     + str(
 
@@ -701,11 +701,31 @@ def generar_recibo_pago_pdf(movimiento):
 
 )
 
-        f"Folio: {movimiento.get('folio','')}\n"
-        f"Alumno: {movimiento.get('alumno','')}\n"
-        f"Monto: ${movimiento.get('monto',0)}\n"
-        f"Fecha: {movimiento.get('fecha_pago','')}"
+datos_qr = (
+
+    "https://control-escolar-i0yw.onrender.com/validar/"
+
+    + str(
+
+        movimiento.get(
+            "folio",
+            ""
+        )
+
     )
+
+)
+
+qr = qrcode.make(
+    datos_qr
+)
+
+qr_buffer = BytesIO()
+
+qr.save(
+    qr_buffer,
+    format="PNG"
+)
 
     qr = qrcode.make(
         datos_qr
