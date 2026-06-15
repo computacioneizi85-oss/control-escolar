@@ -27,11 +27,61 @@ from database.mongo import (
     alumnos,
     movimientos_pagos,
     config_recargos,
+    bitacora_pagos,
     mensualidades
 )
 
 
 pagos_bp = Blueprint(
+
+def registrar_bitacora_pago(
+
+    accion,
+
+    detalle="",
+
+    folio="",
+
+    alumno="",
+
+    monto=0
+
+):
+
+    bitacora_pagos.insert_one({
+
+        "usuario":
+
+            session.get(
+                "usuario"
+            ),
+
+        "accion":
+
+            accion,
+
+        "detalle":
+
+            detalle,
+
+        "folio":
+
+            folio,
+
+        "alumno":
+
+            alumno,
+
+        "monto":
+
+            monto,
+
+        "fecha":
+
+            datetime.now()
+
+    })
+
     "pagos",
     __name__
 )
@@ -429,6 +479,19 @@ def nuevo_pago():
 
                 })
 
+        registrar_bitacora_pago(
+
+            accion="Creó contrato",
+
+            alumno=alumno.get(
+                "nombre",
+                ""
+            ),
+
+            monto=total_debe
+
+        )
+
         flash(
             "Pago creado correctamente"
         )
@@ -587,6 +650,23 @@ def registrar_abono(id):
             "estatus": "activo"
 
         })
+
+        registrar_bitacora_pago(
+
+            accion="Registró abono",
+
+            detalle=metodo,
+
+            folio=folio_recibo,
+
+            alumno=pago.get(
+                "alumno",
+                ""
+            ),
+
+            monto=monto
+
+        )
 
         # =========================
         # MARCAR MENSUALIDAD PAGADA

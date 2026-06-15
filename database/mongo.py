@@ -53,9 +53,12 @@ padres = db["padres"]
 # =========================
 
 admins_secundarios = db["admins_secundarios"]
-bitacora = db["bitacora"]
-auditoria = db["auditoria"]
 
+bitacora = db["bitacora"]
+
+bitacora_pagos = db["bitacora_pagos"]
+
+auditoria = db["auditoria"]
 # =========================
 # ÍNDICES
 # =========================
