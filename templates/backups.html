@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>Respaldos del Sistema</h2>
+
+<div class="card">
+
+    <h3>Respaldos Manuales</h3>
+
+    <p>
+        Descarga respaldos independientes del sistema.
+    </p>
+
+    <a
+        href="/admin/backup/financiero"
+        class="btn btn-primary">
+
+        Descargar Respaldo Financiero
+
+    </a>
+
+    <br><br>
+
+    <a
+        href="/admin/backup/control_escolar"
+        class="btn btn-primary">
+
+        Descargar Respaldo Escolar
+
+    </a>
+
+    <br><br>
+
+    <a
+        href="/admin/backup/descargar"
+        class="btn btn-primary">
+
+        Descargar Respaldo Completo
+
+    </a>
+
+</div>
+
+<hr>
+
+<div class="card">
+
+    <h3>Programación Automática</h3>
+
+    <p>
+        Próximamente configuraremos respaldos automáticos.
+    </p>
+
+</div>
+
+{% endblock %}

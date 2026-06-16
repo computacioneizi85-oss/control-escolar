@@ -20,6 +20,9 @@ from database.mongo import (
     bitacora_pagos,
     configuracion_backups
 )
+
+from flask import render_template
+
 import json
 from io import BytesIO
 
@@ -260,4 +263,11 @@ def descargar_backup_control_escolar():
 
         mimetype="application/json"
 
+    )
+
+@backup_bp.route("/")
+def vista_backups():
+
+    return render_template(
+        "backups.html"
     )
