@@ -887,6 +887,26 @@ def editar_movimiento(id):
             movimiento["pago_id"]
         )
 
+registrar_bitacora_pago(
+
+    accion="Editó movimiento",
+
+    folio=movimiento.get(
+        "folio",
+        ""
+    ),
+
+    alumno=movimiento.get(
+        "alumno",
+        ""
+    ),
+
+    monto=float(
+        request.form["monto"]
+    )
+
+)
+
         flash("Movimiento actualizado")
 
         return redirect(
@@ -930,6 +950,27 @@ def eliminar_movimiento(id):
         recalcular_pago(
             movimiento["pago_id"]
         )
+
+registrar_bitacora_pago(
+
+    accion="Canceló movimiento",
+
+    folio=movimiento.get(
+        "folio",
+        ""
+    ),
+
+    alumno=movimiento.get(
+        "alumno",
+        ""
+    ),
+
+    monto=movimiento.get(
+        "monto",
+        0
+    )
+
+)
 
     flash("Movimiento eliminado")
 
@@ -1161,6 +1202,22 @@ def editar_pago(id):
             str(pago_actualizado["_id"])
         )
 
+registrar_bitacora_pago(
+
+    accion="Editó contrato",
+
+    alumno=pago_actualizado.get(
+        "alumno",
+        ""
+    ),
+
+    monto=pago_actualizado.get(
+        "total_debe",
+        0
+    )
+
+)
+
         flash(
             "Pago actualizado"
         )
@@ -1221,6 +1278,27 @@ def recibo_pago(id):
         return redirect(
             url_for("pagos.pagos_admin")
         )
+
+registrar_bitacora_pago(
+
+    accion="Generó recibo",
+
+    folio=movimiento.get(
+        "folio",
+        ""
+    ),
+
+    alumno=movimiento.get(
+        "alumno",
+        ""
+    ),
+
+    monto=movimiento.get(
+        "monto",
+        0
+    )
+
+)
 
     pdf = generar_recibo_pago_pdf(
         movimiento
