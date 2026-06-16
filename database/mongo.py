@@ -59,6 +59,9 @@ bitacora = db["bitacora"]
 bitacora_pagos = db["bitacora_pagos"]
 
 auditoria = db["auditoria"]
+
+configuracion_backups = db["configuracion_backups"]
+
 # =========================
 # ÍNDICES
 # =========================

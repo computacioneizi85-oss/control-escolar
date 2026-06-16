@@ -1,5 +1,25 @@
 from flask import Blueprint, send_file, request, redirect
-from database.mongo import alumnos, reportes, citatorios, configuracion
+from database.mongo import (
+    alumnos,
+    reportes,
+    citatorios,
+    configuracion,
+    maestros,
+    grupos,
+    materias,
+    horarios,
+    avisos,
+    usuarios,
+    padres,
+    bitacora,
+    auditoria,
+    pagos,
+    movimientos_pagos,
+    mensualidades,
+    config_recargos,
+    bitacora_pagos,
+    configuracion_backups
+)
 import json
 from io import BytesIO
 
@@ -68,3 +88,176 @@ def restaurar_backup():
 
     except Exception as e:
         return f"🔥 ERROR AL RESTAURAR: {str(e)}"
+
+@backup_bp.route("/financiero")
+def descargar_backup_financiero():
+
+    data = {
+
+        "pagos": list(
+            pagos.find(
+                {},
+                {"_id": 0}
+            )
+        ),
+
+        "movimientos_pagos": list(
+            movimientos_pagos.find(
+                {},
+                {"_id": 0}
+            )
+        ),
+
+        "mensualidades": list(
+            mensualidades.find(
+                {},
+                {"_id": 0}
+            )
+        ),
+
+        "config_recargos": list(
+            config_recargos.find(
+                {},
+                {"_id": 0}
+            )
+        ),
+
+        "bitacora_pagos": list(
+            bitacora_pagos.find(
+                {},
+                {"_id": 0}
+            )
+        )
+
+    }
+
+    buffer = BytesIO()
+
+    buffer.write(
+
+        json.dumps(
+            data,
+            indent=4,
+            default=str,
+            ensure_ascii=False
+        ).encode("utf-8")
+
+    )
+
+    buffer.seek(0)
+
+    return send_file(
+
+        buffer,
+
+        as_attachment=True,
+
+        download_name="backup_financiero.json",
+
+        mimetype="application/json"
+
+    )
+
+@backup_bp.route("/control_escolar")
+def descargar_backup_control_escolar():
+
+    data = {
+
+        "alumnos": list(
+            alumnos.find(
+                {},
+                {"_id": 0}
+            )
+        ),
+
+        "maestros": list(
+            maestros.find(
+                {},
+                {"_id": 0}
+            )
+        ),
+
+        "grupos": list(
+            grupos.find(
+                {},
+                {"_id": 0}
+            )
+        ),
+
+        "materias": list(
+            materias.find(
+                {},
+                {"_id": 0}
+            )
+        ),
+
+        "horarios": list(
+            horarios.find(
+                {},
+                {"_id": 0}
+            )
+        ),
+
+        "reportes": list(
+            reportes.find(
+                {},
+                {"_id": 0}
+            )
+        ),
+
+        "citatorios": list(
+            citatorios.find(
+                {},
+                {"_id": 0}
+            )
+        ),
+
+        "avisos": list(
+            avisos.find(
+                {},
+                {"_id": 0}
+            )
+        ),
+
+        "usuarios": list(
+            usuarios.find(
+                {},
+                {"_id": 0}
+            )
+        ),
+
+        "padres": list(
+            padres.find(
+                {},
+                {"_id": 0}
+            )
+        )
+
+    }
+
+    buffer = BytesIO()
+
+    buffer.write(
+
+        json.dumps(
+            data,
+            indent=4,
+            default=str,
+            ensure_ascii=False
+        ).encode("utf-8")
+
+    )
+
+    buffer.seek(0)
+
+    return send_file(
+
+        buffer,
+
+        as_attachment=True,
+
+        download_name="backup_control_escolar.json",
+
+        mimetype="application/json"
+
+    )
