@@ -220,8 +220,12 @@ def generar_kardex(nombre):
 
     tabla.setStyle(TableStyle([
 
-        ("BACKGROUND", (0,0), (-1,0),
-            colors.HexColor("#1f4e79")),
+        (
+            'BACKGROUND',
+            (0,0),
+            (-1,0),
+            colors.HexColor("#1F4E79")
+         ),
 
         ("TEXTCOLOR", (0,0), (-1,0),
             colors.white),
@@ -234,7 +238,7 @@ def generar_kardex(nombre):
 
         ("GRID", (0,0), (-1,-1),
             1,
-            colors.grey),
+            colors.HexColor("#1F4E79")),
 
         ("ROWBACKGROUNDS", (0,1), (-1,-1),
             [colors.whitesmoke, colors.beige]),
@@ -1539,52 +1543,66 @@ def generar_bitacora_pagos_pdf(registros):
         repeatRows=1,
 
         colWidths=[
-            90,
-            70,
+            110,
+            140,
+            180,
+            200,
             120,
-            120,
-            80,
-            70
+            100
         ]
 
     )
 
-    t.setStyle(
+t.setStyle(
 
-        TableStyle([
+    TableStyle([
 
-            (
-                'BACKGROUND',
-                (0,0),
-                (-1,0),
-                colors.grey
-            ),
+        (
+            'BACKGROUND',
+            (0,0),
+            (-1,0),
+            colors.grey
+        ),
 
-            (
-                'TEXTCOLOR',
-                (0,0),
-                (-1,0),
-                colors.whitesmoke
-            ),
+        (
+            'TEXTCOLOR',
+            (0,0),
+            (-1,0),
+            colors.whitesmoke
+        ),
 
-            (
-                'GRID',
-                (0,0),
-                (-1,-1),
-                1,
-                colors.black
-            ),
+        (
+            'ALIGN',
+            (0,0),
+            (-1,0),
+            'CENTER'
+        ),
 
-            (
-                'FONTNAME',
-                (0,0),
-                (-1,0),
-                'Helvetica-Bold'
-            )
+        (
+            'VALIGN',
+            (0,0),
+            (-1,-1),
+            'MIDDLE'
+        ),
 
-        ])
+        (
+            'GRID',
+            (0,0),
+            (-1,-1),
+            1,
+            colors.black
+        ),
 
-    )
+        (
+            'FONTNAME',
+            (0,0),
+            (-1,0),
+            'Helvetica-Bold'
+        )
+
+    ])
+
+)
 
     elementos.append(
         t
