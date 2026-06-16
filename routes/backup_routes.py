@@ -23,6 +23,8 @@ from database.mongo import (
 
 from flask import render_template
 
+from datetime import datetime
+
 import json
 from io import BytesIO
 
@@ -45,6 +47,38 @@ def descargar_backup():
     buffer = BytesIO()
     buffer.write(json.dumps(data, indent=4).encode("utf-8"))
     buffer.seek(0)
+
+configuracion_backups.update_one(
+
+    {
+        "tipo": "financiero"
+    },
+
+    {
+        "$set": {
+            "ultima_ejecucion": datetime.now()
+        }
+    },
+
+    upsert=True
+
+)
+
+configuracion_backups.update_one(
+
+    {
+        "tipo": "sistema"
+    },
+
+    {
+        "$set": {
+            "ultima_ejecucion": datetime.now()
+        }
+    },
+
+    upsert=True
+
+)
 
     return send_file(
         buffer,
@@ -252,6 +286,22 @@ def descargar_backup_control_escolar():
     )
 
     buffer.seek(0)
+
+configuracion_backups.update_one(
+
+    {
+        "tipo": "control_escolar"
+    },
+
+    {
+        "$set": {
+            "ultima_ejecucion": datetime.now()
+        }
+    },
+
+    upsert=True
+
+)
 
     return send_file(
 
