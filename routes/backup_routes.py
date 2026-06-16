@@ -171,28 +171,23 @@ def descargar_backup_financiero():
 
     buffer.seek(0)
 
-configuracion_backups.update_one(
-    {
-        "tipo": "financiero"
-    },
-    {
-        "$set": {
-            "ultima_ejecucion": datetime.now()
-        }
-    },
-    upsert=True
-)
+    configuracion_backups.update_one(
+        {
+            "tipo": "financiero"
+        },
+        {
+            "$set": {
+                "ultima_ejecucion": datetime.now()
+            }
+        },
+        upsert=True
+    )
 
     return send_file(
-
         buffer,
-
         as_attachment=True,
-
         download_name="backup_financiero.json",
-
         mimetype="application/json"
-
     )
 
 @backup_bp.route("/control_escolar")
@@ -287,32 +282,23 @@ def descargar_backup_control_escolar():
 
     buffer.seek(0)
 
-configuracion_backups.update_one(
-
-    {
-        "tipo": "control_escolar"
-    },
-
-    {
-        "$set": {
-            "ultima_ejecucion": datetime.now()
-        }
-    },
-
-    upsert=True
-
-)
+    configuracion_backups.update_one(
+        {
+            "tipo": "control_escolar"
+        },
+        {
+            "$set": {
+                "ultima_ejecucion": datetime.now()
+            }
+        },
+        upsert=True
+    )
 
     return send_file(
-
         buffer,
-
         as_attachment=True,
-
         download_name="backup_control_escolar.json",
-
         mimetype="application/json"
-
     )
 
 @backup_bp.route("/")
