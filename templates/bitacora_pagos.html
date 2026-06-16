@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <h2>
+
+        Bitácora Financiera
+
+    </h2>
+
+    <div class="card">
+
+        <div class="card-body">
+
+            <table class="table table-striped">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Fecha</th>
+
+                        <th>Usuario</th>
+
+                        <th>Acción</th>
+
+                        <th>Alumno</th>
+
+                        <th>Folio</th>
+
+                        <th>Monto</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for r in registros %}
+
+                    <tr>
+
+                        <td>
+
+                            {{ r.fecha.strftime("%d/%m/%Y %H:%M") }}
+
+                        </td>
+
+                        <td>
+
+                            {{ r.usuario }}
+
+                        </td>
+
+                        <td>
+
+                            {{ r.accion }}
+
+                        </td>
+
+                        <td>
+
+                            {{ r.alumno }}
+
+                        </td>
+
+                        <td>
+
+                            {{ r.folio }}
+
+                        </td>
+
+                        <td>
+
+                            ${{ r.monto }}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

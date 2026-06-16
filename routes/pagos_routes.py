@@ -2196,3 +2196,21 @@ def validar_recibo(folio):
         movimiento=movimiento
 
     )
+
+@pagos_bp.route(
+    "/admin/bitacora_pagos"
+)
+def ver_bitacora_pagos():
+
+    registros = bitacora_pagos.find().sort(
+        "fecha",
+        -1
+    )
+
+    return render_template(
+
+        "bitacora_pagos.html",
+
+        registros=registros
+
+    )
