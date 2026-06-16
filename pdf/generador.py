@@ -1382,31 +1382,30 @@ def generar_deudores_grupo_pdf(grupos):
 
         )
 
-    t.setStyle(
+        t.setStyle(
 
-        TableStyle([
+            TableStyle([
 
-            ('BACKGROUND',(0,0),(-1,0),colors.HexColor("#1F4E79")),
+                ('BACKGROUND',(0,0),(-1,0),colors.HexColor("#1F4E79")),
 
-            ('TEXTCOLOR',(0,0),(-1,0),colors.white),
+                ('TEXTCOLOR',(0,0),(-1,0),colors.white),
 
-            ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
+                ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
 
-            ('FONTSIZE',(0,0),(-1,-1),9),
+                ('FONTSIZE',(0,0),(-1,-1),9),
 
-            ('GRID',(0,0),(-1,-1),1,colors.black),
+                ('GRID',(0,0),(-1,-1),1,colors.black),
 
-            ('ROWBACKGROUNDS',(0,1),(-1,-1),
-             [colors.whitesmoke, colors.beige])
+                ('ROWBACKGROUNDS',(0,1),(-1,-1),
+                 [colors.whitesmoke, colors.beige]),
 
-            ('VALIGN',(0,0),(-1,-1),'MIDDLE')
+                ('VALIGN',(0,0),(-1,-1),'MIDDLE')
 
-        ])
+            ])
 
-    )
+        )
 
-    elementos.append(t)
-
+        elementos.append(t)
     doc.build(elementos)
 
     buffer.seek(0)
@@ -1431,155 +1430,132 @@ def generar_bitacora_pagos_pdf(registros):
     estilos = getSampleStyleSheet()
 
     elementos.append(
-
         Paragraph(
-
             "BITÁCORA FINANCIERA",
-
             estilos["Title"]
-
         )
-
     )
 
     elementos.append(
-
-        Spacer(
-            1,
-            20
-        )
-
+        Spacer(1, 20)
     )
 
     tabla = [
-
         [
-
             "Fecha",
-
             "Usuario",
-
             "Acción",
-
             "Alumno",
-
             "Folio",
-
             "Monto"
-
         ]
-
     ]
 
     for r in registros:
 
+        fecha = ""
+
+        if r.get("fecha"):
+            try:
+                fecha = r["fecha"].strftime("%d/%m/%Y %H:%M")
+            except:
+                fecha = str(r["fecha"])
+
         tabla.append(
-
             [
-
-                r.get(
-                    "fecha"
-                ).strftime(
-                    "%d/%m/%Y %H:%M"
-                )
-
-                if r.get(
-                    "fecha"
-                )
-
-                else "",
-
-                r.get(
-                    "usuario",
-                    ""
-                ),
-
-                r.get(
-                    "accion",
-                    ""
-                ),
-
-                r.get(
-                    "alumno",
-                    ""
-                ),
-
-                r.get(
-                    "folio",
-                    ""
-                ),
-
-                f"${r.get('monto',0):,.2f}"
-
+                fecha,
+                str(r.get("usuario", "")),
+                str(r.get("accion", "")),
+                str(r.get("alumno", "")),
+                str(r.get("folio", "")),
+                f"${float(r.get('monto', 0)):,.2f}"
             ]
-
         )
 
     t = Table(
-
         tabla,
-
         repeatRows=1,
-
         colWidths=[
-            90,
-            120,
-            180,
-            220,
-            100,
-            90
+            90,   # Fecha
+            120,  # Usuario
+            180,  # Acción
+            220,  # Alumno
+            100,  # Folio
+            90    # Monto
         ]
+    )
+
+    t.setStyle(
+
+        TableStyle([
+
+            (
+                'BACKGROUND',
+                (0, 0),
+                (-1, 0),
+                colors.HexColor("#1F4E79")
+            ),
+
+            (
+                'TEXTCOLOR',
+                (0, 0),
+                (-1, 0),
+                colors.white
+            ),
+
+            (
+                'FONTNAME',
+                (0, 0),
+                (-1, 0),
+                'Helvetica-Bold'
+            ),
+
+            (
+                'FONTSIZE',
+                (0, 0),
+                (-1, -1),
+                9
+            ),
+
+            (
+                'ALIGN',
+                (0, 0),
+                (-1, -1),
+                'CENTER'
+            ),
+
+            (
+                'VALIGN',
+                (0, 0),
+                (-1, -1),
+                'MIDDLE'
+            ),
+
+            (
+                'GRID',
+                (0, 0),
+                (-1, -1),
+                1,
+                colors.black
+            ),
+
+            (
+                'ROWBACKGROUNDS',
+                (0, 1),
+                (-1, -1),
+                [
+                    colors.whitesmoke,
+                    colors.beige
+                ]
+            )
+
+        ])
 
     )
 
-t.setStyle(
+    elementos.append(t)
 
-    TableStyle([
-
-        ('BACKGROUND',(0,0),(-1,0),colors.HexColor("#1F4E79")),
-
-        ('TEXTCOLOR',(0,0),(-1,0),colors.white),
-
-        (
-            'ALIGN',
-            (0,0),
-            (-1,0),
-            'CENTER'
-        ),
-
-        (
-            'VALIGN',
-            (0,0),
-            (-1,-1),
-            'MIDDLE'
-        ),
-
-        (
-            'GRID',
-            (0,0),
-            (-1,-1),
-            1,
-            colors.black
-        ),
-
-        (
-            'FONTNAME',
-            (0,0),
-            (-1,0),
-            'Helvetica-Bold'
-        )
-
-    ])
-
-)
-
-    elementos.append(
-        t
-    )
-
-    doc.build(
-        elementos
-    )
+    doc.build(elementos)
 
     buffer.seek(0)
 
