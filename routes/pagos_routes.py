@@ -2203,6 +2203,86 @@ def validar_recibo(folio):
 )
 def ver_bitacora_pagos():
 
+    fecha_inicio = request.args.get(
+        "fecha_inicio",
+        ""
+    )
+
+    fecha_fin = request.args.get(
+        "fecha_fin",
+        ""
+    )
+
+    usuario = request.args.get(
+        "usuario",
+        ""
+    )
+
+    consulta = {}
+
+    if usuario:
+
+        consulta["usuario"] = {
+
+            "$regex": usuario,
+
+            "$options": "i"
+
+        }
+
+    registros = list(
+
+        bitacora_pagos.find(
+            consulta
+        ).sort(
+            "fecha",
+            -1
+        )
+
+    )
+
+    if fecha_inicio:
+
+        registros = [
+
+            r
+
+            for r in registros
+
+            if r["fecha"].strftime(
+                "%Y-%m-%d"
+            ) >= fecha_inicio
+
+        ]
+
+    if fecha_fin:
+
+        registros = [
+
+            r
+
+            for r in registros
+
+            if r["fecha"].strftime(
+                "%Y-%m-%d"
+            ) <= fecha_fin
+
+        ]
+
+    return render_template(
+
+        "bitacora_pagos.html",
+
+        registros=registros,
+
+        fecha_inicio=fecha_inicio,
+
+        fecha_fin=fecha_fin,
+
+        usuario=usuario
+
+    )
+
 
 @pagos_bp.route(
     "/admin/bitacora_pagos_pdf"
@@ -2288,85 +2368,5 @@ def bitacora_pagos_pdf():
         download_name="bitacora_financiera.pdf",
 
         mimetype="application/pdf"
-
-    )
-
-    fecha_inicio = request.args.get(
-        "fecha_inicio",
-        ""
-    )
-
-    fecha_fin = request.args.get(
-        "fecha_fin",
-        ""
-    )
-
-    usuario = request.args.get(
-        "usuario",
-        ""
-    )
-
-    consulta = {}
-
-    if usuario:
-
-        consulta["usuario"] = {
-
-            "$regex": usuario,
-
-            "$options": "i"
-
-        }
-
-    registros = list(
-
-        bitacora_pagos.find(
-            consulta
-        ).sort(
-            "fecha",
-            -1
-        )
-
-    )
-
-    if fecha_inicio:
-
-        registros = [
-
-            r
-
-            for r in registros
-
-            if r["fecha"].strftime(
-                "%Y-%m-%d"
-            ) >= fecha_inicio
-
-        ]
-
-    if fecha_fin:
-
-        registros = [
-
-            r
-
-            for r in registros
-
-            if r["fecha"].strftime(
-                "%Y-%m-%d"
-            ) <= fecha_fin
-
-        ]
-
-    return render_template(
-
-        "bitacora_pagos.html",
-
-        registros=registros,
-
-        fecha_inicio=fecha_inicio,
-
-        fecha_fin=fecha_fin,
-
-        usuario=usuario
 
     )
