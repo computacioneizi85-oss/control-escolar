@@ -825,6 +825,22 @@ def estado_cuenta_pdf(id):
 
     )
 
+    registrar_bitacora_pago(
+
+        accion="Generó estado de cuenta",
+
+        alumno=pago.get(
+            "alumno",
+            ""
+        ),
+
+        monto=pago.get(
+            "saldo_restante",
+            0
+        )
+
+    )
+
     pdf = generar_estado_cuenta_pdf(
 
         pago,
@@ -887,25 +903,25 @@ def editar_movimiento(id):
             movimiento["pago_id"]
         )
 
-registrar_bitacora_pago(
+        registrar_bitacora_pago(
 
-    accion="Editó movimiento",
+            accion="Editó movimiento",
 
-    folio=movimiento.get(
-        "folio",
-        ""
-    ),
+            folio=movimiento.get(
+                "folio",
+                ""
+            ),
 
-    alumno=movimiento.get(
-        "alumno",
-        ""
-    ),
+            alumno=movimiento.get(
+                "alumno",
+                ""
+            ),
 
-    monto=float(
-        request.form["monto"]
-    )
+            monto=float(
+                request.form["monto"]
+            )
 
-)
+        )
 
         flash("Movimiento actualizado")
 
@@ -951,26 +967,26 @@ def eliminar_movimiento(id):
             movimiento["pago_id"]
         )
 
-registrar_bitacora_pago(
+        registrar_bitacora_pago(
 
-    accion="Canceló movimiento",
+            accion="Canceló movimiento",
 
-    folio=movimiento.get(
-        "folio",
-        ""
-    ),
+            folio=movimiento.get(
+                "folio",
+                ""
+            ),
 
-    alumno=movimiento.get(
-        "alumno",
-        ""
-    ),
+            alumno=movimiento.get(
+                "alumno",
+                ""
+            ),
 
-    monto=movimiento.get(
-        "monto",
-        0
-    )
+            monto=movimiento.get(
+                "monto",
+                0
+            )
 
-)
+        )
 
     flash("Movimiento eliminado")
 
@@ -1202,21 +1218,21 @@ def editar_pago(id):
             str(pago_actualizado["_id"])
         )
 
-registrar_bitacora_pago(
+        registrar_bitacora_pago(
 
-    accion="Editó contrato",
+            accion="Editó contrato",
 
-    alumno=pago_actualizado.get(
-        "alumno",
-        ""
-    ),
+            alumno=pago_actualizado.get(
+                "alumno",
+                ""
+            ),
 
-    monto=pago_actualizado.get(
-        "total_debe",
-        0
-    )
+            monto=pago_actualizado.get(
+                "total_debe",
+                0
+            )
 
-)
+        )
 
         flash(
             "Pago actualizado"
@@ -1254,6 +1270,30 @@ def eliminar_pago(id):
 
     )
 
+    pago = pagos.find_one({
+
+        "_id": ObjectId(id)
+
+    })
+
+    if pago:
+
+        registrar_bitacora_pago(
+
+            accion="Desactivó contrato",
+
+            alumno=pago.get(
+                "alumno",
+                ""
+            ),
+
+            monto=pago.get(
+                "saldo_restante",
+                0
+            )
+
+        )
+
     flash("Pago desactivado")
 
     return redirect(
@@ -1279,26 +1319,26 @@ def recibo_pago(id):
             url_for("pagos.pagos_admin")
         )
 
-registrar_bitacora_pago(
+    registrar_bitacora_pago(
 
-    accion="Generó recibo",
+        accion="Generó recibo",
 
-    folio=movimiento.get(
-        "folio",
-        ""
-    ),
+        folio=movimiento.get(
+            "folio",
+            ""
+        ),
 
-    alumno=movimiento.get(
-        "alumno",
-        ""
-    ),
+        alumno=movimiento.get(
+            "alumno",
+            ""
+        ),
 
-    monto=movimiento.get(
-        "monto",
-        0
+        monto=movimiento.get(
+            "monto",
+            0
+        )
+
     )
-
-)
 
     pdf = generar_recibo_pago_pdf(
         movimiento
@@ -1481,6 +1521,16 @@ def corte_caja_pdf():
 
     )
 
+    registrar_bitacora_pago(
+
+        accion="Generó corte de caja",
+
+        detalle=hoy,
+
+        monto=total
+
+    )
+
     pdf = generar_corte_caja_pdf(
 
         movimientos,
@@ -1575,6 +1625,14 @@ def morosos_pdf():
             lista.append(
                 pago
             )
+
+    registrar_bitacora_pago(
+
+        accion="Generó reporte de morosos",
+
+        detalle=f"{len(lista)} alumnos"
+
+    )
 
     pdf = generar_morosos_pdf(
         lista
@@ -1984,6 +2042,14 @@ def aplicar_recargos():
 
         )
         modificados += 1
+
+    registrar_bitacora_pago(
+
+        accion="Aplicó recargos",
+
+        detalle=f"{modificados} alumnos"
+
+    )
 
     flash(
 
@@ -2432,6 +2498,14 @@ def bitacora_pagos_pdf():
             ) <= fecha_fin
 
         ]
+
+    registrar_bitacora_pago(
+
+        accion="Generó bitácora financiera PDF",
+
+        detalle="Exportación"
+
+    )
 
     pdf = generar_bitacora_pagos_pdf(
         registros
