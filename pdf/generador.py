@@ -1485,87 +1485,87 @@ def generar_bitacora_pagos_pdf(registros):
         ]
     )
 
-t.setStyle(
+    t.setStyle(
 
-    TableStyle([
+        TableStyle([
 
-        (
-            'BACKGROUND',
-            (0,0),
-            (-1,0),
-            colors.HexColor("#1F4E79")
-        ),
+            (
+                'BACKGROUND',
+                (0,0),
+                (-1,0),
+                colors.HexColor("#1F4E79")
+            ),
 
-        (
-            'TEXTCOLOR',
-            (0,0),
-            (-1,0),
-            colors.white
-        ),
+            (
+                'TEXTCOLOR',
+                (0,0),
+                (-1,0),
+                colors.white
+            ),
 
-        (
-            'FONTNAME',
-            (0,0),
-            (-1,0),
-            'Helvetica-Bold'
-        ),
+            (
+                'FONTNAME',
+                (0,0),
+                (-1,0),
+                'Helvetica-Bold'
+            ),
 
-        (
-            'FONTSIZE',
-            (0,0),
-            (-1,-1),
-            9
-        ),
+            (
+                'FONTSIZE',
+                (0,0),
+                (-1,-1),
+                9
+            ),
 
-        (
-            'ALIGN',
-            (0,0),
-            (0,-1),
-            'CENTER'
-        ),
+            (
+                'ALIGN',
+                (0,0),
+                (0,-1),
+                'CENTER'
+            ),
 
-        (
-            'ALIGN',
-            (4,0),
-            (5,-1),
-            'CENTER'
-        ),
+            (
+                'ALIGN',
+                (4,0),
+                (5,-1),
+                'CENTER'
+            ),
 
-        (
-            'ALIGN',
-            (1,1),
-            (3,-1),
-            'LEFT'
-        ),
+            (
+                'ALIGN',
+                (1,1),
+                (3,-1),
+                'LEFT'
+            ),
 
-        (
-            'VALIGN',
-            (0,0),
-            (-1,-1),
-            'MIDDLE'
-        ),
+            (
+                'VALIGN',
+                (0,0),
+                (-1,-1),
+                'MIDDLE'
+            ),
 
-        (
-            'GRID',
-            (0,0),
-            (-1,-1),
-            1,
-            colors.black
-        ),
+            (
+                'GRID',
+                (0,0),
+                (-1,-1),
+                1,
+                colors.black
+            ),
 
-        (
-            'ROWBACKGROUNDS',
-            (0,1),
-            (-1,-1),
-            [
-                colors.whitesmoke,
-                colors.beige
-            ]
-        )
+            (
+                'ROWBACKGROUNDS',
+                (0,1),
+                (-1,-1),
+                [
+                    colors.whitesmoke,
+                    colors.beige
+                ]
+            )
 
-    ])
+        ])
 
-)
+    )
 
     elementos.append(t)
 
