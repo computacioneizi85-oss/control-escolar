@@ -1429,3 +1429,171 @@ def generar_deudores_grupo_pdf(grupos):
     buffer.seek(0)
 
     return buffer
+
+def generar_bitacora_pagos_pdf(registros):
+
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(letter),
+        leftMargin=20,
+        rightMargin=20,
+        topMargin=20,
+        bottomMargin=20
+    )
+
+    elementos = []
+
+    estilos = getSampleStyleSheet()
+
+    elementos.append(
+
+        Paragraph(
+
+            "BITÁCORA FINANCIERA",
+
+            estilos["Title"]
+
+        )
+
+    )
+
+    elementos.append(
+
+        Spacer(
+            1,
+            20
+        )
+
+    )
+
+    tabla = [
+
+        [
+
+            "Fecha",
+
+            "Usuario",
+
+            "Acción",
+
+            "Alumno",
+
+            "Folio",
+
+            "Monto"
+
+        ]
+
+    ]
+
+    for r in registros:
+
+        tabla.append(
+
+            [
+
+                r.get(
+                    "fecha"
+                ).strftime(
+                    "%d/%m/%Y %H:%M"
+                )
+
+                if r.get(
+                    "fecha"
+                )
+
+                else "",
+
+                r.get(
+                    "usuario",
+                    ""
+                ),
+
+                r.get(
+                    "accion",
+                    ""
+                ),
+
+                r.get(
+                    "alumno",
+                    ""
+                ),
+
+                r.get(
+                    "folio",
+                    ""
+                ),
+
+                f"${r.get('monto',0):,.2f}"
+
+            ]
+
+        )
+
+    t = Table(
+
+        tabla,
+
+        repeatRows=1,
+
+        colWidths=[
+            90,
+            70,
+            120,
+            120,
+            80,
+            70
+        ]
+
+    )
+
+    t.setStyle(
+
+        TableStyle([
+
+            (
+                'BACKGROUND',
+                (0,0),
+                (-1,0),
+                colors.grey
+            ),
+
+            (
+                'TEXTCOLOR',
+                (0,0),
+                (-1,0),
+                colors.whitesmoke
+            ),
+
+            (
+                'GRID',
+                (0,0),
+                (-1,-1),
+                1,
+                colors.black
+            ),
+
+            (
+                'FONTNAME',
+                (0,0),
+                (-1,0),
+                'Helvetica-Bold'
+            )
+
+        ])
+
+    )
+
+    elementos.append(
+        t
+    )
+
+    doc.build(
+        elementos
+    )
+
+    buffer.seek(0)
+
+    return buffer
