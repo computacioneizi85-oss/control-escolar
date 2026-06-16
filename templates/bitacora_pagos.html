@@ -10,6 +10,98 @@
 
     </h2>
 
+<form method="GET">
+
+    <div class="row mb-3">
+
+        <div class="col-md-3">
+
+            <label>
+
+                Desde
+
+            </label>
+
+            <input
+                type="date"
+                name="fecha_inicio"
+                class="form-control"
+                value="{{ fecha_inicio or '' }}"
+            >
+
+        </div>
+
+        <div class="col-md-3">
+
+            <label>
+
+                Hasta
+
+            </label>
+
+            <input
+                type="date"
+                name="fecha_fin"
+                class="form-control"
+                value="{{ fecha_fin or '' }}"
+            >
+
+        </div>
+
+        <div class="col-md-3">
+
+            <label>
+
+                Usuario
+
+            </label>
+
+            <input
+                type="text"
+                name="usuario"
+                class="form-control"
+                value="{{ usuario or '' }}"
+            >
+
+        </div>
+
+        <div class="col-md-3">
+
+            <label>
+
+                &nbsp;
+
+            </label>
+
+            <div>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+
+                    Filtrar
+
+                </button>
+
+                <a
+                    href="/admin/bitacora_pagos_pdf?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}&usuario={{ usuario }}"
+                    class="btn btn-danger"
+                    target="_blank"
+                >
+
+                    PDF
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</form>
+
     <div class="card">
 
         <div class="card-body">
