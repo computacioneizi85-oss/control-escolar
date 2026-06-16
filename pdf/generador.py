@@ -1476,12 +1476,12 @@ def generar_bitacora_pagos_pdf(registros):
         tabla,
         repeatRows=1,
         colWidths=[
-            90,   # Fecha
-            120,  # Usuario
-            180,  # Acción
-            220,  # Alumno
-            100,  # Folio
-            90    # Monto
+            80,   # Fecha
+            110,  # Usuario
+            150,  # Acción
+            180,  # Alumno
+            90,   # Folio
+            80    # Monto
         ]
     )
 
@@ -1518,10 +1518,25 @@ def generar_bitacora_pagos_pdf(registros):
             ),
 
             (
+           (
                 'ALIGN',
-                (0, 0),
-                (-1, -1),
+                (0,0),
+                (0,-1),
                 'CENTER'
+            ),
+
+            (
+                'ALIGN',
+                (4,0),
+                (5,-1),
+                'CENTER'
+            ),
+
+           (
+               'ALIGN',
+               (1,1),
+               (3,-1),
+               'LEFT'
             ),
 
             (
