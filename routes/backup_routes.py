@@ -45,25 +45,29 @@ def descargar_backup():
     }
 
     buffer = BytesIO()
-    buffer.write(json.dumps(data, indent=4).encode("utf-8"))
+
+    buffer.write(
+        json.dumps(
+            data,
+            indent=4,
+            default=str,
+            ensure_ascii=False
+        ).encode("utf-8")
+    )
+
     buffer.seek(0)
 
-
-configuracion_backups.update_one(
-
-    {
-        "tipo": "sistema"
-    },
-
-    {
-        "$set": {
-            "ultima_ejecucion": datetime.now()
-        }
-    },
-
-    upsert=True
-
-)
+    configuracion_backups.update_one(
+        {
+            "tipo": "sistema"
+        },
+        {
+            "$set": {
+                "ultima_ejecucion": datetime.now()
+            }
+        },
+        upsert=True
+    )
 
     return send_file(
         buffer,
@@ -71,7 +75,6 @@ configuracion_backups.update_one(
         download_name="backup_sistema.json",
         mimetype="application/json"
     )
-
 
 # =========================
 # RESTAURAR BACKUP
