@@ -1382,51 +1382,30 @@ def generar_deudores_grupo_pdf(grupos):
 
         )
 
-        t.setStyle(
+    t.setStyle(
 
-            TableStyle([
+        TableStyle([
 
-                (
-                    'BACKGROUND',
-                    (0,0),
-                    (-1,0),
-                    colors.grey
-                ),
+            ('BACKGROUND',(0,0),(-1,0),colors.HexColor("#1F4E79")),
 
-                (
-                    'TEXTCOLOR',
-                    (0,0),
-                    (-1,0),
-                    colors.whitesmoke
-                ),
+            ('TEXTCOLOR',(0,0),(-1,0),colors.white),
 
-                (
-                    'GRID',
-                    (0,0),
-                    (-1,-1),
-                    1,
-                    colors.black
-                ),
+            ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
 
-                (
-                    'FONTNAME',
-                    (0,0),
-                    (-1,0),
-                    'Helvetica-Bold'
-                )
+            ('FONTSIZE',(0,0),(-1,-1),9),
 
-            ])
+            ('GRID',(0,0),(-1,-1),1,colors.black),
 
-        )
+            ('ROWBACKGROUNDS',(0,1),(-1,-1),
+             [colors.whitesmoke, colors.beige])
 
-        elementos.append(t)
+            ('VALIGN',(0,0),(-1,-1),'MIDDLE')
 
-        elementos.append(
-            Spacer(
-                1,
-                15
-            )
-        )
+        ])
+
+    )
+
+    elementos.append(t)
 
     doc.build(elementos)
 
@@ -1543,12 +1522,12 @@ def generar_bitacora_pagos_pdf(registros):
         repeatRows=1,
 
         colWidths=[
-            110,
-            140,
-            180,
-            200,
+            90,
             120,
-            100
+            180,
+            220,
+            100,
+            90
         ]
 
     )
@@ -1557,19 +1536,9 @@ t.setStyle(
 
     TableStyle([
 
-        (
-            'BACKGROUND',
-            (0,0),
-            (-1,0),
-            colors.grey
-        ),
+        ('BACKGROUND',(0,0),(-1,0),colors.HexColor("#1F4E79")),
 
-        (
-            'TEXTCOLOR',
-            (0,0),
-            (-1,0),
-            colors.whitesmoke
-        ),
+        ('TEXTCOLOR',(0,0),(-1,0),colors.white),
 
         (
             'ALIGN',
