@@ -271,3 +271,53 @@ def vista_backups():
     return render_template(
         "backups.html"
     )
+
+@backup_bp.route(
+    "/guardar_configuracion",
+    methods=["POST"]
+)
+def guardar_configuracion_backup():
+
+    tipo = request.form.get(
+        "tipo"
+    )
+
+    unidad = request.form.get(
+        "unidad"
+    )
+
+    intervalo = int(
+        request.form.get(
+            "intervalo",
+            24
+        )
+    )
+
+    configuracion_backups.update_one(
+
+        {
+            "tipo": tipo
+        },
+
+        {
+            "$set": {
+
+                "tipo": tipo,
+
+                "unidad": unidad,
+
+                "intervalo": intervalo,
+
+                "activo": True
+
+            }
+
+        },
+
+        upsert=True
+
+    )
+
+    return redirect(
+        "/admin/backup/"
+    )

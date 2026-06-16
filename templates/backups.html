@@ -48,9 +48,68 @@
 
     <h3>Programación Automática</h3>
 
-    <p>
-        Próximamente configuraremos respaldos automáticos.
-    </p>
+<form method="POST" action="/admin/backup/guardar_configuracion">
+
+    <label>
+        Tipo de respaldo
+    </label>
+
+    <select name="tipo">
+
+        <option value="financiero">
+            Financiero
+        </option>
+
+        <option value="control_escolar">
+            Control Escolar
+        </option>
+
+        <option value="sistema">
+            Sistema Completo
+        </option>
+
+    </select>
+
+    <br><br>
+
+    <label>
+        Frecuencia
+    </label>
+
+    <select name="unidad">
+
+        <option value="horas">
+            Horas
+        </option>
+
+        <option value="dias">
+            Días
+        </option>
+
+    </select>
+
+    <br><br>
+
+    <label>
+        Intervalo
+    </label>
+
+    <input
+        type="number"
+        name="intervalo"
+        value="24"
+        min="1"
+    >
+
+    <br><br>
+
+    <button type="submit">
+
+        Guardar Configuración
+
+    </button>
+
+</form>
 
 </div>
 
