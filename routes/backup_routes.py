@@ -23,7 +23,7 @@ from database.mongo import (
 
 from flask import render_template
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import json
 from io import BytesIO
@@ -339,31 +339,44 @@ def guardar_configuracion_backup():
         )
     )
 
-    configuracion_backups.update_one(
+ahora = datetime.now()
 
-        {
-            "tipo": tipo
-        },
+if unidad == "horas":
 
-        {
-            "$set": {
+    proxima = ahora + timedelta(hours=intervalo)
 
-                "tipo": tipo,
+else:
 
-                "unidad": unidad,
+    proxima = ahora + timedelta(days=intervalo)
 
-                "intervalo": intervalo,
+configuracion_backups.update_one(
 
-                "activo": True
+    {
+        "tipo": tipo
+    },
 
-            }
+    {
+        "$set": {
 
-        },
+            "tipo": tipo,
 
-        upsert=True
+            "unidad": unidad,
 
-    )
+            "intervalo": intervalo,
 
+            "activo": True,
+
+            "ultima_actualizacion": ahora,
+
+            "proxima_ejecucion": proxima
+
+        }
+
+    },
+
+    upsert=True
+
+)
     return redirect(
         "/admin/backup/"
     )
