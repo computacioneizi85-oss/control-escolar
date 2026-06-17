@@ -50,6 +50,8 @@ padres = db["padres"]
 
 historial_backups = db.historial_backups
 
+backups_archivos = db["backups_archivos"]
+
 # =========================
 # NUEVAS COLECCIONES
 # =========================

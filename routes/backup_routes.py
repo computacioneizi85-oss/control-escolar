@@ -20,6 +20,7 @@ from database.mongo import (
     bitacora_pagos,
     historial_backups,
     configuracion_backups
+    backups_archivos
 )
 
 from flask import render_template
@@ -74,6 +75,38 @@ def nombre_backup(
     )
 
     return f"backup_{tipo}_{fecha}.json"
+
+def guardar_backup_mongo(
+    tipo,
+    nombre,
+    datos,
+    usuario="Administrador"
+):
+
+    backups_archivos.insert_one(
+
+        {
+
+            "tipo": tipo,
+
+            "nombre": nombre,
+
+            "fecha": datetime.now(),
+
+            "usuario": usuario,
+
+            "contenido": datos,
+
+            "tamano": len(
+                json.dumps(
+                    datos,
+                    default=str
+                )
+            )
+
+        }
+
+    )
 
 # =========================
 # DESCARGAR BACKUP
