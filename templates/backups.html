@@ -103,6 +103,22 @@
 
     <br><br>
 
+<br><br>
+
+<label>
+
+    <input
+        type="checkbox"
+        name="activo"
+        checked
+    >
+
+    Activar respaldo automático
+
+</label>
+
+<br><br>
+
     <button type="submit">
 
         Guardar Configuración
@@ -151,11 +167,19 @@ Configuraciones guardadas
 
 {% if c.activo %}
 
-🟢 Sí
+<span class="badge bg-success">
+
+Activo
+
+</span>
 
 {% else %}
 
-🔴 No
+<span class="badge bg-danger">
+
+Inactivo
+
+</span>
 
 {% endif %}
 

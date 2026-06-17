@@ -332,6 +332,8 @@ def guardar_configuracion_backup():
         "unidad"
     )
 
+activo = request.form.get("activo") == "on"
+
     intervalo = int(
         request.form.get(
             "intervalo",
@@ -372,7 +374,7 @@ def guardar_configuracion_backup():
 
                 "intervalo": intervalo,
 
-                "activo": True,
+                "activo": activo,
 
                 "ultima_actualizacion": ahora,
 
