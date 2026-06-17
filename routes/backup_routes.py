@@ -26,11 +26,54 @@ from flask import render_template
 
 from datetime import datetime, timedelta
 
+import os
+
 import json
 from io import BytesIO
 
 backup_bp = Blueprint("backup", __name__, url_prefix="/admin/backup")
 
+BASE_BACKUP = "backups"
+
+CARPETA_SISTEMA = os.path.join(
+    BASE_BACKUP,
+    "sistema"
+)
+
+CARPETA_FINANCIERO = os.path.join(
+    BASE_BACKUP,
+    "financiero"
+)
+
+CARPETA_ESCOLAR = os.path.join(
+    BASE_BACKUP,
+    "escolar"
+)
+
+os.makedirs(
+    CARPETA_SISTEMA,
+    exist_ok=True
+)
+
+os.makedirs(
+    CARPETA_FINANCIERO,
+    exist_ok=True
+)
+
+os.makedirs(
+    CARPETA_ESCOLAR,
+    exist_ok=True
+)
+
+def nombre_backup(
+    tipo
+):
+
+    fecha = datetime.now().strftime(
+        "%Y%m%d_%H%M%S"
+    )
+
+    return f"backup_{tipo}_{fecha}.json"
 
 # =========================
 # DESCARGAR BACKUP
