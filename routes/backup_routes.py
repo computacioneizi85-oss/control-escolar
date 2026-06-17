@@ -23,6 +23,8 @@ from database.mongo import (
     backups_archivos
 )
 
+from utils.backup_manager import *
+
 from flask import render_template
 
 from datetime import datetime, timedelta
