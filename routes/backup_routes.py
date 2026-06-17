@@ -301,8 +301,117 @@ def descargar_backup_control_escolar():
         mimetype="application/json"
     )
 
+def verificar_respaldos_automaticos():
+
+    ahora = datetime.now()
+
+    configuraciones = configuracion_backups.find(
+        {
+            "activo": True
+        }
+    )
+
+    for config in configuraciones:
+
+        proxima = config.get(
+            "proxima_ejecucion"
+        )
+
+        if not proxima:
+            continue
+
+        if ahora < proxima:
+            continue
+
+        tipo = config.get(
+            "tipo"
+        )
+
+        if tipo == "sistema":
+
+            configuracion_backups.update_one(
+
+                {
+                    "_id": config["_id"]
+                },
+
+                {
+                    "$set": {
+
+                        "ultima_ejecucion": ahora,
+
+                        "proxima_ejecucion":
+                            ahora + timedelta(
+                                hours=config.get(
+                                    "intervalo",
+                                    24
+                                )
+                            )
+
+                    }
+
+                }
+
+            )
+
+        elif tipo == "financiero":
+
+            configuracion_backups.update_one(
+
+                {
+                    "_id": config["_id"]
+                },
+
+                {
+                    "$set": {
+
+                        "ultima_ejecucion": ahora,
+
+                        "proxima_ejecucion":
+                            ahora + timedelta(
+                                hours=config.get(
+                                    "intervalo",
+                                    24
+                                )
+                            )
+
+                    }
+
+                }
+
+            )
+
+        elif tipo == "control_escolar":
+
+            configuracion_backups.update_one(
+
+                {
+                    "_id": config["_id"]
+                },
+
+                {
+                    "$set": {
+
+                        "ultima_ejecucion": ahora,
+
+                        "proxima_ejecucion":
+                            ahora + timedelta(
+                                hours=config.get(
+                                    "intervalo",
+                                    24
+                                )
+                            )
+
+                    }
+
+                }
+
+            )
+
 @backup_bp.route("/")
 def vista_backups():
+
+    verificar_respaldos_automaticos()
 
     configuraciones = list(
 
@@ -317,7 +426,6 @@ def vista_backups():
         configuraciones=configuraciones
 
     )
-
 @backup_bp.route(
     "/guardar_configuracion",
     methods=["POST"]
