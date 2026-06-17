@@ -209,3 +209,105 @@ def crear_backup_financiero():
         mimetype="application/json"
 
     )
+
+def crear_backup_control_escolar():
+
+    data = {
+
+        "alumnos": list(
+            alumnos.find({}, {"_id": 0})
+        ),
+
+        "maestros": list(
+            maestros.find({}, {"_id": 0})
+        ),
+
+        "grupos": list(
+            grupos.find({}, {"_id": 0})
+        ),
+
+        "materias": list(
+            materias.find({}, {"_id": 0})
+        ),
+
+        "horarios": list(
+            horarios.find({}, {"_id": 0})
+        ),
+
+        "reportes": list(
+            reportes.find({}, {"_id": 0})
+        ),
+
+        "citatorios": list(
+            citatorios.find({}, {"_id": 0})
+        ),
+
+        "avisos": list(
+            avisos.find({}, {"_id": 0})
+        ),
+
+        "usuarios": list(
+            usuarios.find({}, {"_id": 0})
+        ),
+
+        "padres": list(
+            padres.find({}, {"_id": 0})
+        )
+
+    }
+
+    nombre = nombre_backup(
+        "control_escolar"
+    )
+
+    guardar_backup_mongo(
+        "control_escolar",
+        nombre,
+        data
+    )
+
+    configuracion_backups.update_one(
+
+        {
+            "tipo": "control_escolar"
+        },
+
+        {
+            "$set": {
+
+                "ultima_ejecucion": datetime.now()
+
+            }
+
+        },
+
+        upsert=True
+
+    )
+
+    buffer = BytesIO()
+
+    buffer.write(
+
+        json.dumps(
+            data,
+            indent=4,
+            default=str,
+            ensure_ascii=False
+        ).encode("utf-8")
+
+    )
+
+    buffer.seek(0)
+
+    return send_file(
+
+        buffer,
+
+        as_attachment=True,
+
+        download_name=nombre,
+
+        mimetype="application/json"
+
+    )
