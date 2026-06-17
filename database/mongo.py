@@ -48,6 +48,8 @@ mensualidades = db["mensualidades"]
 
 padres = db["padres"]
 
+historial_backups = db.historial_backups
+
 # =========================
 # NUEVAS COLECCIONES
 # =========================

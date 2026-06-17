@@ -18,6 +18,7 @@ from database.mongo import (
     mensualidades,
     config_recargos,
     bitacora_pagos,
+    historial_backups,
     configuracion_backups
 )
 
