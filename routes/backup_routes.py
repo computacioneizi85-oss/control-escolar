@@ -116,44 +116,7 @@ def guardar_backup_mongo(
 @backup_bp.route("/descargar")
 def descargar_backup():
 
-    data = {
-        "alumnos": list(alumnos.find({}, {"_id": 0})),
-        "reportes": list(reportes.find({}, {"_id": 0})),
-        "citatorios": list(citatorios.find({}, {"_id": 0})),
-        "configuracion": list(configuracion.find({}, {"_id": 0}))
-    }
-
-    buffer = BytesIO()
-
-    buffer.write(
-        json.dumps(
-            data,
-            indent=4,
-            default=str,
-            ensure_ascii=False
-        ).encode("utf-8")
-    )
-
-    buffer.seek(0)
-
-    configuracion_backups.update_one(
-        {
-            "tipo": "sistema"
-        },
-        {
-            "$set": {
-                "ultima_ejecucion": datetime.now()
-            }
-        },
-        upsert=True
-    )
-
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name="backup_sistema.json",
-        mimetype="application/json"
-    )
+    return crear_backup_sistema()
 
 # =========================
 # RESTAURAR BACKUP
