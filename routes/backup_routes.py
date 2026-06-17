@@ -339,44 +339,53 @@ def guardar_configuracion_backup():
         )
     )
 
-ahora = datetime.now()
+    ahora = datetime.now()
 
-if unidad == "horas":
+    if unidad == "horas":
 
-    proxima = ahora + timedelta(hours=intervalo)
+        proxima = ahora + timedelta(
+            hours=intervalo
+        )
 
-else:
+    elif unidad == "dias":
 
-    proxima = ahora + timedelta(days=intervalo)
+        proxima = ahora + timedelta(
+            days=intervalo
+        )
 
-configuracion_backups.update_one(
+    else:
 
-    {
-        "tipo": tipo
-    },
+        proxima = ahora
 
-    {
-        "$set": {
+    configuracion_backups.update_one(
 
-            "tipo": tipo,
+        {
+            "tipo": tipo
+        },
 
-            "unidad": unidad,
+        {
+            "$set": {
 
-            "intervalo": intervalo,
+                "tipo": tipo,
 
-            "activo": True,
+                "unidad": unidad,
 
-            "ultima_actualizacion": ahora,
+                "intervalo": intervalo,
 
-            "proxima_ejecucion": proxima
+                "activo": True,
 
-        }
+                "ultima_actualizacion": ahora,
 
-    },
+                "proxima_ejecucion": proxima
 
-    upsert=True
+            }
 
-)
+        },
+
+        upsert=True
+
+    )
+
     return redirect(
         "/admin/backup/"
     )
