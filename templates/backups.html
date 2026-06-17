@@ -111,6 +111,58 @@
 
 </form>
 
+<hr>
+
+<h3>
+
+Configuraciones guardadas
+
+</h3>
+
+<table class="table table-bordered">
+
+<tr>
+
+<th>Tipo</th>
+
+<th>Frecuencia</th>
+
+<th>Intervalo</th>
+
+<th>Activo</th>
+
+</tr>
+
+{% for c in configuraciones %}
+
+<tr>
+
+<td>{{ c.tipo }}</td>
+
+<td>{{ c.unidad }}</td>
+
+<td>{{ c.intervalo }}</td>
+
+<td>
+
+{% if c.activo %}
+
+🟢 Sí
+
+{% else %}
+
+🔴 No
+
+{% endif %}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
 </div>
 
 {% endblock %}

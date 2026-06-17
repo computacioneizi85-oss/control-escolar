@@ -304,8 +304,18 @@ def descargar_backup_control_escolar():
 @backup_bp.route("/")
 def vista_backups():
 
+    configuraciones = list(
+
+        configuracion_backups.find()
+
+    )
+
     return render_template(
-        "backups.html"
+
+        "backups.html",
+
+        configuraciones=configuraciones
+
     )
 
 @backup_bp.route(
