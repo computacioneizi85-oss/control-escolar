@@ -159,78 +159,7 @@ def restaurar_backup():
 @backup_bp.route("/financiero")
 def descargar_backup_financiero():
 
-    data = {
-
-        "pagos": list(
-            pagos.find(
-                {},
-                {"_id": 0}
-            )
-        ),
-
-        "movimientos_pagos": list(
-            movimientos_pagos.find(
-                {},
-                {"_id": 0}
-            )
-        ),
-
-        "mensualidades": list(
-            mensualidades.find(
-                {},
-                {"_id": 0}
-            )
-        ),
-
-        "config_recargos": list(
-            config_recargos.find(
-                {},
-                {"_id": 0}
-            )
-        ),
-
-        "bitacora_pagos": list(
-            bitacora_pagos.find(
-                {},
-                {"_id": 0}
-            )
-        )
-
-    }
-
-    buffer = BytesIO()
-
-    buffer.write(
-
-        json.dumps(
-            data,
-            indent=4,
-            default=str,
-            ensure_ascii=False
-        ).encode("utf-8")
-
-    )
-
-    buffer.seek(0)
-
-    configuracion_backups.update_one(
-        {
-            "tipo": "financiero"
-        },
-        {
-            "$set": {
-                "ultima_ejecucion": datetime.now()
-            }
-        },
-        upsert=True
-    )
-
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name="backup_financiero.json",
-        mimetype="application/json"
-    )
+    return crear_backup_financiero()
 
 @backup_bp.route("/control_escolar")
 def descargar_backup_control_escolar():
