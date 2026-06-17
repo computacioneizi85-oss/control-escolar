@@ -332,7 +332,9 @@ def guardar_configuracion_backup():
         "unidad"
     )
 
-activo = request.form.get("activo") == "on"
+    activo = request.form.get(
+        "activo"
+    ) == "on"
 
     intervalo = int(
         request.form.get(
@@ -340,7 +342,6 @@ activo = request.form.get("activo") == "on"
             24
         )
     )
-
     ahora = datetime.now()
 
     if unidad == "horas":
