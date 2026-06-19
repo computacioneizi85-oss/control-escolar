@@ -73,6 +73,32 @@ def guardar_backup_mongo(
 
     )
 
+def obtener_historial_backups(
+    tipo=None
+):
+
+    consulta = {}
+
+    if tipo:
+
+        consulta["tipo"] = tipo
+
+    return list(
+
+        backups_archivos.find(
+
+            consulta
+
+        ).sort(
+
+            "fecha",
+
+            -1
+
+        )
+
+    )
+
 def crear_backup_sistema():
 
     data = {

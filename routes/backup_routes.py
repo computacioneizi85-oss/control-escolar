@@ -31,9 +31,6 @@ from datetime import datetime, timedelta
 
 import os
 
-import json
-from io import BytesIO
-
 backup_bp = Blueprint("backup", __name__, url_prefix="/admin/backup")
 
 BASE_BACKUP = "backups"
@@ -67,48 +64,6 @@ os.makedirs(
     CARPETA_ESCOLAR,
     exist_ok=True
 )
-
-def nombre_backup(
-    tipo
-):
-
-    fecha = datetime.now().strftime(
-        "%Y%m%d_%H%M%S"
-    )
-
-    return f"backup_{tipo}_{fecha}.json"
-
-def guardar_backup_mongo(
-    tipo,
-    nombre,
-    datos,
-    usuario="Administrador"
-):
-
-    backups_archivos.insert_one(
-
-        {
-
-            "tipo": tipo,
-
-            "nombre": nombre,
-
-            "fecha": datetime.now(),
-
-            "usuario": usuario,
-
-            "contenido": datos,
-
-            "tamano": len(
-                json.dumps(
-                    datos,
-                    default=str
-                )
-            )
-
-        }
-
-    )
 
 # =========================
 # DESCARGAR BACKUP
@@ -364,4 +319,14 @@ def guardar_configuracion_backup():
 
     return redirect(
         "/admin/backup/"
+    )
+
+@backup_bp.route("/historial")
+def historial():
+
+    historial = obtener_historial_backups()
+
+    return render_template(
+        "backup_historial.html",
+        historial=historial
     )
