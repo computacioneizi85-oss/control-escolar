@@ -8,6 +8,10 @@ from flask import (
     url_for
 )
 
+from io import BytesIO
+
+
+
 from database.mongo import (
     alumnos,
     reportes,
@@ -337,7 +341,7 @@ def descargar_backup_historial(
         backup_id
     )
 
-    if not backup:
+    if backup is None:
 
         flash(
             "No se encontró el respaldo.",
@@ -348,39 +352,33 @@ def descargar_backup_historial(
             "/admin/backup/"
         )
 
-    contenido = backup["contenido"]
+    contenido = json.dumps(
 
-    nombre = backup["nombre"]
+        backup["contenido"],
 
-    ruta = f"/tmp/{nombre}"
+        indent=4,
 
-    with open(
-        ruta,
-        "w",
-        encoding="utf-8"
-    ) as archivo:
+        ensure_ascii=False,
 
-        json.dump(
+        default=str
 
-            contenido,
+    )
 
-            archivo,
+    memoria = BytesIO()
 
-            indent=4,
+    memoria.write(
+        contenido.encode("utf-8")
+    )
 
-            default=str,
-
-            ensure_ascii=False
-
-        )
+    memoria.seek(0)
 
     return send_file(
 
-        ruta,
+        memoria,
 
         as_attachment=True,
 
-        download_name=nombre,
+        download_name=backup["nombre"],
 
         mimetype="application/json"
 

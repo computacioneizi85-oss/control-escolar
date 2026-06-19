@@ -217,6 +217,8 @@ Historial de Respaldos
 
 <th>Estado</th>
 
+<th>Acciones<th>
+
 </tr>
 
 {% for b in historial %}
@@ -238,6 +240,71 @@ Historial de Respaldos
 </tr>
 
 {% endfor %}
+
+</table>
+
+<hr>
+
+<h3>Historial de Respaldos</h3>
+
+<table class="table table-bordered table-striped">
+
+    <thead>
+
+        <tr>
+
+            <th>Fecha</th>
+
+            <th>Tipo</th>
+
+            <th>Usuario</th>
+
+            <th>Archivo</th>
+
+            <th>Tamaño</th>
+
+            <th>Estado</th>
+
+            <th>Acciones</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        {% for b in historial %}
+
+        <tr>
+
+            <td>{{ b.fecha }}</td>
+
+            <td>{{ b.tipo }}</td>
+
+            <td>{{ b.usuario }}</td>
+
+            <td>{{ b.nombre }}</td>
+
+            <td>{{ b.tamano }}</td>
+
+            <td>{{ b.estado }}</td>
+
+            <td>
+
+                <a
+                    href="{{ url_for('backup.descargar_backup_historial', backup_id=b._id) }}"
+                    class="btn btn-primary btn-sm"
+                >
+                    Descargar
+                </a>
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
 
 </table>
 
