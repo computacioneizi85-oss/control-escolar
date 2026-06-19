@@ -8,6 +8,8 @@ from flask import send_file
 
 from bson import json_util
 
+from bson import ObjectId
+
 from database.mongo import (
 
     alumnos,
@@ -80,28 +82,43 @@ def guardar_backup_mongo(
     )
 
 def obtener_historial_backups(
-    tipo=None
+    tipo=None,
+    limite=100
 ):
 
     consulta = {}
 
-    if tipo:
-
+    if tipo is not None:
         consulta["tipo"] = tipo
 
-    return list(
+    historial = list(
 
         backups_archivos.find(
-
             consulta
-
         ).sort(
-
             "fecha",
-
             -1
+        ).limit(
+            limite
+        )
 
-        ).limit(100)
+    )
+
+    return historial
+
+def eliminar_backup(
+    backup_id
+):
+
+    backups_archivos.delete_one(
+
+        {
+
+            "_id": ObjectId(
+                backup_id
+            )
+
+        }
 
     )
 
@@ -358,5 +375,21 @@ def crear_backup_control_escolar():
         download_name=nombre,
 
         mimetype="application/json"
+
+    )
+
+def obtener_backup_por_id(
+    backup_id
+):
+
+    return backups_archivos.find_one(
+
+        {
+
+            "_id": ObjectId(
+                backup_id
+            )
+
+        }
 
     )

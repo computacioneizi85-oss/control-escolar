@@ -193,4 +193,52 @@ Inactivo
 
 </div>
 
+<hr>
+
+<h3>
+
+Historial de Respaldos
+
+</h3>
+
+<table class="table table-striped table-bordered">
+
+<tr>
+
+<th>Fecha</th>
+
+<th>Tipo</th>
+
+<th>Usuario</th>
+
+<th>Archivo</th>
+
+<th>Tamaño</th>
+
+<th>Estado</th>
+
+</tr>
+
+{% for b in historial %}
+
+<tr>
+
+<td>{{ b.fecha }}</td>
+
+<td>{{ b.tipo }}</td>
+
+<td>{{ b.usuario }}</td>
+
+<td>{{ b.nombre }}</td>
+
+<td>{{ b.tamano }}</td>
+
+<td>{{ b.estado }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
 {% endblock %}

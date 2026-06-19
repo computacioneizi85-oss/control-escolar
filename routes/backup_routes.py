@@ -1,4 +1,13 @@
-from flask import Blueprint, send_file, request, redirect
+from flask import (
+    Blueprint,
+    send_file,
+    request,
+    redirect,
+    render_template,
+    flash,
+    url_for
+)
+
 from database.mongo import (
     alumnos,
     reportes,
@@ -8,8 +17,6 @@ from database.mongo import (
 )
 
 from utils.backup_manager import *
-
-from flask import render_template
 
 from datetime import datetime, timedelta
 
@@ -184,19 +191,22 @@ def vista_backups():
 
     verificar_respaldos_automaticos()
 
-    configuraciones = list(
+configuraciones = list(
+    configuracion_backups.find()
+)
 
-        configuracion_backups.find()
+historial = obtener_historial_backups()
 
-    )
+return render_template(
 
-    return render_template(
+    "backups.html",
 
-        "backups.html",
+    configuraciones=configuraciones,
 
-        configuraciones=configuraciones
+    historial=historial
 
-    )
+)
+
 @backup_bp.route(
     "/guardar_configuracion",
     methods=["POST"]
@@ -215,12 +225,6 @@ def guardar_configuracion_backup():
         "activo"
     ) == "on"
 
-    intervalo = int(
-        request.form.get(
-            "intervalo",
-            24
-        )
-    )
     intervalo = int(
         request.form.get(
             "intervalo",
@@ -290,4 +294,37 @@ def historial():
     return render_template(
         "backup_historial.html",
         historial=historial
+    )
+
+@backup_bp.route(
+    "/eliminar/<backup_id>"
+)
+def eliminar_backup_historial(
+
+    backup_id
+
+):
+
+    eliminar_backup(
+
+        backup_id
+
+    )
+
+    flash(
+
+        "Respaldo eliminado correctamente.",
+
+        "success"
+
+    )
+
+    return redirect(
+
+        url_for(
+
+            "backup.historial"
+
+        )
+
     )
