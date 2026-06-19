@@ -191,21 +191,21 @@ def vista_backups():
 
     verificar_respaldos_automaticos()
 
-configuraciones = list(
-    configuracion_backups.find()
-)
+    configuraciones = list(
+        configuracion_backups.find()
+    )
 
-historial = obtener_historial_backups()
+    historial = obtener_historial_backups()
 
-return render_template(
+    return render_template(
 
-    "backups.html",
+        "backups.html",
 
-    configuraciones=configuraciones,
+        configuraciones=configuraciones,
 
-    historial=historial
+        historial=historial
 
-)
+    )
 
 @backup_bp.route(
     "/guardar_configuracion",
@@ -286,15 +286,15 @@ def guardar_configuracion_backup():
         "/admin/backup/"
     )
 
-@backup_bp.route("/historial")
-def historial():
+#@backup_bp.route("/historial")
+#def historial():
 
-    historial = obtener_historial_backups()
+#    historial = obtener_historial_backups()
 
-    return render_template(
-        "backup_historial.html",
-        historial=historial
-    )
+#    return render_template(
+#        "backup_historial.html",
+#        historial=historial
+#    )
 
 @backup_bp.route(
     "/eliminar/<backup_id>"
@@ -319,12 +319,6 @@ def eliminar_backup_historial(
 
     )
 
-    return redirect(
-
-        url_for(
-
-            "backup.historial"
-
-        )
-
-    )
+return redirect(
+    "/admin/backup/"
+)
