@@ -1,5 +1,6 @@
 from flask import Flask, session, redirect, request, url_for
 from datetime import timedelta
+
 import os
 
 from licencia import licencia_activa
@@ -44,6 +45,7 @@ from routes.alumno_routes import alumno_bp
 from routes.padre_routes import padre_bp
 from routes.pagos_routes import pagos_bp
 from routes.backup_routes import backup_bp
+from routes.backup_routes import verificar_respaldos_automaticos
 
 # =========================
 # REGISTRAR BLUEPRINTS
@@ -168,6 +170,16 @@ def proteger_rutas():
     ):
         if rol != "padre":
             return redirect(url_for("auth.login"))
+
+    try:
+
+        verificar_respaldos_automaticos()
+
+    except Exception as e:
+
+        print(
+            f"Error en respaldo automático: {e}"
+        )
 
     return
 

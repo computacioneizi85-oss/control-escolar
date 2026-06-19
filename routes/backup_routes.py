@@ -201,8 +201,6 @@ def verificar_respaldos_automaticos():
 @backup_bp.route("/")
 def vista_backups():
 
-    verificar_respaldos_automaticos()
-
     configuraciones = list(
         configuracion_backups.find()
     )
@@ -284,7 +282,7 @@ def guardar_configuracion_backup():
 
                 "ultima_actualizacion": ahora,
 
-                "proxima_ejecucion": próxima,
+                "proxima_ejecucion": proxima,
 
                 "ultima_ejecucion": None
 
