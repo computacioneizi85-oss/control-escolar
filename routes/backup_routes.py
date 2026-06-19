@@ -220,10 +220,17 @@ def guardar_configuracion_backup():
             "intervalo",
             24
         )
+    )
+    intervalo = int(
+        request.form.get(
+            "intervalo",
+            24
+        )
+    )
 
     if intervalo < 1:
         intervalo = 1
-    )
+
     ahora = datetime.now()
 
     if unidad == "horas":
