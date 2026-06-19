@@ -9,12 +9,29 @@ from flask import send_file
 from bson import json_util
 
 from database.mongo import (
+
     alumnos,
     reportes,
     citatorios,
     configuracion,
+
+    maestros,
+    grupos,
+    materias,
+    horarios,
+    avisos,
+    usuarios,
+    padres,
+
+    pagos,
+    movimientos_pagos,
+    mensualidades,
+    config_recargos,
+    bitacora_pagos,
+
     configuracion_backups,
     backups_archivos
+
 )
 
 
