@@ -66,6 +66,9 @@ def guardar_backup_mongo(
                 json.dumps(
                     datos,
                     default=str
+            "estado": "Correcto",
+            "version": "1.0",
+            "restaurado": False
                 )
             )
 
@@ -85,17 +88,12 @@ def obtener_historial_backups(
 
     return list(
 
-        backups_archivos.find(
-
-            consulta
-
-        ).sort(
-
-            "fecha",
-
-            -1
-
-        )
+backups_archivos.find(
+    consulta
+).sort(
+    "fecha",
+    -1
+).limit(100)
 
     )
 

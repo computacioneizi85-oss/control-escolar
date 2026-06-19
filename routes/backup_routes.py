@@ -4,23 +4,7 @@ from database.mongo import (
     reportes,
     citatorios,
     configuracion,
-    maestros,
-    grupos,
-    materias,
-    horarios,
-    avisos,
-    usuarios,
-    padres,
-    bitacora,
-    auditoria,
-    pagos,
-    movimientos_pagos,
-    mensualidades,
-    config_recargos,
-    bitacora_pagos,
-    historial_backups,
-    configuracion_backups,
-    backups_archivos
+    configuracion_backups
 )
 
 from utils.backup_manager import *
@@ -29,41 +13,8 @@ from flask import render_template
 
 from datetime import datetime, timedelta
 
-import os
-
 backup_bp = Blueprint("backup", __name__, url_prefix="/admin/backup")
 
-BASE_BACKUP = "backups"
-
-CARPETA_SISTEMA = os.path.join(
-    BASE_BACKUP,
-    "sistema"
-)
-
-CARPETA_FINANCIERO = os.path.join(
-    BASE_BACKUP,
-    "financiero"
-)
-
-CARPETA_ESCOLAR = os.path.join(
-    BASE_BACKUP,
-    "escolar"
-)
-
-os.makedirs(
-    CARPETA_SISTEMA,
-    exist_ok=True
-)
-
-os.makedirs(
-    CARPETA_FINANCIERO,
-    exist_ok=True
-)
-
-os.makedirs(
-    CARPETA_ESCOLAR,
-    exist_ok=True
-)
 
 # =========================
 # DESCARGAR BACKUP
@@ -269,6 +220,9 @@ def guardar_configuracion_backup():
             "intervalo",
             24
         )
+
+    if intervalo < 1:
+        intervalo = 1
     )
     ahora = datetime.now()
 
