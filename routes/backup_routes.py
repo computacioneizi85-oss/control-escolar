@@ -107,6 +107,8 @@ def verificar_respaldos_automaticos():
 
         if tipo == "sistema":
 
+            crear_backup_sistema()
+
             configuracion_backups.update_one(
 
                 {
@@ -134,6 +136,8 @@ def verificar_respaldos_automaticos():
 
         elif tipo == "financiero":
 
+            crear_backup_financiero()
+
             configuracion_backups.update_one(
 
                 {
@@ -160,6 +164,8 @@ def verificar_respaldos_automaticos():
             )
 
         elif tipo == "control_escolar":
+
+            crear_backup_control_escolar()
 
             configuracion_backups.update_one(
 
@@ -272,7 +278,9 @@ def guardar_configuracion_backup():
 
                 "ultima_actualizacion": ahora,
 
-                "proxima_ejecucion": proxima
+                "proxima_ejecucion": próxima,
+
+                "ultima_ejecucion": None
 
             }
 
@@ -300,25 +308,18 @@ def guardar_configuracion_backup():
     "/eliminar/<backup_id>"
 )
 def eliminar_backup_historial(
-
     backup_id
-
 ):
 
     eliminar_backup(
-
         backup_id
-
     )
 
     flash(
-
         "Respaldo eliminado correctamente.",
-
         "success"
-
     )
 
-return redirect(
-    "/admin/backup/"
-)
+    return redirect(
+        "/admin/backup/"
+    )
