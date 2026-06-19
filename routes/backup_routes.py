@@ -20,6 +20,8 @@ from utils.backup_manager import *
 
 from datetime import datetime, timedelta
 
+import json
+
 backup_bp = Blueprint("backup", __name__, url_prefix="/admin/backup")
 
 
@@ -322,4 +324,64 @@ def eliminar_backup_historial(
 
     return redirect(
         "/admin/backup/"
+    )
+
+@backup_bp.route(
+    "/descargar/<backup_id>"
+)
+def descargar_backup_historial(
+    backup_id
+):
+
+    backup = obtener_backup_por_id(
+        backup_id
+    )
+
+    if not backup:
+
+        flash(
+            "No se encontró el respaldo.",
+            "danger"
+        )
+
+        return redirect(
+            "/admin/backup/"
+        )
+
+    contenido = backup["contenido"]
+
+    nombre = backup["nombre"]
+
+    ruta = f"/tmp/{nombre}"
+
+    with open(
+        ruta,
+        "w",
+        encoding="utf-8"
+    ) as archivo:
+
+        json.dump(
+
+            contenido,
+
+            archivo,
+
+            indent=4,
+
+            default=str,
+
+            ensure_ascii=False
+
+        )
+
+    return send_file(
+
+        ruta,
+
+        as_attachment=True,
+
+        download_name=nombre,
+
+        mimetype="application/json"
+
     )
