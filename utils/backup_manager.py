@@ -32,6 +32,7 @@ from database.mongo import (
     bitacora_pagos,
 
     configuracion_backups,
+    bitacora_restauraciones,
     backups_archivos
 
 )
@@ -76,6 +77,40 @@ def guardar_backup_mongo(
             "version": "1.0",
 
             "restaurado": False
+
+        }
+
+    )
+
+def registrar_restauracion(
+
+    usuario,
+
+    tipo,
+
+    archivo,
+
+    resultado,
+
+    mensaje
+
+):
+
+    bitacora_restauraciones.insert_one(
+
+        {
+
+            "usuario": usuario,
+
+            "tipo": tipo,
+
+            "archivo": archivo,
+
+            "resultado": resultado,
+
+            "mensaje": mensaje,
+
+            "fecha": datetime.now()
 
         }
 
@@ -587,9 +622,37 @@ def restaurar_backup(
 
         )
 
+        registrar_restauracion(
+
+            usuario,
+
+            tipo,
+
+            backup["nombre"],
+
+            "Correcto",
+
+            "Restauración completada"
+
+        )
+
         return True, "Restauración completada."
 
     except Exception as e:
+
+registrar_restauracion(
+
+    usuario,
+
+    tipo,
+
+    backup["nombre"],
+
+    "Error",
+
+    str(e)
+
+)
 
         return False, str(e)
 
