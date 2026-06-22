@@ -41,7 +41,7 @@ def descargar_backup():
 # RESTAURAR BACKUP
 # =========================
 @backup_bp.route("/restaurar", methods=["POST"])
-def restaurar_backup():
+def restaurar_backup_archivo():
 
     archivo = request.files.get("archivo")
 
