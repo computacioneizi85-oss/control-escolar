@@ -2,374 +2,550 @@
 
 {% block content %}
 
-<h2>Respaldos del Sistema</h2>
+<div class="container-fluid mt-4">
 
-<div id="tab-manuales">
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-<div class="card">
-
-    <h3>Respaldos Manuales</h3>
-
-    <p>
-        Descarga respaldos independientes del sistema.
-    </p>
-
-    <a
-        href="/admin/backup/financiero"
-        class="btn btn-primary">
-
-        Descargar Respaldo Financiero
-
-    </a>
-
-    <br><br>
-
-    <a
-        href="/admin/backup/control_escolar"
-        class="btn btn-primary">
-
-        Descargar Respaldo Escolar
-
-    </a>
-
-    <br><br>
-
-    <a
-        href="/admin/backup/descargar"
-        class="btn btn-primary">
-
-        Descargar Respaldo Completo
-
-    </a>
-
-</div>
-
-</div>
-
-<hr>
-
-<div id="tab-automaticos">
-
-<div class="card">
-
-    <h3>Programación Automática</h3>
+        <h2 class="mb-0">
+            <i class="fas fa-database"></i>
+            Administrador de Respaldos
+        </h2>
 
     </div>
 
-<form method="POST" action="/admin/backup/guardar_configuracion">
+    {% with messages = get_flashed_messages(with_categories=true) %}
 
-    <label>
-        Tipo de respaldo
-    </label>
+        {% if messages %}
 
-    <select name="tipo">
+            {% for categoria, mensaje in messages %}
 
-        <option value="financiero">
-            Financiero
-        </option>
+                <div class="alert alert-{{ categoria }} alert-dismissible fade show" role="alert">
 
-        <option value="control_escolar">
-            Control Escolar
-        </option>
+                    {{ mensaje }}
 
-        <option value="sistema">
-            Sistema Completo
-        </option>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert">
+                    </button>
 
-    </select>
+                </div>
 
-    <br><br>
+            {% endfor %}
 
-    <label>
-        Frecuencia
-    </label>
+        {% endif %}
 
-    <select name="unidad">
+    {% endwith %}
 
-        <option value="horas">
-            Horas
-        </option>
+    <!-- ========================= -->
+    <!-- RESPALDOS MANUALES -->
+    <!-- ========================= -->
 
-        <option value="dias">
-            Días
-        </option>
+    <div class="card shadow-sm mb-4">
 
-    </select>
+        <div class="card-header bg-primary text-white">
 
-    <br><br>
+            <h5 class="mb-0">
 
-    <label>
-        Intervalo
-    </label>
+                Respaldos Manuales
 
-    <input
-        type="number"
-        name="intervalo"
-        value="24"
-        min="1"
-    >
+            </h5>
 
-    <br><br>
+        </div>
 
-<br><br>
+        <div class="card-body">
 
-<label>
+            <p>
 
-    <input
-        type="checkbox"
-        name="activo"
-        checked
-    >
+                Descarga respaldos completos del sistema o de módulos específicos.
 
-    Activar respaldo automático
+            </p>
 
-</label>
+            <div class="row">
 
-<br><br>
+                <div class="col-md-4 mb-3">
 
-    <button type="submit">
+                    <a
+                        href="{{ url_for('backup.descargar_backup_financiero') }}"
+                        class="btn btn-success w-100">
 
-        Guardar Configuración
+                        💰 Respaldo Financiero
 
-    </button>
+                    </a>
 
-</form>
+                </div>
 
-<hr>
+                <div class="col-md-4 mb-3">
 
-<h3>
+                    <a
+                        href="{{ url_for('backup.descargar_backup_control_escolar') }}"
+                        class="btn btn-info w-100">
 
-Configuraciones guardadas
+                        🎓 Control Escolar
 
-</h3>
+                    </a>
 
-<table class="table table-bordered">
+                </div>
 
-<tr>
+                <div class="col-md-4 mb-3">
 
-<th>Tipo</th>
+                    <a
+                        href="{{ url_for('backup.descargar_backup') }}"
+                        class="btn btn-dark w-100">
 
-<th>Frecuencia</th>
+                        🖥 Sistema Completo
 
-<th>Intervalo</th>
+                    </a>
 
-<th>Próxima ejecución</th>
+                </div>
 
-<th>Activo</th>
+            </div>
 
-</tr>
+        </div>
 
-{% for c in configuraciones %}
+    </div>
 
-<tr>
+    <!-- ========================= -->
+    <!-- CONFIGURACIÓN -->
+    <!-- ========================= -->
 
-<td>{{ c.tipo }}</td>
+    <div class="card shadow-sm mb-4">
 
-<td>{{ c.unidad }}</td>
+        <div class="card-header bg-warning">
 
-<td>{{ c.intervalo }}</td>
+            <h5 class="mb-0">
 
-<td>{{ c.proxima_ejecucion }}</td>
+                Programación Automática
 
-<td>
+            </h5>
 
-{% if c.activo %}
+        </div>
 
-<span class="badge bg-success">
+        <div class="card-body">
 
-Activo
+            <form
+                method="POST"
+                action="{{ url_for('backup.guardar_configuracion_backup') }}">
 
-</span>
+                <div class="row">
 
-{% else %}
+                    <div class="col-md-3">
 
-<span class="badge bg-danger">
+                        <label class="form-label">
 
-Inactivo
+                            Tipo
 
-</span>
+                        </label>
 
-{% endif %}
+                        <select
+                            name="tipo"
+                            class="form-select">
 
-</td>
+                            <option value="financiero">
 
-</tr>
+                                Financiero
 
-{% endfor %}
+                            </option>
 
-</table>
+                            <option value="control_escolar">
 
-</div>
+                                Control Escolar
 
-<hr>
+                            </option>
 
-<h3>
+                            <option value="sistema">
 
-Historial de Respaldos
+                                Sistema Completo
 
-</h3>
+                            </option>
 
-<table class="table table-striped table-bordered">
+                        </select>
 
-<tr>
+                    </div>
 
-<th>Fecha</th>
+                    <div class="col-md-3">
 
-<th>Tipo</th>
+                        <label class="form-label">
 
-<th>Usuario</th>
+                            Frecuencia
 
-<th>Archivo</th>
+                        </label>
 
-<th>Tamaño</th>
+                        <select
+                            name="unidad"
+                            class="form-select">
 
-<th>Estado</th>
+                            <option value="horas">
 
-<th>Acciones<th>
+                                Horas
 
-</tr>
+                            </option>
 
-{% for b in historial %}
+                            <option value="dias">
 
-<tr>
+                                Días
 
-<td>{{ b.fecha }}</td>
+                            </option>
 
-<td>{{ b.tipo }}</td>
+                        </select>
 
-<td>{{ b.usuario }}</td>
+                    </div>
 
-<td>{{ b.nombre }}</td>
+                    <div class="col-md-2">
 
-<td>{{ b.tamano }}</td>
+                        <label class="form-label">
 
-<td>{{ b.estado }}</td>
+                            Intervalo
 
-</tr>
+                        </label>
 
-{% endfor %}
+                        <input
+                            type="number"
+                            name="intervalo"
+                            value="24"
+                            min="1"
+                            class="form-control">
 
-</table>
+                    </div>
 
-<hr>
+                    <div class="col-md-2 d-flex align-items-end">
 
-<h3>Historial de Respaldos</h3>
+                        <div class="form-check">
 
-<table class="table table-bordered table-striped">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                name="activo"
+                                checked>
 
-    <thead>
+                            <label class="form-check-label">
 
-        <tr>
+                                Activo
 
-            <th>Fecha</th>
+                            </label>
 
-            <th>Tipo</th>
+                        </div>
 
-            <th>Usuario</th>
+                    </div>
 
-            <th>Archivo</th>
+                    <div class="col-md-2 d-flex align-items-end">
 
-            <th>Tamaño</th>
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100">
 
-            <th>Estado</th>
+                            Guardar
 
-            <th>Acciones</th>
+                        </button>
 
-        </tr>
+                    </div>
 
-    </thead>
+                </div>
 
-    <tbody>
+            </form>
 
-        {% for b in historial %}
+        </div>
 
-        <tr>
+    </div>
 
-            <td>{{ b.fecha }}</td>
+    <!-- ========================= -->
+    <!-- CONFIGURACIONES GUARDADAS -->
+    <!-- ========================= -->
 
-            <td>{{ b.tipo }}</td>
+    <div class="card shadow-sm mb-4">
 
-            <td>{{ b.usuario }}</td>
+        <div class="card-header bg-secondary text-white">
 
-            <td>{{ b.nombre }}</td>
+            <h5 class="mb-0">
 
-            <td>{{ b.tamano }}</td>
+                Configuraciones Guardadas
 
-            <td>{{ b.estado }}</td>
+            </h5>
 
-            <td>
+        </div>
 
-                <a
-                    href="{{ url_for('backup.descargar_backup_historial', backup_id=b._id) }}"
-                    class="btn btn-primary btn-sm"
-                >
-                    Descargar
-                </a>
+        <div class="card-body">
 
-            <td>
+            <div class="table-responsive">
 
-    <a
-        href="{{ url_for('backup.descargar_backup_historial', backup_id=b._id) }}"
-        class="btn btn-primary btn-sm"
-    >
-        📥 Descargar
-    </a>
+                <table class="table table-hover table-bordered align-middle">
 
-    {% if b.tipo == "financiero" %}
+                    <thead class="table-light">
 
-        <form
-            action="{{ url_for('backup.restaurar_financiero', backup_id=b._id) }}"
-            method="POST"
-            style="display:inline;"
-            onsubmit="return confirmarRestauracionFinanciera();"
-        >
+                        <tr>
 
-            <button
-                type="submit"
-                class="btn btn-warning btn-sm"
-            >
-                ♻ Financiero
-            </button>
+                            <th>Tipo</th>
 
-        </form>
+                            <th>Frecuencia</th>
 
-    {% elif b.tipo == "control_escolar" %}
+                            <th>Intervalo</th>
 
-        <button
-            class="btn btn-secondary btn-sm"
-            disabled
-        >
-            ♻ Control Escolar
-        </button>
+                            <th>Próxima ejecución</th>
 
-    {% elif b.tipo == "sistema" %}
+                            <th>Última ejecución</th>
 
-        <button
-            class="btn btn-secondary btn-sm"
-            disabled
-        >
-            ♻ Sistema
-        </button>
+                            <th>Estado</th>
 
-    {% endif %}
+                        </tr>
 
-    <a
-        href="{{ url_for('backup.eliminar_backup_historial', backup_id=b._id) }}"
-        class="btn btn-danger btn-sm"
-        onclick="return confirmarEliminar();"
-    >
-        🗑
-    </a>
+                    </thead>
 
-</td>
+                    <tbody>
 
-        </tr>
+                        {% for c in configuraciones %}
 
-        {% endfor %}
+                        <tr>
 
-    </tbody>
+                            <td>
 
-</table>
+                                {{ c.tipo|replace("_"," ")|title }}
+
+                            </td>
+
+                            <td>
+
+                                {{ c.unidad|title }}
+
+                            </td>
+
+                            <td>
+
+                                {{ c.intervalo }}
+
+                            </td>
+
+                            <td>
+
+                                {{ c.proxima_ejecucion if c.proxima_ejecucion else "-" }}
+
+                            </td>
+
+                            <td>
+
+                                {{ c.ultima_ejecucion if c.ultima_ejecucion else "-" }}
+
+                            </td>
+
+                            <td>
+
+                                {% if c.activo %}
+
+                                    <span class="badge bg-success">
+
+                                        Activo
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-danger">
+
+                                        Inactivo
+
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- HISTORIAL -->
+    <!-- ========================= -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-dark text-white">
+
+            <h5 class="mb-0">
+
+                Historial de Respaldos
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-striped table-hover align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>Fecha</th>
+
+                            <th>Tipo</th>
+
+                            <th>Usuario</th>
+
+                            <th>Archivo</th>
+
+                            <th>Tamaño</th>
+
+                            <th>Estado</th>
+
+                            <th width="260">
+
+                                Acciones
+
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for b in historial %}
+
+                        <tr>
+
+                            <td>
+
+                                {{ b.fecha }}
+
+                            </td>
+
+                            <td>
+
+                                {{ b.tipo|replace("_"," ")|title }}
+
+                            </td>
+
+                            <td>
+
+                                {{ b.usuario }}
+
+                            </td>
+
+                            <td>
+
+                                {{ b.nombre }}
+
+                            </td>
+
+                            <td>
+
+                                {{ b.tamano }}
+
+                            </td>
+
+                            <td>
+
+                                {% if b.estado == "Correcto" %}
+
+                                    <span class="badge bg-success">
+
+                                        {{ b.estado }}
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-danger">
+
+                                        {{ b.estado }}
+
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                <div class="btn-group">
+
+                                    <a
+                                        href="{{ url_for('backup.descargar_backup_historial', backup_id=b._id) }}"
+                                        class="btn btn-primary btn-sm">
+
+                                        📥 Descargar
+
+                                    </a>
+
+                                    {% if b.tipo == "financiero" %}
+
+                                        <form
+                                            action="{{ url_for('backup.restaurar_financiero', backup_id=b._id) }}"
+                                            method="POST"
+                                            style="display:inline;"
+                                            onsubmit="return confirmarRestauracionFinanciera();">
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-warning btn-sm">
+
+                                                ♻ Restaurar
+
+                                            </button>
+
+                                        </form>
+
+                                    {% elif b.tipo == "control_escolar" %}
+
+                                        <button
+                                            class="btn btn-secondary btn-sm"
+                                            disabled>
+
+                                            ♻ Escolar
+
+                                        </button>
+
+                                    {% elif b.tipo == "sistema" %}
+
+                                        <button
+                                            class="btn btn-secondary btn-sm"
+                                            disabled>
+
+                                            ♻ Sistema
+
+                                        </button>
+
+                                    {% endif %}
+
+                                    <a
+                                        href="{{ url_for('backup.eliminar_backup_historial', backup_id=b._id) }}"
+                                        class="btn btn-danger btn-sm"
+                                        onclick="return confirmarEliminar();">
+
+                                        🗑
+
+                                    </a>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
 
 <script>
 
@@ -377,7 +553,7 @@ function confirmarRestauracionFinanciera(){
 
     return confirm(
 
-        "Se realizará un respaldo financiero del estado actual antes de restaurar.\n\n¿Desea continuar?"
+        "⚠️ Se creará automáticamente un respaldo financiero del estado actual antes de restaurar.\n\n¿Desea continuar?"
 
     );
 
@@ -393,6 +569,78 @@ function confirmarEliminar(){
 
 }
 
+/* Ocultar automáticamente los mensajes flash */
+
+setTimeout(function(){
+
+    let alertas = document.querySelectorAll(".alert");
+
+    alertas.forEach(function(alerta){
+
+        try{
+
+            let bsAlert = bootstrap.Alert.getOrCreateInstance(alerta);
+
+            bsAlert.close();
+
+        }catch(e){
+
+            alerta.style.display="none";
+
+        }
+
+    });
+
+},5000);
+
 </script>
+
+<style>
+
+.card{
+
+    border-radius:12px;
+
+}
+
+.card-header{
+
+    font-weight:600;
+
+}
+
+.table th{
+
+    white-space:nowrap;
+
+}
+
+.btn-group .btn{
+
+    margin-right:4px;
+
+}
+
+.badge{
+
+    font-size:0.85rem;
+
+}
+
+.table td{
+
+    vertical-align:middle;
+
+}
+
+.alert{
+
+    border-radius:10px;
+
+}
+
+</style>
+
+</div>
 
 {% endblock %}
