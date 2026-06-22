@@ -315,23 +315,51 @@ Historial de Respaldos
         📥 Descargar
     </a>
 
-    <form
-        action="{{ url_for('backup.restaurar_financiero', backup_id=b._id) }}"
-        method="POST"
-        style="display:inline;"
-        onsubmit="return confirmarRestauracion();"
-    >
+    {% if b.tipo == "financiero" %}
 
-        <button
-            type="submit"
-            class="btn btn-warning btn-sm"
+        <form
+            action="{{ url_for('backup.restaurar_financiero', backup_id=b._id) }}"
+            method="POST"
+            style="display:inline;"
+            onsubmit="return confirmarRestauracionFinanciera();"
         >
 
-            ♻ Restaurar
+            <button
+                type="submit"
+                class="btn btn-warning btn-sm"
+            >
+                ♻ Financiero
+            </button>
 
+        </form>
+
+    {% elif b.tipo == "control_escolar" %}
+
+        <button
+            class="btn btn-secondary btn-sm"
+            disabled
+        >
+            ♻ Control Escolar
         </button>
 
-    </form>
+    {% elif b.tipo == "sistema" %}
+
+        <button
+            class="btn btn-secondary btn-sm"
+            disabled
+        >
+            ♻ Sistema
+        </button>
+
+    {% endif %}
+
+    <a
+        href="{{ url_for('backup.eliminar_backup_historial', backup_id=b._id) }}"
+        class="btn btn-danger btn-sm"
+        onclick="return confirmarEliminar();"
+    >
+        🗑
+    </a>
 
 </td>
 
@@ -345,11 +373,21 @@ Historial de Respaldos
 
 <script>
 
-function confirmarRestauracion(){
+function confirmarRestauracionFinanciera(){
 
     return confirm(
 
-        "⚠ Se creará automáticamente un respaldo financiero del estado actual antes de restaurar.\n\n¿Desea continuar?"
+        "Se realizará un respaldo financiero del estado actual antes de restaurar.\n\n¿Desea continuar?"
+
+    );
+
+}
+
+function confirmarEliminar(){
+
+    return confirm(
+
+        "¿Está seguro de eliminar este respaldo?\n\nEsta acción no se puede deshacer."
 
     );
 
