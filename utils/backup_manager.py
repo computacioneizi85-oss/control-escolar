@@ -81,6 +81,70 @@ def guardar_backup_mongo(
 
     )
 
+def crear_backup_financiero_interno():
+
+    data = {
+
+        "pagos": list(
+            pagos.find({}, {"_id": 0})
+        ),
+
+        "movimientos_pagos": list(
+            movimientos_pagos.find({}, {"_id": 0})
+        ),
+
+        "mensualidades": list(
+            mensualidades.find({}, {"_id": 0})
+        ),
+
+        "config_recargos": list(
+            config_recargos.find({}, {"_id": 0})
+        ),
+
+        "bitacora_pagos": list(
+            bitacora_pagos.find({}, {"_id": 0})
+        )
+
+    }
+
+    nombre = nombre_backup(
+        "financiero"
+    )
+
+    guardar_backup_mongo(
+
+        "financiero",
+
+        nombre,
+
+        data
+
+    )
+
+    configuracion_backups.update_one(
+
+        {
+
+            "tipo": "financiero"
+
+        },
+
+        {
+
+            "$set": {
+
+                "ultima_ejecucion": datetime.now()
+
+            }
+
+        },
+
+        upsert=True
+
+    )
+
+    return data
+
 def obtener_historial_backups(
     tipo=None,
     limite=100
