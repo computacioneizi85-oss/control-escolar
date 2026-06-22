@@ -640,98 +640,20 @@ def restaurar_backup(
 
     except Exception as e:
 
-registrar_restauracion(
+except Exception as e:
 
-    usuario,
+    registrar_restauracion(
 
-    tipo,
+        usuario,
 
-    backup["nombre"],
+        tipo,
 
-    "Error",
+        backup["nombre"],
 
-    str(e)
+        "Error",
 
-)
+        str(e)
 
-        return False, str(e)
-
-    # =========================
-    # RESPALDO PREVIO
-    # =========================
-
-    crear_backup_financiero_interno()
-
-    datos = backup.get(
-        "contenido",
-        {}
     )
 
-    try:
-
-        pagos.delete_many({})
-
-        movimientos_pagos.delete_many({})
-
-        mensualidades.delete_many({})
-
-        config_recargos.delete_many({})
-
-        bitacora_pagos.delete_many({})
-
-        if datos.get("pagos"):
-
-            pagos.insert_many(
-                datos["pagos"]
-            )
-
-        if datos.get("movimientos_pagos"):
-
-            movimientos_pagos.insert_many(
-                datos["movimientos_pagos"]
-            )
-
-        if datos.get("mensualidades"):
-
-            mensualidades.insert_many(
-                datos["mensualidades"]
-            )
-
-        if datos.get("config_recargos"):
-
-            config_recargos.insert_many(
-                datos["config_recargos"]
-            )
-
-        if datos.get("bitacora_pagos"):
-
-            bitacora_pagos.insert_many(
-                datos["bitacora_pagos"]
-            )
-
-        backups_archivos.update_one(
-
-            {
-                "_id": backup["_id"]
-            },
-
-            {
-                "$set": {
-
-                    "restaurado": True,
-
-                    "fecha_restauracion": datetime.now(),
-
-                    "restaurado_por": usuario
-
-                }
-
-            }
-
-        )
-
-        return True, "Respaldo restaurado correctamente."
-
-    except Exception as e:
-
-        return False, str(e)
+    return False, str(e)
