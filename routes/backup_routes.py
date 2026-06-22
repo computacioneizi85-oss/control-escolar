@@ -381,3 +381,51 @@ def descargar_backup_historial(
         mimetype="application/json"
 
     )
+
+# =========================
+# RESTAURAR RESPALDO FINANCIERO
+# =========================
+
+@backup_bp.route(
+    "/restaurar_financiero/<backup_id>",
+    methods=["POST"]
+)
+def restaurar_financiero(
+    backup_id
+):
+
+    usuario = "Administrador"
+
+    resultado, mensaje = restaurar_backup_financiero(
+
+        backup_id,
+
+        usuario
+
+    )
+
+    if resultado:
+
+        flash(
+
+            mensaje,
+
+            "success"
+
+        )
+
+    else:
+
+        flash(
+
+            mensaje,
+
+            "danger"
+
+        )
+
+    return redirect(
+
+        "/admin/backup/"
+
+    )
