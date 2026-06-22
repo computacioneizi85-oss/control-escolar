@@ -458,7 +458,24 @@ def obtener_backup_por_id(
 
     )
 
-def restaurar_backup_financiero(
+# def restaurar_backup_financiero(
+#    backup_id,
+#    usuario="Administrador"
+#):
+
+#    backup = obtener_backup_por_id(
+#        backup_id
+#    )
+
+#    if backup is None:
+
+#        return False, "No existe el respaldo."
+
+#    if backup.get("tipo") != "financiero":
+
+#        return False, "El respaldo seleccionado no es #financiero."
+
+def restaurar_backup(
     backup_id,
     usuario="Administrador"
 ):
@@ -471,9 +488,110 @@ def restaurar_backup_financiero(
 
         return False, "No existe el respaldo."
 
-    if backup.get("tipo") != "financiero":
+    tipo = backup.get(
+        "tipo"
+    )
 
-        return False, "El respaldo seleccionado no es financiero."
+    datos = backup.get(
+        "contenido",
+        {}
+    )
+
+    try:
+
+        # ===========================
+        # FINANCIERO
+        # ===========================
+
+        if tipo == "financiero":
+
+            crear_backup_financiero_interno()
+
+            pagos.delete_many({})
+
+            movimientos_pagos.delete_many({})
+
+            mensualidades.delete_many({})
+
+            config_recargos.delete_many({})
+
+            bitacora_pagos.delete_many({})
+
+            if datos.get("pagos"):
+
+                pagos.insert_many(
+                    datos["pagos"]
+                )
+
+            if datos.get("movimientos_pagos"):
+
+                movimientos_pagos.insert_many(
+                    datos["movimientos_pagos"]
+                )
+
+            if datos.get("mensualidades"):
+
+                mensualidades.insert_many(
+                    datos["mensualidades"]
+                )
+
+            if datos.get("config_recargos"):
+
+                config_recargos.insert_many(
+                    datos["config_recargos"]
+                )
+
+            if datos.get("bitacora_pagos"):
+
+                bitacora_pagos.insert_many(
+                    datos["bitacora_pagos"]
+                )
+
+        # ===========================
+        # CONTROL ESCOLAR
+        # ===========================
+
+        elif tipo == "control_escolar":
+
+            return False, "Pendiente de implementar."
+
+        # ===========================
+        # SISTEMA
+        # ===========================
+
+        elif tipo == "sistema":
+
+            return False, "Pendiente de implementar."
+
+        backups_archivos.update_one(
+
+            {
+
+                "_id": backup["_id"]
+
+            },
+
+            {
+
+                "$set": {
+
+                    "restaurado": True,
+
+                    "fecha_restauracion": datetime.now(),
+
+                    "restaurado_por": usuario
+
+                }
+
+            }
+
+        )
+
+        return True, "Restauración completada."
+
+    except Exception as e:
+
+        return False, str(e)
 
     # =========================
     # RESPALDO PREVIO

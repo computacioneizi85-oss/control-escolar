@@ -396,7 +396,7 @@ def restaurar_financiero(
 
     usuario = "Administrador"
 
-    resultado, mensaje = restaurar_backup_financiero(
+    resultado, mensaje = restaurar_backup(
 
         backup_id,
 
