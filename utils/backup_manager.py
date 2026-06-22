@@ -638,20 +638,20 @@ def restaurar_backup(
 
         return True, "Restauración completada."
 
-except Exception as e:
+    except Exception as e:
 
-    registrar_restauracion(
+        registrar_restauracion(
 
-        usuario,
+            usuario,
 
-        tipo,
+            tipo,
 
-        backup["nombre"],
+            backup["nombre"],
 
-        "Error",
+            "Error",
 
-        str(e)
+            str(e)
 
-    )
+        )
 
-    return False, str(e)
+        return False, str(e)
