@@ -638,8 +638,6 @@ def restaurar_backup(
 
         return True, "Restauración completada."
 
-    except Exception as e:
-
 except Exception as e:
 
     registrar_restauracion(
