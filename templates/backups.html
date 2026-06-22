@@ -306,7 +306,34 @@ Historial de Respaldos
                     Descargar
                 </a>
 
-            </td>
+            <td>
+
+    <a
+        href="{{ url_for('backup.descargar_backup_historial', backup_id=b._id) }}"
+        class="btn btn-primary btn-sm"
+    >
+        📥 Descargar
+    </a>
+
+    <form
+        action="{{ url_for('backup.restaurar_financiero', backup_id=b._id) }}"
+        method="POST"
+        style="display:inline;"
+        onsubmit="return confirmarRestauracion();"
+    >
+
+        <button
+            type="submit"
+            class="btn btn-warning btn-sm"
+        >
+
+            ♻ Restaurar
+
+        </button>
+
+    </form>
+
+</td>
 
         </tr>
 
@@ -315,5 +342,19 @@ Historial de Respaldos
     </tbody>
 
 </table>
+
+<script>
+
+function confirmarRestauracion(){
+
+    return confirm(
+
+        "⚠ Se creará automáticamente un respaldo financiero del estado actual antes de restaurar.\n\n¿Desea continuar?"
+
+    );
+
+}
+
+</script>
 
 {% endblock %}
