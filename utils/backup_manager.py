@@ -602,77 +602,78 @@ def restaurar_backup(
                     datos["bitacora_pagos"]
                 )
 
+            backups_archivos.update_one(
+
+                {
+
+                    "_id": backup["_id"]
+
+                },
+
+                {
+
+                    "$set": {
+
+                        "restaurado": True,
+
+                        "fecha_restauracion": datetime.now(),
+
+                        "restaurado_por": usuario
+
+                    }
+
+                }
+
+            )
+
+            registrar_restauracion(
+
+                usuario,
+
+                tipo,
+
+                backup["nombre"],
+
+                "Correcto",
+
+                "Restauración completada"
+
+            )
+
+            return True, "Restauración completada."
+
         # ===========================
         # CONTROL ESCOLAR
         # ===========================
 
-elif tipo == "control_escolar":
+        elif tipo == "control_escolar":
 
-    return _restaurar_control_escolar(
+            return _restaurar_control_escolar(
 
-        datos,
+                datos,
 
-        backup,
+                backup,
 
-        usuario
+                usuario
 
-    )
+            )
 
         # ===========================
         # SISTEMA
         # ===========================
 
-elif tipo == "sistema":
+        elif tipo == "sistema":
 
-    return _restaurar_sistema(
+            return _restaurar_sistema(
 
-        datos,
+                datos,
 
-        backup,
+                backup,
 
-        usuario
+                usuario
 
-    )
+            )
 
-        backups_archivos.update_one(
-
-            {
-
-                "_id": backup["_id"]
-
-            },
-
-            {
-
-                "$set": {
-
-                    "restaurado": True,
-
-                    "fecha_restauracion": datetime.now(),
-
-                    "restaurado_por": usuario
-
-                }
-
-            }
-
-        )
-
-        registrar_restauracion(
-
-            usuario,
-
-            tipo,
-
-            backup["nombre"],
-
-            "Correcto",
-
-            "Restauración completada"
-
-        )
-
-        return True, "Restauración completada."
 
     except Exception as e:
 
