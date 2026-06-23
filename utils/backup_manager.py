@@ -33,9 +33,13 @@ from database.mongo import (
 
     configuracion_backups,
     bitacora_restauraciones,
-    backups_archivos
+    backups_archivos,
+    calificaciones,
+    admins_secundarios,
+    bitacora,
+    auditoria
 
-)
+    )
 
 
 def nombre_backup(tipo):
@@ -417,6 +421,22 @@ def crear_backup_control_escolar():
 
         "padres": list(
             padres.find({}, {"_id": 0})
+        ),
+
+        "calificaciones": list(
+            calificaciones.find({}, {"_id": 0})
+        ),
+
+        "admins_secundarios": list(
+            admins_secundarios.find({}, {"_id": 0})
+        ),
+
+        "bitacora": list(
+            bitacora.find({}, {"_id": 0})
+        ),
+
+        "auditoria": list(
+            auditoria.find({}, {"_id": 0})
         )
 
     }
@@ -586,17 +606,33 @@ def restaurar_backup(
         # CONTROL ESCOLAR
         # ===========================
 
-        elif tipo == "control_escolar":
+elif tipo == "control_escolar":
 
-            return False, "Pendiente de implementar."
+    return _restaurar_control_escolar(
+
+        datos,
+
+        backup,
+
+        usuario
+
+    )
 
         # ===========================
         # SISTEMA
         # ===========================
 
-        elif tipo == "sistema":
+elif tipo == "sistema":
 
-            return False, "Pendiente de implementar."
+    return _restaurar_sistema(
+
+        datos,
+
+        backup,
+
+        usuario
+
+    )
 
         backups_archivos.update_one(
 
