@@ -799,6 +799,8 @@ def _restaurar_control_escolar(
     usuario
 ):
 
+    crear_backup_control_escolar_interno()
+
     colecciones = [
 
         (alumnos, "alumnos"),
