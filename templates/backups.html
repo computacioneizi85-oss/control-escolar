@@ -314,17 +314,49 @@
 
                             </td>
 
-                            <td>
+<td>
 
-                                {{ c.proxima_ejecucion if c.proxima_ejecucion else "-" }}
+    {% if c.proxima_ejecucion %}
 
-                            </td>
+        {{ c.proxima_ejecucion.strftime("%d/%m/%Y") }}
 
-                            <td>
+        <br>
 
-                                {{ c.ultima_ejecucion if c.ultima_ejecucion else "-" }}
+        <small class="text-muted">
 
-                            </td>
+            {{ c.proxima_ejecucion.strftime("%H:%M:%S") }}
+
+        </small>
+
+    {% else %}
+
+        -
+
+    {% endif %}
+
+</td>
+
+<td>
+
+    {% if c.ultima_ejecucion %}
+
+        {{ c.ultima_ejecucion.strftime("%d/%m/%Y") }}
+
+        <br>
+
+        <small class="text-muted">
+
+            {{ c.ultima_ejecucion.strftime("%H:%M:%S") }}
+
+        </small>
+
+    {% else %}
+
+        -
+
+    {% endif %}
+
+</td>
 
                             <td>
 
