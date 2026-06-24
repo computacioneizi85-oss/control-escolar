@@ -329,8 +329,28 @@ def crear_backup_sistema():
 
     data = {
 
+        # =========================
+        # CONTROL ESCOLAR
+        # =========================
+
         "alumnos": list(
             alumnos.find({}, {"_id": 0})
+        ),
+
+        "maestros": list(
+            maestros.find({}, {"_id": 0})
+        ),
+
+        "grupos": list(
+            grupos.find({}, {"_id": 0})
+        ),
+
+        "materias": list(
+            materias.find({}, {"_id": 0})
+        ),
+
+        "horarios": list(
+            horarios.find({}, {"_id": 0})
         ),
 
         "reportes": list(
@@ -341,8 +361,68 @@ def crear_backup_sistema():
             citatorios.find({}, {"_id": 0})
         ),
 
+        "avisos": list(
+            avisos.find({}, {"_id": 0})
+        ),
+
+        "usuarios": list(
+            usuarios.find({}, {"_id": 0})
+        ),
+
+        "padres": list(
+            padres.find({}, {"_id": 0})
+        ),
+
+        "calificaciones": list(
+            calificaciones.find({}, {"_id": 0})
+        ),
+
+        "admins_secundarios": list(
+            admins_secundarios.find({}, {"_id": 0})
+        ),
+
+        # =========================
+        # FINANCIERO
+        # =========================
+
+        "pagos": list(
+            pagos.find({}, {"_id": 0})
+        ),
+
+        "movimientos_pagos": list(
+            movimientos_pagos.find({}, {"_id": 0})
+        ),
+
+        "mensualidades": list(
+            mensualidades.find({}, {"_id": 0})
+        ),
+
+        "config_recargos": list(
+            config_recargos.find({}, {"_id": 0})
+        ),
+
+        "bitacora_pagos": list(
+            bitacora_pagos.find({}, {"_id": 0})
+        ),
+
+        # =========================
+        # CONFIGURACIÓN
+        # =========================
+
         "configuracion": list(
             configuracion.find({}, {"_id": 0})
+        ),
+
+        # =========================
+        # AUDITORÍA
+        # =========================
+
+        "bitacora": list(
+            bitacora.find({}, {"_id": 0})
+        ),
+
+        "auditoria": list(
+            auditoria.find({}, {"_id": 0})
         )
 
     }
@@ -352,21 +432,31 @@ def crear_backup_sistema():
     )
 
     guardar_backup_mongo(
+
         "sistema",
+
         nombre,
+
         data
+
     )
 
     configuracion_backups.update_one(
 
         {
+
             "tipo": "sistema"
+
         },
 
         {
+
             "$set": {
+
                 "ultima_ejecucion": datetime.now()
+
             }
+
         },
 
         upsert=True
@@ -378,10 +468,15 @@ def crear_backup_sistema():
     buffer.write(
 
         json.dumps(
+
             data,
+
             indent=4,
+
             default=str,
+
             ensure_ascii=False
+
         ).encode("utf-8")
 
     )
