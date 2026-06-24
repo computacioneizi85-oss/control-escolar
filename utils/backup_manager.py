@@ -692,3 +692,93 @@ def restaurar_backup(
         )
 
         return False, str(e)
+
+def _restaurar_control_escolar(
+    datos,
+    backup,
+    usuario
+):
+
+    colecciones = [
+
+        (alumnos, "alumnos"),
+
+        (maestros, "maestros"),
+
+        (grupos, "grupos"),
+
+        (materias, "materias"),
+
+        (horarios, "horarios"),
+
+        (reportes, "reportes"),
+
+        (citatorios, "citatorios"),
+
+        (avisos, "avisos"),
+
+        (usuarios, "usuarios"),
+
+        (padres, "padres"),
+
+        (calificaciones, "calificaciones"),
+
+        (admins_secundarios, "admins_secundarios"),
+
+        (bitacora, "bitacora"),
+
+        (auditoria, "auditoria")
+
+    ]
+
+    for coleccion, nombre in colecciones:
+
+        coleccion.delete_many({})
+
+        if datos.get(nombre):
+
+            coleccion.insert_many(
+
+                datos[nombre]
+
+            )
+
+    backups_archivos.update_one(
+
+        {
+
+            "_id": backup["_id"]
+
+        },
+
+        {
+
+            "$set": {
+
+                "restaurado": True,
+
+                "fecha_restauracion": datetime.now(),
+
+                "restaurado_por": usuario
+
+            }
+
+        }
+
+    )
+
+    registrar_restauracion(
+
+        usuario,
+
+        "control_escolar",
+
+        backup["nombre"],
+
+        "Correcto",
+
+        "Restauración completada"
+
+    )
+
+    return True, "Restauración de Control Escolar completada."
