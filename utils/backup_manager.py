@@ -184,6 +184,106 @@ def crear_backup_financiero_interno():
 
     return data
 
+def crear_backup_control_escolar_interno():
+
+    data = {
+
+        "alumnos": list(
+            alumnos.find({}, {"_id": 0})
+        ),
+
+        "maestros": list(
+            maestros.find({}, {"_id": 0})
+        ),
+
+        "grupos": list(
+            grupos.find({}, {"_id": 0})
+        ),
+
+        "materias": list(
+            materias.find({}, {"_id": 0})
+        ),
+
+        "horarios": list(
+            horarios.find({}, {"_id": 0})
+        ),
+
+        "reportes": list(
+            reportes.find({}, {"_id": 0})
+        ),
+
+        "citatorios": list(
+            citatorios.find({}, {"_id": 0})
+        ),
+
+        "avisos": list(
+            avisos.find({}, {"_id": 0})
+        ),
+
+        "usuarios": list(
+            usuarios.find({}, {"_id": 0})
+        ),
+
+        "padres": list(
+            padres.find({}, {"_id": 0})
+        ),
+
+        "calificaciones": list(
+            calificaciones.find({}, {"_id": 0})
+        ),
+
+        "admins_secundarios": list(
+            admins_secundarios.find({}, {"_id": 0})
+        ),
+
+        "bitacora": list(
+            bitacora.find({}, {"_id": 0})
+        ),
+
+        "auditoria": list(
+            auditoria.find({}, {"_id": 0})
+        )
+
+    }
+
+    nombre = nombre_backup(
+        "control_escolar_auto"
+    )
+
+    guardar_backup_mongo(
+
+        "control_escolar",
+
+        nombre,
+
+        data
+
+    )
+
+    configuracion_backups.update_one(
+
+        {
+
+            "tipo": "control_escolar"
+
+        },
+
+        {
+
+            "$set": {
+
+                "ultima_ejecucion": datetime.now()
+
+            }
+
+        },
+
+        upsert=True
+
+    )
+
+    return data
+
 def obtener_historial_backups(
     tipo=None,
     limite=100
