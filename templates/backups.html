@@ -418,10 +418,21 @@
 
                             <td>
 
-                                {{ b.fecha }}
+                               {% if b.fecha %}
 
-                            </td>
+                                    {{ b.fecha.strftime("%d/%m/%Y") }}
 
+                                     <br>
+
+                                    <small class="text-muted">
+
+                                    {{ b.fecha.strftime("%H:%M:%S") }}
+
+                                  </small>
+
+                             {% endif %}
+
+</td>
                             <td>
 
                                 {{ b.tipo|replace("_"," ")|title }}
@@ -440,11 +451,13 @@
 
                             </td>
 
-                            <td>
-
-                                {{ b.tamano }}
-
-                            </td>
+<td>
+    {% if b.tamano %}
+        {{ "%.2f"|format(b.tamano / 1024) }} KB
+    {% else %}
+        -
+    {% endif %}
+</td>
 
                             <td>
 
@@ -470,67 +483,43 @@
 
                             <td>
 
-                                <div class="btn-group">
+<div class="d-flex justify-content-center gap-2">
 
-                                    <a
-                                        href="{{ url_for('backup.descargar_backup_historial', backup_id=b._id) }}"
-                                        class="btn btn-primary btn-sm">
+    <a href="{{ url_for('backup.descargar_backup_historial', backup_id=b._id) }}"
+       class="btn btn-primary btn-sm">
 
-                                        📥 Descargar
+        <i class="fas fa-download"></i>
+        Descargar
 
-                                    </a>
+    </a>
 
-                                    {% if b.tipo == "financiero" %}
+    {% if b.tipo == "financiero" %}
 
-                                        <form
-                                            action="{{ url_for('backup.restaurar_financiero', backup_id=b._id) }}"
-                                            method="POST"
-                                            style="display:inline;"
-                                            onsubmit="return confirmarRestauracionFinanciera();">
+        <form action="{{ url_for('backup.restaurar_financiero', backup_id=b._id) }}"
+              method="POST"
+              onsubmit="return confirmarRestauracionFinanciera();">
 
-                                            <button
-                                                type="submit"
-                                                class="btn btn-warning btn-sm">
+            <button type="submit"
+                    class="btn btn-success btn-sm">
 
-                                                ♻ Restaurar
+                <i class="fas fa-rotate"></i>
+                Restaurar
 
-                                            </button>
+            </button>
 
-                                        </form>
+        </form>
 
-                                    {% elif b.tipo == "control_escolar" %}
+    {% endif %}
 
-                                        <button
-                                            class="btn btn-secondary btn-sm"
-                                            disabled>
+    <a href="{{ url_for('backup.eliminar_backup_historial', backup_id=b._id) }}"
+       class="btn btn-danger btn-sm"
+       onclick="return confirmarEliminar();">
 
-                                            ♻ Escolar
+        <i class="fas fa-trash"></i>
 
-                                        </button>
+    </a>
 
-                                    {% elif b.tipo == "sistema" %}
-
-                                        <button
-                                            class="btn btn-secondary btn-sm"
-                                            disabled>
-
-                                            ♻ Sistema
-
-                                        </button>
-
-                                    {% endif %}
-
-                                    <a
-                                        href="{{ url_for('backup.eliminar_backup_historial', backup_id=b._id) }}"
-                                        class="btn btn-danger btn-sm"
-                                        onclick="return confirmarEliminar();">
-
-                                        🗑
-
-                                    </a>
-
-                                </div>
-
+</div>
                             </td>
 
                         </tr>
@@ -597,45 +586,113 @@ setTimeout(function(){
 
 <style>
 
-.card{
+.card {
 
-    border-radius:12px;
-
-}
-
-.card-header{
-
-    font-weight:600;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.08);
 
 }
 
-.table th{
+.card-header {
 
-    white-space:nowrap;
-
-}
-
-.btn-group .btn{
-
-    margin-right:4px;
+    background: #17375e;
+    color: white;
+    font-weight: 600;
+    border-radius: 16px 16px 0 0 !important;
 
 }
 
-.badge{
+.table {
 
-    font-size:0.85rem;
-
-}
-
-.table td{
-
-    vertical-align:middle;
+    margin-bottom: 0;
 
 }
 
-.alert{
+.table thead {
 
-    border-radius:10px;
+    background: #17375e;
+
+}
+
+.table thead th {
+
+    color: white;
+    border: none;
+    vertical-align: middle;
+
+}
+
+.table tbody tr:hover {
+
+    background: #f4f8ff;
+
+}
+
+.table td {
+
+    vertical-align: middle;
+
+}
+
+.btn {
+
+    border-radius: 8px;
+    font-weight: 600;
+
+}
+
+.btn-primary {
+
+    background: #1976d2;
+    border: none;
+
+}
+
+.btn-success {
+
+    background: #7c3aed;
+    border: none;
+
+}
+
+.btn-danger {
+
+    background: #dc3545;
+    border: none;
+
+}
+
+.badge {
+
+    border-radius: 8px;
+    padding: .55em .8em;
+    font-size: .85rem;
+
+}
+
+.form-control,
+.form-select {
+
+    border-radius: 10px;
+
+}
+
+.alert {
+
+    border-radius: 12px;
+
+}
+
+.d-flex.gap-2 > * {
+
+    margin-right: 6px;
+
+}
+
+.d-flex.gap-2 > *:last-child {
+
+    margin-right: 0;
 
 }
 
