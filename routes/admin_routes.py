@@ -2,6 +2,7 @@
 from flask import Blueprint, render_template, request, redirect, session, send_file, url_for
 from bson.objectid import ObjectId
 import os
+from utils.backup_manager import crear_backup_sistema
 from datetime import datetime
 
 from database.mongo import (
@@ -1501,9 +1502,10 @@ def descargar_backup():
     if not verificar_admin():
         return redirect(url_for("auth.login"))
 
-    # 🔒 SOLO SUPERUSUARIO
     if session.get("admin_secundario"):
         return redirect("/admin")
+
+    return crear_backup_sistema()
 
     import json
     from io import BytesIO
