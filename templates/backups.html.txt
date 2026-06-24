@@ -527,21 +527,55 @@
 
     {% if b.tipo == "financiero" %}
 
-        <form action="{{ url_for('backup.restaurar_financiero', backup_id=b._id) }}"
-              method="POST"
-              onsubmit="return confirmarRestauracionFinanciera();">
+{% if b.tipo == "financiero" %}
 
-            <button type="submit"
-                    class="btn btn-success btn-sm">
+<form action="{{ url_for('backup.restaurar_financiero', backup_id=b._id) }}"
+      method="POST"
+      onsubmit="return confirmarRestauracionFinanciera();">
 
-                <i class="fas fa-rotate"></i>
-                Restaurar
+    <button type="submit"
+            class="btn btn-success btn-sm">
 
-            </button>
+        <i class="fas fa-rotate"></i>
+        Restaurar
 
-        </form>
+    </button>
 
-    {% endif %}
+</form>
+
+{% elif b.tipo == "control_escolar" %}
+
+<form action="{{ url_for('backup.restaurar_control_escolar', backup_id=b._id) }}"
+      method="POST"
+      onsubmit="return confirmarRestauracionEscolar();">
+
+    <button type="submit"
+            class="btn btn-info btn-sm">
+
+        <i class="fas fa-school"></i>
+        Restaurar
+
+    </button>
+
+</form>
+
+{% elif b.tipo == "sistema" %}
+
+<form action="{{ url_for('backup.restaurar_sistema', backup_id=b._id) }}"
+      method="POST"
+      onsubmit="return confirmarRestauracionSistema();">
+
+    <button type="submit"
+            class="btn btn-dark btn-sm">
+
+        <i class="fas fa-server"></i>
+        Restaurar
+
+    </button>
+
+</form>
+
+{% endif %}
 
     <a href="{{ url_for('backup.eliminar_backup_historial', backup_id=b._id) }}"
        class="btn btn-danger btn-sm"
@@ -575,6 +609,18 @@ function confirmarRestauracionFinanciera(){
     return confirm(
 
         "⚠️ Se creará automáticamente un respaldo financiero del estado actual antes de restaurar.\n\n¿Desea continuar?"
+
+    );
+
+}
+
+}
+
+function confirmarRestauracionSistema(){
+
+    return confirm(
+
+        "⚠️ Se creará automáticamente un respaldo COMPLETO del sistema antes de restaurar.\n\nEsta operación reemplazará toda la información actual.\n\n¿Desea continuar?"
 
     );
 

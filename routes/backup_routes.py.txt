@@ -429,3 +429,91 @@ def restaurar_financiero(
         "/admin/backup/"
 
     )
+
+@backup_bp.route(
+    "/restaurar_control_escolar/<backup_id>",
+    methods=["POST"]
+)
+def restaurar_control_escolar(
+    backup_id
+):
+
+    usuario = "Administrador"
+
+    resultado, mensaje = restaurar_backup(
+
+        backup_id,
+
+        usuario
+
+    )
+
+    if resultado:
+
+        flash(
+
+            mensaje,
+
+            "success"
+
+        )
+
+    else:
+
+        flash(
+
+            mensaje,
+
+            "danger"
+
+        )
+
+    return redirect(
+
+        "/admin/backup/"
+
+    )
+
+@backup_bp.route(
+    "/restaurar_sistema/<backup_id>",
+    methods=["POST"]
+)
+def restaurar_sistema(
+    backup_id
+):
+
+    usuario = "Administrador"
+
+    resultado, mensaje = restaurar_backup(
+
+        backup_id,
+
+        usuario
+
+    )
+
+    if resultado:
+
+        flash(
+
+            mensaje,
+
+            "success"
+
+        )
+
+    else:
+
+        flash(
+
+            mensaje,
+
+            "danger"
+
+        )
+
+    return redirect(
+
+        "/admin/backup/"
+
+    )

@@ -284,6 +284,146 @@ def crear_backup_control_escolar_interno():
 
     return data
 
+def crear_backup_sistema_interno():
+
+    data = {
+
+        # =========================
+        # CONTROL ESCOLAR
+        # =========================
+
+        "alumnos": list(
+            alumnos.find({}, {"_id": 0})
+        ),
+
+        "maestros": list(
+            maestros.find({}, {"_id": 0})
+        ),
+
+        "grupos": list(
+            grupos.find({}, {"_id": 0})
+        ),
+
+        "materias": list(
+            materias.find({}, {"_id": 0})
+        ),
+
+        "horarios": list(
+            horarios.find({}, {"_id": 0})
+        ),
+
+        "reportes": list(
+            reportes.find({}, {"_id": 0})
+        ),
+
+        "citatorios": list(
+            citatorios.find({}, {"_id": 0})
+        ),
+
+        "avisos": list(
+            avisos.find({}, {"_id": 0})
+        ),
+
+        "usuarios": list(
+            usuarios.find({}, {"_id": 0})
+        ),
+
+        "padres": list(
+            padres.find({}, {"_id": 0})
+        ),
+
+        "calificaciones": list(
+            calificaciones.find({}, {"_id": 0})
+        ),
+
+        "admins_secundarios": list(
+            admins_secundarios.find({}, {"_id": 0})
+        ),
+
+        # =========================
+        # FINANCIERO
+        # =========================
+
+        "pagos": list(
+            pagos.find({}, {"_id": 0})
+        ),
+
+        "movimientos_pagos": list(
+            movimientos_pagos.find({}, {"_id": 0})
+        ),
+
+        "mensualidades": list(
+            mensualidades.find({}, {"_id": 0})
+        ),
+
+        "config_recargos": list(
+            config_recargos.find({}, {"_id": 0})
+        ),
+
+        "bitacora_pagos": list(
+            bitacora_pagos.find({}, {"_id": 0})
+        ),
+
+        # =========================
+        # CONFIGURACIÓN
+        # =========================
+
+        "configuracion": list(
+            configuracion.find({}, {"_id": 0})
+        ),
+
+        # =========================
+        # AUDITORÍA
+        # =========================
+
+        "bitacora": list(
+            bitacora.find({}, {"_id": 0})
+        ),
+
+        "auditoria": list(
+            auditoria.find({}, {"_id": 0})
+        )
+
+    }
+
+    nombre = nombre_backup(
+        "sistema_auto"
+    )
+
+    guardar_backup_mongo(
+
+        "sistema",
+
+        nombre,
+
+        data
+
+    )
+
+    configuracion_backups.update_one(
+
+        {
+
+            "tipo": "sistema"
+
+        },
+
+        {
+
+            "$set": {
+
+                "ultima_ejecucion": datetime.now()
+
+            }
+
+        },
+
+        upsert=True
+
+    )
+
+    return data
+
 def obtener_historial_backups(
     tipo=None,
     limite=100
@@ -979,3 +1119,107 @@ def _restaurar_control_escolar(
     )
 
     return True, "Restauración de Control Escolar completada."
+
+def _restaurar_sistema(
+    datos,
+    backup,
+    usuario
+):
+
+    crear_backup_sistema_interno()
+
+    colecciones = [
+
+        (alumnos, "alumnos"),
+
+        (maestros, "maestros"),
+
+        (grupos, "grupos"),
+
+        (materias, "materias"),
+
+        (horarios, "horarios"),
+
+        (reportes, "reportes"),
+
+        (citatorios, "citatorios"),
+
+        (avisos, "avisos"),
+
+        (usuarios, "usuarios"),
+
+        (padres, "padres"),
+
+        (calificaciones, "calificaciones"),
+
+        (admins_secundarios, "admins_secundarios"),
+
+        (pagos, "pagos"),
+
+        (movimientos_pagos, "movimientos_pagos"),
+
+        (mensualidades, "mensualidades"),
+
+        (config_recargos, "config_recargos"),
+
+        (bitacora_pagos, "bitacora_pagos"),
+
+        (configuracion, "configuracion"),
+
+        (bitacora, "bitacora"),
+
+        (auditoria, "auditoria")
+
+    ]
+
+    for coleccion, nombre in colecciones:
+
+        coleccion.delete_many({})
+
+        if datos.get(nombre):
+
+            coleccion.insert_many(
+
+                datos[nombre]
+
+            )
+
+    backups_archivos.update_one(
+
+        {
+
+            "_id": backup["_id"]
+
+        },
+
+        {
+
+            "$set": {
+
+                "restaurado": True,
+
+                "fecha_restauracion": datetime.now(),
+
+                "restaurado_por": usuario
+
+            }
+
+        }
+
+    )
+
+registrar_restauracion(
+
+    usuario,
+
+    "sistema",
+
+    backup["nombre"],
+
+    "Correcto",
+
+    "Restauración completa del sistema realizada correctamente."
+
+)
+
+return True, "Restauración completa del sistema realizada correctamente."
