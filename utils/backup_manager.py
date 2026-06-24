@@ -961,17 +961,17 @@ def restaurar_backup(
 
             )
 
-            registrar_restauracion(
+                registrar_restauracion(
 
-                usuario,
+                    usuario,
 
-                tipo,
+                    tipo,
 
-                backup["nombre"],
+                    backup["nombre"],
 
-                "Correcto",
+                    "Correcto",
 
-                "Restauración completada"
+                    "Restauración completada"
 
             )
 
@@ -1208,18 +1208,19 @@ def _restaurar_sistema(
 
     )
 
-registrar_restauracion(
 
-    usuario,
+    registrar_restauracion(
 
-    "sistema",
+        usuario,
 
-    backup["nombre"],
+        "sistema",
 
-    "Correcto",
+        backup["nombre"],
 
-    "Restauración completa del sistema realizada correctamente."
+        "Correcto",
 
-)
+        "Restauración completa del sistema realizada correctamente."
 
-return True, "Restauración completa del sistema realizada correctamente."
+    )
+
+    return True, "Restauración completa del sistema realizada correctamente."
