@@ -961,17 +961,17 @@ def restaurar_backup(
 
             )
 
-                registrar_restauracion(
+            registrar_restauracion(
 
-                    usuario,
+                usuario,
 
-                    tipo,
+                tipo,
 
-                    backup["nombre"],
+                backup["nombre"],
 
-                    "Correcto",
+                "Correcto",
 
-                    "Restauración completada"
+                "Restauración completada"
 
             )
 
