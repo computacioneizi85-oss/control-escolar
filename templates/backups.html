@@ -316,7 +316,11 @@
 
 <td>
 
-    {% if c.proxima_ejecucion %}
+<td>
+
+{% if c.proxima_ejecucion %}
+
+    {% if c.proxima_ejecucion.strftime is defined %}
 
         {{ c.proxima_ejecucion.strftime("%d/%m/%Y") }}
 
@@ -330,15 +334,24 @@
 
     {% else %}
 
-        -
+        {{ c.proxima_ejecucion }}
 
     {% endif %}
 
+{% else %}
+
+-
+
+{% endif %}
+
 </td>
+
 
 <td>
 
-    {% if c.ultima_ejecucion %}
+{% if c.ultima_ejecucion %}
+
+    {% if c.ultima_ejecucion.strftime is defined %}
 
         {{ c.ultima_ejecucion.strftime("%d/%m/%Y") }}
 
@@ -352,12 +365,17 @@
 
     {% else %}
 
-        -
+        {{ c.ultima_ejecucion }}
 
     {% endif %}
 
-</td>
+{% else %}
 
+-
+
+{% endif %}
+
+</td>
                             <td>
 
                                 {% if c.activo %}
@@ -525,8 +543,7 @@
 
     </a>
 
-    {% if b.tipo == "financiero" %}
-
+    
 {% if b.tipo == "financiero" %}
 
 <form action="{{ url_for('backup.restaurar_financiero', backup_id=b._id) }}"
@@ -613,6 +630,14 @@ function confirmarRestauracionFinanciera(){
     );
 
 }
+
+function confirmarRestauracionEscolar(){
+
+    return confirm(
+
+        "⚠️ Se creará automáticamente un respaldo de CONTROL ESCOLAR antes de restaurar.\n\nEsta operación reemplazará la información académica actual.\n\n¿Desea continuar?"
+
+    );
 
 }
 
